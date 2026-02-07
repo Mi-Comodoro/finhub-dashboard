@@ -1,1 +1,1 @@
-# finhub-dashboard
+# Finhub dashboard

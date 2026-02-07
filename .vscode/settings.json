@@ -1,0 +1,34 @@
+{
+  // === FORMAT ===
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // 🔑 Fuerza Prettier local + config
+  "prettier.requireConfig": true,
+  "prettier.configPath": ".prettierrc",
+  "prettier.prettierPath": "./node_modules/prettier",
+  // === LENGUAJES ===
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // === CSS / TAILWIND ===
+  "css.lint.unknownAtRules": "ignore",
+  // === EDITOR ===
+  "editor.tabSize": 2,
+  "editor.comments.insertSpace": true,
+  "[xml]": {
+    "editor.defaultFormatter": "mikeburgh.xml-format"
+  },
+  "cSpell.words": ["Finhub"]
+}
