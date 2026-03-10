@@ -1,0 +1,62 @@
+import { defineStore } from 'pinia'
+
+import type { UserMe } from '~/types/api'
+
+export const useUserStore = defineStore('user', {
+  state: () => ({
+    id: null as string | null,
+    email: null as string | null,
+    name: null as string | null,
+    displayName: null as string | null,
+    photo: null as string | null,
+    phone: null as string | null,
+    gender: null as string | null,
+    createdAt: null as Date | null,
+    trialEndsAt: null as Date | null,
+    isActive: false,
+    country: null as string | null
+  }),
+
+  getters: {
+    userInfo: state => ({
+      id: state.id,
+      email: state.email,
+      name: state.name,
+      displayName: state.displayName,
+      photo: state.photo,
+      phone: state.phone,
+      gender: state.gender,
+      trialEndsAt: state.trialEndsAt,
+      isActive: state.isActive,
+      country: state.country
+    })
+  },
+  actions: {
+    setUser(userData: UserMe['result']['user']) {
+      this.id = userData.id ?? this.id
+      this.email = userData.email ?? this.email
+      this.name = userData.name ?? this.name
+      this.displayName = userData.displayName ?? this.displayName
+      this.photo = userData.photo ?? this.photo
+      this.phone = userData.phone ?? this.phone
+      this.gender = userData.gender ?? this.gender
+      this.createdAt = userData.createdAt ? new Date(userData.createdAt) : this.createdAt
+      this.trialEndsAt = userData.trialEndsAt ? new Date(userData.trialEndsAt) : this.trialEndsAt
+      this.isActive = userData.isActive ?? this.isActive
+      this.country = userData.country ?? this.country
+    },
+    clearUser() {
+      this.id = null
+      this.email = null
+      this.name = null
+      this.displayName = null
+      this.photo = null
+      this.phone = null
+      this.gender = null
+      this.createdAt = null
+      this.trialEndsAt = null
+      this.isActive = false
+      this.country = null
+    }
+  }
+})

@@ -1,10 +1,23 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+  import { ThemeToggle } from '@/components/atoms'
+
+  // Define page metadata - use login layout
+  definePageMeta({
+    layout: 'login'
+  })
+</script>
+
 <template>
   <div
-    class="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-indigo-50 p-4 font-sans"
+    class="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-teal-50 p-4 font-sans transition-colors duration-200 dark:from-gray-900 dark:to-gray-800"
   >
+    <!-- Theme Toggle - Fixed position -->
+    <div class="absolute right-6 top-6 z-20">
+      <ThemeToggle size="lg" />
+    </div>
+
     <div
-      class="flex min-h-[700px] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+      class="flex min-h-[700px] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl transition-colors duration-200 dark:bg-gray-800 dark:shadow-gray-900/50"
     >
       <!-- Panel Izquierdo -->
       <div class="relative flex-1 overflow-hidden">
@@ -17,7 +30,7 @@
           }"
         ></div>
         <div
-          class="absolute inset-0 z-0 bg-gradient-to-br from-green-900/70 via-indigo-800/60 to-indigo-700/50"
+          class="absolute inset-0 z-0 bg-gradient-to-br from-primary-900/70 via-primary-800/60 to-primary-700/50"
         ></div>
 
         <!-- Contenido -->
@@ -68,14 +81,22 @@
       </div>
 
       <!-- Panel Derecho -->
-      <div class="flex flex-1 flex-col justify-between p-8 lg:p-12">
+      <div
+        class="flex flex-1 flex-col justify-between bg-white p-8 transition-colors duration-200 lg:p-12 dark:bg-gray-800"
+      >
         <LoginForm />
         <!-- Footer -->
-        <div class="mt-12 border-t border-gray-200 pt-8 text-center">
-          <p class="text-sm text-gray-500">
+        <div
+          class="mt-12 border-t border-gray-200 pt-6 text-center transition-colors duration-200 dark:border-gray-600"
+        >
+          <p class="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
             Desarrollado por
             <span class="ml-2 inline-block">
-              <img src="@/assets/svg/V2MIGUELALVAREZ.svg" alt="Miguel Alvarez" class="h-6 w-auto" />
+              <img
+                src="@/assets/svg/V2MIGUELALVAREZ.svg"
+                alt="Miguel Alvarez"
+                class="h-6 w-auto opacity-80 dark:opacity-60"
+              />
             </span>
           </p>
         </div>

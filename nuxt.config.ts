@@ -1,19 +1,10 @@
+import { fileURLToPath } from 'node:url'
 import { defineNuxtConfig } from 'nuxt/config'
 
+const resolvePath = (relativePath: string) => fileURLToPath(new URL(relativePath, import.meta.url))
+
 export default defineNuxtConfig({
-  srcDir: 'src/',
-
-  devtools: {
-    enabled: true
-  },
-
-  css: ['~/assets/css/main.css'],
-
-  typescript: {
-    strict: true,
-    shim: false
-  },
-
+  compatibilityDate: '2026-02-08',
   app: {
     head: {
       title: 'FinHub',
@@ -34,17 +25,47 @@ export default defineNuxtConfig({
       ]
     }
   },
+  srcDir: 'src/',
+  serverDir: 'src/server/',
+  alias: {
+    '@types': resolvePath('./src/types'),
+    '@api-types': resolvePath('./src/types/api'),
+    '@domain-types': resolvePath('./src/types/domain'),
+    '@ui-types': resolvePath('./src/types/ui')
+  },
+  devtools: {
+    enabled: true
+  },
+  css: ['~/assets/css/main.css'],
+  typescript: {
+    strict: true,
+    shim: false
+  },
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.API_URL
+    },
+    FB_API_KEY: process.env.FB_API_KEY,
+    FB_AUTH_DOMAIN: process.env.FB_AUTH_DOMAIN,
+    FB_PROJECT_ID: process.env.FB_PROJECT_ID,
+    FB_STORAGE_BUCKET: process.env.FB_STORAGE_BUCKET,
+    FB_MESSAGING_SENDER_ID: process.env.FB_MESSAGING_SENDER_ID,
+    FB_APP_ID: process.env.FB_APP_ID,
+    FB_MEASUREMENT_ID: process.env.FB_MEASUREMENT_ID
+  },
 
   components: [
-    { path: '~/components/atoms', pathPrefix: false },
-    { path: '~/components/molecules', pathPrefix: false },
-    { path: '~/components/organisms', pathPrefix: false },
-    { path: '~/components/templates', pathPrefix: false }
+    { path: '@/components/atoms', pathPrefix: false },
+    { path: '@/components/molecules', pathPrefix: false },
+    { path: '@/components/organisms', pathPrefix: false }
+    /*     { path: '@/components/templates', pathPrefix: false } */
   ],
 
   imports: {
-    dirs: ['composables', 'stores']
+    autoImport: true,
+    dirs: ['composables', 'stores', 'middlewares', 'utils']
   },
+  modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/image'],
 
   postcss: {
     plugins: {
@@ -53,26 +74,22 @@ export default defineNuxtConfig({
     }
   },
 
-  nitro: {
-    compatibilityDate: '2026-02-07'
-  },
-
   vite: {
     server: {
       watch: {
-        usePolling: process.env.NODE_ENV === 'development', // Solo polling en dev
-        interval: 1000, // Intervalo de polling
+        usePolling: process.env.NODE_ENV === 'development',
+        interval: 1000,
         ignored: ['**/node_modules/**', '**/.git/**', '**/.nuxt/**', '**/dist/**']
       },
       hmr: {
-        overlay: process.env.NODE_ENV === 'development', // Mostrar errores solo en dev
+        overlay: process.env.NODE_ENV === 'development',
         clientPort: 3000,
         protocol: 'ws',
         host: 'localhost',
-        timeout: 60000 // Timeout aumentado para HMR
+        timeout: 60000
       },
 
-      strictPort: false, // Permitir cambio de puerto si está ocupado
+      strictPort: false,
       cors: true,
       fs: {
         strict: false,
@@ -80,13 +97,11 @@ export default defineNuxtConfig({
       }
     },
 
-    // Optimizaciones de rendimiento
     optimizeDeps: {
       include: ['vue', '@vue/runtime-core'],
       exclude: []
     },
 
-    // Configuración de CSS
     css: {
       devSourcemap: true,
       preprocessorOptions: {
@@ -96,7 +111,6 @@ export default defineNuxtConfig({
       }
     },
 
-    // Configuración de build
     build: {
       minify: 'terser',
       terserOptions: {
@@ -120,7 +134,6 @@ export default defineNuxtConfig({
       chunkSizeWarningLimit: 1500
     },
 
-    // Plugins
     plugins: []
   }
 })

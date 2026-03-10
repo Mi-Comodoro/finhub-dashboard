@@ -1,9 +1,11 @@
+@import '@fontsource-variable/inter/wght.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   html {
-    @apply bg-background-light text-slate-900;
+    @apply bg-background-light font-sans text-slate-900;
   }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import type { ButtonProps } from '../types/atoms.types'
+  import type { ButtonProps } from '@/components/atoms'
 
   const props = withDefaults(defineProps<ButtonProps>(), {
     type: 'button',
@@ -30,7 +30,7 @@
    * =======================*/
 
   const BASE_CLASSES =
-    'inline-flex select-none items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light'
+    'inline-flex select-none items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900'
 
   const SIZE_CLASSES = {
     sm: {
@@ -48,14 +48,20 @@
   }
 
   const VARIANT_CLASSES = {
-    primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-600',
+    primary:
+      'bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold',
 
-    secondary: 'bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-600',
+    secondary:
+      'bg-secondary-600 text-white hover:bg-secondary-700 dark:bg-secondary-600 dark:hover:bg-secondary-700 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold',
 
     outline:
-      'border border-border-light bg-transparent text-text-main hover:bg-background-light focus:ring-border-light',
+      'border border-slate-300 dark:border-slate-600 bg-transparent text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold',
 
-    danger: 'bg-danger-500 text-white hover:bg-danger-700 focus:ring-danger-500'
+    danger:
+      'bg-danger-500 text-white hover:bg-danger-700 dark:bg-danger-500 dark:hover:bg-danger-700 focus:ring-danger-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold',
+
+    ghost:
+      'bg-gray-100 border border-slate-200 text-slate-900 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold'
   }
 
   /* =========================
@@ -67,8 +73,7 @@
   )
 
   const stateClasses = computed(() => ({
-    'w-full': props.fullWidth,
-    'cursor-not-allowed opacity-50 pointer-events-none': props.disabled || props.loading
+    'w-full': props.fullWidth
   }))
 
   const classes = computed(() => [
@@ -102,7 +107,11 @@
     </svg>
 
     <!-- Icon -->
-    <span v-if="icon && !loading" class="material-icons-sharp text-base" :class="iconOrderClass">
+    <span
+      v-if="icon && !loading"
+      class="material-icons-sharp material-symbols-outlined text-base"
+      :class="iconOrderClass"
+    >
       {{ icon }}
     </span>
 
