@@ -3,6 +3,8 @@
  * User profile and preferences
  */
 
+import type { Currency } from '@/utils/currency'
+
 export interface UserProfile {
   readonly id: string
   readonly email: string
@@ -12,8 +14,6 @@ export interface UserProfile {
   readonly financialSpace: FinancialSpace
   readonly subscription: SubscriptionPlan | null
 }
-
-import type { Currency } from '@/utils/currency'
 
 export interface UserPreferences {
   readonly currency: Currency

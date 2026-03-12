@@ -11,27 +11,10 @@
 
   import { Badge, Label } from '@/components/atoms'
 
-  interface BudgetAllocation {
-    needs: number // Gastos Fijos
-    wants: number // Gastos Variables u Ocasionales
-    savings: number // Ahorro e Inversiones
-  }
-
-  interface BudgetStrategyCardProps {
-    title: string
-    description: string
-    allocation: BudgetAllocation
-    icon?: string
-    recommended?: boolean
-    advanced?: boolean
-    selected?: boolean
-    selectable?: boolean
-  }
-
-  interface Emits {
-    select: []
-    'update:allocation': [allocation: BudgetAllocation]
-  }
+  import type {
+    BudgetAllocation,
+    BudgetStrategyCardProps
+  } from './types/budget-strategy-card.types'
 
   const props = withDefaults(defineProps<BudgetStrategyCardProps>(), {
     icon: 'account_balance',
@@ -41,7 +24,7 @@
     selectable: true
   })
 
-  const emit = defineEmits<Emits>()
+  const emit = defineEmits(['select', 'update:allocation'] as const)
 
   // Local reactive allocation for advanced cards
   const localAllocation = reactive({ ...props.allocation })

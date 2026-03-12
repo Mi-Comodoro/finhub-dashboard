@@ -1,20 +1,10 @@
 <script setup lang="ts">
   import { Text } from '@/components/atoms'
-  import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
 
-  interface Props {
-    label: string
-    percentage: number
-    amount: number
-    currency: Currency
-    /** Tailwind color class applied to the dot and the progress bar fill — e.g. "bg-teal-500" */
-    color: string
-    /** 0–100 progress value; defaults to 0 until transactions are linked */
-    progress?: number
-  }
+  import type { BudgetCategoryRowProps } from './types/budget-category-row.types'
 
-  withDefaults(defineProps<Props>(), {
+  withDefaults(defineProps<BudgetCategoryRowProps>(), {
     progress: 0
   })
 </script>

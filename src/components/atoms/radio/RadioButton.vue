@@ -8,9 +8,10 @@
   })
   const emit = defineEmits(['update:modelValue'])
 
-  if (!props.modelValue && props.options.length) {
-    emit('update:modelValue', props.options[0].value)
+  if (!props.modelValue && props.options.length > 0) {
+    emit('update:modelValue', null)
   }
+
   const updateValue = (value: string | number) => {
     emit('update:modelValue', value)
   }

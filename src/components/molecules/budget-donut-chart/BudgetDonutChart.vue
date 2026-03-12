@@ -1,27 +1,11 @@
 <script setup lang="ts">
   import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-  import type { Currency } from '@/utils/currency'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
 
-  // ─── Types ────────────────────────────────────────────────────────────────────
+  import type { BudgetDonutChartProps, BudgetDonutItem } from './types/budget-donut-chart.types'
 
-  export interface BudgetDonutItem {
-    id: string
-    name: string
-    type: 'needs' | 'wants' | 'savings'
-    budgeted: number
-    percentage: number
-  }
-
-  interface Props {
-    items?: BudgetDonutItem[]
-    total?: number
-    currency?: Currency
-    showLegend?: boolean
-  }
-
-  const props = withDefaults(defineProps<Props>(), {
+  const props = withDefaults(defineProps<BudgetDonutChartProps>(), {
     items: () => [],
     total: 0,
     currency: 'COP',

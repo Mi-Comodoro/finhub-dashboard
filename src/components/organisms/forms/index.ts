@@ -1,0 +1,4 @@
+export { default as BasicInformationForm } from './BasicInformationForm.vue'
+export { default as BudgetStrategyForm } from './BudgetStrategyForm.vue'
+export { default as FinancialGoalsForm } from './FinancialGoalsForm.vue'
+export { default as LoginForm } from './LoginForm.vue'

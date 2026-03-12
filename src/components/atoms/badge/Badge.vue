@@ -4,7 +4,7 @@
 -->
 
 <script setup lang="ts">
-  import type { BadgeProps } from '@/components/atoms'
+  import type { BadgeProps } from './types/badge.types'
 
   withDefaults(defineProps<BadgeProps>(), {
     variant: 'default',

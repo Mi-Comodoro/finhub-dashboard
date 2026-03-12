@@ -4,12 +4,7 @@
   import { Icon } from '@/components/atoms'
   import { HeaderActions } from '@/components/molecules'
 
-  interface DashboardHeaderProps {
-    /** Header title */
-    title?: string
-    /** Custom classes */
-    className?: string
-  }
+  import type { DashboardHeaderProps } from './types/dashboard-header.types'
 
   withDefaults(defineProps<DashboardHeaderProps>(), {
     title: '',

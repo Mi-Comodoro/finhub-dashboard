@@ -9,7 +9,7 @@
    * Container for multiple BudgetStrategyCard components with layout control
    */
 
-  import type { BudgetStrategyGroupProps } from '@/components/molecules'
+  import type { BudgetStrategyGroupProps } from './types/budget-strategy-group.types'
 
   const props = withDefaults(defineProps<BudgetStrategyGroupProps>(), {
     direction: 'column',

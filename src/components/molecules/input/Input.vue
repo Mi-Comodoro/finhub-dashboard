@@ -2,36 +2,30 @@
   import { computed, ref, watch } from 'vue'
 
   import { Label } from '@/components/atoms'
-  import type { InputProps } from '@/components/molecules'
 
-  const props = withDefaults(
-    defineProps<
-      InputProps & {
-        size?: 'sm' | 'default'
-      }
-    >(),
-    {
-      type: 'text',
-      tag: 'input',
-      required: false,
-      disabled: false,
-      pattern: () => /.*/,
-      error: '',
-      errorMessage: 'Valor inválido',
-      placeHolder: '',
-      placeholder: ' ',
-      variant: 'column',
-      searchIcon: false,
-      forgotPassword: false,
-      forgotPasswordText: '',
-      showPasswordToggle: false,
-      passwordIconStyle: 'outline',
-      size: 'default',
-      readonly: false
-    }
-  )
+  import type { InputProps, InputSize } from './types/input.types'
 
-  const emit = defineEmits(['update:modelValue', 'blur'])
+  const props = withDefaults(defineProps<InputProps & { size?: InputSize }>(), {
+    type: 'text',
+    tag: 'input',
+    required: false,
+    disabled: false,
+    pattern: () => /.*/,
+    error: '',
+    errorMessage: 'Valor inválido',
+    placeHolder: '',
+    placeholder: ' ',
+    variant: 'column',
+    searchIcon: false,
+    forgotPassword: false,
+    forgotPasswordText: '',
+    showPasswordToggle: false,
+    passwordIconStyle: 'outline',
+    size: 'default',
+    readonly: false
+  })
+
+  const emit = defineEmits(['update:modelValue', 'blur'] as const)
 
   const internalError = ref(false)
   const modelValue = ref(props.modelValue ?? '')

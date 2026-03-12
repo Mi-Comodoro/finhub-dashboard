@@ -5,8 +5,10 @@
   import { Input } from '@/components/molecules'
   import { useAuth } from '~/composables/useAuth'
 
-  const email = ref<string>('')
-  const password = ref<string>('')
+  import type { LoginFormState } from './types/login-form.types'
+
+  const email = ref<LoginFormState['email']>('')
+  const password = ref<LoginFormState['password']>('')
 
   // Composables - volviendo a useAuth que funcionaba
   const { login, loginWithGoogle, user, error: authError } = useAuth()

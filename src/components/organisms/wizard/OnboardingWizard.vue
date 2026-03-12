@@ -1,23 +1,22 @@
 <script setup lang="ts">
-  import { Heading, Text } from '@/components/atoms'
   import { OnboardingStepIntro, ProgressBar } from '@/components/molecules'
   import {
     BasicInformationForm,
     BudgetStrategyForm,
     FinancialGoalsForm
   } from '@/components/organisms'
+  import { ON_BOARDING_CONFIG } from '~/common/constants'
   import type { OnboardingFormData } from '~/types/ui'
 
+  import type {
+    FinancialGoalsData,
+    FinancialUsage,
+    FinancialUsageInput
+  } from '../forms/types/financial-goals-form.types'
   // State
-  const props = defineProps<{
-    currentStep: number
-    totalSteps: number
-    stepProgress: number
-    stages: string[]
-  }>()
-  const emit = defineEmits<{
-    completed: [data: OnboardingFormData]
-  }>()
+  import type { OnboardingWizardEmits } from './types/onboarding-wizard.types'
+
+  const emit = defineEmits<OnboardingWizardEmits>()
   // Computed properties
 
   const wizardData = reactive<OnboardingFormData>({
@@ -47,15 +46,18 @@
     wizardData.personalInfo = data
   }
 
-  const onboardingFinancialGoalsData = (data: Pick<OnboardingFormData, 'finances'>['finances']) => {
-    wizardData.finances = data
+  const onboardingFinancialGoalsData = (data: FinancialGoalsData) => {
+    wizardData.finances = {
+      ...data,
+      currency: data.currency,
+      usage: normalizeUsage(data.usage),
+      profile: data.profile ?? 'EMPLOYEE',
+      budgetFrequency: data.budgetFrequency ?? 'MONTHLY'
+    }
   }
 
   const budgetStrategyData = (data: OnboardingFormData['budget']) => {
     wizardData.budget = data
-
-    // Ya no completar automáticamente - solo actualizar los datos
-    // La completación ahora se maneja manualmente desde el botón
   }
 
   // Función para validar si todos los datos están completos
@@ -69,10 +71,15 @@
     )
   }
 
+  const budgetStrategy = ref<'BALANCED' | 'CUSTOM' | null>(null)
+  const handleChangeStrategy = () => {
+    budgetStrategy.value = wizardData.budget.strategy === 'BALANCED' ? 'CUSTOM' : 'BALANCED'
+    wizardData.budget.strategy = '' as 'BALANCED' | 'CUSTOM'
+  }
   // Método que puede ser llamado externamente para intentar completar el wizard
   const tryComplete = () => {
     // La completación se activa en el step 3 (cuando se tienen todos los datos)
-    if (props.currentStep === 3 && isDataComplete()) {
+    if (currentStep.value === 3 && isDataComplete()) {
       emit('completed', { ...wizardData })
     }
   }
@@ -81,60 +88,158 @@
   defineExpose({
     tryComplete
   })
+  const currentStep = ref(1)
+  const firstStep = ref(1)
+  const totalSteps = ref(ON_BOARDING_CONFIG.stages.length)
+  const stepProgress = computed(() => (currentStep.value / totalSteps.value) * 100)
+
+  const userStore = useUserStore()
+  const nextStep = () => {
+    if (currentStep.value < totalSteps.value) {
+      currentStep.value++
+    }
+  }
+  const prevStep = () => {
+    if (currentStep.value > firstStep.value) {
+      currentStep.value--
+    }
+  }
+  const disabledNext = ref(true)
+  const validateBasicInformation = (isValid: boolean) => {
+    disabledNext.value = !isValid
+  }
+
+  const normalizeUsage = (usage?: FinancialUsageInput): FinancialUsage => {
+    if (!usage) return 'personal'
+
+    return usage.toLowerCase() === 'shared' ? 'shared' : 'personal'
+  }
 </script>
 <template>
-  <div class="w-full">
+  <div class="onboarding-wizard">
     <ProgressBar
       :current-step="currentStep"
       :total-steps="totalSteps"
-      :stages="stages"
+      :stages="ON_BOARDING_CONFIG.stages"
       :progress="stepProgress"
       variant="primary"
       size="lg"
     />
-
-    <!-- Step 1: Información Básica -->
-    <div v-if="currentStep === 1" class="w-full space-y-6">
+    <div v-if="currentStep === 1" class="onboarding-wizard__step">
       <OnboardingStepIntro
         icon="person"
-        title="Información Personal"
-        description="Confirma tus datos personales para crear tu cuenta segura en FinHub."
+        :title="`Bienvenido, ${userStore.displayName?.trim().length ? userStore.displayName : (userStore.userInfo.name ?? 'Usuario')}!`"
+        :description="ON_BOARDING_CONFIG.personalInfo.description"
       />
 
-      <BasicInformationForm @update:model-value="onboardingBasicData" />
+      <BasicInformationForm
+        @update:model-value="onboardingBasicData"
+        @valid="validateBasicInformation"
+      />
     </div>
-
-    <!-- Step 2: Configuración Financiera -->
-    <div v-if="currentStep === 2" class="w-full space-y-6">
-      <div class="mt-8">
-        <Heading level="h1" size="3xl" weight="extrabold">Configura tu Perfil Financiero</Heading>
-        <Text size="sm" color="muted" class="mt-1 max-w-lg">
-          Personaliza tu experiencia para tener mejores resultados
-        </Text>
-      </div>
+    <div v-if="currentStep === 2" class="onboarding-wizard__step">
+      <OnboardingStepIntro
+        icon="account_balance_wallet"
+        :title="ON_BOARDING_CONFIG.financesConfig.title"
+        :description="ON_BOARDING_CONFIG.financesConfig.description"
+      />
 
       <FinancialGoalsForm @update:model-value="onboardingFinancialGoalsData" />
     </div>
-
-    <!-- Step 3: Estrategia de Presupuesto -->
-    <div v-if="currentStep === 3" class="w-full space-y-6">
+    <div v-if="currentStep === 3" class="onboarding-wizard__step">
       <OnboardingStepIntro
         icon="account_balance_wallet"
-        title="Estrategia de Presupuesto"
-        description="Elige la estrategia que mejor se adapte a tu estilo de vida y objetivos financieros."
+        :title="ON_BOARDING_CONFIG.budgetStrategy.title"
+        :description="ON_BOARDING_CONFIG.budgetStrategy.description"
       />
 
-      <BudgetStrategyForm @update:model-value="budgetStrategyData" />
-    </div>
+      <div
+        v-if="wizardData.budget.strategy"
+        class="mb-4 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4"
+      >
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <IconChip icon="security" variant="primary" />
 
-    <!-- Step 4: Completado -->
-    <div v-if="currentStep === 4" class="w-full space-y-6">
+            <div>
+              <Heading
+                level="h2"
+                size="base"
+                weight="semibold"
+                class-name="account-info-section__title"
+              >
+                Estrategia Seleccionada
+              </Heading>
+              <Label
+                variant="form"
+                size="sm"
+                color="muted"
+                class-name="account-info-section__field-label"
+              >
+                {{ wizardData.budget.strategy === 'BALANCED' ? 'Equilibrada' : 'Personalizada' }}
+              </Label>
+            </div>
+          </div>
+        </div>
+        <Button size="sm" variant="primary" @click="handleChangeStrategy">Cambiar</Button>
+      </div>
+
+      <BudgetStrategyForm
+        :strategy-selected="wizardData.budget.strategy"
+        @update:model-value="budgetStrategyData"
+      />
+    </div>
+    <div v-if="currentStep === totalSteps" class="onboarding-wizard__step">
       <OnboardingStepIntro
         icon="check_circle"
-        title="¡Configuración Completada!"
-        description="Excelente. Tu perfil financiero está listo. Ahora puedes comenzar a gestionar tu presupuesto y alcanzar tus objetivos financieros."
+        :title="ON_BOARDING_CONFIG.completion.title"
+        :description="ON_BOARDING_CONFIG.completion.description"
         :highlighted-title="true"
       />
     </div>
+    <div class="flex justify-between">
+      <Button
+        variant="ghost"
+        icon="arrow_back"
+        size="sm"
+        :disabled="currentStep <= 1"
+        @click="prevStep"
+      >
+        {{ currentStep <= firstStep ? 'Primer Paso' : 'Anterior' }}
+      </Button>
+      <Button
+        variant="primary"
+        :icon="currentStep === totalSteps ? 'check' : 'arrow_forward'"
+        icon-position="right"
+        size="sm"
+        :disabled="disabledNext"
+        @click="
+          () => {
+            if (currentStep === totalSteps) {
+              tryComplete()
+            } else {
+              nextStep()
+            }
+          }
+        "
+      >
+        {{
+          currentStep === totalSteps
+            ? 'Finalizar'
+            : currentStep === totalSteps - 1
+              ? 'Completar Configuración'
+              : 'Siguiente'
+        }}
+      </Button>
+    </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .onboarding-wizard {
+    @apply w-full;
+  }
+  .onboarding-wizard__step {
+    @apply box-content flex w-full flex-col flex-wrap gap-1 text-wrap;
+  }
+</style>

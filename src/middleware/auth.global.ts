@@ -16,7 +16,7 @@ export default defineNuxtRouteMiddleware(async to => {
 
   // Check authentication status
   const isLoggedIn = authStore.isAuthenticated
-  const needsOnboarding = authStore.needsOnboarding()
+
   // 🚫 Not authenticated → redirect away from protected routes
   if (!isLoggedIn && (isDashboard || isOnboarding)) {
     return navigateTo('/')
@@ -24,16 +24,16 @@ export default defineNuxtRouteMiddleware(async to => {
 
   // ✅ Authenticated on home → redirect based on onboarding status
   if (isLoggedIn && isHome) {
-    return navigateTo(needsOnboarding ? '/onboarding' : '/dashboard')
+    return navigateTo('/dashboard')
   }
 
-  // ✅ Authenticated trying to access dashboard but needs onboarding → redirect to onboarding
-  if (isLoggedIn && isDashboard && needsOnboarding) {
-    return navigateTo('/onboarding')
-  }
+  // ✅ Authenticated trying to access dashboard but needs onboarding → NO REDIRECT, ahora onboarding es modal
+  // if (isLoggedIn && isDashboard && needsOnboarding) {
+  //   return navigateTo('/onboarding')
+  // }
 
   // ✅ Authenticated trying to access onboarding but already completed → redirect to dashboard
-  if (isLoggedIn && isOnboarding && !needsOnboarding) {
+  if (isLoggedIn && isOnboarding) {
     return navigateTo('/dashboard')
   }
 })

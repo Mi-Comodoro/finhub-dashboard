@@ -9,8 +9,12 @@
    * Configures budget strategy during onboarding
    */
 
-  type CanonicalStrategy = 'BALANCED' | 'CUSTOM'
-  type StrategyValue = CanonicalStrategy | 'balanced' | 'custom'
+  import type {
+    BudgetStrategyFormProps,
+    CanonicalStrategy,
+    StrategyFormData,
+    StrategyValue
+  } from './types/budget-strategy-form.types'
 
   const normalizeStrategy = (strategy?: StrategyValue): CanonicalStrategy => {
     const normalized = (strategy || '').toUpperCase()
@@ -24,29 +28,7 @@
     return strategy === 'CUSTOM' ? 'custom' : 'balanced'
   }
 
-  interface StrategyFormInput {
-    strategy: StrategyValue
-    customAllocations: {
-      needs: number
-      wants: number
-      savings: number
-    }
-  }
-
-  interface StrategyFormData {
-    strategy: CanonicalStrategy
-    customAllocations: {
-      needs: number
-      wants: number
-      savings: number
-    }
-  }
-
-  interface Props {
-    modelValue?: StrategyFormInput
-  }
-
-  const props = withDefaults(defineProps<Props>(), {
+  const props = withDefaults(defineProps<BudgetStrategyFormProps>(), {
     modelValue: () => ({
       strategy: 'BALANCED' as CanonicalStrategy,
       customAllocations: {
@@ -122,7 +104,7 @@
 
     // Validate custom allocations
     if (formModel.value.strategy === 'CUSTOM') {
-      if (totalPercentage.value !== 100) {
+      if (totalPercentage.value > 100) {
         errors.value.strategy = 'Los porcentajes deben sumar exactamente 100%'
       }
 
@@ -146,6 +128,12 @@
   // Watch for changes and emit
   const selectedBudgetStrategy = ref<'balanced' | 'custom'>(
     toStrategyKey(normalizeStrategy(formModel.value.strategy))
+  )
+  watch(
+    () => props.strategySelected,
+    newStrategy => {
+      selectedBudgetStrategy.value = toStrategyKey(normalizeStrategy(newStrategy as StrategyValue))
+    }
   )
 
   watch(
@@ -216,7 +204,35 @@
 <template>
   <form class="strategy-form space-y-6" @submit.prevent>
     <!-- Legend Section -->
-    <div class="strategy-legend">
+    <!-- Account Type Example (Column Layout) -->
+    <div class="form-field">
+      <Label variant="form" size="sm" class-name="form-field__label">Tipo de Presupuesto</Label>
+
+      <RadioButton
+        v-model="formModel.usage"
+        name="budgetType"
+        variant="card"
+        direction="row"
+        :options="[
+          {
+            label: 'Personal',
+            value: 'personal',
+            title: 'Personal',
+            description: 'Solo para mi',
+            badge: 'Recomendado',
+            icon: 'person'
+          },
+          {
+            label: 'Compartido',
+            value: 'shared',
+            title: 'Compartido',
+            description: 'Pareja o familia',
+            icon: 'group'
+          }
+        ]"
+      />
+    </div>
+    <div v-if="!strategySelected || selectedBudgetStrategy !== 'custom'" class="strategy-legend">
       <h4 class="strategy-legend__title">Distribución del Presupuesto</h4>
       <div class="strategy-legend__items">
         <div class="legend-item">
@@ -234,10 +250,14 @@
       </div>
     </div>
 
-    <!-- Strategy Selection -->
-    <div class="space-y-6">
-      <BudgetStrategyGroup direction="column" gap="md">
+    <div class="strategy-form__selection">
+      <BudgetStrategyGroup :direction="strategySelected ? 'column' : 'row'" gap="md">
         <BudgetStrategyCard
+          v-if="
+            selectedBudgetStrategy === 'balanced' ||
+            strategySelected === 'balanced' ||
+            !strategySelected
+          "
           title="Equilibrada"
           description="Regla clásica 50/30/20. Equilibra tus obligaciones con tu disfrute personal y futuro."
           :allocation="{ needs: 50, wants: 30, savings: 20 }"
@@ -251,6 +271,11 @@
           {{ errors.strategy }}
         </div>
         <BudgetStrategyCard
+          v-if="
+            selectedBudgetStrategy === 'custom' ||
+            strategySelected === 'custom' ||
+            !strategySelected
+          "
           title="Personalizada"
           description="Crea tu propia estrategia de presupuesto ajustada a tus necesidades y objetivos."
           :allocation="customAllocations"
@@ -264,50 +289,41 @@
     </div>
   </form>
 </template>
-<style scoped>
-  /* Strategy Form Styles */
-  .strategy-form {
-    @apply w-full;
-  }
 
-  /* Legend Section */
-  .strategy-legend {
+<style scoped lang="postcss">
+  .strategy-form {
+    @apply h-96 min-h-96 w-full space-y-6 overflow-y-auto pr-2;
+  }
+  .strategy-form__legend {
     @apply rounded-lg border border-gray-200 bg-gray-50 p-4;
   }
-
-  .strategy-legend__title {
+  .strategy-form__title {
     @apply mb-3 text-sm font-semibold text-gray-700;
   }
-
-  .strategy-legend__items {
+  .strategy-form__items {
     @apply flex justify-between;
   }
-
+  .strategy-form__selection {
+    @apply space-y-6;
+  }
   .legend-item {
     @apply flex items-center gap-2;
   }
-
   .legend-item__color {
     @apply h-3 w-3 rounded-full;
   }
-
   .legend-item__color--needs {
     @apply bg-primary-500;
   }
-
   .legend-item__color--wants {
     @apply bg-success-500;
   }
-
   .legend-item__color--savings {
     @apply bg-secondary-700;
   }
-
   .legend-item__text {
     @apply text-xs font-medium text-gray-600;
   }
-
-  /* Error Message */
   .error-message {
     @apply rounded-md bg-red-50 p-3 text-sm font-medium text-red-700;
   }

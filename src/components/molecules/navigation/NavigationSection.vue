@@ -2,23 +2,7 @@
   import { Text } from '@/components/atoms'
 
   import NavigationItem from './NavigationItem.vue'
-
-  interface MenuItem {
-    name: string
-    icon: string
-    path: string
-    isActive?: boolean
-  }
-
-  interface NavigationSectionProps {
-    /** Section title */
-    title: string
-    /** Menu items for this section */
-    items: MenuItem[]
-    /** Custom classes */
-    className?: string
-  }
-
+  import type { NavigationSectionProps } from './types/navigation-section.types'
   withDefaults(defineProps<NavigationSectionProps>(), {
     className: ''
   })

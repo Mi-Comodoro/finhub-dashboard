@@ -4,12 +4,7 @@
   import { AppLogo, AppVersion } from '@/components/atoms'
   import { NavigationSection } from '@/components/molecules'
 
-  interface MenuItem {
-    name: string
-    icon: string
-    path: string
-    isActive?: boolean
-  }
+  import type { MenuItem } from './types/dashboard-sidebar.types'
 
   const route = useRoute()
 
@@ -63,23 +58,31 @@
 </script>
 
 <template>
-  <aside
-    class="flex h-full w-full flex-col border-r border-slate-200 bg-white text-slate-900 shadow-lg transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:shadow-2xl"
-  >
-    <!-- Header -->
-    <div class="z-10 max-h-[56px] border-gray-200 px-6 py-2 dark:border-gray-700">
+  <aside class="dashboard-sidebar">
+    <div class="dashboard-sidebar__header">
       <AppLogo :class-name="'dark:text-white'" :show-text="true" />
     </div>
-
-    <!-- Main Navigation -->
-    <nav class="flex-1 space-y-2 p-4">
+    <nav class="dashboard-sidebar__nav">
       <NavigationSection title="MENÚ PRINCIPAL" :items="mainMenuItems" />
       <NavigationSection title="CONFIGURACIÓN" :items="settingsMenuItems" />
     </nav>
-
-    <!-- Version info -->
-    <div class="px-6 pb-4">
+    <div class="dashboard-sidebar__version">
       <AppVersion class="ml-1" />
     </div>
   </aside>
 </template>
+
+<style scoped lang="postcss">
+  .dashboard-sidebar {
+    @apply flex h-full w-full flex-col border-r border-slate-200 bg-white text-slate-900 shadow-lg transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:shadow-2xl;
+  }
+  .dashboard-sidebar__header {
+    @apply z-10 max-h-[56px] border-gray-200 px-6 py-2 dark:border-gray-700;
+  }
+  .dashboard-sidebar__nav {
+    @apply flex-1 space-y-2 p-4;
+  }
+  .dashboard-sidebar__version {
+    @apply px-6 pb-4;
+  }
+</style>

@@ -1,23 +1,15 @@
 <script setup lang="ts">
   import { Button, Heading } from '@/components/atoms'
 
-  interface Props {
-    title: string
-    isSaving?: boolean
-    saveLabel?: string
-    savingLabel?: string
-  }
+  import type { EditSectionActionsProps } from './types/edit-section-actions.types'
 
-  withDefaults(defineProps<Props>(), {
+  withDefaults(defineProps<EditSectionActionsProps>(), {
     isSaving: false,
     saveLabel: 'Guardar',
     savingLabel: 'Guardando...'
   })
 
-  const emit = defineEmits<{
-    cancel: []
-    save: []
-  }>()
+  const emit = defineEmits(['cancel', 'save'] as const)
 </script>
 
 <template>

@@ -1,12 +1,27 @@
 <script setup lang="ts">
-  import { computed, onMounted } from 'vue'
+  // Referencia al wizard para poder llamar tryComplete
+  import { computed, onMounted, ref } from 'vue'
 
-  import { Button, Card, Heading, Icon, MetricCard, Text } from '@/components/atoms'
+  import { Button, Card, Heading, MetricCard, Text } from '@/components/atoms'
   import { BudgetDonutChart } from '@/components/molecules'
+  import { OnboardingWizard } from '@/components/organisms'
+  import { useModalNotification } from '@/components/organisms/modal-notification/useModalNotification'
+  import { ModalWizard } from '@/components/organisms/modal-wizard'
   import { useBudget } from '@/composables/useBudget'
+  import { useAuthStore } from '@/stores/auth.store'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
+
+  const authStore = useAuthStore()
+
+  const showWizard = ref(false)
+
+  // Solo una función handleWizardCompleted, tipada correctamente
+
+  function handleWizardCompleted() {
+    showWizard.value = false
+  }
 
   definePageMeta({
     layout: 'dashboard'
@@ -18,6 +33,19 @@
 
   onMounted(() => {
     fetchCurrentBudget()
+    // Mostrar wizard si el usuario necesita onboarding
+    setTimeout(() => {
+      if (authStore.needsOnboarding()) {
+        showWizard.value = true
+      } else {
+        const { showModal } = useModalNotification()
+        showModal('info', {
+          title: 'Onboarding completado',
+          message: 'Tu perfil ya está configurado. ¡Bienvenido!',
+          actionLabel: undefined
+        })
+      }
+    }, 500)
   })
 
   const currency = computed(() => financesStore.defaultCurrency)
@@ -88,20 +116,14 @@
           Conoce el estado de tus finanzas y toma decisiones inteligentes con datos en tiempo real.
         </Text>
       </div>
-      <div class="flex items-center gap-3">
-        <Button variant="ghost" size="md">
-          <Icon name="download" class="mr-2" size="sm" />
-          Reporte
-        </Button>
-        <Button variant="primary" size="md">
-          <Icon name="add" class="mr-2" size="sm" />
-          Nueva Transacción
-        </Button>
+      <div class="flex items-center gap-2">
+        <Button variant="ghost" size="sm" icon="download">Reporte</Button>
+        <Button variant="primary" size="sm" icon="add">Nueva Transacción</Button>
       </div>
     </div>
 
     <!-- Metrics Cards -->
-    <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div class="mb-8 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
       <MetricCard
         title="Ingreso Total"
         :value="totalIncome"
@@ -117,7 +139,14 @@
         icon="receipt_long"
         variant="expense"
       />
-
+      <MetricCard
+        title="Ahorro e Inversiones"
+        :value="savingsAmount"
+        :currency-code="currency"
+        icon="trending_up"
+        variant="neutral"
+        icon-class="bg-yellow-200 text-yellow-700"
+      />
       <MetricCard
         title="Disponible"
         :value="available"
@@ -135,7 +164,13 @@
       >
         <div class="flex border-b border-slate-100 px-5 py-4 dark:border-slate-700">
           <Heading level="h3" size="lg" weight="semibold">Distribución del Presupuesto</Heading>
-          <Badge size="sm" class="ml-2" :color="budgetStore.currentBudgetPlan ? 'green' : 'gray'">
+          <Badge
+            size="sm"
+            class="ml-2"
+            :variant="
+              budgetStore.currentBudgetPlan?.strategy === 'BALANCED' ? 'primary' : 'secondary'
+            "
+          >
             {{
               budgetStore.currentBudgetPlan?.strategy === 'BALANCED' ? '50/30/20' : 'Personalizada'
             }}
@@ -224,6 +259,11 @@
       <Heading level="h3" size="lg" weight="semibold" class="mb-4">Transacciones Recientes</Heading>
       <Text color="muted">Próximamente: Lista de transacciones recientes...</Text>
     </Card>
+
+    <!-- Onboarding Wizard -->
+    <ModalWizard :show="showWizard" class="px-8">
+      <OnboardingWizard ref="wizardRef" @completed="handleWizardCompleted" />
+    </ModalWizard>
   </div>
 </template>
 

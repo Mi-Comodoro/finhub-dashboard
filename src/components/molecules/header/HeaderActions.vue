@@ -3,10 +3,7 @@
   import { NotificationCenter } from '@/components/molecules'
   import { useAuthStore } from '~/stores/auth.store'
 
-  interface HeaderActionsProps {
-    /** Custom classes */
-    className?: string
-  }
+  import type { HeaderActionsProps } from './types/header-actions.types'
 
   withDefaults(defineProps<HeaderActionsProps>(), {
     className: ''

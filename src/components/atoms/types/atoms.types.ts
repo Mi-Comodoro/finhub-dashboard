@@ -27,7 +27,7 @@ export interface RadioOption<T = string> {
 }
 
 export interface RadioButtonProps {
-  modelValue: string | number
+  modelValue: string | number | null | undefined
   name: string
   options: RadioOption[]
   label?: string

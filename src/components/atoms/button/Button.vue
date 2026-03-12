@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import type { ButtonProps } from '@/components/atoms'
+  import type { ButtonProps } from './types/button.types'
 
   const props = withDefaults(defineProps<ButtonProps>(), {
     type: 'button',

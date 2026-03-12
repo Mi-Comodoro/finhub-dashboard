@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { Card, Heading } from '@/components/atoms'
-  import type { EditableInfoCardProps } from '@/components/molecules'
+  import { IconChip } from '@/components/molecules'
 
-  import IconChip from '../icon-chip/IconChip.vue'
+  import type { EditableInfoCardProps } from './types/editable-info-card.types'
 
   withDefaults(defineProps<EditableInfoCardProps>(), {
     iconContainerClass: '',
@@ -12,9 +12,7 @@
     editButtonText: 'Editar'
   })
 
-  const emit = defineEmits<{
-    edit: []
-  }>()
+  const emit = defineEmits(['edit'] as const)
 </script>
 
 <template>

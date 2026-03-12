@@ -2,7 +2,7 @@
   import type { IconBadgeProps } from '@/components/atoms'
   import { Icon } from '@/components/atoms'
 
-  const props = withDefaults(defineProps<IconBadgeProps>(), {
+  withDefaults(defineProps<IconBadgeProps>(), {
     size: 'md',
     iconClass: 'bg-slate-100 text-slate-500'
   })

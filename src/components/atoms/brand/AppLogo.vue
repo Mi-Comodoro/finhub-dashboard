@@ -1,14 +1,7 @@
 <script setup lang="ts">
   import { Text } from '@/components/atoms'
 
-  interface AppLogoProps {
-    /** Show full logo with text */
-    showText?: boolean
-    /** Size of the logo */
-    size?: 'sm' | 'md' | 'lg'
-    /** Custom classes */
-    className?: string
-  }
+  import type { AppLogoProps, LogoSize, TextSize } from './types/app-logo.types'
 
   withDefaults(defineProps<AppLogoProps>(), {
     showText: true,
@@ -16,13 +9,13 @@
     className: ''
   })
 
-  const logoSizes = {
+  const logoSizes: Record<LogoSize, string> = {
     sm: 'h-8 w-8 text-xs',
     md: 'h-10 w-10 text-sm',
     lg: 'h-12 w-12 text-base'
   }
 
-  const textSizes: Record<string, 'base' | 'lg' | 'xl'> = {
+  const textSizes: Record<LogoSize, TextSize> = {
     sm: 'base',
     md: 'lg',
     lg: 'xl'

@@ -5,10 +5,10 @@
    */
 
   import { Badge, Button, Card, Heading, Label } from '@/components/atoms'
-  import type { AccountInfoSectionProps } from '@/components/molecules'
   import { ProgressBar } from '@/components/molecules'
 
   import IconChip from '../icon-chip/IconChip.vue'
+  import type { AccountInfoSectionProps } from './types/account-info-section.types'
 
   withDefaults(defineProps<AccountInfoSectionProps>(), {
     accountInfo: () => ({
@@ -22,9 +22,7 @@
     showManageButton: true
   })
 
-  const emit = defineEmits<{
-    manageSubscription: []
-  }>()
+  const emit = defineEmits(['manageSubscription'])
 
   const onManageSubscription = () => {
     emit('manageSubscription')

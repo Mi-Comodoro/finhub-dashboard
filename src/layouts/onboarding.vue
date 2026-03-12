@@ -1,9 +1,18 @@
 <script setup lang="ts">
-  // Login layout - minimal layout for authentication pages
+  import { ModalNotification } from '@/components/organisms/modal-notification'
+  import { useModalNotification } from '@/components/organisms/modal-notification/useModalNotification'
+
+  const { modalState, hideModal } = useModalNotification()
 </script>
 
 <template>
   <div class="onboarding-layout">
+    <ModalNotification
+      :show="modalState.show"
+      :type="modalState.type"
+      :options="modalState.options"
+      :on-close="hideModal"
+    />
     <slot />
   </div>
 </template>

@@ -4,15 +4,9 @@
 -->
 
 <script setup lang="ts">
-  type AlertVariant = 'info' | 'success' | 'warning' | 'danger' | 'neutral' | 'purple'
+  import type { AlertBannerProps, AlertVariant, VariantClasses } from './types/alert-banner.types'
 
-  interface Props {
-    variant?: AlertVariant
-    icon?: string
-    title?: string
-  }
-
-  const props = withDefaults(defineProps<Props>(), {
+  const props = withDefaults(defineProps<AlertBannerProps>(), {
     variant: 'info',
     icon: undefined,
     title: undefined
@@ -29,7 +23,7 @@
 
   const resolvedIcon = computed(() => props.icon ?? DEFAULT_ICONS[props.variant])
 
-  const VARIANT_CLASSES: Record<AlertVariant, { wrapper: string; icon: string; title: string }> = {
+  const VARIANT_CLASSES: Record<AlertVariant, VariantClasses> = {
     info: {
       wrapper: 'bg-teal-50 border-teal-100 dark:bg-teal-900/20 dark:border-teal-800/40',
       icon: 'text-teal-500 dark:text-teal-400',
@@ -66,25 +60,40 @@
 </script>
 
 <template>
-  <div
-    :class="['flex items-start gap-3 rounded-xl border px-4 py-3', classes.wrapper]"
-    role="alert"
-  >
+  <div :class="['alert-banner', classes.wrapper]" role="alert">
     <span
-      class="material-symbols-outlined mt-0.5 shrink-0 text-[1.1rem] leading-none"
+      class="alert-banner__icon material-symbols-outlined"
       :class="classes.icon"
       aria-hidden="true"
     >
       {{ resolvedIcon }}
     </span>
 
-    <div class="min-w-0 flex-1">
-      <p v-if="title" :class="['mb-0.5 text-sm font-semibold', classes.title]">
+    <div class="alert-banner__content">
+      <p v-if="title" :class="['alert-banner__title', classes.title]">
         {{ title }}
       </p>
-      <div class="text-sm text-slate-600 dark:text-slate-400">
+      <div class="alert-banner__body">
         <slot />
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .alert-banner {
+    @apply flex items-start gap-3 rounded-xl border px-4 py-3;
+  }
+  .alert-banner__icon {
+    @apply mt-0.5 shrink-0 text-[1.1rem] leading-none;
+  }
+  .alert-banner__content {
+    @apply min-w-0 flex-1;
+  }
+  .alert-banner__title {
+    @apply mb-0.5 text-sm font-semibold;
+  }
+  .alert-banner__body {
+    @apply text-sm text-slate-600 dark:text-slate-400;
+  }
+</style>

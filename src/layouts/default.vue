@@ -1,3 +1,9 @@
+<script setup lang="ts">
+  import { ModalNotification } from '@/components/organisms/modal-notification'
+  import { useModalNotification } from '@/components/organisms/modal-notification/useModalNotification'
+
+  const { modalState, hideModal } = useModalNotification()
+</script>
 <template>
   <div class="layout">
     <header class="layout-header">
@@ -18,26 +24,18 @@
 
     <footer class="layout-footer">
       <!-- Footer content -->
+
+      <ModalNotification
+        :show="modalState.show"
+        :type="modalState.type"
+        :options="modalState.options"
+        :on-close="hideModal"
+      />
     </footer>
   </div>
 </template>
 
-<script>
-  export default {
-    name: 'DefaultLayout',
-    data() {
-      return {}
-    }
-  }
-</script>
-
-<style>
-  .layout {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-
+<style scoped lang="postcss">
   .layout-header {
     background-color: #f5f5f5;
     border-bottom: 1px solid #ddd;

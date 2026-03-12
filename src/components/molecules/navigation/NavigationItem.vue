@@ -1,13 +1,7 @@
 <script setup lang="ts">
   import { Icon, Link, Text } from '@/components/atoms'
 
-  interface NavigationItemProps {
-    name: string
-    icon: string
-    path: string
-    isActive?: boolean
-    className?: string
-  }
+  import type { NavigationItemProps } from './types/navigation-item.types'
 
   withDefaults(defineProps<NavigationItemProps>(), {
     isActive: false,

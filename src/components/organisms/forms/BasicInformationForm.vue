@@ -10,25 +10,16 @@
    */
 
   import { Select } from '@/components/molecules'
+  import { GENDER_OPTIONS } from '~/common/constants'
   import { useUserStore } from '~/stores/user.store'
 
-  interface BasicInformationData {
-    displayName: string
-    email: string
-    phone: string
-    gender: 'MALE' | 'FEMALE' | 'PREFER_NOT_TO_SAY' | ''
-  }
+  import type {
+    BasicInformationData,
+    BasicInformationFormEmits,
+    BasicInformationFormProps
+  } from './types/basic-information-form.types'
 
-  interface Props {
-    modelValue?: BasicInformationData
-  }
-
-  interface Emits {
-    'update:modelValue': [value: BasicInformationData]
-    valid: [isValid: boolean]
-  }
-
-  const props = withDefaults(defineProps<Props>(), {
+  const props = withDefaults(defineProps<BasicInformationFormProps>(), {
     modelValue: () => ({
       displayName: '',
       email: '',
@@ -37,7 +28,7 @@
     })
   })
 
-  const emit = defineEmits<Emits>()
+  const emit = defineEmits<BasicInformationFormEmits>()
 
   const userStore = useUserStore()
 
@@ -58,13 +49,6 @@
   // Validation state
   const errors = ref<Record<string, string>>({})
   const isValid = ref(false)
-
-  // Gender options
-  const genderOptions = [
-    { value: 'MALE', label: 'Masculino' },
-    { value: 'FEMALE', label: 'Femenino' },
-    { value: 'PREFER_NOT_TO_SAY', label: 'Prefiero no decirlo' }
-  ]
 
   // Validation rules (only for editable fields)
   const validationRules = {
@@ -90,25 +74,42 @@
     const hasRequiredFields =
       formModel.value.displayName.trim() &&
       formModel.value.email.trim() &&
-      formModel.value.phone.trim() &&
-      formModel.value.gender
+      formModel.value.phone.trim()
 
     isValid.value = !hasErrors && !!hasRequiredFields
     emit('valid', isValid.value)
   }
 
+  /**
+   * Validate all fields and emit validity state
+   */
+  const validateAllFields = () => {
+    Object.keys(validationRules).forEach(field => {
+      validateField(field as keyof typeof validationRules)
+    })
+    updateFormValidity()
+  }
+
+  // Optionally, expose for parent or use internally
+  defineExpose({ validateAllFields })
   // Emit model changes to parent without re-validating eagerly
   watch(
     formModel,
     newValue => {
+      userStore.displayName = newValue.displayName
       emit('update:modelValue', { ...newValue })
+      updateFormValidity()
     },
     { deep: true }
   )
+  onMounted(() => {
+    // Trigger initial validation so parent receives correct validity state
+    updateFormValidity()
+  })
 </script>
 <template>
   <form class="basic-information-form space-y-6" @submit.prevent>
-    <div class="space-y-4">
+    <div class="flex-col gap-2">
       <!-- Display Name (read-only, pre-filled from store) -->
       <div class="form-field">
         <Input
@@ -120,20 +121,6 @@
           label="Nombre para Mostrar"
         />
         <Text as="p" size="xs" color="muted" class="mt-1">Nombre registrado en tu cuenta</Text>
-      </div>
-
-      <!-- Email (read-only, pre-filled from store) -->
-      <div class="form-field">
-        <Input
-          id="email"
-          v-model="formModel.email"
-          name="email"
-          type="email"
-          placeholder="juan@example.com"
-          label="Email"
-          :readonly="formModel.email.trim() !== ''"
-        />
-        <Text as="p" size="xs" color="muted" class="mt-1">Tu correo electrónico registrado</Text>
       </div>
 
       <!-- Phone -->
@@ -148,6 +135,7 @@
           label="Teléfono"
           required
           @blur="validateField('phone')"
+          @input="validateField('phone')"
         />
         <Text as="p" size="xs" color="muted" class="mt-1">
           Para notificaciones de seguridad y recordatorios
@@ -160,7 +148,7 @@
           v-model="formModel.gender"
           name="gender"
           label="Género"
-          :options="genderOptions"
+          :options="GENDER_OPTIONS"
           :error="!!errors.gender"
           :error-message="errors.gender"
           required
@@ -173,6 +161,18 @@
     </div>
   </form>
 </template>
-<style scoped>
-  /* Helper text now uses Text atom and Tailwind classes directly. */
+
+<style scoped lang="postcss">
+  .basic-information-form {
+    @apply box-content h-96 min-h-96 space-y-6 overflow-y-auto px-1;
+  }
+  .basic-information-form__fields {
+    @apply space-y-4;
+  }
+  .form-field {
+    @apply mb-4;
+  }
+  .form-field__helper {
+    @apply mt-1 text-xs text-gray-400;
+  }
 </style>

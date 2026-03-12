@@ -1,10 +1,5 @@
 <script setup lang="ts">
-  interface UserAvatarProps {
-    name: string
-    avatar?: string | null
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-    className?: string
-  }
+  import type { AvatarSize, UserAvatarProps } from './types/user-avatar.types'
 
   withDefaults(defineProps<UserAvatarProps>(), {
     avatar: null,
@@ -12,7 +7,7 @@
     className: ''
   })
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string): string => {
     return name
       .split(' ')
       .map(n => n[0]?.toUpperCase())
@@ -20,7 +15,7 @@
       .slice(0, 2)
   }
 
-  const sizeClasses = {
+  const sizeClasses: Record<AvatarSize, string> = {
     xs: 'h-6 w-6 text-xs',
     sm: 'h-8 w-8 text-sm',
     md: 'h-10 w-10 text-sm',
@@ -32,7 +27,7 @@
 <template>
   <div
     :class="[
-      'flex items-center justify-center rounded-full bg-primary-600 font-medium text-white',
+      'flex items-center justify-center rounded-full font-medium text-white',
       sizeClasses[size],
       className
     ]"
@@ -42,7 +37,8 @@
       :src="avatar"
       :alt="name"
       class="h-full w-full rounded-full object-cover"
+      :class="sizeClasses[size]"
     />
-    <span v-else>{{ getInitials(name) }}</span>
+    <span v-else class="bg-primary-500">{{ getInitials(name) }}</span>
   </div>
 </template>

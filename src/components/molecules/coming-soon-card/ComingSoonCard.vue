@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { Card, Heading } from '@/components/atoms'
-  import type { ComingSoonCardProps } from '@/components/molecules'
+  import { IconChip } from '@/components/molecules'
 
-  import IconChip from '../icon-chip/IconChip.vue'
+  import type { ComingSoonCardProps } from './types/coming-soon-card.types'
 
   withDefaults(defineProps<ComingSoonCardProps>(), {
     title: 'Próximamente',
