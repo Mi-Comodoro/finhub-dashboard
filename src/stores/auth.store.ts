@@ -31,10 +31,6 @@ export const useAuthStore = defineStore('auth', {
       return state.onboarding?.isCompleted ?? false
     },
 
-    currentOnboardingStep: state => {
-      return state.onboarding?.currentStep ?? 'personal-info'
-    },
-
     isSessionExpired: (state): boolean => {
       if (!state.session) return true
       return state.session.sessionExpiresAt < new Date()

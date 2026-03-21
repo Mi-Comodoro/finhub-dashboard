@@ -2,7 +2,8 @@
   import { computed } from 'vue'
 
   import { Label } from '@/components/atoms'
-  import type { SelectProps } from '@/components/molecules'
+
+  import type { SelectProps } from './types'
 
   const props = withDefaults(defineProps<SelectProps>(), {
     required: false,
@@ -79,6 +80,7 @@
           v-for="option in options"
           :key="option.value"
           :value="option.value"
+          :disabled="option.disabled"
           class="select-option"
         >
           {{ option.label }}
@@ -105,13 +107,13 @@
     @apply relative w-full;
   }
   .select {
-    @apply w-full appearance-none rounded-md border bg-white text-slate-700 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400;
+    @apply w-full appearance-none rounded-md border bg-white text-slate-700 focus:outline-none disabled:bg-neutral-100 disabled:text-neutral-400;
   }
   .select--error {
     @apply border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500;
   }
   .select--normal {
-    @apply border-gray-300 focus:border-slate-500 focus:ring-1 focus:ring-slate-500;
+    @apply border-neutral-300 focus:border-slate-500 focus:ring-1 focus:ring-slate-500;
   }
   .select--sm {
     @apply w-14 px-2 py-1 text-xs;

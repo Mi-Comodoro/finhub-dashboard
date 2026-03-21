@@ -8,7 +8,7 @@ export type BackendUserMe = {
     email: string
     onboarding: string
     createdAt: Date
-    account: {
+    userProfile: {
       type: AccountType
       name: string
       displayName: string

@@ -16,9 +16,12 @@
 
 <style lang="postcss" scoped>
   .card {
-    @apply rounded-lg border border-gray-200 bg-white;
+    @apply rounded-lg border border-neutral-200 bg-white p-4;
   }
 
+  .card--primary {
+    @apply border-primary-200 bg-primary-500;
+  }
   .card--elevated {
     @apply shadow-sm;
   }

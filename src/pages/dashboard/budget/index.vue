@@ -9,11 +9,17 @@
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
 
-  definePageMeta({ layout: 'dashboard' })
+  useRoute()
+  definePageMeta({
+    layout: 'dashboard',
+    title: 'Presupuesto',
+    breadcrumb: 'Presupuesto'
+  })
 
   const { fetchBudgets } = useBudget()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
+
   const router = useRouter()
 
   // ─── Year filter ─────────────────────────────────────────────────────────────
@@ -23,14 +29,15 @@
   const selectedYear = ref<number>(currentYear)
 
   onMounted(() => fetchBudgets(selectedYear.value))
+
   watch(selectedYear, year => fetchBudgets(year))
 
   const currency = computed(() => financesStore.defaultCurrency)
 
   // ─── Summary metrics ─────────────────────────────────────────────────────────
-  const totalBudgeted = computed(() =>
-    budgetStore.budgetPlans.reduce((sum, p) => sum + p.totalIncome, 0)
-  )
+  /*   const totalBudgeted = computed(() =>
+    budgetStore.budgetPlans.reduce((sum, p) => sum + p, 0)
+  ) */
 
   // % executed = 0 until transactions are loaded
   const avgExecution = computed(() => 0)
@@ -42,10 +49,14 @@
     const lastDay = new Date(active.year, m, 0)
     return `${lastDay.getDate()} ${monthShort(active.month)} ${active.year}`
   })
+
+  const budgetDetails = (id: string) => {
+    router.push(`/dashboard/budget/${id}`)
+  }
 </script>
 
 <template>
-  <div class="space-y-6 p-6">
+  <div class="space-y-4 p-4">
     <!-- ── Header ─────────────────────────────────────────────────────────── -->
     <div class="flex items-start justify-between gap-4">
       <div>
@@ -74,10 +85,10 @@
     </div>
 
     <!-- ── Summary cards ──────────────────────────────────────────────────── -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       <MetricCard
         title="TOTAL PRESUPUESTADO"
-        :value="totalBudgeted"
+        :value="1000000000"
         :currency-code="currency"
         icon="account_balance_wallet"
         variant="income"
@@ -134,7 +145,9 @@
       :plans="budgetStore.budgetPlans"
       :currency="currency"
       :selected-year="selectedYear"
-      @edit="(id: string) => router.push(`/dashboard/budget/${id}?mode=edit`)"
+      :avg-execution="avgExecution"
+      :next-closing-date="nextClosingDate!"
+      @view="budgetDetails"
       @duplicate="(id: string) => console.log('duplicate', id)"
       @delete="(id: string) => console.log('delete', id)"
     />

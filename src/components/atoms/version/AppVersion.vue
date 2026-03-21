@@ -27,7 +27,9 @@
 </script>
 
 <template>
-  <span :class="['font-normal text-gray-500 dark:text-gray-400', sizeClasses[size], className]">
+  <span
+    :class="['font-normal text-neutral-500 dark:text-neutral-400', sizeClasses[size], className]"
+  >
     {{ displayVersion }}
   </span>
 </template>

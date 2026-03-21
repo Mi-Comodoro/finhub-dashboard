@@ -72,7 +72,7 @@ export default withNuxt([
           ]
         }
       ],
-      'no-console': ['warn', { allow: ['error'] }],
+      'no-console': ['warn', { allow: ['error', 'warn'] }],
       'no-debugger': 'error'
     }
   }

@@ -1,17 +1,16 @@
 <script setup lang="ts">
   import { ref } from 'vue'
 
-  import { Button, GoogleIcon, Heading, Link, Text } from '@/components/atoms'
-  import { Input } from '@/components/molecules'
-  import { useAuth } from '~/composables/useAuth'
+  import { Button, GoogleIcon, Link, Text } from '@/components/atoms'
+  import { CardInfo, Input } from '@/components/molecules'
+  import { useAuth } from '@/composables/useAuth'
 
   import type { LoginFormState } from './types/login-form.types'
 
   const email = ref<LoginFormState['email']>('')
   const password = ref<LoginFormState['password']>('')
 
-  // Composables - volviendo a useAuth que funcionaba
-  const { login, loginWithGoogle, user, error: authError } = useAuth()
+  const { login, loginWithGoogle, error: authError } = useAuth()
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -67,10 +66,16 @@
   <div class="max-w-lg p-4">
     <div class="flex w-full flex-col gap-6">
       <div>
-        <Heading level="h2" size="3xl" weight="extrabold" color="primary" class="mt-8 lg:mt-5">
-          Bienvenido
-        </Heading>
-        <Text size="base" color="secondary" class="mb-8">Inicia sesión en tu panel de FinHub</Text>
+        <CardInfo
+          level="h2"
+          title-size="3xl"
+          title="Bienvenido"
+          color="black"
+          weight="extrabold"
+          sub-title="Inicia sesión en tu panel de FinHub"
+          sub-title-size="base"
+          sub-title-color="muted"
+        />
       </div>
 
       <!-- Error Display -->
@@ -103,14 +108,14 @@
       <div class="relative my-4">
         <div class="absolute inset-0 flex items-center">
           <div
-            class="w-full border-t border-gray-200 transition-colors duration-200 dark:border-gray-600"
+            class="w-full border-t border-neutral-200 transition-colors duration-200 dark:border-neutral-600"
           ></div>
         </div>
         <div class="relative flex justify-center">
           <Text
             size="sm"
             color="muted"
-            class="bg-white px-4 transition-colors duration-200 dark:bg-gray-800"
+            class="bg-white px-4 transition-colors duration-200 dark:bg-neutral-800"
           >
             O continúa con tu correo
           </Text>
@@ -154,20 +159,11 @@
         </Button>
       </form>
 
-      <!-- Info solo para debug -->
-      <div v-if="user">
-        <Text size="sm" color="secondary">
-          Sesión Google activa como
-          <Text as="strong" weight="semibold" color="accent">
-            {{ user.email }}
-          </Text>
-        </Text>
-      </div>
-
-      <Text size="base" color="secondary" class="text-center">
+      <Text size="sm" color="muted" class="text-center">
         ¿No tienes una cuenta?
         <Link
           href="#"
+          size="sm"
           class="font-semibold text-teal-600 transition-colors duration-200 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
         >
           Regístrate

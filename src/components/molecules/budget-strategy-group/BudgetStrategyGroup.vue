@@ -33,7 +33,7 @@
 <style lang="postcss" scoped>
   /* Base Container */
   .budget-strategy-group {
-    @apply flex;
+    @apply mb-4 flex w-full items-center justify-center;
   }
 
   /* Direction Variants */

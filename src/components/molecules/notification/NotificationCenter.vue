@@ -117,40 +117,40 @@
     @apply relative;
   }
   .notification-center__trigger {
-    @apply relative flex cursor-pointer items-center justify-center rounded-md p-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white;
+    @apply relative flex cursor-pointer items-center justify-center rounded-md p-2 text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white;
   }
   .notification-center__badge {
-    @apply absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white;
+    @apply absolute -top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white;
   }
   .notification-center__dropdown {
-    @apply absolute right-0 top-10 z-50 w-80 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-700;
+    @apply absolute right-0 top-10 z-50 w-80 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-neutral-700;
   }
   .notification-center__dropdown-header {
-    @apply border-b border-gray-200 px-4 py-2 dark:border-gray-600;
+    @apply border-b border-neutral-200 px-4 py-2 dark:border-neutral-600;
   }
   .notification-center__dropdown-title {
-    @apply text-sm font-medium text-gray-900 dark:text-white;
+    @apply text-sm font-medium text-neutral-900 dark:text-white;
   }
   .notification-center__dropdown-list {
     @apply max-h-64 overflow-y-auto;
   }
   .notification-center__dropdown-empty {
-    @apply px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400;
+    @apply px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400;
   }
   .notification-center__dropdown-item {
-    @apply border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-600;
+    @apply border-b border-neutral-100 px-4 py-3 hover:bg-neutral-50 dark:border-neutral-600 dark:hover:bg-neutral-600;
   }
   .notification-center__dropdown-item-title {
-    @apply text-sm font-medium text-gray-900 dark:text-white;
+    @apply text-sm font-medium text-neutral-900 dark:text-white;
   }
   .notification-center__dropdown-item-message {
-    @apply text-xs text-gray-500 dark:text-gray-400;
+    @apply text-xs text-neutral-500 dark:text-neutral-400;
   }
   .notification-center__dropdown-item-time {
-    @apply mt-1 text-xs text-gray-400 dark:text-gray-500;
+    @apply mt-1 text-xs text-neutral-400 dark:text-neutral-500;
   }
   .notification-center__dropdown-footer {
-    @apply border-t border-gray-200 p-2 text-center dark:border-gray-600;
+    @apply border-t border-neutral-200 p-2 text-center dark:border-neutral-600;
   }
   .notification-center__dropdown-footer-btn {
     @apply text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300;

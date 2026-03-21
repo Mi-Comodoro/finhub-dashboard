@@ -167,7 +167,7 @@ Component para enlaces internos y externos.
 1. **Consistencia**: Estilos unificados en toda la aplicación
 2. **Mantenibilidad**: Cambios centralizados afectan todos los usos
 3. **Reutilización**: Componentes exportables a otros proyectos
-4. **Flexibilidad**: Props para personalizar sin CSS custom
+4. **Flexibilidad**: Props para personalizar sin CSS CUSTOM
 5. **Accesibilidad**: Elementos semánticos correctos
 6. **Performance**: Tailwind classes optimizadas
 

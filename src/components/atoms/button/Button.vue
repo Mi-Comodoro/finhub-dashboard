@@ -22,78 +22,34 @@
   const tooltipText = computed(() => (props.iconOnly && props.icon ? props.icon : undefined))
 
   const iconOrderClass = computed(() =>
-    props.iconPosition === 'right' ? 'order-last' : 'order-first'
+    props.iconPosition === 'right' ? 'btn__icon--right' : 'btn__icon--left'
   )
 
   /* =========================
-   * Class maps
+   * BEM Modifiers
    * =======================*/
 
-  const BASE_CLASSES =
-    'inline-flex select-none items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900'
-
-  const SIZE_CLASSES = {
-    sm: {
-      default: 'min-h-8 px-3 py-1.5 text-sm min-w-[5rem]',
-      icon: 'h-8 w-8 p-0'
-    },
-    md: {
-      default: 'min-h-10 px-4 py-2 text-sm min-w-[6rem]',
-      icon: 'h-10 w-10 p-0'
-    },
-    lg: {
-      default: 'min-h-12 px-6 py-3 text-base min-w-[7rem]',
-      icon: 'h-12 w-12 p-0'
-    }
-  }
-
-  const VARIANT_CLASSES = {
-    primary:
-      'bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold',
-
-    secondary:
-      'bg-secondary-600 text-white hover:bg-secondary-700 dark:bg-secondary-600 dark:hover:bg-secondary-700 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold',
-
-    outline:
-      'border border-slate-300 dark:border-slate-600 bg-transparent text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold',
-
-    danger:
-      'bg-danger-500 text-white hover:bg-danger-700 dark:bg-danger-500 dark:hover:bg-danger-700 focus:ring-danger-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold',
-
-    ghost:
-      'bg-gray-100 border border-slate-200 text-slate-900 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:opacity-50 font-extrabold'
-  }
-
-  /* =========================
-   * Computed classes
-   * =======================*/
-
-  const sizeClass = computed(() =>
-    props.iconOnly ? SIZE_CLASSES[props.size].icon : SIZE_CLASSES[props.size].default
-  )
-
-  const stateClasses = computed(() => ({
-    'w-full': props.fullWidth
+  const classes = computed(() => ({
+    [`btn--${props.variant}`]: true,
+    [`btn--${props.size}`]: true,
+    'btn--icon-only': props.iconOnly,
+    'btn--loading': props.loading,
+    'btn--disabled': props.disabled,
+    'btn--full': props.fullWidth
   }))
-
-  const classes = computed(() => [
-    BASE_CLASSES,
-    sizeClass.value,
-    VARIANT_CLASSES[props.variant],
-    stateClasses.value
-  ])
 </script>
 
 <template>
   <button
     :type="type"
     :disabled="disabled || loading"
+    class="btn"
     :class="classes"
     :title="tooltipText"
     :aria-label="tooltipText"
   >
     <!-- Loader -->
-    <svg v-if="loading" class="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+    <svg v-if="loading" class="btn__loader" viewBox="0 0 24 24">
       <circle
         cx="12"
         cy="12"
@@ -109,15 +65,123 @@
     <!-- Icon -->
     <span
       v-if="icon && !loading"
-      class="material-icons-sharp material-symbols-outlined text-base"
+      class="btn__icon material-icons-sharp material-symbols-outlined"
       :class="iconOrderClass"
     >
       {{ icon }}
     </span>
 
     <!-- Text -->
-    <span v-if="$slots.default && !iconOnly && !loading">
+    <span v-if="$slots.default && !iconOnly && !loading" class="btn__text">
       <slot />
     </span>
   </button>
 </template>
+
+<style scoped lang="postcss">
+  /* =========================
+   Base
+   =======================*/
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900;
+  }
+
+  /* =========================
+   Sizes
+   =======================*/
+
+  .btn--sm {
+    @apply min-h-8 px-3 py-1.5 text-sm;
+  }
+
+  .btn--md {
+    @apply min-h-10 px-4 py-2 text-sm;
+  }
+
+  .btn--lg {
+    @apply min-h-12 px-6 py-3 text-base;
+  }
+
+  /* Icon only */
+
+  /* =========================
+   Icon Only
+   =======================*/
+
+  .btn--icon-only {
+    @apply gap-0;
+  }
+
+  .btn--icon-only.btn--sm {
+    @apply h-8 w-8;
+  }
+
+  .btn--icon-only.btn--md {
+    @apply h-10 w-10;
+  }
+
+  .btn--icon-only.btn--lg {
+    @apply h-12 w-12;
+  }
+
+  /* =========================
+   Variants
+   =======================*/
+
+  .btn--primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 disabled:opacity-50;
+  }
+
+  .btn--secondary {
+    @apply bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500 disabled:opacity-50;
+  }
+
+  .btn--outline {
+    @apply border border-slate-300 bg-transparent text-slate-900 hover:bg-slate-50 focus:ring-secondary-500;
+  }
+
+  .btn--danger {
+    @apply bg-danger-500 text-white hover:bg-danger-700 focus:ring-danger-500;
+  }
+
+  .btn--ghost {
+    @apply border border-slate-200 bg-neutral-100 text-slate-900 hover:bg-slate-100;
+  }
+
+  /* =========================
+   States
+   =======================*/
+
+  .btn--full {
+    @apply w-full;
+  }
+
+  .btn--disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  /* =========================
+   Elements
+   =======================*/
+
+  .btn__icon {
+    @apply text-base;
+  }
+
+  .btn__icon--right {
+    @apply order-last;
+  }
+
+  .btn__icon--left {
+    @apply order-first;
+  }
+
+  .btn__loader {
+    @apply h-4 w-4 animate-spin;
+  }
+
+  .btn__text {
+    @apply leading-none;
+  }
+</style>

@@ -20,25 +20,36 @@ export interface WizardEmits {
 
 export type OnBoardingFinances = {
   currency: string
-  usage: string
-  profile: 'EMPLOYEE' | 'FREELANCER' | 'BUSINESS_OWNER'
-  budgetFrequency: 'MONTHLY' | 'BIWEEKLY'
+  profile: 'employee' | 'freelancer' | 'business_owner'
+  budgetFrequency: 'monthly' | 'biweekly'
+  monthPayment: Date | null
+  biweeklyPayments: [Date | null, Date | null]
 }
 export type OnboardingFormData = {
   personalInfo: {
     displayName: string
     email: string
     phone: string
-    gender: 'MALE' | 'FEMALE' | 'PREFER_NOT_TO_SAY' | ''
+    gender: 'male' | 'female' | 'prefer_not_to_say'
   }
   finances: OnBoardingFinances
   budget: {
     strategy: 'BALANCED' | 'CUSTOM'
+    usage: 'personal' | 'shared' | null
     customAllocations: {
       needs: number
       wants: number
       savings: number
     }
+  }
+  incomes: {
+    incomes: {
+      source: string
+      amount: number
+      isAdditional: boolean
+    }[]
+    frequency: 'monthly' | 'biweekly'
+    paymentsDates: Date | [Date, Date] | null
   }
 }
 

@@ -82,14 +82,14 @@ export const useBudgetStore = defineStore('budget', {
       return state.activeBudget.allocations
         .filter(allocation => allocation.isOverBudget)
         .reduce((total, allocation) => total + Math.abs(allocation.remainingAmount), 0)
-    },
+    }
 
-    savingsPercentage: (state): number => {
+    /*  savingsPercentage: (state): number => {
       if (!state.activeBudget || state.activeBudget.totalIncome === 0) return 0
 
       const savingsAmount = state.activeBudget.totalIncome - state.activeBudget.totalActual
       return (savingsAmount / state.activeBudget.totalIncome) * 100
-    }
+    } */
   },
 
   actions: {
@@ -198,7 +198,7 @@ export const useBudgetStore = defineStore('budget', {
       const updatedBudget: Budget = {
         ...budget,
         allocations: updatedAllocations,
-        totalPlanned: updatedAllocations.reduce((sum, a) => sum + a.plannedAmount, 0),
+        /*  totalPlanned: updatedAllocations.reduce((sum, a) => sum + a.plannedAmount, 0), */
         updatedAt: new Date()
       }
 

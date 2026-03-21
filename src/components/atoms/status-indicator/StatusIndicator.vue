@@ -19,7 +19,7 @@
   const statusClasses = computed(() => {
     const statusMap = {
       active: 'bg-green-500',
-      inactive: 'bg-gray-400',
+      inactive: 'bg-neutral-400',
       pending: 'bg-yellow-500',
       error: 'bg-red-500',
       default: 'bg-green-500'
@@ -30,9 +30,9 @@
   const textColors = computed(() => {
     const colorMap = {
       active: 'text-green-600',
-      inactive: 'text-gray-600',
+      inactive: 'text-neutral-600',
       pending: 'text-yellow-600',
-      default: 'text-gray-900',
+      default: 'text-neutral-900',
       error: 'text-red-600'
     }
     return colorMap[props.status]

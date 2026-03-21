@@ -3,15 +3,16 @@
 
   import { AppLogo, AppVersion } from '@/components/atoms'
   import { NavigationSection } from '@/components/molecules'
+  import { useAuthStore } from '~/stores/auth.store'
 
   import type { MenuItem } from './types/dashboard-sidebar.types'
-
   const route = useRoute()
 
+  const { accountType } = useAuthStore()
   const menuItems: Omit<MenuItem, 'isActive'>[] = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
-    { name: 'Transacciones', icon: 'receipt_long', path: '/dashboard/transactions' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
+    { name: 'Transacciones', icon: 'receipt_long', path: '/dashboard/transactions' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' }
   ]
 
@@ -67,7 +68,25 @@
       <NavigationSection title="CONFIGURACIÓN" :items="settingsMenuItems" />
     </nav>
     <div class="dashboard-sidebar__version">
-      <AppVersion class="ml-1" />
+      <Card as="div" class="my-2 p-2" class-name="!bg-primary-50 !rounded-md !border-primary-100">
+        <CardInfo
+          level="h3"
+          title-size="sm"
+          title="Estado"
+          weight="bold"
+          color="black"
+          :sub-title="
+            accountType?.toUpperCase() === 'TRIAL'
+              ? 'Periodo de Prueba'
+              : accountType?.toUpperCase() === 'PREMIUM'
+                ? 'Premium'
+                : 'FREE'
+          "
+          sub-title-color="primary"
+          sub-title-size="xs"
+        />
+      </Card>
+      <AppVersion class="ml-1" size="xs" />
     </div>
   </aside>
 </template>
@@ -77,7 +96,7 @@
     @apply flex h-full w-full flex-col border-r border-slate-200 bg-white text-slate-900 shadow-lg transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:shadow-2xl;
   }
   .dashboard-sidebar__header {
-    @apply z-10 max-h-[56px] border-gray-200 px-6 py-2 dark:border-gray-700;
+    @apply z-10 max-h-[56px] border-neutral-200 px-6 py-2 dark:border-neutral-700;
   }
   .dashboard-sidebar__nav {
     @apply flex-1 space-y-2 p-4;

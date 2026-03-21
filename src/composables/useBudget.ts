@@ -23,14 +23,11 @@ export const useBudget = () => {
         name: result.name,
         month: result.month,
         year: result.year,
-        income: result.income,
-        otherIncome: result.otherIncome,
-        totalIncome: result.income + result.otherIncome,
         isShared: result.isShared,
-        partnerIncome: result.partnerIncome,
-        partnerOtherIncome: result.partnerOtherIncome,
         limits: result.limits,
         financesId: result.financesId,
+        status: result.status,
+        ownerId: result.ownerId,
         partnerId: result.partnerId,
         strategy: result.strategy,
         frequency: result.frequency
@@ -63,13 +60,10 @@ export const useBudget = () => {
           name: item.name,
           month: item.month,
           year: item.year,
-          income: item.income,
-          otherIncome: item.otherIncome,
-          totalIncome: item.income + item.otherIncome,
           isShared: item.isShared,
-          partnerIncome: item.partnerIncome,
-          partnerOtherIncome: item.partnerOtherIncome,
+          status: item.status,
           limits: item.limits,
+          ownerId: item.ownerId,
           financesId: item.financesId,
           partnerId: item.partnerId,
           strategy: item.strategy,
@@ -84,5 +78,36 @@ export const useBudget = () => {
     }
   }
 
-  return { fetchCurrentBudget, fetchBudgets }
+  const fetchBudgetById = async (budgetId: string) => {
+    budgetStore.setLoading(true)
+    budgetStore.setError(null)
+
+    try {
+      const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/plan/${budgetId}`)
+
+      if (!success || !result) return
+
+      budgetStore.setCurrentBudget({
+        id: result.id,
+        name: result.name,
+        month: result.month,
+        year: result.year,
+        isShared: result.isShared,
+        limits: result.limits,
+        financesId: result.financesId,
+        status: result.status,
+        ownerId: result.ownerId,
+        partnerId: result.partnerId,
+        strategy: result.strategy,
+        frequency: result.frequency
+      })
+    } catch (error) {
+      console.error('❌ Error fetching current budget:', error)
+      budgetStore.setError('Error al cargar el presupuesto actual')
+    } finally {
+      budgetStore.setLoading(false)
+    }
+  }
+
+  return { fetchCurrentBudget, fetchBudgets, fetchBudgetById }
 }

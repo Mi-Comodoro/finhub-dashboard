@@ -1,0 +1,13 @@
+export type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+export type HeadingSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl'
+export type HeadingWeight = 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold'
+export type HeadingColor =
+  | 'primary'
+  | 'secondary'
+  | 'muted'
+  | 'accent'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'white'
+  | 'black'

@@ -1,8 +1,6 @@
 <script setup lang="ts">
-  type LabelSize = 'xs' | 'sm' | 'base'
-  type LabelColor = 'primary' | 'secondary' | 'muted' | 'accent' | 'white'
-  type LabelVariant = 'default' | 'section' | 'form' | 'badge'
-  type LegacyLabelVariant = 'row' | 'column'
+  import type { LabelColor, LabelSize, LabelVariant, LegacyLabelVariant } from './types/label.types'
+  import type { TextWeight } from './types/text.types'
 
   interface LabelProps {
     /** Label size */
@@ -11,6 +9,7 @@
     color?: LabelColor
     /** Label variant with predefined styles */
     variant?: LabelVariant | LegacyLabelVariant
+    weight?: TextWeight
     /** Make text uppercase */
     uppercase?: boolean
     /** Required field indicator */
@@ -34,7 +33,8 @@
     className: '',
     htmlFor: undefined,
     forId: undefined,
-    text: ''
+    text: '',
+    weight: 'normal'
   })
 
   const sizeClasses = {
@@ -44,13 +44,21 @@
   }
 
   const colorClasses = {
-    primary: 'text-slate-900 dark:text-white',
-    secondary: 'text-slate-700 dark:text-slate-300',
+    primary: 'text-primary-900 dark:text-white',
+    secondary: 'text-secondary-700 dark:text-slate-300',
     muted: 'text-slate-500 dark:text-slate-400',
-    accent: 'text-teal-600 dark:text-teal-400',
-    white: 'text-white'
+    accent: 'text-primary-600 dark:text-teal-400',
+    white: 'text-white',
+    black: 'text-black'
   }
 
+  const weightClasses = {
+    light: 'font-light',
+    normal: 'font-normal',
+    medium: 'font-medium',
+    semibold: 'font-semibold',
+    bold: 'font-bold'
+  }
   const variantClasses = {
     default: '',
     section: 'font-semibold uppercase tracking-wider',
@@ -76,6 +84,7 @@
       sizeClasses[props.size],
       colorClasses[props.color],
       variantClasses[normalizedVariant.value],
+      weightClasses[props.weight],
       props.uppercase && props.variant !== 'section' ? 'uppercase' : '',
       props.className
     ]

@@ -1,120 +1,89 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
+  import { computed, ref, watch } from 'vue'
 
   import { DatePicker, Icon } from '@/components/atoms'
+  import { Input } from '@/components/molecules'
   import type { DatePickerInputProps } from '@/types/ui/date-picker.types'
 
   const props = withDefaults(defineProps<DatePickerInputProps>(), {
     mode: 'single',
     locale: 'es',
     label: '',
-    placeholder: 'Seleccionar fechas',
-    inputClass: ''
+    placeholder: 'Seleccionar fecha'
   })
-  const emit = defineEmits(['update:modelValue'] as const)
+
+  const emit = defineEmits(['update:modelValue'])
 
   const showPicker = ref(false)
   const value = ref<Date | null>(props.modelValue)
 
-  // Sync local value with prop when parent updates
   watch(
     () => props.modelValue,
-    newValue => {
-      value.value = newValue
-    }
+    v => (value.value = v)
   )
 
   const displayValue = computed(() => {
-    if (!value.value) return ''
-    if (props.mode === 'single' && value.value instanceof Date) {
-      return value.value.toLocaleDateString(props.locale)
-    }
-    /* if (
-      props.mode === 'range' &&
-      typeof value.value === 'object' &&
-      value.value !== null &&
-      'start' in value.value &&
-      'end' in value.value &&
-      value.value.start &&
-      value.value.end
-    ) {
-      return `${value.value.start.toLocaleDateString(props.locale)} - ${value.value.end.toLocaleDateString(props.locale)}`
-    } */
-    return ''
+    if (!value.value) return null
+    return value.value.toLocaleDateString(props.locale)
   })
 
   function openPicker() {
     showPicker.value = true
   }
+
   function closePicker() {
     showPicker.value = false
   }
-  function handleUpdate(val: Date | null) {
+
+  const selectedDate = ref<Date | null>(null)
+  const selectDate = (val: Date) => {
     value.value = val
+    selectedDate.value = val
     emit('update:modelValue', val)
   }
-
-  function handleApply(val: Date | null) {
-    value.value = val
-    emit('update:modelValue', val)
-    closePicker()
-  }
-
-  function handleCancel() {
-    closePicker()
-  }
-
-  function handleToday(val: Date | null) {
-    value.value = val
-    emit('update:modelValue', val)
+  function handleApply() {
+    emit('update:modelValue', selectedDate.value)
     closePicker()
   }
 </script>
 <template>
-  <div class="date-picker-input">
-    <div class="date-picker-input__field">
-      <Input
-        :model-value="displayValue"
-        :placeholder="placeholder"
-        readonly
-        :class="inputClass"
-        aria-label="Seleccionar rango de fechas"
-      />
-      <Icon name="calendar_month" size="md" class="date-picker-input__icon" @click="openPicker" />
-    </div>
+  <div class="relative w-full">
+    <Input
+      :label="label"
+      :model-value="displayValue ? displayValue : ''"
+      :placeholder="placeholder"
+      required
+      readonly
+    >
+      <template #suffix>
+        <button type="button" class="text-primary-500" @click="openPicker">
+          <Icon name="calendar_month" size="md" />
+        </button>
+      </template>
+    </Input>
+
     <teleport to="body">
-      <div v-if="showPicker" class="date-picker-input__popover">
-        <DatePicker
-          :model-value="value"
-          :mode="mode"
-          :min-date="minDate"
-          :max-date="maxDate"
-          :locale="locale"
-          :label="label"
-          :placeholder="placeholder"
-          @apply="handleApply"
-          @cancel="handleCancel"
-          @today="handleToday"
-          @update:model-value="handleUpdate"
-        />
+      <div v-if="showPicker" class="date-picker-overlay" @click="closePicker">
+        <div class="date-picker-popover" @click.stop>
+          <DatePicker
+            :model-value="value"
+            :mode="mode"
+            :locale="locale"
+            @update:model-value="selectDate"
+            @apply="handleApply"
+            @cancel="closePicker"
+          />
+        </div>
       </div>
     </teleport>
   </div>
 </template>
-<style scoped lang="postcss">
-  .date-picker-input {
-    @apply relative w-full;
+<style lang="postcss" scoped>
+  .date-picker-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm;
   }
-  .date-picker-input__field {
-    @apply flex w-full cursor-pointer items-center gap-2;
-  }
-  .date-picker-input__input {
-    @apply w-full rounded-lg border border-gray-200 bg-white px-4 py-2 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-200;
-  }
-  .date-picker-input__icon {
-    @apply text-primary-500;
-  }
-  .date-picker-input__popover {
-    @apply fixed left-1/2 top-1/2 z-[9999] -translate-x-1/2 -translate-y-1/2;
+
+  .date-picker-popover {
+    @apply mt-24 dark:border-neutral-700 dark:bg-neutral-800;
   }
 </style>

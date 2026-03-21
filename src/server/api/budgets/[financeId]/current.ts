@@ -28,27 +28,23 @@ export default defineEventHandler(async event => {
 
   return {
     success,
-    result: success
-      ? {
-          id: data.id,
-          name: data.name,
-          month: data.month,
-          year: data.year,
-          income: data.income,
-          otherIncome: data.otherIncome,
-          isShared: data.isShared,
-          partnerIncome: data.partnerIncome,
-          partnerOtherIncome: data.partnerOtherIncome,
-          limits: {
-            needs: data.needsLimit,
-            wants: data.wantsLimit,
-            savings: data.savingsLimit
-          },
-          financesId: data.financesId,
-          partnerId: data.partnerId,
-          strategy: data.strategy,
-          frequency: data.frequency
-        }
-      : null
+    result: {
+      id: data.id,
+      name: data.name,
+      month: data.month,
+      year: data.year,
+      isShared: data.isShared,
+      limits: {
+        needs: data.needsLimit,
+        wants: data.wantsLimit,
+        savings: data.savingsLimit
+      },
+      ownerId: data.ownerId,
+      status: data.status,
+      financesId: data.financesId,
+      partnerId: data.partnerId,
+      strategy: data.strategy,
+      frequency: data.frequency
+    }
   }
 })

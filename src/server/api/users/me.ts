@@ -21,19 +21,19 @@ export default defineEventHandler(async event => {
       user: {
         id: data.id,
         email: data.email,
-        name: data.account.name,
-        displayName: data.account.displayName,
-        photo: data.account.photo,
-        phone: data.account.phone,
-        gender: data.account.gender,
+        name: data.userProfile.name,
+        displayName: data.userProfile.displayName,
+        photo: data.userProfile.photo,
+        phone: data.userProfile.phone,
+        gender: data.userProfile.gender,
         createdAt: data.createdAt,
-        trialEndsAt: data.account.trialEndsAt,
-        isActive: data.account.isActive,
-        country: data.account.country
+        trialEndsAt: data.userProfile.trialEndsAt,
+        isActive: data.userProfile.isActive,
+        country: data.userProfile.country
       },
       finances: data.finances,
       onboarding: data.onboarding,
-      accountType: data.account.type
+      accountType: data.userProfile.type
     }
   }
 })

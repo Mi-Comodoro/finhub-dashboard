@@ -23,21 +23,21 @@
 <style lang="postcss" scoped>
   .coming-soon-card {
     @apply p-8 text-center;
-    @apply dark:border-gray-700 dark:bg-gray-800;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .coming-soon-card__icon {
-    @apply mx-auto mb-4 w-fit bg-gray-100 text-gray-600;
-    @apply dark:bg-gray-700 dark:text-gray-300;
+    @apply mx-auto mb-4 w-fit bg-neutral-100 text-neutral-600;
+    @apply dark:bg-neutral-700 dark:text-neutral-300;
   }
 
   .coming-soon-card__title {
-    @apply mb-2 text-gray-900;
+    @apply mb-2 text-neutral-900;
     @apply dark:text-white;
   }
 
   .coming-soon-card__description {
-    @apply text-gray-500;
-    @apply dark:text-gray-400;
+    @apply text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 </style>

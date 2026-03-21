@@ -5,8 +5,7 @@
 -->
 
 <script setup lang="ts">
-  import { Heading } from '@/components/atoms'
-  import type { SectionCardProps } from '@/components/molecules'
+  import type { SectionCardProps } from './types'
 
   withDefaults(defineProps<SectionCardProps>(), {
     as: 'div',
@@ -18,7 +17,8 @@
   <component :is="as" class="section-card">
     <!-- Header — only rendered when title or #action slot has content -->
     <div v-if="title || $slots.action" class="section-card__header">
-      <Heading v-if="title" level="h4">{{ title }}</Heading>
+      <CardInfo v-if="title" level="h4" :title="title" :icon="icon" :icon-variant="iconVariant" />
+
       <slot name="action" />
     </div>
 
@@ -31,7 +31,7 @@
 </template>
 <style lang="postcss" scoped>
   .section-card {
-    @apply flex flex-col rounded-2xl border border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-800;
+    @apply flex flex-col rounded-md border border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-800;
   }
   .section-card__header {
     @apply flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700;

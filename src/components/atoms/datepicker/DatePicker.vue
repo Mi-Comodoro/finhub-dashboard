@@ -106,9 +106,9 @@
 
     <CalendarGrid :days="days" :selected-day="selectedDay" @on-day-click="handleDayClick" />
     <div class="date-picker__footer">
-      <Button variant="ghost" @click="handleCancel">Cancelar</Button>
-      <Button variant="ghost" @click="handleToday">Hoy</Button>
-      <Button @click="handleApply">Aplicar</Button>
+      <Button variant="ghost" size="sm" @click="handleCancel">Cancelar</Button>
+      <Button variant="ghost" size="sm" @click="handleToday">Hoy</Button>
+      <Button size="sm" @click="handleApply">Aplicar</Button>
     </div>
   </div>
 </template>

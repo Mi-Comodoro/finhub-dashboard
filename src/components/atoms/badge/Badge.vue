@@ -9,7 +9,8 @@
   withDefaults(defineProps<BadgeProps>(), {
     variant: 'default',
     size: 'md',
-    rounded: true
+    rounded: true,
+    className: ''
   })
 </script>
 
@@ -22,7 +23,8 @@
       {
         'badge--rounded': rounded,
         'badge--square': !rounded
-      }
+      },
+      className
     ]"
   >
     <slot>{{ text }}</slot>
@@ -63,7 +65,7 @@
 
   /* Color variants */
   .badge--default {
-    @apply bg-gray-100 text-gray-800;
+    @apply bg-neutral-100 text-neutral-800;
   }
 
   .badge--primary {
@@ -96,7 +98,7 @@
   }
 
   .badge--outline.badge--default {
-    @apply border-gray-300 text-gray-700;
+    @apply border-neutral-300 text-neutral-700;
   }
 
   .badge--outline.badge--primary {
@@ -129,7 +131,7 @@
   }
 
   .badge--solid.badge--default {
-    @apply bg-gray-600;
+    @apply bg-neutral-600;
   }
 
   .badge--solid.badge--primary {

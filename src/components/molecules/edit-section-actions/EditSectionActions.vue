@@ -34,7 +34,7 @@
   }
 
   .edit-section-actions__title {
-    @apply text-gray-900;
+    @apply text-neutral-900;
   }
 
   .edit-section-actions__buttons {

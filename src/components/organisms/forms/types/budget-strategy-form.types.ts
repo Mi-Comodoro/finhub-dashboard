@@ -1,8 +1,12 @@
 export type CanonicalStrategy = 'BALANCED' | 'CUSTOM'
-export type StrategyValue = CanonicalStrategy | 'balanced' | 'custom'
+
+export type StrategyValue = CanonicalStrategy | 'BALANCED' | 'CUSTOM'
+
+export type UsageValue = 'personal' | 'shared'
 
 export interface StrategyFormInput {
-  strategy: StrategyValue
+  strategy: StrategyValue | null
+  usage: UsageValue | null
   customAllocations: {
     needs: number
     wants: number
@@ -11,7 +15,8 @@ export interface StrategyFormInput {
 }
 
 export interface StrategyFormData {
-  strategy: CanonicalStrategy
+  strategy: CanonicalStrategy | null
+  usage: UsageValue | null
   customAllocations: {
     needs: number
     wants: number

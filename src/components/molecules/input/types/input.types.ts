@@ -23,5 +23,7 @@ export interface InputProps {
   label?: string
   id?: string
   name?: string
-  modelValue?: string
+  modelValue?: string | number
+  prefix?: string
+  currency?: string
 }

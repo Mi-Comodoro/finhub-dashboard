@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { computed, ref, watch } from 'vue'
+  import { computed, ref, useSlots, watch } from 'vue'
 
   import { Label } from '@/components/atoms'
 
@@ -7,13 +7,11 @@
 
   const props = withDefaults(defineProps<InputProps & { size?: InputSize }>(), {
     type: 'text',
-    tag: 'input',
     required: false,
     disabled: false,
     pattern: () => /.*/,
     error: '',
     errorMessage: 'Valor inválido',
-    placeHolder: '',
     placeholder: ' ',
     variant: 'column',
     searchIcon: false,
@@ -25,33 +23,12 @@
     readonly: false
   })
 
-  const emit = defineEmits(['update:modelValue', 'blur'] as const)
-
-  const internalError = ref(false)
+  const emit = defineEmits(['update:modelValue', 'blur'])
+  const slots = useSlots()
   const modelValue = ref(props.modelValue ?? '')
+  const internalError = ref(false)
+  const touched = ref(false)
   const showPassword = ref(false)
-
-  const inputId = computed(() => props.id || props.name)
-
-  const normalizedPlaceholder = computed(() => props.placeholder || props.placeHolder || ' ')
-
-  const hasExternalError = computed(() => {
-    if (typeof props.error === 'string') {
-      return props.error.trim().length > 0
-    }
-
-    return !!props.error
-  })
-
-  const hasError = computed(() => internalError.value || hasExternalError.value)
-
-  const displayErrorMessage = computed(() => {
-    if (typeof props.error === 'string' && props.error.trim()) {
-      return props.error
-    }
-
-    return props.errorMessage
-  })
 
   watch(
     () => props.modelValue,
@@ -60,10 +37,64 @@
     }
   )
 
-  const handleInput = (event: Event) => {
-    modelValue.value = (event.target as HTMLInputElement).value
+  const inputId = computed(() => props.id || props.name)
+
+  const hasExternalError = computed(() => {
+    if (typeof props.error === 'string') {
+      return props.error.trim().length > 0
+    }
+    return !!props.error
+  })
+
+  const hasError = computed(() => {
+    if (!touched.value) return false
+    return internalError.value || hasExternalError.value
+  })
+
+  const displayErrorMessage = computed(() => {
+    if (typeof props.error === 'string' && props.error.trim()) {
+      return props.error
+    }
+    return props.errorMessage
+  })
+
+  function validate(value: string | number) {
+    const stringValue = value.toString()
+
+    if (props.required && !stringValue.trim()) {
+      internalError.value = true
+      return
+    }
+
+    if (!value) {
+      internalError.value = false
+      return
+    }
+
+    if (props.pattern instanceof RegExp) {
+      internalError.value = !props.pattern.test(stringValue)
+    } else {
+      internalError.value = false
+    }
+  }
+
+  function handleInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value
+
+    modelValue.value = value
+
+    if (touched.value) {
+      validate(value)
+    }
+
+    emit('update:modelValue', value)
+  }
+
+  function handleBlur() {
+    touched.value = true
     validate(modelValue.value)
-    emit('update:modelValue', modelValue.value)
+
+    emit('blur')
   }
 
   const inputType = computed(() => {
@@ -73,22 +104,10 @@
     return props.type
   })
 
-  const passwordIcon = computed(() => {
-    return showPassword.value ? 'visibility_off' : 'visibility'
-  })
+  function togglePasswordVisibility() {
+    showPassword.value = !showPassword.value
+  }
 
-  const iconClass = computed(() => {
-    switch (props.passwordIconStyle) {
-      case 'filled':
-        return 'material-symbols-outlined material-symbols-filled text-primary-500 hover:text-primary-600'
-      case 'rounded':
-        return 'material-symbols-rounded'
-      default:
-        return 'material-symbols-outlined material-symbols-filled text-primary-500 hover:text-primary-600'
-    }
-  })
-
-  // Clases de tamaño compatibles con el Select
   const sizeClasses = computed(() => {
     if (props.size === 'sm') {
       return {
@@ -97,6 +116,7 @@
         label: 'input__label--sm'
       }
     }
+
     return {
       input: 'input--default',
       icon: 'input__icon--default',
@@ -107,40 +127,15 @@
   const inputClasses = computed(() => [
     'input',
     sizeClasses.value.input,
+    { 'input-with-icon-left': props.searchIcon || props.type === 'search' },
     hasError.value ? 'input--error' : 'input--normal',
     props.disabled ? 'input--disabled' : '',
-    props.readonly && !props.disabled ? 'input--readonly' : '',
-    props.tag === 'textarea' ? 'input--textarea' : '',
-    props.searchIcon || (props.type === 'password' && props.showPasswordToggle)
-      ? 'input--with-icon'
+    props.readonly ? 'input--readonly' : '',
+    props.prefix ? 'input--with-prefix' : '',
+    props.searchIcon || (props.type === 'password' && props.showPasswordToggle) || !!slots.suffix
+      ? 'input--with-icon '
       : ''
   ])
-
-  const rows = computed(() => (props.tag === 'textarea' ? 4 : undefined))
-
-  function validate(value: string) {
-    if (props.pattern instanceof RegExp) {
-      internalError.value = !props.pattern.test(value)
-    } else {
-      internalError.value = false
-    }
-  }
-
-  function handlePaste(e: ClipboardEvent) {
-    const clipboard = e.clipboardData
-    if (clipboard) {
-      const pasted = clipboard.getData('text')
-      const target = e.target as HTMLInputElement | HTMLTextAreaElement
-      const newValue = target.value + pasted
-
-      validate(newValue)
-      emit('update:modelValue', newValue)
-    }
-  }
-
-  function togglePasswordVisibility() {
-    showPassword.value = !showPassword.value
-  }
 </script>
 
 <template>
@@ -158,6 +153,7 @@
         >
           {{ label }}
         </Label>
+
         <a
           v-if="forgotPassword && forgotPasswordText"
           href="#"
@@ -167,36 +163,40 @@
         </a>
       </div>
 
-      <div
-        :class="[searchIcon || (type === 'password' && showPasswordToggle) ? 'input-relative' : '']"
-      >
-        <component
-          :is="tag"
+      <div class="input-field">
+        <span v-if="prefix" class="input-prefix">
+          {{ prefix }}
+        </span>
+        <span
+          v-if="searchIcon"
+          :class="['input-search-icon material-symbols-outlined', sizeClasses.icon]"
+          aria-hidden="true"
+        >
+          search
+        </span>
+        <input
           :id="inputId"
           :name="name"
           :type="inputType"
           :class="inputClasses"
-          :placeholder="normalizedPlaceholder"
+          :placeholder="placeholder"
           :value="modelValue"
           :required="required"
           :disabled="disabled"
           :readonly="readonly"
-          :rows="rows"
           autocomplete="off"
           @input="handleInput"
-          @paste="handlePaste"
-          @blur="emit('blur')"
+          @blur="handleBlur"
         />
 
-        <!-- Ícono de búsqueda -->
-        <span v-if="searchIcon" :class="['input-search-icon', sizeClasses.icon]" aria-hidden="true">
-          search
-        </span>
+        <div v-if="$slots.suffix" class="input-suffix">
+          <slot name="suffix" />
+        </div>
 
-        <!-- Ícono de toggle de contraseña -->
         <button
           v-if="type === 'password' && showPasswordToggle"
           type="button"
+          class="material-symbols-outlined"
           :class="[
             'input-password-toggle',
             size === 'sm' ? 'input-password-toggle--sm' : 'input-password-toggle--default'
@@ -204,9 +204,7 @@
           :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
           @click="togglePasswordVisibility"
         >
-          <span :class="[iconClass, sizeClasses.icon]">
-            {{ passwordIcon }}
-          </span>
+          {{ showPassword ? 'visibility_off' : 'visibility' }}
         </button>
       </div>
 
@@ -224,80 +222,120 @@
   .input-container {
     @apply w-full;
   }
+
   .input-row {
     @apply flex w-full items-center gap-3;
   }
+
   .input-column {
     @apply flex w-full flex-col gap-1;
   }
+
   .input-label-row {
     @apply flex justify-between;
   }
+
   .input__label--sm {
     @apply text-xs;
   }
+
   .input__label--default {
     @apply text-sm;
   }
+
   .input-forgot {
     @apply font-medium text-teal-600 no-underline transition-colors duration-200 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300;
   }
-  .input-relative {
+
+  .input-field {
     @apply relative w-full;
   }
+
   .input {
-    @apply w-full rounded-md border bg-white text-gray-900 transition-colors duration-200 placeholder:text-gray-400 placeholder:opacity-100 focus:outline-none dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500;
+    @apply w-full rounded-md border bg-white text-neutral-900 transition-colors duration-200 placeholder:text-neutral-400 placeholder:opacity-100 focus:outline-none dark:bg-neutral-800 dark:text-white dark:placeholder:text-neutral-500;
   }
+
   .input--sm {
     @apply px-2 py-1 text-xs;
   }
+
   .input--default {
     @apply px-3 py-2 text-sm;
   }
+
   .input--error {
     @apply border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 dark:border-red-400 dark:focus:border-red-400 dark:focus:ring-red-400;
   }
+
   .input--normal {
-    @apply border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 dark:border-gray-600 dark:focus:border-teal-400 dark:focus:ring-teal-400;
+    @apply border-neutral-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 dark:border-neutral-600 dark:focus:border-teal-400 dark:focus:ring-teal-400;
   }
+
   .input--disabled {
-    @apply cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500;
+    @apply cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-700 dark:text-neutral-500;
   }
+
   .input--readonly {
-    @apply cursor-default border-dashed border-slate-300 bg-slate-50 italic text-slate-500 focus:border-dashed focus:ring-0 dark:border-slate-600 dark:bg-gray-800 dark:text-slate-400;
+    @apply cursor-default border-dashed border-slate-300 bg-slate-50 italic text-slate-500 focus:border-dashed focus:ring-0 dark:border-slate-600 dark:bg-neutral-800 dark:text-slate-400;
   }
-  .input--textarea {
-    @apply resize-none;
-  }
+
   .input--with-icon {
     @apply pr-10;
   }
+
   .input__icon--sm {
     @apply text-base;
   }
+
   .input__icon--default {
     @apply text-lg;
   }
+
   .input-search-icon {
-    @apply pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400;
+    @apply pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400;
   }
+
   .input-password-toggle {
     @apply absolute right-3 top-1/2 -translate-y-1/2 p-1 text-teal-600 transition-colors duration-200 hover:text-teal-700 focus:outline-none dark:text-teal-400 dark:hover:text-teal-300;
   }
+
   .input-password-toggle--sm {
     @apply p-0.5;
   }
+
   .input-password-toggle--default {
     @apply p-1;
   }
+
   .input-error {
     @apply mt-1 block text-red-600 dark:text-red-400;
   }
+
   .input-error--sm {
     @apply text-xs;
   }
+
   .input-error--default {
     @apply text-xs;
+  }
+
+  .input-prefix {
+    @apply pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500;
+  }
+
+  .input--with-prefix {
+    @apply pl-12;
+  }
+
+  .input--number {
+    @apply text-right;
+  }
+
+  .input-suffix {
+    @apply absolute right-3 top-1/2 flex -translate-y-1/2 items-center text-neutral-500 dark:text-neutral-400;
+  }
+  .input-password-toggle--sm {
+    @apply text-sm;
   }
 </style>
 
@@ -306,13 +344,17 @@
     font-variation-settings: 'FILL' 1;
   }
 
-  /* Read-only: dashed border, suppressed focus ring, italic text to signal non-editable */
-  .input--readonly {
-    font-style: italic;
-  }
-
   .input--readonly:focus {
     outline: none;
     box-shadow: none;
+  }
+
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .input-with-icon-left {
+    padding-left: 40px !important; /* Espacio suficiente para el icono */
   }
 </style>

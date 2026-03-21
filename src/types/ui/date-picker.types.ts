@@ -8,6 +8,7 @@ export interface DatePickerInputProps {
   minDate?: Date
   maxDate?: Date
   disabledDates?: Date[]
+  required?: boolean
 }
 
 export interface DateRange {

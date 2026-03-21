@@ -1,7 +1,5 @@
 <script setup lang="ts">
-  import { Text } from '@/components/atoms'
-
-  import type { AppLogoProps, LogoSize, TextSize } from './types/app-logo.types'
+  import type { AppLogoProps, LogoSize } from './types/app-logo.types'
 
   withDefaults(defineProps<AppLogoProps>(), {
     showText: true,
@@ -14,26 +12,27 @@
     md: 'h-10 w-10 text-sm',
     lg: 'h-12 w-12 text-base'
   }
-
-  const textSizes: Record<LogoSize, TextSize> = {
-    sm: 'base',
-    md: 'lg',
-    lg: 'xl'
-  }
 </script>
 
 <template>
   <div :class="['flex items-center gap-3', className]">
-    <div
+    <span
       :class="[
         'flex items-center justify-center rounded-lg bg-teal-600 font-bold text-white',
         logoSizes[size]
       ]"
     >
       FH
-    </div>
-    <Text v-if="showText" as="span" :size="textSizes[size]" weight="bold" color="inherit">
-      FinHub
-    </Text>
+    </span>
+    <CardInfo
+      title="FinHub"
+      title-size="lg"
+      level="h2"
+      color="black"
+      weight="extrabold"
+      sub-title="Gestion financiera"
+      sub-title-size="xs"
+      sub-title-color="muted"
+    />
   </div>
 </template>

@@ -61,5 +61,5 @@ export interface FieldValidation {
   readonly minLength?: number
   readonly maxLength?: number
   readonly pattern?: RegExp
-  readonly custom?: (value: unknown) => string | null
+  readonly CUSTOM?: (value: unknown) => string | null
 }

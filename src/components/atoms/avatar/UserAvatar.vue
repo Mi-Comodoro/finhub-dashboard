@@ -1,11 +1,15 @@
 <script setup lang="ts">
+  import { useUserStore } from '@/stores/user.store'
+
   import type { AvatarSize, UserAvatarProps } from './types/user-avatar.types'
 
+  const userStore = useUserStore()
   withDefaults(defineProps<UserAvatarProps>(), {
-    avatar: null,
     size: 'md',
     className: ''
   })
+
+  const user = computed(() => userStore.userInfo)
 
   const getInitials = (name: string): string => {
     return name
@@ -32,13 +36,19 @@
       className
     ]"
   >
+    <span
+      v-if="!user.photo"
+      class="flex h-full w-full items-center justify-center rounded-full bg-primary-500 font-medium text-white"
+    >
+      {{ getInitials(user.name ?? 'Avatar') }}
+    </span>
     <NuxtImg
-      v-if="avatar"
-      :src="avatar"
-      :alt="name"
+      v-else
+      :src="user.photo"
+      :alt="user.name ?? 'Avatar'"
       class="h-full w-full rounded-full object-cover"
       :class="sizeClasses[size]"
+      @error="e => console.log('Error cargando imagen:', e)"
     />
-    <span v-else class="bg-primary-500">{{ getInitials(name) }}</span>
   </div>
 </template>

@@ -11,12 +11,12 @@
   })
 
   const variantClass = {
-    primary: 'bg-primary-100 text-primary-500',
-    secondary: 'bg-secondary-100 text-secondary-500',
-    success: 'bg-green-100 text-green-600',
-    warning: 'bg-yellow-100 text-yellow-600',
-    danger: 'bg-red-100 text-red-600',
-    neutral: 'bg-gray-100 text-gray-500'
+    primary: 'bg-primary-50 text-primary-600',
+    secondary: 'bg-secondary-50 text-secondary-600',
+    success: 'bg-green-50 text-green-600',
+    warning: 'bg-yellow-50 text-yellow-600',
+    danger: 'bg-red-50 text-red-600',
+    neutral: 'bg-neutral-50 text-neutral-600'
   }
 </script>
 

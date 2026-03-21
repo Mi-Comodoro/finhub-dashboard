@@ -5,7 +5,7 @@
 
 import type { BudgetFrequency, BudgetStrategy } from '../domain'
 
-export interface BudgetApiResponse {
+/* export interface BudgetApiResponse {
   readonly id: string
   readonly userId: string
   readonly year: number
@@ -20,7 +20,7 @@ export interface BudgetApiResponse {
   readonly createdAt: string // ISO string
   readonly updatedAt: string // ISO string
 }
-
+ */
 export interface BudgetAllocationApiResponse {
   readonly categoryId: string
   readonly plannedAmount: number
@@ -34,20 +34,9 @@ export interface BudgetStrategyApiResponse {
   readonly savingsPercentage: number
 }
 
-export interface CategoryApiResponse {
-  readonly id: string
-  readonly name: string
-  readonly type: string
-  readonly isDefault: boolean
-  readonly iconName: string
-  readonly color: string
-  readonly parentId: string | null
-  readonly sortOrder: number
-}
-
 export interface BudgetSummaryApiResponse {
-  readonly currentBudget: BudgetApiResponse | null
-  readonly nextBudget: BudgetApiResponse | null
+  readonly currentBudget: SingleBudget | null
+  readonly nextBudget: SingleBudget | null
   readonly totalCategories: number
   readonly overBudgetCategories: number
   readonly savingsRate: number
@@ -66,51 +55,31 @@ export interface CreateBudgetApiRequest {
 /** Raw response from the external backend — array of all budgets for a finances */
 export type BackendBudgetList = {
   success: boolean
-  data: Array<BackendCurrentBudgetData>
+  data: BackendCurrentBudgetData[]
 }
 
 /** Response from the Nuxt server handler /api/budgets/[financeId] */
 export type BudgetListResponse = {
   success: boolean
-  result: Array<{
-    id: string
-    name: string
-    month: string
-    year: number
-    income: number
-    otherIncome: number
-    isShared: boolean
-    partnerIncome: number
-    partnerOtherIncome: number
-    limits: {
-      needs: number
-      wants: number
-      savings: number
-    }
-    financesId: string
-    partnerId: string | null
-    strategy: BudgetStrategy['name']
-    frequency: BudgetFrequency
-  }> | null
+  result: SingleBudget[]
 }
 
 // ─── Current Budget (from backend /budgets/{financeId}/current) ───────────────
 
 /** Raw response from the external backend */
+
 export type BackendCurrentBudgetData = {
   id: string
   name: string
   month: string
   year: number
-  income: number
-  otherIncome: number
   isShared: boolean
-  partnerIncome: number
-  partnerOtherIncome: number
+  status: string
   needsLimit: number
   wantsLimit: number
   savingsLimit: number
   financesId: string
+  ownerId: string | null
   partnerId: string | null
   updatedBy: string | null
   strategy: string
@@ -121,29 +90,28 @@ export type BackendCurrentBudget = {
   data: BackendCurrentBudgetData
 }
 
+export type SingleBudget = {
+  id: string
+  name: string
+  month: string
+  year: number
+  isShared: boolean
+  limits: {
+    needs: number
+    wants: number
+    savings: number
+  }
+  status: 'PLANNED' | 'ACTIVE' | 'CLOSED'
+  financesId: string
+  ownerId: string | null
+  partnerId: string | null
+  strategy: BudgetStrategy['name']
+  frequency: BudgetFrequency
+}
 /** Response from the Nuxt server handler /api/budgets/[financeId]/current */
 export type CurrentBudget = {
   success: boolean
-  result: {
-    id: string
-    name: string
-    month: string
-    year: number
-    income: number
-    otherIncome: number
-    isShared: boolean
-    partnerIncome: number
-    partnerOtherIncome: number
-    limits: {
-      needs: number
-      wants: number
-      savings: number
-    }
-    financesId: string
-    partnerId: string | null
-    strategy: BudgetStrategy['name']
-    frequency: BudgetFrequency
-  } | null
+  result: SingleBudget
 }
 
 export interface UpdateBudgetAllocationApiRequest {

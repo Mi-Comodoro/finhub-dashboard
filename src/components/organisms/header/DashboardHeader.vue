@@ -1,10 +1,17 @@
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue'
+  import { onMounted } from 'vue'
 
   import { Icon } from '@/components/atoms'
-  import { HeaderActions } from '@/components/molecules'
+  import { Breadcrumbs, HeaderActions, Input } from '@/components/molecules'
+  import { useBreadcrumbNavigation } from '@/composables/useBreadcrumbNavigation'
 
   import type { DashboardHeaderProps } from './types/dashboard-header.types'
+  const router = useRouter()
+  // Initialize auto breadcrumb navigation
+  useBreadcrumbNavigation({
+    autoUpdate: true,
+    homeLabel: 'Dashboard'
+  })
 
   withDefaults(defineProps<DashboardHeaderProps>(), {
     title: '',
@@ -12,22 +19,8 @@
   })
 
   // Simulate last connection time - avoid SSR hydration mismatch
-  const lastConnection = ref('')
 
-  onMounted(() => {
-    const now = new Date()
-    const lastAccess = new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000) // Random time in last 24h
-
-    lastConnection.value = lastAccess.toLocaleString('es-CO', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    })
-  })
+  onMounted(() => {})
 </script>
 
 <template>
@@ -39,13 +32,26 @@
   >
     <div class="flex h-full items-center justify-between">
       <!-- Last connections info -->
-      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
-        <Icon name="schedule" size="xs" class="mr-1" />
-        <span>Última conexión: {{ lastConnection }}</span>
+      <div class="flex items-center space-x-1">
+        <div class="container mx-auto flex gap-2">
+          <Icon name="arrow_back" class="cursor-pointer" @click="router.back()" />
+          <Breadcrumbs :max-items="4" class="hidden xl:flex" />
+        </div>
+        <!--  <div class="flex flex-col">
+          <Heading level="h1" size="lg" weight="bold">Hola, {{ userName }}!</Heading>
+          <Text size="xs" color="muted">
+            <Icon name="schedule" size="xs" class="mr-1" />
+            <span>Resumen de tus Finanzas Hoy, {{ lastConnection }}</span>
+          </Text>
+        </div> -->
       </div>
-
-      <!-- Header Actions -->
-      <HeaderActions />
+      <div class="flex items-center gap-4">
+        <div>
+          <Input type="search" search-icon placeholder="Buscar Movimientos..." />
+        </div>
+        <!-- Header Actions -->
+        <HeaderActions />
+      </div>
     </div>
   </header>
 </template>

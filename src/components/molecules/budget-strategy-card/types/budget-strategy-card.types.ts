@@ -1,10 +1,6 @@
-export interface BudgetAllocation {
-  needs: number // Gastos Fijos
-  wants: number // Gastos Variables u Ocasionales
-  savings: number // Ahorro e Inversiones
-}
+import type { BudgetAllocation } from '../../index'
 
-export interface BudgetStrategyCardProps {
+export type BudgetStrategyCardProps = {
   title: string
   description: string
   allocation: BudgetAllocation

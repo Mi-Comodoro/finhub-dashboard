@@ -8,11 +8,11 @@
   })
   const emit = defineEmits(['update:modelValue'])
 
-  if (!props.modelValue && props.options.length > 0) {
+  if (props.modelValue === undefined && props.options.length > 0) {
     emit('update:modelValue', null)
   }
 
-  const updateValue = (value: string | number) => {
+  const updateValue = (value: string | number | boolean) => {
     emit('update:modelValue', value)
   }
 </script>
@@ -20,9 +20,9 @@
 <template>
   <!-- Default Radio Button Style -->
   <div v-if="variant === 'default'" class="radio-group">
-    <label v-if="label" class="radio-group__label">
+    <Label v-if="label" class="radio-group__label" :required="required">
       {{ label }}
-    </label>
+    </Label>
 
     <div
       :class="[
@@ -30,7 +30,7 @@
         direction === 'row' ? 'radio-group__options--row' : 'radio-group__options--column'
       ]"
     >
-      <label v-for="option in options" :key="option.value" class="radio-group__option">
+      <label v-for="(option, index) in options" :key="index" class="radio-group__option">
         <input
           type="radio"
           class="radio-group__input"
@@ -64,8 +64,8 @@
       ]"
     >
       <label
-        v-for="option in options"
-        :key="option.value"
+        v-for="(option, index) in options"
+        :key="index"
         :class="[
           'radio-card-option',
           {
@@ -122,7 +122,7 @@
   }
 
   .radio-group__label {
-    @apply text-sm font-semibold text-gray-700;
+    @apply text-sm font-semibold text-neutral-700;
   }
 
   .radio-group__options {
@@ -146,7 +146,7 @@
   }
 
   .radio-group__custom {
-    @apply flex h-4 w-4 items-center justify-center rounded-full border border-gray-400;
+    @apply flex h-4 w-4 items-center justify-center rounded-full border border-neutral-400;
   }
 
   .radio-group__input:checked + .radio-group__custom {
@@ -159,7 +159,7 @@
   }
 
   .radio-group__text {
-    @apply text-sm text-gray-700;
+    @apply text-sm text-neutral-700;
   }
 
   .radio-group__input:disabled + .radio-group__custom {
@@ -168,11 +168,11 @@
 
   /* Card Radio Button Styles */
   .radio-card-group {
-    @apply space-y-3;
+    @apply space-y-3 py-2;
   }
 
   .radio-card-group__label {
-    @apply mb-3 block text-sm font-semibold text-gray-700;
+    @apply mb-3 block text-sm font-semibold text-neutral-700;
   }
 
   .radio-card-group__options {
@@ -188,16 +188,16 @@
   }
 
   .radio-card-option {
-    @apply relative flex cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:border-gray-300;
+    @apply relative flex cursor-pointer items-center gap-4 rounded-md border border-neutral-300 bg-neutral-50 p-4 transition-all duration-200 hover:border-neutral-300;
   }
 
   /* Adjust card width for row layout */
   .radio-card-group__options--row .radio-card-option {
-    @apply flex-1;
+    @apply flex-1 gap-2;
   }
 
   .radio-card-option--selected {
-    @apply border-primary-500 bg-primary-50 text-primary-900;
+    @apply border-primary-500 bg-primary-50 text-primary-900 hover:border-primary-500;
   }
 
   .radio-card-option--disabled {
@@ -209,7 +209,7 @@
   }
 
   .radio-card-icon {
-    @apply flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white text-gray-500;
+    @apply flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-white text-neutral-500;
   }
 
   .radio-card-option--selected .radio-card-icon {
@@ -221,7 +221,7 @@
   }
 
   .radio-card-title {
-    @apply flex items-center gap-2 text-base font-medium text-gray-900;
+    @apply flex items-center gap-2 text-base font-medium text-neutral-900;
   }
 
   .radio-card-option--selected .radio-card-title {
@@ -229,7 +229,7 @@
   }
 
   .radio-card-description {
-    @apply text-sm text-gray-500;
+    @apply text-xs text-neutral-500;
   }
 
   .radio-card-option--selected .radio-card-description {

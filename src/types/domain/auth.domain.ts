@@ -22,8 +22,6 @@ export interface AuthSession {
 
 export interface OnboardingStatus {
   isCompleted: boolean
-  currentStep: OnboardingStep
-  completedSteps: OnboardingStep[]
 }
 
 export type OnboardingStep = 'personal-info' | 'finances-config' | 'budget-strategy' | 'completed'

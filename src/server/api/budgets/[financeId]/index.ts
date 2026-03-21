@@ -29,6 +29,7 @@ export default defineEventHandler(async event => {
       query: parsedYear !== undefined ? { year: parsedYear } : {},
       headers: { authorization: `Bearer ${token}` },
       onResponseError: ({ response }) => {
+        console.error('❌ Error fetching budgets list:', response.status, response.statusText)
         validateError(event, response.status)
       }
     }
@@ -36,27 +37,23 @@ export default defineEventHandler(async event => {
 
   return {
     success,
-    result: success
-      ? data.map(item => ({
-          id: item.id,
-          name: item.name,
-          month: item.month,
-          year: item.year,
-          income: item.income,
-          otherIncome: item.otherIncome,
-          isShared: item.isShared,
-          partnerIncome: item.partnerIncome,
-          partnerOtherIncome: item.partnerOtherIncome,
-          limits: {
-            needs: item.needsLimit,
-            wants: item.wantsLimit,
-            savings: item.savingsLimit
-          },
-          financesId: item.financesId,
-          partnerId: item.partnerId,
-          strategy: item.strategy,
-          frequency: item.frequency
-        }))
-      : null
+    result: data.map(item => ({
+      id: item.id,
+      name: item.name,
+      month: item.month,
+      year: item.year,
+      isShared: item.isShared,
+      status: item.status,
+      limits: {
+        needs: item.needsLimit,
+        wants: item.wantsLimit,
+        savings: item.savingsLimit
+      },
+      financesId: item.financesId,
+      ownerId: item.ownerId,
+      partnerId: item.partnerId,
+      strategy: item.strategy,
+      frequency: item.frequency
+    }))
   }
 })

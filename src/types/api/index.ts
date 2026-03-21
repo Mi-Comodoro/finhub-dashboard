@@ -1,4 +1,6 @@
 export * from './auth.api'
 export * from './budget.api'
+export * from './categories.api'
 export * from './common.api'
+export * from './income.api'
 export * from './user.api'

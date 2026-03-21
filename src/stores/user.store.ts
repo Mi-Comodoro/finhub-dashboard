@@ -10,7 +10,7 @@ export const useUserStore = defineStore('user', {
     displayName: null as string | null,
     photo: null as string | null,
     phone: null as string | null,
-    gender: null as string | null,
+    gender: 'prefer_not_to_say' as 'male' | 'female' | 'prefer_not_to_say',
     createdAt: null as Date | null,
     trialEndsAt: null as Date | null,
     isActive: false,
@@ -39,7 +39,11 @@ export const useUserStore = defineStore('user', {
       this.displayName = userData.displayName ?? this.displayName
       this.photo = userData.photo ?? this.photo
       this.phone = userData.phone ?? this.phone
-      this.gender = userData.gender ?? this.gender
+      this.gender = (
+        ['male', 'female', 'prefer_not_to_say'].includes(userData.gender as string)
+          ? userData.gender
+          : this.gender
+      ) as 'male' | 'female' | 'prefer_not_to_say'
       this.createdAt = userData.createdAt ? new Date(userData.createdAt) : this.createdAt
       this.trialEndsAt = userData.trialEndsAt ? new Date(userData.trialEndsAt) : this.trialEndsAt
       this.isActive = userData.isActive ?? this.isActive
@@ -52,7 +56,7 @@ export const useUserStore = defineStore('user', {
       this.displayName = null
       this.photo = null
       this.phone = null
-      this.gender = null
+      this.gender = 'prefer_not_to_say'
       this.createdAt = null
       this.trialEndsAt = null
       this.isActive = false

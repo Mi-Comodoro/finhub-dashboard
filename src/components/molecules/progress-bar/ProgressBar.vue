@@ -129,16 +129,16 @@
   }
 
   .step-counter {
-    @apply text-sm font-semibold uppercase text-gray-500;
+    @apply text-sm font-semibold uppercase text-neutral-500;
   }
 
   .percentage-label {
-    @apply text-sm font-medium text-gray-500;
+    @apply text-sm font-medium text-neutral-500;
   }
 
   /* Progress Bar Track */
   .progress-bar-track {
-    @apply relative overflow-hidden rounded-full bg-gray-200;
+    @apply relative overflow-hidden rounded-full bg-neutral-200;
   }
 
   /* Main Fill */
@@ -179,7 +179,7 @@
 
   /* Step Name */
   .step-name {
-    @apply text-sm font-semibold uppercase text-gray-500;
+    @apply text-sm font-semibold uppercase text-neutral-500;
   }
 
   /*   .progress-bar--sm .step-name {

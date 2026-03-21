@@ -14,7 +14,7 @@
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 transition-colors duration-200 dark:bg-gray-900">
+  <div class="min-h-screen bg-neutral-50 transition-colors duration-200 dark:bg-neutral-900">
     <ModalNotification
       :show="modalState.show"
       :type="modalState.type"

@@ -52,7 +52,7 @@
     @apply grid grid-cols-7 gap-1;
   }
   .calendar-grid__day {
-    @apply flex h-9 w-9 items-center justify-center rounded-lg text-sm transition hover:cursor-pointer;
+    @apply flex h-9 w-9 items-center justify-center rounded-md text-sm transition hover:cursor-pointer;
   }
   .calendar-grid__day--selected {
     @apply bg-teal-600 font-semibold text-white;

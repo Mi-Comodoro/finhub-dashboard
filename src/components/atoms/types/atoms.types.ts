@@ -1,108 +1,86 @@
-export interface ButtonProps {
-  type?: 'button' | 'submit' | 'reset'
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
-  icon?: string
-  iconPosition?: 'left' | 'right'
-  disabled?: boolean
-  loading?: boolean
-  iconOnly?: boolean
-  fullWidth?: boolean
-}
+/**
+ * UI GLOBAL TYPES - ARCHIVO CENTRALIZADO
+ */
 
-export interface LabelProps {
-  forId: string
-  text: string
-  required?: boolean
-  variant?: 'column' | 'row'
-}
+// 1. Tipos Compartidos (Tokens de diseño)
+export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | (string & {})
+export type ComponentIntent =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'neutral'
+export type LayoutDirection = 'row' | 'column'
 
-export interface RadioOption<T = string> {
-  label: string
-  value: T
-  title?: string // For card variant - main title
-  description?: string // For card variant - subtitle/description
-  icon?: string // For card variant - material icon name
-  badge?: string // For card variant - optional badge text
-}
-
-export interface RadioButtonProps {
-  modelValue: string | number | null | undefined
-  name: string
-  options: RadioOption[]
-  label?: string
-  required?: boolean
-  disabled?: boolean
-  variant?: 'default' | 'card' // New variant prop
-  direction?: 'row' | 'column' // Layout direction
-}
-
-export interface BadgeProps {
-  text?: string
-  variant?:
-    | 'default'
-    | 'primary'
-    | 'secondary'
-    | 'success'
-    | 'warning'
-    | 'danger'
-    | 'info'
-    | 'outline'
-    | 'solid'
-  size?: 'xs' | 'sm' | 'md' | 'lg'
-  rounded?: boolean
-  interactive?: boolean
-}
-
-export interface IconProps {
-  /** Name of the Material Symbol icon */
-  name: string
-  /** Size of the icon - predefined sizes or custom string */
-  size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | string
-  /** Material icon variant */
-  variant?: 'outlined' | 'filled' | 'sharp' | 'rounded'
-  /** Additional CSS classes */
+interface BaseUIProps {
   className?: string
-  /** Accessibility label */
+  disabled?: boolean
+  required?: boolean
+}
+
+// 2. Iconos
+export interface IconProps extends BaseUIProps {
+  name: string
+  size?: ComponentSize | '2xl' | '3xl' | '4xl' | '5xl' | '6xl'
+  variant?: 'outlined' | 'filled' | 'sharp' | 'rounded'
   ariaLabel?: string
 }
 
-export interface IconBadgeProps {
-  /** Material Symbol icon name */
+export interface IconBadgeProps extends Pick<IconProps, 'className'> {
   icon: string
-  /** Size of the badge container and icon */
-  size?: 'sm' | 'md' | 'lg'
-  /** Tailwind bg + text classes for the bubble. Falls back to neutral slate. */
+  size?: Extract<ComponentSize, 'sm' | 'md' | 'lg'>
   iconClass?: string
 }
 
-export type CardTag = 'div' | 'section' | 'article'
-export type CardVariant = 'default' | 'elevated'
+// 3. Botones y Etiquetas
 
-export interface CardProps {
-  as?: CardTag
-  variant?: CardVariant
-  className?: string
+export interface LabelProps extends BaseUIProps {
+  forId: string
+  text: string
+  variant?: LayoutDirection
 }
 
-export type MetricVariant = 'income' | 'expense' | 'available' | 'neutral'
-export type MetricSize = 'sm' | 'md' | 'lg'
+// 4. Feedback y Datos
 
-export interface MetricCardProps {
+// 5. Entradas (Radio/Select)
+export interface RadioOption<T = string | boolean | number> {
+  label: string
+  value: T
+  title?: string
+  description?: string
+  icon?: string
+  badge?: string
+}
+
+export interface RadioButtonProps extends BaseUIProps {
+  modelValue: string | number | boolean | null | undefined
+  name: string
+  options: RadioOption[]
+  label?: string
+  variant?: 'default' | 'card'
+  direction?: LayoutDirection
+}
+
+// 6. Contenedores y Visualización
+export interface CardProps extends BaseUIProps {
+  as?: 'div' | 'section' | 'article'
+  variant?: 'default' | 'elevated' | 'outline' | 'primary'
+}
+
+export interface MetricCardProps extends BaseUIProps {
   title: string
-  value: number | string
+  value?: number | string
+  subtitle?: string
+  variant?: 'income' | 'expense' | 'available' | 'neutral'
+  size?: Extract<ComponentSize, 'sm' | 'md' | 'lg'>
+  icon?: string
+  iconClass?: string
   percentage?: number
   percentageText?: string
-  icon?: string
-  variant?: MetricVariant
-  size?: MetricSize
   currency?: boolean
-  currencyCode?: import('@/utils/currency').Currency
-  /** Override the number of decimal places shown. Defaults to the currency's natural precision (COP=0, USD/EUR=2). */
+  currencyCode?: string
   decimals?: number
-  className?: string
-  /** Override the icon bubble background + icon color (Tailwind classes). Falls back to variant default. */
-  iconClass?: string
-  /** Secondary label rendered below the main value (static text, not tied to percentage). */
-  subtitle?: string
+  hiddenValue?: boolean
 }

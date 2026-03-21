@@ -10,8 +10,8 @@
     class="h-3 w-3 rounded-full transition"
     :class="[
       active && 'bg-primary-500',
-      !active && disabled && 'bg-gray-300',
-      !active && !disabled && 'bg-gray-400'
+      !active && disabled && 'bg-neutral-300',
+      !active && !disabled && 'bg-neutral-400'
     ]"
   />
 </template>

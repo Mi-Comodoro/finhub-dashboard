@@ -97,7 +97,7 @@
 
 <style lang="postcss" scoped>
   .account-info-section__header {
-    @apply flex items-center justify-between border-b border-gray-100 p-6;
+    @apply flex items-center justify-between border-b border-neutral-100 p-6;
   }
 
   .account-info-section__header-main {
@@ -105,7 +105,7 @@
   }
 
   .account-info-section__title {
-    @apply text-gray-900;
+    @apply text-neutral-900;
   }
 
   .account-info-section__content {
@@ -121,7 +121,7 @@
   }
 
   .account-info-section__field-label {
-    @apply text-sm font-bold text-gray-500;
+    @apply text-sm font-bold text-neutral-500;
   }
 
   .account-info-section__field-value {
@@ -141,7 +141,7 @@
   }
 
   .account-info-section__expiration {
-    @apply flex items-center gap-1 font-bold text-gray-900;
+    @apply flex items-center gap-1 font-bold text-neutral-900;
   }
 
   .account-info-section__progress {
@@ -149,6 +149,6 @@
   }
 
   .account-info-section__progress-text {
-    @apply text-sm text-gray-900;
+    @apply text-sm text-neutral-900;
   }
 </style>

@@ -1,1 +1,1 @@
-export { default } from './CalendarGrid.vue'
+export { default as CalendarGrid } from './CalendarGrid.vue'

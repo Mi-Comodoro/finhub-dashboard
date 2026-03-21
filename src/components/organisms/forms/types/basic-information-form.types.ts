@@ -2,7 +2,7 @@ export interface BasicInformationData {
   displayName: string
   email: string
   phone: string
-  gender: 'MALE' | 'FEMALE' | 'PREFER_NOT_TO_SAY' | ''
+  gender: 'male' | 'female' | 'prefer_not_to_say'
 }
 
 export interface BasicInformationFormProps {

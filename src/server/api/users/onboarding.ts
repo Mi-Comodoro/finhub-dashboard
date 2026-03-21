@@ -17,7 +17,9 @@ export default defineEventHandler(async event => {
         finances: {
           profile: body.finances.profile,
           currency: body.finances.currency,
-          usage: body.finances.usage
+          usage: body.finances.usage,
+          monthPayment: body.finances.monthPayment,
+          biweeklyPayments: body.finances.biweeklyPayments
         },
         budget: {
           strategy: body.budget.strategy,
@@ -25,6 +27,11 @@ export default defineEventHandler(async event => {
           needs: body.budget.customAllocations.needs,
           wants: body.budget.customAllocations.wants,
           savings: body.budget.customAllocations.savings
+        },
+        incomes: {
+          incomes: body.incomes.incomes,
+          frequency: body.incomes.frequency,
+          paymentsDates: body.incomes.paymentsDates
         }
       },
       headers: { Authorization: auth ?? '' }

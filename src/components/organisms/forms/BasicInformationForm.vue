@@ -10,7 +10,7 @@
    */
 
   import { Select } from '@/components/molecules'
-  import { GENDER_OPTIONS } from '~/common/constants'
+  import { GENDER_OPTIONS, ON_BOARDING_CONFIG } from '~/common/constants'
   import { useUserStore } from '~/stores/user.store'
 
   import type {
@@ -24,7 +24,7 @@
       displayName: '',
       email: '',
       phone: '',
-      gender: ''
+      gender: 'prefer_not_to_say' as 'male' | 'female' | 'prefer_not_to_say'
     })
   })
 
@@ -43,7 +43,8 @@
   const formModel = ref<BasicInformationData>({
     ...props.modelValue,
     displayName: prefillDisplayName,
-    email: prefillEmail
+    email: prefillEmail,
+    gender: userStore.userInfo.gender ?? 'prefer_not_to_say'
   })
 
   // Validation state
@@ -109,6 +110,8 @@
 </script>
 <template>
   <form class="basic-information-form space-y-6" @submit.prevent>
+    <AlertBanner type="info" :title="ON_BOARDING_CONFIG.personalInfo.banner" />
+
     <div class="flex-col gap-2">
       <!-- Display Name (read-only, pre-filled from store) -->
       <div class="form-field">
@@ -118,9 +121,8 @@
           name="displayName"
           type="text"
           placeholder="Ej. Juan Pérez"
-          label="Nombre para Mostrar"
+          label="¿Como quieres que te llamemos?"
         />
-        <Text as="p" size="xs" color="muted" class="mt-1">Nombre registrado en tu cuenta</Text>
       </div>
 
       <!-- Phone -->
@@ -137,9 +139,6 @@
           @blur="validateField('phone')"
           @input="validateField('phone')"
         />
-        <Text as="p" size="xs" color="muted" class="mt-1">
-          Para notificaciones de seguridad y recordatorios
-        </Text>
       </div>
 
       <!-- Gender -->
@@ -164,7 +163,7 @@
 
 <style scoped lang="postcss">
   .basic-information-form {
-    @apply box-content h-96 min-h-96 space-y-6 overflow-y-auto px-1;
+    @apply mx-auto box-content h-96 min-h-96 w-full max-w-2xl space-y-6 overflow-y-auto px-1;
   }
   .basic-information-form__fields {
     @apply space-y-4;
@@ -173,6 +172,6 @@
     @apply mb-4;
   }
   .form-field__helper {
-    @apply mt-1 text-xs text-gray-400;
+    @apply mt-1 text-xs text-neutral-400;
   }
 </style>

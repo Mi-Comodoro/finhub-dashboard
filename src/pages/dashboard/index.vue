@@ -3,66 +3,90 @@
   import { computed, onMounted, ref } from 'vue'
 
   import { Button, Card, Heading, MetricCard, Text } from '@/components/atoms'
-  import { BudgetDonutChart } from '@/components/molecules'
+  import { BudgetDonutChart, CardInfo } from '@/components/molecules'
   import { OnboardingWizard } from '@/components/organisms'
   import { useModalNotification } from '@/components/organisms/modal-notification/useModalNotification'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
   import { useBudget } from '@/composables/useBudget'
+  import { usePlannedIncomes } from '@/composables/usePlannedIncome'
   import { useAuthStore } from '@/stores/auth.store'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
+  import { usePlannedIncomeStore } from '@/stores/planned-income.store'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
+  import { useOnBoarding } from '~/composables/useOnBoarding'
+  import type { OnboardingFormData } from '~/types/ui'
 
   const authStore = useAuthStore()
 
   const showWizard = ref(false)
 
   // Solo una función handleWizardCompleted, tipada correctamente
+  const { completeOnboarding, isLoading, error } = useOnBoarding()
+  const { showModal, hideModal } = useModalNotification()
+  async function handleWizardCompleted(data: OnboardingFormData) {
+    const success = await completeOnboarding(data)
 
-  function handleWizardCompleted() {
+    if (success && !isLoading.value) {
+      showModal('success', {
+        title: 'Onboarding Completado',
+        message: '¡Tu perfil ha sido configurado exitosamente! Bienvenido a FinHub.',
+        actionLabel: 'Aceptar',
+        onAction: hideModal
+      })
+    } else {
+      showModal('error', {
+        title: 'Error al Completar Onboarding',
+        message:
+          error.value ||
+          'Hubo un problema al completar el onboarding. Por favor, intenta de nuevo.',
+        actionLabel: undefined
+      })
+    }
+
     showWizard.value = false
   }
 
   definePageMeta({
-    layout: 'dashboard'
+    layout: 'dashboard',
+    title: 'Dashboard',
+    breadcrumb: 'Dashboard'
   })
 
   const { fetchCurrentBudget } = useBudget()
+
+  const { fetchPlannedIncomeByBudgetId } = usePlannedIncomes()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
+  const plannedIncomeStore = usePlannedIncomeStore()
 
-  onMounted(() => {
-    fetchCurrentBudget()
+  onMounted(async () => {
+    await fetchCurrentBudget()
+    await fetchPlannedIncomeByBudgetId(budgetStore.currentBudgetPlan?.id as string)
+
     // Mostrar wizard si el usuario necesita onboarding
     setTimeout(() => {
       if (authStore.needsOnboarding()) {
         showWizard.value = true
-      } else {
-        const { showModal } = useModalNotification()
-        showModal('info', {
-          title: 'Onboarding completado',
-          message: 'Tu perfil ya está configurado. ¡Bienvenido!',
-          actionLabel: undefined
-        })
       }
     }, 500)
   })
 
-  const currency = computed(() => financesStore.defaultCurrency)
+  const expectedAmount = computed(() => plannedIncomeStore.expectedIncome)
+  const buckets = computed(() => {
+    const { needsAmount, wantsAmount, savingsAmount } = plannedIncomeStore.buckets
+    return { needsAmount, wantsAmount, savingsAmount }
+  })
 
-  const totalIncome = computed(() => budgetStore.currentBudgetPlan?.totalIncome ?? 0)
+  const currency = computed(() => financesStore.defaultCurrency)
 
   // Expenses start at 0 until transactions are loaded
   const totalExpenses = computed(() => 0)
 
-  const savingsAmount = computed(() =>
-    percentOf(totalIncome.value, budgetStore.currentBudgetPlan?.limits.savings ?? 0, currency.value)
-  )
-
   // Available = (totalIncome - savingsAmount) - expenses
   const available = computed(() =>
     subtractAmounts(
-      subtractAmounts(totalIncome.value, savingsAmount.value, currency.value),
+      subtractAmounts(expectedAmount.value, buckets.value.savingsAmount, currency.value),
       totalExpenses.value,
       currency.value
     )
@@ -78,7 +102,7 @@
         id: 'needs',
         name: 'Gastos Fijos',
         type: 'needs' as const,
-        budgeted: percentOf(plan.totalIncome, plan.limits.needs, cur),
+        budgeted: percentOf(expectedAmount.value, plan.limits.needs, cur),
         spent: 0,
         percentage: plan.limits.needs
       },
@@ -86,7 +110,7 @@
         id: 'wants',
         name: 'Gastos Variables u Ocasionales',
         type: 'wants' as const,
-        budgeted: percentOf(plan.totalIncome, plan.limits.wants, cur),
+        budgeted: percentOf(expectedAmount.value, plan.limits.wants, cur),
         spent: 0,
         percentage: plan.limits.wants
       },
@@ -94,7 +118,7 @@
         id: 'savings',
         name: 'Ahorro e Inversiones',
         type: 'savings' as const,
-        budgeted: percentOf(plan.totalIncome, plan.limits.savings, cur),
+        budgeted: percentOf(expectedAmount.value, plan.limits.savings, cur),
         spent: 0,
         percentage: plan.limits.savings
       }
@@ -103,15 +127,24 @@
 </script>
 
 <template>
-  <div class="space-y-8 p-6">
+  <div class="space-y-2 p-4">
     <!-- Dashboard Header -->
 
     <!-- Quick Actions -->
     <div class="flex items-center justify-between">
-      <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="mb-1">
-          Dashboard Financiero
-        </Heading>
+      <div class="md:pr-4 xl:pr-0">
+        <div class="flex items-center gap-3">
+          <Heading level="h1" size="2xl" weight="extrabold" class="mb-1">
+            Resumen Financiero
+          </Heading>
+          <Badge
+            :variant="budgetStore.currentBudgetPlan?.status === 'PLANNED' ? 'warning' : 'secondary'"
+          >
+            {{
+              budgetStore.currentBudgetPlan?.status === 'PLANNED' ? 'Planificado' : 'En Ejecución'
+            }}
+          </Badge>
+        </div>
         <Text size="sm" color="muted">
           Conoce el estado de tus finanzas y toma decisiones inteligentes con datos en tiempo real.
         </Text>
@@ -123,10 +156,10 @@
     </div>
 
     <!-- Metrics Cards -->
-    <div class="mb-8 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
+    <div class="mb-8 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
       <MetricCard
-        title="Ingreso Total"
-        :value="totalIncome"
+        title="Ingreso Esperado"
+        :value="expectedAmount"
         :currency-code="currency"
         icon="account_balance_wallet"
         variant="income"
@@ -134,14 +167,14 @@
 
       <MetricCard
         title="Gastos Totales"
-        :value="totalExpenses"
+        :value="totalExpenses || 555"
         :currency-code="currency"
         icon="receipt_long"
         variant="expense"
       />
       <MetricCard
         title="Ahorro e Inversiones"
-        :value="savingsAmount"
+        :value="buckets.savingsAmount"
         :currency-code="currency"
         icon="trending_up"
         variant="neutral"
@@ -157,13 +190,19 @@
     </div>
 
     <!-- Budget Overview -->
-    <div class="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+    <div class="mb-8 grid grid-cols-1 gap-2 lg:grid-cols-2">
       <!-- Budget Distribution -->
       <div
         class="rounded-2xl border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
       >
         <div class="flex border-b border-slate-100 px-5 py-4 dark:border-slate-700">
-          <Heading level="h3" size="lg" weight="semibold">Distribución del Presupuesto</Heading>
+          <Heading level="h3" size="lg" weight="semibold">
+            {{
+              budgetStore.currentBudgetPlan?.status === 'PLANNED'
+                ? 'Planificacion del Presupuesto'
+                : 'Estado del Presupuesto'
+            }}
+          </Heading>
           <Badge
             size="sm"
             class="ml-2"
@@ -183,7 +222,7 @@
             <ClientOnly>
               <BudgetDonutChart
                 :items="categories"
-                :total="totalIncome"
+                :total="expectedAmount"
                 :currency="currency"
                 :show-legend="false"
               />
@@ -245,10 +284,16 @@
       <Card
         class-name="rounded-xl border-slate-200 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
       >
-        <Heading level="h3" size="lg" weight="semibold" class="mb-4">Alertas Inteligentes</Heading>
-        <Text color="muted">
-          Próximamente: Alertas personalizadas y sugerencias inteligentes...
-        </Text>
+        <CardInfo
+          title="Alertas Inteligentes"
+          level="h3"
+          title-size="lg"
+          weight="semibold"
+          color="black"
+          sub-title="Próximamente: Alertas personalizadas y sugerencias inteligentes..."
+          sub-title-variant="form"
+          sub-title-color="muted"
+        />
       </Card>
     </div>
 

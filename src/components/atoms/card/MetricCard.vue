@@ -3,7 +3,7 @@
 
   import type { MetricCardProps } from '@/components/atoms'
   import { Heading, Icon, IconBadge, Text } from '@/components/atoms'
-  import { formatCurrency, formatNumber } from '@/utils/currency'
+  import { type Currency, formatCurrency, formatNumber } from '@/utils/currency'
 
   const props = withDefaults(defineProps<MetricCardProps>(), {
     percentage: undefined,
@@ -28,7 +28,7 @@
 
   const sizeClasses = {
     sm: 'p-4',
-    md: 'p-6',
+    md: 'p-4 md:p-4',
     lg: 'p-8'
   }
 
@@ -55,11 +55,11 @@
 
   const formattedValue = computed(() => {
     if (typeof props.value === 'string') return props.value
-    const code = props.currencyCode ?? 'COP'
+    const code = (props.currencyCode ? props.currencyCode : 'COP') as Currency
     if (props.currency) {
-      return formatCurrency(props.value, code, props.decimals)
+      return props.value ? formatCurrency(props.value, code, props.decimals) : ''
     }
-    return formatNumber(props.value, code, props.decimals)
+    return props.value ? formatNumber(props.value, code, props.decimals) : 0
   })
 </script>
 
@@ -74,7 +74,7 @@
   >
     <div class="flex flex-1 flex-col">
       <!-- Icon + Title -->
-      <div class="mb-3 flex items-center gap-3">
+      <div class="mb-3 flex items-center gap-3 md:gap-2">
         <IconBadge v-if="icon" :icon="icon" :icon-class="resolvedIconClass" size="md" />
         <Heading level="h4" size="sm" weight="bold" :color="titleColor" uppercase tracking="wider">
           {{ title }}
@@ -83,6 +83,7 @@
 
       <!-- Value -->
       <Heading
+        v-if="value"
         level="h3"
         size="2xl"
         weight="bold"
@@ -91,6 +92,7 @@
       >
         {{ formattedValue }}
       </Heading>
+      <slot name="content" />
 
       <!-- Footer: subtitle / percentage — anchored to bottom -->
       <div class="mt-auto">

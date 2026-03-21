@@ -1,17 +1,10 @@
 <script setup lang="ts">
-  type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-  type HeadingSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
-  type HeadingWeight = 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold'
-  type HeadingColor =
-    | 'primary'
-    | 'secondary'
-    | 'muted'
-    | 'accent'
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'white'
-    | 'black'
+  import type {
+    HeadingColor,
+    HeadingLevel,
+    HeadingSize,
+    HeadingWeight
+  } from './types/heading.types'
 
   interface HeadingProps {
     /** HTML heading level (semantic) */
@@ -48,7 +41,8 @@
     xl: 'text-xl',
     '2xl': 'text-2xl',
     '3xl': 'text-3xl',
-    '4xl': 'text-4xl'
+    '4xl': 'text-4xl',
+    '5xl': 'text-5xl'
   }
 
   const weightClasses = {

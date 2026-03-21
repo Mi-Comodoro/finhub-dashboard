@@ -13,7 +13,7 @@
 
   const props = withDefaults(defineProps<LocalIconProps>(), {
     size: 'base',
-    variant: 'outlined',
+    variant: 'filled',
     className: '',
     ariaLabel: ''
   })
@@ -29,8 +29,8 @@
 
     const sizeClasses: Record<string, string> = {
       xs: 'text-xs',
-      sm: 'text-sm',
-      base: 'text-base',
+      sm: 'text-sm sm:text-sm sm:px-1',
+      base: 'text-base md:text-md md:px-1',
       lg: 'text-lg',
       xl: 'text-xl',
       '2xl': 'text-2xl',

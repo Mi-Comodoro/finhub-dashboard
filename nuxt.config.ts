@@ -4,6 +4,9 @@ import { defineNuxtConfig } from 'nuxt/config'
 const resolvePath = (relativePath: string) => fileURLToPath(new URL(relativePath, import.meta.url))
 
 export default defineNuxtConfig({
+  future: {
+    compatibilityVersion: 4
+  },
   compatibilityDate: '2026-02-08',
   app: {
     head: {
@@ -55,18 +58,22 @@ export default defineNuxtConfig({
   },
 
   components: [
-    { path: '@/components/atoms', pathPrefix: false },
-    { path: '@/components/molecules', pathPrefix: false },
-    { path: '@/components/organisms', pathPrefix: false }
+    { path: '@/components/atoms', pathPrefix: false, extensions: ['.vue'] },
+    { path: '@/components/molecules', pathPrefix: false, extensions: ['.vue'] },
+    { path: '@/components/organisms', pathPrefix: false, extensions: ['.vue'] },
+    { path: '@/components/business', pathPrefix: false, extensions: ['.vue'] }
     /*     { path: '@/components/templates', pathPrefix: false } */
   ],
+  ignore: ['**/*.types.ts', '**/types/**'],
 
   imports: {
     autoImport: true,
     dirs: ['composables', 'stores', 'middlewares', 'utils']
   },
   modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/image'],
-
+  image: {
+    domains: ['lh3.googleusercontent.com']
+  },
   postcss: {
     plugins: {
       tailwindcss: {},
@@ -121,7 +128,7 @@ export default defineNuxtConfig({
       },
       rollupOptions: {
         output: {
-          manualChunks: id => {
+          manualChunks: (id: string | string[]) => {
             if (id.includes('node_modules')) {
               if (id.includes('vue')) return 'vue-vendor'
               if (id.includes('chart')) return 'chart-vendor'

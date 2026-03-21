@@ -1,10 +1,13 @@
 import type { User } from 'firebase/auth'
 import { computed, ref } from 'vue'
 
-import { ACCESS_TOKEN, ACCOUNT_TYPE, COOKIE_OPTIONS, SESSION_DURATION } from '~/common/constants'
-import type { UserMe } from '~/types/api'
-import type { AuthResponseResult } from '~/types/auth'
-import type { FirebasePlugin } from '~/types/firebase'
+import { ACCESS_TOKEN, ACCOUNT_TYPE, COOKIE_OPTIONS, SESSION_DURATION } from '@/common/constants'
+import { useAuthStore } from '@/stores/auth.store'
+import { useFinancesStore } from '@/stores/finances.store'
+import { useUserStore } from '@/stores/user.store'
+import type { UserMe } from '@/types/api'
+import type { AuthResponseResult } from '@/types/auth'
+import type { FirebasePlugin } from '@/types/firebase'
 
 export const useAuth = () => {
   // Reactive variables
@@ -47,12 +50,7 @@ export const useAuth = () => {
     userStore.setUser(result.user)
 
     authStore.setOnboarding({
-      isCompleted: result.onboarding === 'COMPLETED',
-      currentStep: result.onboarding === 'COMPLETED' ? 'completed' : 'personal-info',
-      completedSteps:
-        result.onboarding === 'COMPLETED'
-          ? ['personal-info', 'finances-config', 'budget-strategy', 'completed']
-          : []
+      isCompleted: result.onboarding === 'COMPLETED'
     })
 
     authStore.setAccountType(result.accountType)
@@ -131,8 +129,9 @@ export const useAuth = () => {
       user.value = createFirebaseUser(authStore.user)
 
       return { success: true, onboardingStatus }
-    } catch {
-      error.value = 'Error al iniciar sesión con Google'
+    } catch (err) {
+      error.value = JSON.stringify(err) /* || 'Error al iniciar sesión con Google' */
+
       return { success: false, onboardingStatus: 'PENDING' }
     }
   }

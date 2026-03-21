@@ -1,18 +1,5 @@
 <script setup lang="ts">
-  type TextSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl'
-  type TextWeight = 'light' | 'normal' | 'medium' | 'semibold' | 'bold'
-  type TextColor =
-    | 'primary'
-    | 'secondary'
-    | 'muted'
-    | 'accent'
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'white'
-    | 'black'
-    | 'inherit'
-  type TextAlign = 'left' | 'center' | 'right' | 'justify'
+  import type { TextAlign, TextColor, TextSize, TextWeight } from './types/text.types'
 
   interface TextProps {
     /** Text size */
@@ -42,7 +29,7 @@
   const props = withDefaults(defineProps<TextProps>(), {
     size: 'base',
     weight: 'normal',
-    color: 'primary',
+    color: 'black',
     align: 'left',
     italic: false,
     uppercase: false,
@@ -70,10 +57,10 @@
   }
 
   const colorClasses = {
-    primary: 'text-slate-900 dark:text-white',
-    secondary: 'text-slate-700 dark:text-slate-300',
-    muted: 'text-slate-500 dark:text-slate-400',
-    accent: 'text-teal-600 dark:text-teal-400',
+    primary: 'text-primary-600 dark:text-white',
+    secondary: 'text-secondary-600 dark:text-slate-300',
+    muted: 'text-slate-600 dark:text-slate-400',
+    accent: 'text-primary-600 dark:text-teal-400',
     success: 'text-green-600 dark:text-green-400',
     warning: 'text-yellow-600 dark:text-yellow-400',
     error: 'text-red-600 dark:text-red-400',

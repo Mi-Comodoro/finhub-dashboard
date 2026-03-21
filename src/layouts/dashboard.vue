@@ -15,10 +15,10 @@
       :options="modalState.options"
       :on-close="hideModal"
     />
+    <ToastContainer />
+
     <!-- Header (top, full width) -->
-    <div class="relative z-20 flex-shrink-0">
-      <DashboardHeader />
-    </div>
+    <!--  <div class="relative z-20 flex-shrink-0"></div> -->
 
     <!-- Body: sidebar + main -->
     <div class="flex min-h-0 flex-1">
@@ -29,7 +29,10 @@
 
       <!-- Main content (right) -->
       <main class="flex-1 overflow-y-auto bg-slate-100/25 dark:bg-slate-950">
-        <slot />
+        <DashboardHeader />
+        <div class="mx-auto space-y-4 px-4 py-6">
+          <slot />
+        </div>
       </main>
     </div>
   </div>

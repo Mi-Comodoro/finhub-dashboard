@@ -54,7 +54,7 @@
     @apply relative flex flex-col rounded-xl bg-white p-8 shadow-lg dark:bg-slate-800;
   }
   .modal-wizard__container--auto {
-    @apply h-min w-[500px] overflow-hidden p-8;
+    @apply h-min w-[650px] overflow-hidden p-8;
   }
   .modal-wizard__content {
     @apply flex h-full w-full flex-auto flex-col gap-6;

@@ -8,4 +8,3 @@ export interface AppLogoProps {
 }
 
 export type LogoSize = 'sm' | 'md' | 'lg'
-export type TextSize = 'base' | 'lg' | 'xl'

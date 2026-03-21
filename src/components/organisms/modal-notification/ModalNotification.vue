@@ -23,9 +23,11 @@
         message: '',
         actionLabel: undefined,
         titleIcon: undefined,
-        hideTitle: false
+        hideTitle: false,
+        onAction: undefined,
+        onClose: undefined
       }) as NotificationOptions,
-    onAction: undefined,
+
     onClose: undefined
   })
 
@@ -39,14 +41,49 @@
   )
 
   function handleAction() {
-    if (props.onAction) props.onAction()
+    if (props.options.onAction) props.options.onAction()
     visible.value = false
   }
 
   function handleClose() {
+    if (props.options.onClose) props.options.onClose()
     if (props.onClose) props.onClose()
     visible.value = false
   }
+
+  const typeStyles = computed(() => {
+    switch (props.type) {
+      case 'success':
+        return {
+          icon: 'check_circle',
+          iconClass: 'modal-notification__title-icon--success'
+        }
+
+      case 'error':
+        return {
+          icon: 'error',
+          iconClass: 'modal-notification__title-icon--error'
+        }
+
+      case 'info':
+        return {
+          icon: 'info',
+          iconClass: 'modal-notification__title-icon--info'
+        }
+
+      case 'warning':
+        return {
+          icon: 'alert_triangle',
+          iconClass: 'modal-notification__title-icon--warning'
+        }
+
+      default:
+        return {
+          icon: 'info',
+          iconClass: 'modal-notification__title-icon--info'
+        }
+    }
+  })
 </script>
 
 <template>
@@ -56,8 +93,8 @@
       <div class="modal-notification__content">
         <div v-if="!options.hideTitle && options.title" class="modal-notification__title-row">
           <IconChip
-            :icon="type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'"
-            container-class="modal-notification__title-icon"
+            :icon="typeStyles.icon"
+            :class="['modal-notification__title-icon', typeStyles.iconClass]"
           />
           <Heading level="h2">{{ options.title }}</Heading>
         </div>
@@ -107,14 +144,20 @@
   .modal-notification__icon {
     @apply mb-2 text-3xl;
   }
-  .modal-notification__icon--success {
-    @apply text-success-500;
+  .modal-notification__title-icon--success {
+    @apply bg-success-100 text-success-600;
   }
-  .modal-notification__icon--error {
-    @apply text-danger-500;
+
+  .modal-notification__title-icon--error {
+    @apply bg-danger-100 text-danger-600;
   }
-  .modal-notification__icon--info {
-    @apply text-secondary-500;
+
+  .modal-notification__title-icon--info {
+    @apply bg-secondary-100 text-secondary-500;
+  }
+
+  .modal-notification__title-icon--warning {
+    @apply bg-warning-100 text-warning-600;
   }
   .modal-notification__content {
     @apply w-full text-center;

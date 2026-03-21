@@ -36,9 +36,7 @@ export interface Budget {
   readonly userId: string
   readonly period: BudgetPeriod
   readonly frequency: BudgetFrequency
-  readonly totalIncome: number
-  readonly totalPlanned: number
-  readonly totalActual: number
+  readonly status: string
   readonly allocations: readonly BudgetAllocation[]
   readonly strategy: BudgetStrategy['name']
   readonly isEditable: boolean
@@ -92,25 +90,22 @@ export interface UpdateBudgetAllocationRequest {
 
 /** Domain model for the active budget plan from /budgets/{financeId}/current */
 export interface CurrentBudgetPlan {
-  readonly id: string
-  readonly name: string
-  readonly month: string
-  readonly year: number
-  readonly income: number
-  readonly otherIncome: number
-  readonly totalIncome: number // income + otherIncome
-  readonly isShared: boolean
-  readonly partnerIncome: number
-  readonly partnerOtherIncome: number
-  readonly limits: {
-    readonly needs: number // needsLimit %
-    readonly wants: number // wantsLimit %
-    readonly savings: number // savingsLimit %
+  id: string
+  name: string
+  month: string
+  year: number
+  isShared: boolean
+  status: string
+  limits: {
+    needs: number // needsLimit %
+    wants: number // wantsLimit %
+    savings: number // savingsLimit %
   }
-  readonly financesId: string
-  readonly partnerId: string | null
-  readonly strategy: BudgetStrategy['name']
-  readonly frequency: BudgetFrequency
+  financesId: string
+  ownerId: string | null
+  partnerId: string | null
+  strategy: BudgetStrategy['name']
+  frequency: BudgetFrequency
 }
 
 export interface BudgetState {

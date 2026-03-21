@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { useAuthStore } from '~/stores/auth.store'
   import { useUserStore } from '~/stores/user.store'
 
   import type { UserBasicInformationProps } from './types/index'

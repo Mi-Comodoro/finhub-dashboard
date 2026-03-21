@@ -25,9 +25,9 @@
 
   const VARIANT_CLASSES: Record<AlertVariant, VariantClasses> = {
     info: {
-      wrapper: 'bg-teal-50 border-teal-100 dark:bg-teal-900/20 dark:border-teal-800/40',
-      icon: 'text-teal-500 dark:text-teal-400',
-      title: 'text-teal-800 dark:text-teal-200'
+      wrapper: 'bg-primary-50 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800/40',
+      icon: 'text-primary-500 dark:text-primary-400',
+      title: 'text-primary-800 dark:text-primary-200'
     },
     success: {
       wrapper: 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800/40',
@@ -60,38 +60,44 @@
 </script>
 
 <template>
-  <div :class="['alert-banner', classes.wrapper]" role="alert">
-    <span
-      class="alert-banner__icon material-symbols-outlined"
-      :class="classes.icon"
-      aria-hidden="true"
-    >
-      {{ resolvedIcon }}
-    </span>
+  <div class="alert-banner-wrapper">
+    <div :class="['alert-banner', classes.wrapper]" role="alert">
+      <span
+        class="alert-banner__icon material-symbols-outlined"
+        :class="classes.icon"
+        aria-hidden="true"
+      >
+        {{ resolvedIcon }}
+      </span>
 
-    <div class="alert-banner__content">
-      <p v-if="title" :class="['alert-banner__title', classes.title]">
-        {{ title }}
-      </p>
-      <div class="alert-banner__body">
-        <slot />
+      <div class="alert-banner__content">
+        <p v-if="title" :class="['alert-banner__title', classes.title]">
+          {{ title }}
+        </p>
+        <div class="alert-banner__body">
+          <slot />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="postcss">
+  .alert-banner-wrapper {
+    @apply px-0 pb-4;
+  }
+
   .alert-banner {
-    @apply flex items-start gap-3 rounded-xl border px-4 py-3;
+    @apply flex items-start gap-3 rounded-md border px-4 py-3;
   }
   .alert-banner__icon {
     @apply mt-0.5 shrink-0 text-[1.1rem] leading-none;
   }
   .alert-banner__content {
-    @apply min-w-0 flex-1;
+    @apply box-content min-w-0 flex-1;
   }
   .alert-banner__title {
-    @apply mb-0.5 text-sm font-semibold;
+    @apply mb-0.5 text-sm font-normal;
   }
   .alert-banner__body {
     @apply text-sm text-slate-600 dark:text-slate-400;

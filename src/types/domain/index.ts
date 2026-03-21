@@ -1,4 +1,6 @@
 export * from './auth.domain'
 export * from './budget.domain'
 export * from './common.domain'
+export * from './expense.domain'
+export * from './income.domain'
 export * from './user.domain'
