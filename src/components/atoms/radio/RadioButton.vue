@@ -233,7 +233,7 @@
   }
 
   .radio-card-option--selected .radio-card-description {
-    @apply text-primary-700;
+    @apply text-primary-900;
   }
 
   .radio-card-check {

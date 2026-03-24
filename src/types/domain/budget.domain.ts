@@ -114,6 +114,7 @@ export interface BudgetState {
   categories: Category[]
   activeBudget: Budget | null
   currentBudgetPlan: CurrentBudgetPlan | null
+  budgetSelected: CurrentBudgetPlan | null
   summary: BudgetSummary | null
   isLoading: boolean
   error: string | null

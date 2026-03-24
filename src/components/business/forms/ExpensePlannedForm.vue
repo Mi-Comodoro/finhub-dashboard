@@ -5,7 +5,7 @@
   import { useCategoryStore } from '@/stores/categories.store'
   import type { ExpenseData } from '~/types/domain'
 
-  import { expensedPlannedFieldsSchema } from './schema/fields.schema'
+  import { expensedPlannedFieldsSchema } from './schema/expense.fields.schema'
 
   const { fetchCategories } = useCategories()
   const categoryStore = useCategoryStore()

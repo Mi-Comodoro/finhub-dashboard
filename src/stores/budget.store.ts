@@ -22,6 +22,7 @@ export const useBudgetStore = defineStore('budget', {
     categories: [],
     activeBudget: null,
     currentBudgetPlan: null,
+    budgetSelected: null,
     summary: null,
     isLoading: false,
     error: null
@@ -158,6 +159,10 @@ export const useBudgetStore = defineStore('budget', {
 
     setCurrentBudget(plan: CurrentBudgetPlan) {
       this.currentBudgetPlan = plan
+      this.error = null
+    },
+    setBudgetSelected(plan: CurrentBudgetPlan) {
+      this.budgetSelected = plan
       this.error = null
     },
 

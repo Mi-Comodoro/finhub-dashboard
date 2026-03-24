@@ -32,6 +32,7 @@ export interface IconBadgeProps extends Pick<IconProps, 'className'> {
   icon: string
   size?: Extract<ComponentSize, 'sm' | 'md' | 'lg'>
   iconClass?: string
+  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'neutral'
 }
 
 // 3. Botones y Etiquetas
@@ -73,7 +74,7 @@ export interface MetricCardProps extends BaseUIProps {
   title: string
   value?: number | string
   subtitle?: string
-  variant?: 'income' | 'expense' | 'available' | 'neutral'
+  variant?: 'income' | 'expense' | 'available' | 'neutral' | 'undefined'
   size?: Extract<ComponentSize, 'sm' | 'md' | 'lg'>
   icon?: string
   iconClass?: string

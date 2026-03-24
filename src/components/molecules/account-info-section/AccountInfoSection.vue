@@ -4,10 +4,9 @@
    * Molecule-level component for displaying account information and subscription details
    */
 
-  import { Badge, Button, Card, Heading, Label } from '@/components/atoms'
+  import { Badge, Button, Card, Heading, IconBadge, Label } from '@/components/atoms'
   import { ProgressBar } from '@/components/molecules'
 
-  import IconChip from '../icon-chip/IconChip.vue'
   import type { AccountInfoSectionProps } from './types/account-info-section.types'
 
   withDefaults(defineProps<AccountInfoSectionProps>(), {
@@ -33,7 +32,7 @@
   <Card variant="elevated" class-name="account-info-section">
     <div class="account-info-section__header">
       <div class="account-info-section__header-main">
-        <IconChip icon="security" container-class="bg-purple-100 text-purple-600" />
+        <IconBadge icon="security" container-class="bg-purple-100 text-purple-600" />
         <Heading level="h2" size="lg" weight="semibold" class-name="account-info-section__title">
           Estado de la Cuenta
         </Heading>

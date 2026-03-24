@@ -24,7 +24,7 @@ export default defineEventHandler(async event => {
   }
 
   const { success, data } = await $fetch<BackendBudgetList>(
-    `${config.public.apiBase}/budgets/${financeId}`,
+    `${config.public.apiBase}/budgets/finances/${financeId}`,
     {
       query: parsedYear !== undefined ? { year: parsedYear } : {},
       headers: { authorization: `Bearer ${token}` },

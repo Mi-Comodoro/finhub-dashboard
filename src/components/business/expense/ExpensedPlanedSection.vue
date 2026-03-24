@@ -1,9 +1,8 @@
 <script setup lang="ts">
   import { useDebounceFn } from '@vueuse/core'
 
+  import type { Column, RowData } from '@/components/organisms'
   import { useExpensesStore } from '@/stores/expense.store'
-  import type { Column } from '~/components/organisms'
-  import type { RowData } from '~/components/organisms/datatable/DataTable.vue'
 
   const emit = defineEmits(['open-form', 'edit', 'remove', 'mark-as-payed'])
 

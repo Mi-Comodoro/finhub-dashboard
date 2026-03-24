@@ -6,8 +6,7 @@
 <script setup lang="ts">
   import { ref, watch } from 'vue'
 
-  import { Button, Heading, Text } from '@/components/atoms'
-  import { IconChip } from '@/components/molecules'
+  import { Button, Heading, IconBadge,Text } from '@/components/atoms'
 
   import type {
     ModalNotificationProps,
@@ -30,6 +29,7 @@
 
     onClose: undefined
   })
+  const emit = defineEmits(['action', 'close', 'update:show'])
 
   const visible = ref(props.show)
 
@@ -42,15 +42,20 @@
 
   function handleAction() {
     if (props.options.onAction) props.options.onAction()
-    visible.value = false
+    emit('action')
+    closeModal()
   }
 
   function handleClose() {
     if (props.options.onClose) props.options.onClose()
     if (props.onClose) props.onClose()
-    visible.value = false
+    emit('close')
+    closeModal()
   }
-
+  function closeModal() {
+    visible.value = false
+    emit('update:show', false) // Sincroniza el v-model:show
+  }
   const typeStyles = computed(() => {
     switch (props.type) {
       case 'success':
@@ -92,7 +97,7 @@
     <div class="modal-notification__container modal-notification__container--wide">
       <div class="modal-notification__content">
         <div v-if="!options.hideTitle && options.title" class="modal-notification__title-row">
-          <IconChip
+          <IconBadge
             :icon="typeStyles.icon"
             :class="['modal-notification__title-icon', typeStyles.iconClass]"
           />

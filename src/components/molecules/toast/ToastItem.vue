@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { Toast } from '@/composables/useToast'
+  import type { Toast } from '@/components/organisms/toast/useToast'
 
   defineProps<{
     toast: Toast

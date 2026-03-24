@@ -34,15 +34,19 @@ export const logoutError = (event: H3Event, status: number): never => {
 
 export const validateError = (event: H3Event, status: number): never => {
   if (status === 401) {
+    // 1. Borramos cookies del servidor
     deleteCookie(event, ACCESS_TOKEN)
     deleteCookie(event, ACCOUNT_TYPE)
+    // Agrega cualquier otra cookie de sesión que uses
+
     throw apiError.unauthorized('La sesión ha expirado')
   }
-  switch (status) {
-    case 401:
-      throw apiError.forbidden('La session expiro antes de intentar validar session')
 
+  // Otros errores
+  switch (status) {
+    case 403:
+      throw apiError.forbidden('No tienes permisos para esto')
     default:
-      throw apiError.internal('Error al validar session')
+      throw apiError.internal('Error inesperado en el servidor')
   }
 }

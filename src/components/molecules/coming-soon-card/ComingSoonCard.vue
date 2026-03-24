@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import { Card, Heading } from '@/components/atoms'
-  import { IconChip } from '@/components/molecules'
+  import { Card, Heading, IconBadge } from '@/components/atoms'
 
   import type { ComingSoonCardProps } from './types/coming-soon-card.types'
 
@@ -12,7 +11,7 @@
 
 <template>
   <Card class-name="coming-soon-card">
-    <IconChip :icon="icon" container-class="coming-soon-card__icon" />
+    <IconBadge :icon="icon" container-class="coming-soon-card__icon" />
     <Heading level="h3" size="lg" weight="semibold" class-name="coming-soon-card__title">
       {{ title }}
     </Heading>

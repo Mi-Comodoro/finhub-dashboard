@@ -1,9 +1,6 @@
 <script setup lang="ts">
-  import { type Column, DataCell } from '@/components/organisms'
+  import type { Column, DataCell, RowData } from '@/components/organisms'
 
-  export interface RowData {
-    [key: string]: string | number | boolean | Date | null | undefined
-  }
   defineProps<{
     columns: Column[]
     data: RowData[]
@@ -84,6 +81,7 @@
           </tr>
         </tbody>
       </table>
+      <slot name="footer" />
     </div>
   </div>
 </template>

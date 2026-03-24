@@ -17,8 +17,8 @@
     success: 'check_circle',
     warning: 'warning',
     danger: 'error',
-    neutral: 'notifications',
-    purple: 'auto_awesome'
+    neutral: 'info',
+    secondary: 'auto_awesome'
   }
 
   const resolvedIcon = computed(() => props.icon ?? DEFAULT_ICONS[props.variant])
@@ -49,10 +49,11 @@
       icon: 'text-slate-400 dark:text-slate-500',
       title: 'text-slate-700 dark:text-slate-200'
     },
-    purple: {
-      wrapper: 'bg-purple-50 border-purple-200 dark:bg-purple-900/10 dark:border-purple-800/50',
-      icon: 'text-purple-600 dark:text-purple-300',
-      title: 'text-purple-800 dark:text-purple-200'
+    secondary: {
+      wrapper:
+        'bg-secondary-50 border-secondary-200 dark:bg-secondary-900/10 dark:border-secondary-800/50',
+      icon: 'text-secondary-600 dark:text-secondary-300',
+      title: 'text-secondary-800 dark:text-secondary-200'
     }
   }
 

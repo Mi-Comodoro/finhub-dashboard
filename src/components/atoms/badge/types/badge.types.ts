@@ -16,6 +16,7 @@ export interface BadgeProps {
   variant?: BadgeVariant
   size?: BadgeSize
   rounded?: boolean
+  bold?: boolean
   text?: string
   className?: string
 }

@@ -61,8 +61,8 @@
   >
     <!-- Header -->
     <div class="budget-strategy-card__header">
-      <!-- IconChip -->
-      <IconChip
+      <!-- IconBadge -->
+      <IconBadge
         :icon="icon"
         size="md"
         :class="{ 'budget-strategy-card__icon--selected': selected }"
@@ -168,7 +168,7 @@
   }
 
   .budget-strategy-card--selected .legend-item__text {
-    @apply text-primary-700;
+    @apply text-primary-900;
   }
 
   .budget-strategy-card__selector {

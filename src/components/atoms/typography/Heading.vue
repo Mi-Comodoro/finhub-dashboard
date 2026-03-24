@@ -56,7 +56,7 @@
 
   const colorClasses = {
     primary: 'text-slate-900 dark:text-white',
-    secondary: 'text-slate-700 dark:text-slate-300',
+    secondary: 'text-secondary-700 dark:secondary-300',
     muted: 'text-slate-500 dark:text-slate-400',
     accent: 'text-teal-600 dark:text-teal-400',
     success: 'text-green-600 dark:text-green-400',

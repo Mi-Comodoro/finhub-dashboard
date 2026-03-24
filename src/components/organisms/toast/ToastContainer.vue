@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ToastItem } from '@/components/molecules'
-  import { useToast } from '@/composables/useToast'
+  import { useToast } from '@/components/organisms/toast/useToast'
 
   const { toasts, remove } = useToast()
 </script>

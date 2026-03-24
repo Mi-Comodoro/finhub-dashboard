@@ -23,7 +23,8 @@
     income: 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700',
     expense: 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700',
     available: 'bg-gradient-to-br from-teal-600 to-teal-800 text-white border-teal-700 shadow-md',
-    neutral: 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+    neutral: 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700',
+    undefined: 'hidden'
   }
 
   const sizeClasses = {
@@ -36,7 +37,8 @@
     income: 'bg-success-50 text-success-700',
     expense: 'bg-danger-50 text-danger-700',
     available: 'bg-white/20 text-white',
-    neutral: 'bg-slate-100 text-slate-500'
+    neutral: 'bg-slate-100 text-slate-500',
+    undefined: 'hidden'
   }
 
   const resolvedIconClass = computed(() => props.iconClass ?? iconVariantClasses[props.variant])
@@ -50,7 +52,7 @@
   })
 
   const titleColor = computed(() => {
-    return props.variant === 'available' ? 'white' : 'secondary'
+    return props.variant === 'available' ? 'white' : 'muted'
   })
 
   const formattedValue = computed(() => {

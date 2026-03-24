@@ -3,14 +3,16 @@
 
   import type { CardInfoProps } from './types/card-info.types'
 
-  defineProps<CardInfoProps>()
+  withDefaults(defineProps<CardInfoProps>(), {
+    verticalSpace: false
+  })
 </script>
 <template>
   <div class="card-info">
     <div class="card-info__header">
-      <IconChip v-if="icon" :icon="icon" :size="iconSize" :variant="iconVariant" />
+      <IconBadge v-if="icon" :icon="icon" :size="iconSize" :variant="iconVariant" />
 
-      <div class="-space-y-1">
+      <div :class="verticalSpace ? 'flex flex-col space-y-2' : 'flex flex-col -space-y-1'">
         <Heading :level="level" :size="titleSize" :weight="weight" :color="color">
           {{ title }}
         </Heading>

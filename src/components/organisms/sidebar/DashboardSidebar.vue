@@ -12,8 +12,8 @@
   const menuItems: Omit<MenuItem, 'isActive'>[] = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
-    { name: 'Transacciones', icon: 'receipt_long', path: '/dashboard/transactions' },
-    { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' }
+    { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
+    { name: 'Transacciones', icon: 'receipt_long', path: '/dashboard/transactions' }
   ]
 
   const settingsItems: Omit<MenuItem, 'isActive'>[] = [
@@ -68,13 +68,13 @@
       <NavigationSection title="CONFIGURACIÓN" :items="settingsMenuItems" />
     </nav>
     <div class="dashboard-sidebar__version">
-      <Card as="div" class="my-2 p-2" class-name="!bg-primary-50 !rounded-md !border-primary-100">
+      <Card as="div" class="my-2 p-2" class-name="!bg-primary-900 !rounded-md !border-primary-100">
         <CardInfo
           level="h3"
           title-size="sm"
           title="Estado"
           weight="bold"
-          color="black"
+          color="white"
           :sub-title="
             accountType?.toUpperCase() === 'TRIAL'
               ? 'Periodo de Prueba'
@@ -82,7 +82,7 @@
                 ? 'Premium'
                 : 'FREE'
           "
-          sub-title-color="primary"
+          sub-title-color="warning"
           sub-title-size="xs"
         />
       </Card>

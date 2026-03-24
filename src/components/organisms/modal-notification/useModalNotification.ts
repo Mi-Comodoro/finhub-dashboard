@@ -34,7 +34,6 @@ function hideModal() {
 
 export function useModalNotification() {
   return {
-    modalState,
     showModal,
     hideModal
   }

@@ -4,35 +4,14 @@
   import { useRoute } from 'vue-router'
 
   import { Icon } from '@/components/atoms'
-  import { useBreadcrumbs } from '@/composables/useBreadcrumbs'
+  import { useBreadcrumbs } from '@/components/molecules/breadcrumbs/useBreadcrumbs'
 
   import type { BreadcrumbItem } from './types'
 
   // Props
   interface Props {
-    /**
-     * Custom breadcrumbs (overrides auto-generated)
-     */
-
-    /**
-     * Icon size for breadcrumb icons
-     */
     iconSize?: 'xs' | 'sm' | 'md' | 'lg'
-    /**
-     * Whether to show home breadcrumb automatically
-     */
     showHome?: boolean
-    /**
-     * Home label text
-     */
-
-    /**
-     * Home icon name
-     */
-
-    /**
-     * Maximum number of breadcrumbs to show
-     */
     maxItems?: number
   }
 

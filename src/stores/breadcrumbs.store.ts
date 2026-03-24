@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import type { BreadcrumbItem } from '~/components/molecules'
+import type { BreadcrumbItem } from '@/components/molecules'
 
 export const useBreadcrumbsStore = defineStore('breadcrumbs', () => {
   // State

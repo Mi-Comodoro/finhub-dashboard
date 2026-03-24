@@ -1,3 +1,5 @@
+import type { HeadingColor } from '~/components/atoms'
+
 export interface SectionCardProps {
   /** Heading text rendered inside the card header. Omit to suppress the header entirely. */
   title?: string
@@ -5,4 +7,8 @@ export interface SectionCardProps {
   as?: 'div' | 'section' | 'article'
   icon?: string
   iconVariant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'neutral'
+  textColor?: HeadingColor
+  bg?: HeadingColor
+  uppercase?: boolean
+  className?: string
 }

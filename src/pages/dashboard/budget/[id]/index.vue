@@ -19,10 +19,10 @@
   import { ModalWizard } from '@/components/organisms'
   import { useBudget } from '@/composables/useBudget'
   import { usePlannedIncomes } from '@/composables/usePlannedIncome'
-  import { useToast } from '@/composables/useToast'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
   import { usePlannedIncomeStore } from '@/stores/planned-income.store'
+  import { useToast } from '~/components/organisms/toast/useToast'
   import DateUtils from '~/utils/date'
 
   definePageMeta({
@@ -46,8 +46,8 @@
   const budgetId = route.params['id'] as string
 
   onMounted(async () => {
-    await fetchPlannedIncomeByBudgetId(budgetId)
     await fetchBudgetById(budgetId)
+    await fetchPlannedIncomeByBudgetId(budgetId)
   })
 
   const { show } = useToast()
@@ -118,7 +118,7 @@
     }
   ])
 
-  const plan = computed(() => budgetStore.budgetPlans.find(p => p.id === budgetId) || null)
+  const plan = computed(() => budgetStore.budgetSelected)
 
   const planStatus = computed(() => plan.value?.status)
   const expectedAmount = computed(() => plannedIncomeStore.expectedIncome)
@@ -205,199 +205,183 @@
 </script>
 
 <template>
-  <div class="space-y-4">
-    <!-- ── Loading state ───────────────────────────────────────────────────── -->
-    <template v-if="budgetStore.isLoading">
-      <div class="animate-pulse space-y-4">
-        <div class="h-8 w-48 rounded-lg bg-slate-200 dark:bg-slate-700" />
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div v-for="i in 4" :key="i" class="h-24 rounded-xl bg-slate-200 dark:bg-slate-700" />
-        </div>
-        <div class="h-72 rounded-xl bg-slate-200 dark:bg-slate-700" />
-      </div>
-    </template>
-
-    <!-- ── Not found ───────────────────────────────────────────────────────── -->
-    <template v-else-if="!plan">
-      <div class="flex flex-col items-center gap-4 py-20 text-center">
-        <Icon name="search_off" class="text-slate-400 dark:text-slate-600" size="2xl" />
-        <Heading level="h3" color="muted">Presupuesto no encontrado</Heading>
-        <Text size="sm" color="muted">No se encontró un presupuesto con el ID indicado.</Text>
-        <Button
-          variant="ghost"
-          size="sm"
-          icon="arrow_back"
-          class="mt-2"
-          @click="router.push('/dashboard/budget')"
-        >
-          Volver a Presupuestos
-        </Button>
-      </div>
-    </template>
-
+  <div v-if="plan?.id" class="space-y-4">
     <!-- ── Main content ────────────────────────────────────────────────────── -->
-    <template v-else>
-      <!-- Header -->
-      <div class="flex w-full flex-wrap items-start p-4">
-        <div class="flex items-center gap-2">
-          <div class="flex flex-col">
-            <div class="flex flex-wrap items-center gap-2">
-              <Heading level="h1" size="2xl" weight="extrabold" class="leading-tight">
-                {{ replaceUnderscoresWithSpaces(plan.name) }}
-              </Heading>
 
-              <div class="hidden gap-2 xl:flex">
-                <Badge :variant="planStatus === 'ACTIVE' ? 'success' : 'warning'" size="sm">
-                  {{ planStatus === 'ACTIVE' ? 'Activo' : 'Planeado' }}
-                </Badge>
+    <!-- Header -->
+    <div class="flex w-full flex-wrap items-start p-4">
+      <div class="flex items-center gap-2">
+        <div class="flex flex-col">
+          <div class="flex flex-wrap items-center gap-2">
+            <Heading level="h1" size="2xl" weight="extrabold" class="leading-tight">
+              {{ replaceUnderscoresWithSpaces(plan.name) }}
+            </Heading>
 
-                <Badge v-if="plan.isShared" variant="warning" size="xs">
-                  <Icon name="group" size="xs" />
-                  Compartido
-                </Badge>
-              </div>
+            <div class="hidden gap-2 xl:flex">
+              <Badge :variant="planStatus === 'ACTIVE' ? 'success' : 'warning'" size="sm">
+                {{ planStatus === 'ACTIVE' ? 'Activo' : 'Planeado' }}
+              </Badge>
+
+              <Badge v-if="plan.isShared" variant="warning" size="xs">
+                <Icon name="group" size="xs" />
+                Compartido
+              </Badge>
             </div>
+          </div>
 
-            <Text size="sm" color="muted" class="flex items-center gap-1">
-              Análisis mensual · Estrategia
-              <Badge variant="secondary" size="xs">{{ strategyInfo?.label }}</Badge>
+          <Text size="sm" color="muted" class="flex items-center gap-1">
+            Análisis mensual · Estrategia
+            <Badge variant="secondary" size="xs">{{ strategyInfo?.label }}</Badge>
+          </Text>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="ml-auto flex items-center gap-2">
+        <template v-for="(action, index) in headerButtonActions" :key="index">
+          <Button
+            v-if="action.condition"
+            :variant="action.variant as ButtonVariant"
+            :size="action.size as ButtonSize"
+            :icon="action.icon"
+            @click="action.click"
+          >
+            {{ action.name }}
+          </Button>
+        </template>
+      </div>
+    </div>
+
+    <div class="px-4">
+      <Card class="flex p-4">
+        <div class="flex flex-1 items-center gap-2">
+          <IconBadge icon="account_balance" variant="primary" />
+          <div>
+            <Label variant="section" text="Ingreso total esperado" color="muted" />
+            <Text color="black" size="xl" weight="bold">
+              {{ formatCurrency(expectedAmount!, financesStore.defaultCurrency, 2) }}
+              <span class="text-sm uppercase text-slate-500">
+                {{ financesStore.defaultCurrency }}
+              </span>
             </Text>
           </div>
         </div>
 
-        <!-- Action buttons -->
-        <div class="ml-auto flex items-center gap-2">
-          <template v-for="(action, index) in headerButtonActions" :key="index">
-            <Button
-              v-if="action.condition"
-              :variant="action.variant as ButtonVariant"
-              :size="action.size as ButtonSize"
-              :icon="action.icon"
-              @click="action.click"
-            >
-              {{ action.name }}
-            </Button>
-          </template>
-        </div>
-      </div>
-
-      <div class="px-4">
-        <Card class="flex p-4">
-          <div class="flex flex-1 items-center gap-2">
-            <IconChip icon="account_balance" variant="primary" />
-            <div>
-              <Label variant="section" text="Ingreso total esperado" color="muted" />
-              <Text color="black" size="xl" weight="bold">
-                {{ formatCurrency(expectedAmount!, financesStore.defaultCurrency, 2) }}
-                <span class="text-sm uppercase text-slate-500">
-                  {{ financesStore.defaultCurrency }}
-                </span>
-              </Text>
-            </div>
+        <div class="flex gap-4">
+          <div class="place-items-end">
+            <Label variant="form" text="Fuentes de ingreso" color="muted" />
+            <Text color="muted" size="sm" weight="bold">
+              {{ sources?.join(', ') }}
+            </Text>
           </div>
+          <div class="place-items-end text-end">
+            <Label variant="form" text="Ultima actualización" color="muted" />
+            <Text color="muted" size="sm" weight="bold">
+              {{ DateUtils.formatSmartDate(lastUpdate!) }}
+            </Text>
+          </div>
+        </div>
+      </Card>
+    </div>
 
-          <div class="flex gap-4">
-            <div class="place-items-end">
-              <Label variant="form" text="Fuentes de ingreso" color="muted" />
-              <Text color="muted" size="sm" weight="bold">
-                {{ sources?.join(', ') }}
-              </Text>
-            </div>
-            <div class="place-items-end text-end">
-              <Label variant="form" text="Ultima actualización" color="muted" />
-              <Text color="muted" size="sm" weight="bold">
-                {{ DateUtils.formatSmartDate(lastUpdate!) }}
-              </Text>
+    <!-- ── Summary metric cards ─────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 xl:grid-cols-4">
+      <MetricCard v-for="card in metricCards" :key="card.id" v-bind="card" />
+    </div>
+
+    <!-- ── Strategy insight ────────────────────────────────────────────── -->
+
+    <div class="grid gap-6 px-4 lg:grid-cols-2">
+      <!-- LEFT: Distribución -->
+      <BudgetDistribution />
+
+      <!-- RIGHT: Desglose de Ahorros -->
+      <SectionCard title="Desglose de Ahorros">
+        <template #action>
+          <Icon name="bolt" class="text-yellow-400" size="sm" />
+        </template>
+
+        <Card class-name="flex flex-col items-center gap-2 w-full h-full">
+          <div class="m-auto flex flex-col items-center">
+            <IconBadge icon="savings" container-class="coming-soon-card__icon" />
+            <Heading level="h3" size="lg" weight="semibold">Metas de Ahorro</Heading>
+            <Text color="muted" size="sm" class="coming-soon-card__description">
+              Aun no haz creado tus metas de Ahorro
+            </Text>
+            <div class="pt-4">
+              <Button
+                variant="secondary"
+                @click="router.push(`/dashboard/budget/${budgetId}/savings`)"
+              >
+                Crear Metas de Ahorro
+              </Button>
             </div>
           </div>
         </Card>
-      </div>
-
-      <!-- ── Summary metric cards ─────────────────────────────────────────── -->
-      <div class="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard v-for="card in metricCards" :key="card.id" v-bind="card" />
-      </div>
-
-      <!-- ── Strategy insight ────────────────────────────────────────────── -->
-
-      <div class="grid gap-6 px-4 lg:grid-cols-2">
-        <!-- LEFT: Distribución -->
-        <BudgetDistribution />
-
-        <!-- RIGHT: Desglose de Ahorros -->
-        <SectionCard title="Desglose de Ahorros">
-          <template #action>
-            <Icon name="bolt" class="text-yellow-400" size="sm" />
-          </template>
-
-          <Card class-name="flex flex-col items-center gap-2 w-full h-full">
-            <div class="m-auto flex flex-col items-center">
-              <IconChip icon="savings" container-class="coming-soon-card__icon" />
-              <Heading level="h3" size="lg" weight="semibold">Metas de Ahorro</Heading>
-              <Text color="muted" size="sm" class="coming-soon-card__description">
-                Aun no haz creado tus metas de Ahorro
+        <!-- Sub-segment rows — replace with v-for when API ready -->
+        <div class="hidden flex-1 divide-y divide-slate-100 px-5 dark:divide-slate-700">
+          <div class="space-y-2 py-4">
+            <div class="flex items-center justify-between">
+              <Text size="sm" weight="medium" class="text-teal-600 dark:text-teal-400">
+                Sub-segmento 1
+                <Text size="xs" color="muted" class="inline">(–%)</Text>
               </Text>
-              <div class="pt-4">
-                <Button
-                  variant="secondary"
-                  @click="router.push(`/dashboard/budget/${budgetId}/savings`)"
-                >
-                  Crear Metas de Ahorro
-                </Button>
-              </div>
+              <Text size="sm" weight="semibold">–</Text>
             </div>
-          </Card>
-          <!-- Sub-segment rows — replace with v-for when API ready -->
-          <div class="hidden flex-1 divide-y divide-slate-100 px-5 dark:divide-slate-700">
-            <div class="space-y-2 py-4">
-              <div class="flex items-center justify-between">
-                <Text size="sm" weight="medium" class="text-teal-600 dark:text-teal-400">
-                  Sub-segmento 1
-                  <Text size="xs" color="muted" class="inline">(–%)</Text>
-                </Text>
-                <Text size="sm" weight="semibold">–</Text>
-              </div>
-              <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                <div class="h-full w-0 rounded-full bg-teal-500" />
-              </div>
-            </div>
-
-            <div class="space-y-2 py-4">
-              <div class="flex items-center justify-between">
-                <Text size="sm" weight="medium" class="text-indigo-600 dark:text-indigo-400">
-                  Sub-segmento 2
-                  <Text size="xs" color="muted" class="inline">(–%)</Text>
-                </Text>
-                <Text size="sm" weight="semibold">–</Text>
-              </div>
-              <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                <div class="h-full w-0 rounded-full bg-indigo-500" />
-              </div>
-            </div>
-
-            <div class="space-y-2 py-4">
-              <div class="flex items-center justify-between">
-                <Text size="sm" weight="medium" class="text-slate-500 dark:text-slate-400">
-                  Sub-segmento 3
-                  <Text size="xs" color="muted" class="inline">(–%)</Text>
-                </Text>
-                <Text size="sm" weight="semibold">–</Text>
-              </div>
-              <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                <div class="h-full w-0 rounded-full bg-slate-400" />
-              </div>
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+              <div class="h-full w-0 rounded-full bg-teal-500" />
             </div>
           </div>
-        </SectionCard>
-      </div>
-      <div class="px-4">
-        <ExpensePlannedSection :budget-id="budgetId" @open-form="openForm" />
-      </div>
 
-      <ModalWizard v-model:show="showForm">
-        <ExpensePlannedForm :budget-id="budgetId" @on-close="closeForm" />
-      </ModalWizard>
-    </template>
+          <div class="space-y-2 py-4">
+            <div class="flex items-center justify-between">
+              <Text size="sm" weight="medium" class="text-indigo-600 dark:text-indigo-400">
+                Sub-segmento 2
+                <Text size="xs" color="muted" class="inline">(–%)</Text>
+              </Text>
+              <Text size="sm" weight="semibold">–</Text>
+            </div>
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+              <div class="h-full w-0 rounded-full bg-indigo-500" />
+            </div>
+          </div>
+
+          <div class="space-y-2 py-4">
+            <div class="flex items-center justify-between">
+              <Text size="sm" weight="medium" class="text-slate-500 dark:text-slate-400">
+                Sub-segmento 3
+                <Text size="xs" color="muted" class="inline">(–%)</Text>
+              </Text>
+              <Text size="sm" weight="semibold">–</Text>
+            </div>
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+              <div class="h-full w-0 rounded-full bg-slate-400" />
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+    </div>
+    <div class="px-4">
+      <ExpensePlannedSection :budget-id="budgetId" @open-form="openForm" />
+    </div>
+
+    <ModalWizard v-model:show="showForm">
+      <ExpensePlannedForm :budget-id="budgetId" @on-close="closeForm" />
+    </ModalWizard>
+  </div>
+  <div v-else class="flex flex-col items-center gap-4 py-20 text-center">
+    <Icon name="search_off" class="text-slate-400 dark:text-slate-600" size="2xl" />
+    <Heading level="h3" color="muted">Presupuesto no encontrado</Heading>
+    <Text size="sm" color="muted">No se encontró un presupuesto con el ID indicado.</Text>
+    <Button
+      variant="ghost"
+      size="sm"
+      icon="arrow_back"
+      class="mt-2"
+      @click="router.push('/dashboard/budget')"
+    >
+      Volver a Presupuestos
+    </Button>
   </div>
 </template>
 

@@ -14,7 +14,7 @@ export const useBudget = () => {
     budgetStore.setError(null)
 
     try {
-      const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/${financeId}/current`)
+      const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/current/${financeId}`)
 
       if (!success || !result) return
 
@@ -48,9 +48,12 @@ export const useBudget = () => {
     budgetStore.setError(null)
 
     try {
-      const { success, result } = await $fetch<BudgetListResponse>(`/api/budgets/${financeId}`, {
-        query: year !== undefined ? { year } : {}
-      })
+      const { success, result } = await $fetch<BudgetListResponse>(
+        `/api/budgets/finances/${financeId}`,
+        {
+          query: year !== undefined ? { year } : {}
+        }
+      )
 
       if (!success || !result) return
 
@@ -87,7 +90,7 @@ export const useBudget = () => {
 
       if (!success || !result) return
 
-      budgetStore.setCurrentBudget({
+      budgetStore.setBudgetSelected({
         id: result.id,
         name: result.name,
         month: result.month,

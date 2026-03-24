@@ -100,7 +100,7 @@
         <div v-if="currentStep && totalSteps" class="step-counter">
           paso {{ currentStep }} de {{ totalSteps }}
         </div>
-        <div v-else class="font-semibold uppercase">{{ displayTitle }}</div>
+        <Heading v-else color="muted" class="font-semibold uppercase">{{ displayTitle }}</Heading>
         <p class="step-name">{{ currentStepName }}</p>
       </div>
 

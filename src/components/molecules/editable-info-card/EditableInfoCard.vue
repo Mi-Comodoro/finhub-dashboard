@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import { Card, Heading } from '@/components/atoms'
-  import { IconChip } from '@/components/molecules'
+  import { Card, Heading, IconBadge } from '@/components/atoms'
 
   import type { EditableInfoCardProps } from './types/editable-info-card.types'
 
@@ -19,7 +18,7 @@
   <Card variant="elevated" :class-name="`editable-info-card editable-info-card--${variant}`">
     <div :class="['editable-info-card__header', `editable-info-card__header--${variant}`]">
       <div class="editable-info-card__title-group">
-        <IconChip :icon="icon" :container-class="iconContainerClass" />
+        <IconBadge :icon="icon" :container-class="iconContainerClass" />
         <Heading level="h2" size="lg" weight="semibold" class-name="editable-info-card__title">
           {{ title }}
         </Heading>

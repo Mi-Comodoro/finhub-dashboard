@@ -28,7 +28,7 @@
           }"
         ></div>
         <div
-          class="absolute inset-0 z-0 bg-gradient-to-br from-primary-900/70 via-primary-800/60 to-primary-700/50"
+          class="absolute inset-0 z-0 bg-gradient-to-br from-primary-900/70 via-primary-800/60 to-primary-900/50"
         ></div>
 
         <!-- Contenido -->

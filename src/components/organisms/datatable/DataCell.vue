@@ -5,7 +5,7 @@
   import type { Column } from './types/index'
 
   interface Data {
-    [key: string]: string | number | boolean | Date | null | undefined
+    [key: string]: string | number | boolean | Date | null | object | undefined
   }
   const props = defineProps<{
     column: Column

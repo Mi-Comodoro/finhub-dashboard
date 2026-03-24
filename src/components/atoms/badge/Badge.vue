@@ -10,6 +10,7 @@
     variant: 'default',
     size: 'md',
     rounded: true,
+    bold: true,
     className: ''
   })
 </script>
@@ -24,6 +25,10 @@
         'badge--rounded': rounded,
         'badge--square': !rounded
       },
+      {
+        'badge--bold': bold,
+        'badge--default': !bold
+      },
       className
     ]"
   >
@@ -34,7 +39,7 @@
 <style lang="postcss" scoped>
   /* Base Badge Styles */
   .badge {
-    @apply inline-flex items-center justify-center font-medium transition-colors;
+    @apply inline-flex items-center justify-center transition-colors;
   }
 
   /* Rounded variants */
@@ -44,6 +49,13 @@
 
   .badge--square {
     @apply rounded-md;
+  }
+
+  .badge--bold {
+    @apply !font-bold;
+  }
+  .badge--default {
+    @apply font-medium;
   }
 
   /* Size variants */
@@ -69,7 +81,7 @@
   }
 
   .badge--primary {
-    @apply bg-primary-100 text-primary-800;
+    @apply bg-primary-200 text-primary-900;
   }
 
   .badge--secondary {
@@ -77,7 +89,7 @@
   }
 
   .badge--success {
-    @apply bg-green-100 text-green-800;
+    @apply bg-green-100 text-green-900;
   }
 
   .badge--warning {
@@ -102,7 +114,7 @@
   }
 
   .badge--outline.badge--primary {
-    @apply border-primary-300 text-primary-700;
+    @apply border-primary-300 text-primary-900;
   }
 
   .badge--outline.badge--secondary {

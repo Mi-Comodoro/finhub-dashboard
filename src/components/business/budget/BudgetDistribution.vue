@@ -14,7 +14,7 @@
   const expectedAmount = computed(() =>
     plannedIncomeStore.summary?.reduce((acc, b) => acc + Number(b.amount), 0)
   )
-  const plan = computed(() => budgetStore.budgetPlans.find(item => item))
+  const plan = computed(() => budgetStore.budgetSelected)
 
   // ─── Derived amounts ──────────────────────────────────────────────────────
   const needsAmount = computed(() =>
@@ -147,7 +147,7 @@
 
     <AlertBanner
       v-if="strategyInfo"
-      variant="purple"
+      variant="secondary"
       :icon="strategyInfo.icon"
       :title="strategyInfo.title"
       class="m-5"

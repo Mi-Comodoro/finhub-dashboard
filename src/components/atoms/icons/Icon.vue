@@ -19,55 +19,58 @@
   })
 
   const iconClasses = computed(() => {
-    const baseClass = 'material-symbols-outlined'
-    const variantClasses: Record<string, string> = {
+    // 1. Mapeo de variantes de Material Symbols
+    const variantMap: Record<string, string> = {
       outlined: 'material-symbols-outlined',
       filled: 'material-symbols-outlined material-symbols-filled',
       sharp: 'material-icons-sharp material-symbols-outlined',
       rounded: 'material-symbols-outlined material-symbols-rounded'
     }
 
-    const sizeClasses: Record<string, string> = {
+    // 2. Mapeo de tamaños (Corregido md:text-base)
+    const sizeMap: Record<string, string> = {
       xs: 'text-xs',
-      sm: 'text-sm sm:text-sm sm:px-1',
-      base: 'text-base md:text-md md:px-1',
+      sm: 'text-sm',
+      base: 'text-base', // Corregido: antes decía md:text-md
       lg: 'text-lg',
       xl: 'text-xl',
       '2xl': 'text-2xl',
-      '3xl': 'text-3xl',
-      '4xl': 'text-4xl',
-      '5xl': 'text-5xl',
-      '6xl': 'text-6xl'
+      '3xl': 'text-3xl'
     }
 
-    const variantClass = variantClasses[props.variant] || baseClass
+    const variantClass = variantMap[props.variant] || variantMap.outlined
+    const sizeClass = sizeMap[props.size] || props.size
 
-    // Si el tamaño es una cadena personalizada, la usamos directamente
-    const sizeClass = sizeClasses[props.size] || props.size
-
-    return [variantClass, sizeClass, props.className].filter(Boolean).join(' ')
+    // Unimos clases evitando duplicados y asegurando que className vaya al final
+    return `${variantClass} ${sizeClass} ${props.className}`.trim()
   })
 </script>
 
 <template>
-  <span :class="iconClasses" :aria-label="ariaLabel || name" role="img">
+  <span
+    :class="iconClasses"
+    :aria-label="ariaLabel || name"
+    class="flex select-none items-center justify-center"
+  >
     {{ name }}
   </span>
 </template>
+
 <style scoped>
-  /* Asegurar que los iconos mantengan sus proporciones */
-  .material-symbols-outlined,
-  .material-symbols-filled,
-  .material-symbols-rounded,
-  .material-icons-sharp {
+  .material-symbols-outlined {
     font-variation-settings:
       'FILL' 0,
       'wght' 400,
       'GRAD' 0,
       'opsz' 24;
     font-feature-settings: 'liga';
-    display: inline-block;
-    vertical-align: middle;
+    display: inline-flex; /* Cambiado a inline-flex para mejor centrado */
+    line-height: 1; /* Evita que el line-height del texto mueva el icono */
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
   }
 
   .material-symbols-filled {

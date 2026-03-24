@@ -130,7 +130,7 @@
    =======================*/
 
   .btn--primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 disabled:opacity-50;
+    @apply bg-primary-900 text-white hover:bg-primary-900 focus:ring-primary-500 disabled:opacity-50;
   }
 
   .btn--secondary {

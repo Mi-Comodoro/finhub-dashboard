@@ -1,4 +1,4 @@
-export type AlertVariant = 'info' | 'success' | 'warning' | 'danger' | 'neutral' | 'purple'
+export type AlertVariant = 'info' | 'success' | 'warning' | 'danger' | 'neutral' | 'secondary'
 
 export interface AlertBannerProps {
   variant?: AlertVariant

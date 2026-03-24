@@ -1,24 +1,22 @@
 <script setup lang="ts">
-  import { DashboardHeader, DashboardSidebar } from '@/components/organisms'
-  import { ModalNotification } from '@/components/organisms/modal-notification'
-  import { useModalNotification } from '@/components/organisms/modal-notification/useModalNotification'
-
-  const { modalState, hideModal } = useModalNotification()
+  import { Container } from '@/components/atoms'
+  import { DashboardHeader, DashboardSidebar, ModalNotification } from '@/components/organisms'
+  import { useModalStore } from '@/stores/modal.store'
+  const modalStore = useModalStore()
 </script>
 <template>
   <div
     class="flex h-screen w-full flex-col bg-slate-200/25 transition-colors duration-200 dark:bg-slate-950"
   >
     <ModalNotification
-      :show="modalState.show"
-      :type="modalState.type"
-      :options="modalState.options"
-      :on-close="hideModal"
+      :show="modalStore.state.show"
+      :type="modalStore.state.type"
+      :options="modalStore.state.options"
+      @update:show="modalStore.state.show = $event"
     />
     <ToastContainer />
 
     <!-- Header (top, full width) -->
-    <!--  <div class="relative z-20 flex-shrink-0"></div> -->
 
     <!-- Body: sidebar + main -->
     <div class="flex min-h-0 flex-1">
@@ -30,9 +28,9 @@
       <!-- Main content (right) -->
       <main class="flex-1 overflow-y-auto bg-slate-100/25 dark:bg-slate-950">
         <DashboardHeader />
-        <div class="mx-auto space-y-4 px-4 py-6">
+        <Container>
           <slot />
-        </div>
+        </Container>
       </main>
     </div>
   </div>

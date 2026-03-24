@@ -1,6 +1,6 @@
 import { usePlannedIncomeStore } from '@/stores/planned-income.store'
-
-type PlannedIncomeData = {
+import { percentOf } from '@/utils/currency'
+export type PlannedIncomeData = {
   id: string
   amount: number
   source: string
@@ -15,29 +15,30 @@ export const usePlannedIncomes = () => {
   const financesStore = useFinancesStore()
 
   const expectedIncome = ref(0)
-  const savingsAmount = computed(() =>
-    percentOf(
-      expectedIncome.value,
-      budgetStore.currentBudgetPlan?.limits.savings ?? 0,
-      financesStore.defaultCurrency
-    )
-  )
-  const needsAmount = computed(() =>
-    percentOf(
-      expectedIncome.value,
-      budgetStore.currentBudgetPlan?.limits.needs ?? 0,
-      financesStore.defaultCurrency
-    )
-  )
-  const wantsAmount = computed(() =>
-    percentOf(
-      expectedIncome.value,
-      budgetStore.currentBudgetPlan?.limits.wants ?? 0,
-      financesStore.defaultCurrency
-    )
-  )
+
   const { summary, isLoading, error } = storeToRefs(plannedIncomeStore)
   const fetchPlannedIncomeByBudgetId = async (budgedId: string) => {
+    const savingsAmount = computed(() =>
+      percentOf(
+        expectedIncome.value,
+        budgetStore.currentBudgetPlan?.limits.savings ?? 0,
+        financesStore.defaultCurrency
+      )
+    )
+    const needsAmount = computed(() =>
+      percentOf(
+        expectedIncome.value,
+        budgetStore.currentBudgetPlan?.limits.needs ?? 0,
+        financesStore.defaultCurrency
+      )
+    )
+    const wantsAmount = computed(() =>
+      percentOf(
+        expectedIncome.value,
+        budgetStore.currentBudgetPlan?.limits.wants ?? 0,
+        financesStore.defaultCurrency
+      )
+    )
     try {
       plannedIncomeStore.setLoading(true)
       plannedIncomeStore.setError(null)
@@ -66,9 +67,34 @@ export const usePlannedIncomes = () => {
       plannedIncomeStore.setLoading(false)
     }
   }
+  const fetchPlannedIncome = async () => {
+    try {
+      plannedIncomeStore.setLoading(true)
+      plannedIncomeStore.setError(null)
+      const { success, result } = await $fetch<{
+        success: boolean
+        result: PlannedIncomeData[]
+      }>(`/api/incomes/planned/`)
+
+      return { success, result }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error fetching incomes'
+      plannedIncomeStore.setError(errorMessage)
+      return { success: false, result: null }
+    } finally {
+      plannedIncomeStore.setLoading(false)
+    }
+  }
   const getExpectedAmount = (result: PlannedIncomeData[]) => {
     return result.reduce((acc, b) => acc + Number(b.amount), 0)
   }
 
-  return { summary, isLoading, error, fetchPlannedIncomeByBudgetId }
+  return {
+    summary,
+    isLoading,
+    error,
+    fetchPlannedIncomeByBudgetId,
+    getExpectedAmount,
+    fetchPlannedIncome
+  }
 }

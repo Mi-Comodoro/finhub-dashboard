@@ -3,7 +3,7 @@
 
   import { Icon } from '@/components/atoms'
   import { Breadcrumbs, HeaderActions, Input } from '@/components/molecules'
-  import { useBreadcrumbNavigation } from '@/composables/useBreadcrumbNavigation'
+  import { useBreadcrumbNavigation } from '@/components/molecules/breadcrumbs/useBreadcrumbNavigation'
 
   import type { DashboardHeaderProps } from './types/dashboard-header.types'
   const router = useRouter()

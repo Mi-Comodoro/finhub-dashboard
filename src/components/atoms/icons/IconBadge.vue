@@ -4,7 +4,8 @@
 
   const props = withDefaults(defineProps<IconBadgeProps>(), {
     size: 'md',
-    iconClass: 'bg-slate-100 text-slate-500'
+    variant: 'neutral',
+    icon: 'square'
   })
 
   const paddingClasses = {
@@ -19,6 +20,14 @@
     lg: 'lg'
   } as const
 
+  const variantClass = {
+    primary: 'bg-primary-50 text-primary-600',
+    secondary: 'bg-secondary-50 text-secondary-600',
+    success: 'bg-green-50 text-green-600',
+    warning: 'bg-yellow-50 text-yellow-600',
+    danger: 'bg-red-50 text-red-600',
+    neutral: 'bg-neutral-50 text-neutral-600'
+  } as const
   const iconResponsive = computed(() => {
     if (props.size === 'sm') return 'sm:text-sm sm:px-1'
     if (props.size === 'md') return 'md:text-md md:px-0'
@@ -27,7 +36,7 @@
 </script>
 
 <template>
-  <div :class="['shrink-0 rounded-lg', paddingClasses[size], iconClass]">
+  <div :class="['flex w-fit shrink-0 rounded-lg', paddingClasses[size], variantClass[variant]]">
     <Icon :name="icon" :size="iconSizeMap[size]" :class-name="iconResponsive" />
   </div>
 </template>

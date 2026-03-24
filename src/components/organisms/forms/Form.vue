@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, reactive } from 'vue'
+  import { onMounted, reactive, watch } from 'vue'
 
   import {
     DatePickerInput,
@@ -28,7 +28,15 @@
   }
   type commonField = string | number | boolean | Date | null
   interface FieldSchema {
-    type: 'text' | 'number' | 'select' | 'date' | 'switch' | 'textarea' | 'money'
+    type:
+      | 'text'
+      | 'number'
+      | 'select'
+      | 'date'
+      | 'switch'
+      | 'textarea'
+      | 'money'
+      | 'slider-percentage'
     label: string
     placeholder?: string
     required?: boolean
@@ -82,7 +90,7 @@
   onMounted(() => {
     Object.entries(props.schema.fields).forEach(([key, field]) => {
       switch (field.type) {
-        case 'number':
+        case 'slider-percentage':
           formData[key] = 0
           break
         case 'date':
@@ -138,6 +146,7 @@
             v-model="formData[fieldKey] as number"
             :label="schema.fields[fieldKey]!.label"
             :prefix="schema.fields[fieldKey]!.prefix"
+            :required="schema.fields[fieldKey]!.required"
           />
           <Select
             v-else-if="schema.fields[fieldKey]!.type === 'select'"
@@ -173,6 +182,11 @@
             :label="schema.fields[fieldKey]!.label"
             placeholder="Describe el gasto..."
             v-bind="schema.fields[fieldKey]"
+          />
+          <RangeSlider
+            v-else-if="schema.fields[fieldKey]!.type === 'slider-percentage'"
+            v-model="formData[fieldKey] as number"
+            label="Porcentaje de Distribucion"
           />
         </template>
       </div>

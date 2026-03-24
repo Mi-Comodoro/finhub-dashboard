@@ -17,7 +17,7 @@ export default defineEventHandler(async event => {
   }
 
   const { success, data } = await $fetch<BackendCurrentBudget>(
-    `${config.public.apiBase}/budgets/${financeId}/current`,
+    `${config.public.apiBase}/budgets/current/${financeId}`,
     {
       headers: { authorization: `Bearer ${token}` },
       onResponseError: ({ response }) => {
