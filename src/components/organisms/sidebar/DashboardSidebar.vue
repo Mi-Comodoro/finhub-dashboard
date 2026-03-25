@@ -11,8 +11,8 @@
   const { accountType } = useAuthStore()
   const menuItems: Omit<MenuItem, 'isActive'>[] = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
-    { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
+    { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
     { name: 'Transacciones', icon: 'receipt_long', path: '/dashboard/transactions' }
   ]
 
@@ -68,13 +68,13 @@
       <NavigationSection title="CONFIGURACIÓN" :items="settingsMenuItems" />
     </nav>
     <div class="dashboard-sidebar__version">
-      <Card as="div" class="my-2 p-2" class-name="!bg-primary-900 !rounded-md !border-primary-100">
+      <div class="my-2 rounded-md border border-warning-200 bg-warning-50 p-4">
         <CardInfo
           level="h3"
           title-size="sm"
           title="Estado"
           weight="bold"
-          color="white"
+          color="warning"
           :sub-title="
             accountType?.toUpperCase() === 'TRIAL'
               ? 'Periodo de Prueba'
@@ -85,7 +85,7 @@
           sub-title-color="warning"
           sub-title-size="xs"
         />
-      </Card>
+      </div>
       <AppVersion class="ml-1" size="xs" />
     </div>
   </aside>

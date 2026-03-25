@@ -1,29 +1,20 @@
 import type { FormSchema } from '~/components/organisms/forms/Form.vue'
 
-export const savingDistributionFieldsSchema = (): FormSchema => {
+export const savingDistributionFieldsSchema = (
+  options: { label: string; value: string; disabled: boolean }[]
+): FormSchema => {
   return {
     fields: {
-      name: {
-        type: 'text',
-        label: 'Nombre de Cuenta',
-        placeholder: 'Bancolombia',
+      goalId: {
+        type: 'select',
+        label: 'Meta',
+        options,
         required: true
       },
       percentage: {
         type: 'slider-percentage',
         label: 'Porcentaje',
         placeholder: '9%',
-        required: true
-      },
-
-      compoundingFrequency: {
-        type: 'select',
-        label: 'Entrega de intereses',
-        options: [
-          { label: 'Diaria', value: 'daily' },
-          { label: 'Mensual', value: 'monthly' },
-          { label: 'Anual', value: 'foannuallyod' }
-        ],
         required: true
       }
     },
@@ -32,7 +23,7 @@ export const savingDistributionFieldsSchema = (): FormSchema => {
       {
         type: 'grid',
         columns: 2,
-        fields: ['name']
+        fields: ['goalId']
       },
       {
         type: 'row',

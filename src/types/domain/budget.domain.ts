@@ -117,5 +117,5 @@ export interface BudgetState {
   budgetSelected: CurrentBudgetPlan | null
   summary: BudgetSummary | null
   isLoading: boolean
-  error: string | null
+  error: { title: string; message: string; status?: number } | null
 }

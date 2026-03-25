@@ -1,21 +1,74 @@
 <script setup lang="ts">
   import { AlertBanner } from '@/components/atoms'
   import { Form } from '@/components/organisms'
+  import { useBudgetStore } from '@/stores/budget.store'
+  import { useGoalsStore } from '@/stores/goals.store'
   import { usePlannedIncomeStore } from '@/stores/planned-income.store'
+  import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
+  import { subtractPercentage } from '@/utils/numbers'
 
   import { savingDistributionFieldsSchema } from './schema/saving-distribution.fields.schema'
   const plannedIncomeStore = usePlannedIncomeStore()
-  const savingsAmount = computed(() => plannedIncomeStore.buckets.savingsAmount)
+  const goalsStore = useGoalsStore()
+  const budgetStore = useBudgetStore()
 
-  const emit = defineEmits(['onClose'])
-  const formSchema = computed(() => savingDistributionFieldsSchema())
+  const savingsAllocationsStore = useSavingAllocationsStore()
+
+  const budgetId = ref()
+  onMounted(async () => {
+    await budgetStore.fetchCurrentBudget()
+    budgetId.value = budgetStore?.currentBudgetPlan?.id
+    await plannedIncomeStore.fetchPlannedIncomeByBudgetId(budgetId.value as string)
+    if (savingsAllocationsStore.savingAllocations.length < 1) {
+      await savingsAllocationsStore.fetchSavingAllocations()
+    }
+  })
+  const savingsAmount = computed(() => plannedIncomeStore.buckets.savingsAmount)
+  const goals = computed(() =>
+    goalsStore.goals.map(item => ({
+      label: item.name,
+      value: item.id!,
+      disabled: !item.isActive
+    }))
+  )
+
+  const emit = defineEmits(['onClose', 'onError', 'onSuccess'])
+  const formSchema = computed(() => savingDistributionFieldsSchema(goals.value))
   const percentage = ref<number>(0)
-  const form = data => {
-    if (data.percentage >= 0) {
-      percentage.value = data.percentage
+
+  const formKey = ref(0)
+  const formData = ref<{ percentage: number; goalId: string }>({ percentage: 0, goalId: '' })
+  const savingAllocationTotal = computed(() =>
+    savingsAllocationsStore.savingAllocations.reduce((acc, sa) => acc + Number(sa.percentage), 0)
+  )
+
+  const newAmount = computed(() =>
+    subtractPercentage(savingsAmount.value, savingAllocationTotal.value)
+  )
+  watch(formData, value => {
+    if (value?.percentage && value?.percentage > 0) {
+      percentage.value = value?.percentage
+    }
+  })
+  const handleSubmit = () => {
+    const buildData = {
+      ...formData.value,
+      budgetId: budgetId.value
+    } as { budgetId: string; goalId: string; percentage: number }
+
+    savingsAllocationsStore.addSavingAllocation(buildData)
+
+    formData.value = { percentage: 0, goalId: '' }
+    formKey.value++
+
+    if (!savingsAllocationsStore.error) {
+      emit('onSuccess')
+    } else {
+      emit('onError', goalsStore.error)
     }
   }
-  const savingDiscount = computed(() => savingsAmount.value * (1 - percentage.value / 100))
+
+  const savingDiscount = computed(() => subtractPercentage(newAmount.value, percentage.value))
 </script>
 
 <template>
@@ -35,11 +88,13 @@
     />
     <Text size="xl" weight="bold" class="">
       Monto disponible
-      <strong class="text-primary-900">{{ formatCurrency(savingDiscount, 'COP') }}</strong>
+      <strong class="text-primary-900">
+        {{ formatCurrency(savingDiscount, 'COP') }}
+      </strong>
     </Text>
 
-    <AlertBanner icon="info" title="">
-      <Text size="sm" color="primary" class="">
+    <AlertBanner icon="info" variant="warning">
+      <Text size="sm" color="warning">
         <strong>Págate a ti mismo primero</strong>
         es una estrategia de finanzas personales donde priorizas el ahorro e inversión antes de
         pagar facturas o gastos discrecionales. Al recibir tus ingresos, separa automáticamente
@@ -50,11 +105,11 @@
       </Text>
     </AlertBanner>
 
-    <Form :schema="formSchema" @update:model-value="form">
+    <Form :key="formKey" v-model="formData" :schema="formSchema">
       <template #actions>
         <div class="flex justify-end gap-2">
           <Button type="button" variant="ghost" @click.stop="emit('onClose')">Cancelar</Button>
-          <Button type="submit" variant="primary">Guardar</Button>
+          <Button type="submit" variant="primary" @click="handleSubmit">Guardar</Button>
         </div>
       </template>
     </Form>

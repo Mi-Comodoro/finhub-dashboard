@@ -5,14 +5,14 @@
 
   interface LocalIconProps extends IconProps {
     name: string
-    size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | string
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | string
     variant?: 'outlined' | 'filled' | 'sharp' | 'rounded'
     className?: string
     ariaLabel?: string
   }
 
   const props = withDefaults(defineProps<LocalIconProps>(), {
-    size: 'base',
+    size: 'md',
     variant: 'filled',
     className: '',
     ariaLabel: ''
@@ -31,7 +31,7 @@
     const sizeMap: Record<string, string> = {
       xs: 'text-xs',
       sm: 'text-sm',
-      base: 'text-base', // Corregido: antes decía md:text-md
+      md: '',
       lg: 'text-lg',
       xl: 'text-xl',
       '2xl': 'text-2xl',

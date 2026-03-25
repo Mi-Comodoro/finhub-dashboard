@@ -26,7 +26,7 @@
     @apply flex items-center gap-3 rounded px-3 py-2.5 outline-none transition-all duration-200;
   }
   .nav-item--active {
-    @apply rounded-r-none border-y-0 border-l-8 border-r-0 border-primary-900 bg-primary-50 font-bold text-primary-900;
+    @apply rounded-md border-y-0 border-l-8 border-r-0 border-primary-900 bg-primary-50 font-bold text-primary-900;
     @apply hover:bg-primary-900 hover:text-white;
     @apply dark:bg-primary-600 dark:text-white dark:hover:bg-primary-900;
   }

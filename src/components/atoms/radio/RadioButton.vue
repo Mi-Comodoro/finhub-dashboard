@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { RadioButtonProps } from '@/components/atoms'
+  import type { IconBadge, RadioButtonProps } from '@/components/atoms'
   import { Badge } from '@/components/atoms'
 
   const props = withDefaults(defineProps<RadioButtonProps>(), {
@@ -86,14 +86,10 @@
         />
 
         <!-- Icon -->
-        <div class="radio-card-icon">
-          <span v-if="option.icon" class="material-symbols-outlined">
-            {{ option.icon }}
-          </span>
-          <span v-else class="material-symbols-outlined">
-            {{ modelValue === option.value ? 'radio_button_checked' : 'radio_button_unchecked' }}
-          </span>
-        </div>
+        <IconBadge v-if="option.icon" :icon="option.icon" size="md" variant="primary" />
+        <span v-else class="material-symbols-outlined">
+          {{ modelValue === option.value ? 'radio_button_checked' : 'radio_button_unchecked' }}
+        </span>
 
         <!-- Content -->
         <div class="radio-card-content">

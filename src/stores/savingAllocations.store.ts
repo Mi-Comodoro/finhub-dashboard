@@ -1,52 +1,60 @@
 import type { FetchError } from 'ofetch'
 import { defineStore } from 'pinia'
 
-import type { GoalsData, GoalsResponseList } from '@/types/api/'
+import type { SavingAllocationData, SavingAllocationResponseList } from '@/types/api/'
 
-export const useGoalsStore = defineStore('goals', {
+import { useBudgetStore } from './budget.store'
+
+export const useSavingAllocationsStore = defineStore('allocations', {
   state: (): {
-    goals: GoalsData[]
+    savingAllocations: SavingAllocationData[]
     error: { title: string; message: string; status?: number } | null
     isLoading: boolean
+    newSavingAmount: number
   } => ({
-    goals: [],
+    savingAllocations: [],
     error: null,
-    isLoading: false
+    isLoading: false,
+    newSavingAmount: 0
   }),
+  getters: {
+    getAvailableAmount: state => state.newSavingAmount
+  },
   actions: {
-    async fetchGoals() {
+    async fetchSavingAllocations() {
       this.isLoading = true
       this.error = null
+      const budgetStore = useBudgetStore()
+
       try {
-        const { result } = await $fetch<GoalsResponseList>('/api/savings/goals/find', {
-          method: 'GET'
-        })
-        this.goals = result
+        const { result } = await $fetch<SavingAllocationResponseList>(
+          `/api/savings/allocations/${budgetStore.currentBudgetPlan?.id}`,
+          {
+            method: 'GET'
+          }
+        )
+        this.savingAllocations = result
       } catch (err) {
         this.handleError(err as FetchError)
       } finally {
         this.isLoading = false
       }
     },
-    async addSavingGoals(data: {
-      name: string
-      reason: string
-      targetAmount: number
-      targetDate: Date
-      isActive: boolean
-      accountId: string
-    }) {
+    async addSavingAllocation(data: { percentage: number; goalId: string; budgetId: string }) {
       this.error = null
       try {
-        const { success } = await $fetch('/api/savings/goals/create', {
+        const { success } = await $fetch('/api/savings/allocations/create', {
           method: 'POST',
           body: data
         })
-        await this.fetchGoals()
+        await this.fetchSavingAllocations()
         return success
       } catch (err) {
         this.handleError(err as FetchError)
       }
+    },
+    setNewSavingAmount(amount: number) {
+      this.newSavingAmount = amount
     },
     handleError(error: FetchError) {
       if (error.status === 401) {

@@ -34,7 +34,6 @@
     [`btn--${props.size}`]: true,
     'btn--icon-only': props.iconOnly,
     'btn--loading': props.loading,
-    'btn--disabled': props.disabled,
     'btn--full': props.fullWidth
   }))
 </script>
@@ -42,7 +41,7 @@
 <template>
   <button
     :type="type"
-    :disabled="disabled || loading"
+    :disabled="disabled"
     class="btn"
     :class="classes"
     :title="tooltipText"
@@ -84,7 +83,7 @@
    =======================*/
 
   .btn {
-    @apply inline-flex select-none items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900;
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-slate-900;
   }
 
   /* =========================
@@ -130,23 +129,23 @@
    =======================*/
 
   .btn--primary {
-    @apply bg-primary-900 text-white hover:bg-primary-900 focus:ring-primary-500 disabled:opacity-50;
+    @apply bg-primary-900 text-white hover:bg-primary-900 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:opacity-50;
   }
 
   .btn--secondary {
-    @apply bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500 disabled:opacity-50;
+    @apply bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:opacity-50;
   }
 
   .btn--outline {
-    @apply border border-slate-300 bg-transparent text-slate-900 hover:bg-slate-50 focus:ring-secondary-500;
+    @apply border border-slate-300 bg-transparent text-slate-900 hover:bg-slate-50 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500;
   }
 
   .btn--danger {
-    @apply bg-danger-500 text-white hover:bg-danger-700 focus:ring-danger-500;
+    @apply bg-danger-500 text-white hover:bg-danger-700 focus:ring-danger-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500;
   }
 
   .btn--ghost {
-    @apply border border-slate-200 bg-neutral-100 text-slate-900 hover:bg-slate-100;
+    @apply border border-slate-200 bg-neutral-100 text-slate-900 hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500;
   }
 
   /* =========================
@@ -155,10 +154,6 @@
 
   .btn--full {
     @apply w-full;
-  }
-
-  .btn--disabled {
-    @apply cursor-not-allowed opacity-50;
   }
 
   /* =========================

@@ -4,7 +4,8 @@
   import type { CardInfoProps } from './types/card-info.types'
 
   withDefaults(defineProps<CardInfoProps>(), {
-    verticalSpace: false
+    verticalSpace: false,
+    iconSize: 'md' as 'sm' | 'md' | 'lg'
   })
 </script>
 <template>

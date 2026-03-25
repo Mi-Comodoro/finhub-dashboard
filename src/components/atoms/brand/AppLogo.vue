@@ -18,7 +18,7 @@
   <div :class="['flex items-center gap-3', className]">
     <span
       :class="[
-        'flex items-center justify-center rounded-lg bg-teal-600 font-bold text-white',
+        'flex items-center justify-center rounded-lg bg-teal-900 font-bold text-white',
         logoSizes[size]
       ]"
     >

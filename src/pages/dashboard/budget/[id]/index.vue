@@ -13,14 +13,15 @@
   import {
     BudgetDistribution,
     ExpensePlannedForm,
-    ExpensePlannedSection
+    ExpensePlannedSection,
+    SavingsDistribution
   } from '@/components/business'
-  import { SectionCard } from '@/components/molecules'
   import { ModalWizard } from '@/components/organisms'
-  import { useBudget } from '@/composables/useBudget'
   import { usePlannedIncomes } from '@/composables/usePlannedIncome'
+  import { useAuthStore } from '@/stores/auth.store'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
+  import { useModalStore } from '@/stores/modal.store'
   import { usePlannedIncomeStore } from '@/stores/planned-income.store'
   import { useToast } from '~/components/organisms/toast/useToast'
   import DateUtils from '~/utils/date'
@@ -35,19 +36,35 @@
   const route = useRoute()
   const router = useRouter()
 
+  const authStore = useAuthStore()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
   const plannedIncomeStore = usePlannedIncomeStore()
-
-  const { fetchBudgetById } = useBudget()
+  const modalStore = useModalStore()
   const { fetchPlannedIncomeByBudgetId } = usePlannedIncomes()
 
   // ─── Load data if navigated directly (store empty) ────────────────────────
   const budgetId = route.params['id'] as string
-
+  const handleActions = () => {
+    if (budgetStore.error?.status === 401) {
+      authStore.clearAuth()
+      return navigateTo('/', { replace: true })
+    } else {
+      modalStore.hideModal()
+    }
+  }
   onMounted(async () => {
-    await fetchBudgetById(budgetId)
+    await budgetStore.fetchBudgetById(budgetId)
     await fetchPlannedIncomeByBudgetId(budgetId)
+
+    if (budgetStore.error) {
+      modalStore.showModal('error', {
+        title: budgetStore.error.title,
+        message: budgetStore.error.message,
+        actionLabel: 'Aceptar',
+        onAction: handleActions
+      })
+    }
   })
 
   const { show } = useToast()
@@ -202,6 +219,14 @@
       iconClass: 'bg-yellow-100 text-yellow-500 dark:bg-yellow-900/30 dark:text-yellow-400'
     }
   ])
+
+  const showSavingDistributionForm = ref(false)
+  const createSavingDistributionForm = () => {
+    showSavingDistributionForm.value = true
+  }
+  const closeSavingDistributionForm = () => {
+    showSavingDistributionForm.value = false
+  }
 </script>
 
 <template>
@@ -219,7 +244,7 @@
 
             <div class="hidden gap-2 xl:flex">
               <Badge :variant="planStatus === 'ACTIVE' ? 'success' : 'warning'" size="sm">
-                {{ planStatus === 'ACTIVE' ? 'Activo' : 'Planeado' }}
+                {{ planStatus === 'ACTIVE' ? 'Activo' : 'PLANIFICADO' }}
               </Badge>
 
               <Badge v-if="plan.isShared" variant="warning" size="xs">
@@ -255,7 +280,7 @@
     <div class="px-4">
       <Card class="flex p-4">
         <div class="flex flex-1 items-center gap-2">
-          <IconBadge icon="account_balance" variant="primary" />
+          <IconBadge icon="account_balance" variant="primary" size="md" />
           <div>
             <Label variant="section" text="Ingreso total esperado" color="muted" />
             <Text color="black" size="xl" weight="bold">
@@ -296,70 +321,7 @@
       <BudgetDistribution />
 
       <!-- RIGHT: Desglose de Ahorros -->
-      <SectionCard title="Desglose de Ahorros">
-        <template #action>
-          <Icon name="bolt" class="text-yellow-400" size="sm" />
-        </template>
-
-        <Card class-name="flex flex-col items-center gap-2 w-full h-full">
-          <div class="m-auto flex flex-col items-center">
-            <IconBadge icon="savings" container-class="coming-soon-card__icon" />
-            <Heading level="h3" size="lg" weight="semibold">Metas de Ahorro</Heading>
-            <Text color="muted" size="sm" class="coming-soon-card__description">
-              Aun no haz creado tus metas de Ahorro
-            </Text>
-            <div class="pt-4">
-              <Button
-                variant="secondary"
-                @click="router.push(`/dashboard/budget/${budgetId}/savings`)"
-              >
-                Crear Metas de Ahorro
-              </Button>
-            </div>
-          </div>
-        </Card>
-        <!-- Sub-segment rows — replace with v-for when API ready -->
-        <div class="hidden flex-1 divide-y divide-slate-100 px-5 dark:divide-slate-700">
-          <div class="space-y-2 py-4">
-            <div class="flex items-center justify-between">
-              <Text size="sm" weight="medium" class="text-teal-600 dark:text-teal-400">
-                Sub-segmento 1
-                <Text size="xs" color="muted" class="inline">(–%)</Text>
-              </Text>
-              <Text size="sm" weight="semibold">–</Text>
-            </div>
-            <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-              <div class="h-full w-0 rounded-full bg-teal-500" />
-            </div>
-          </div>
-
-          <div class="space-y-2 py-4">
-            <div class="flex items-center justify-between">
-              <Text size="sm" weight="medium" class="text-indigo-600 dark:text-indigo-400">
-                Sub-segmento 2
-                <Text size="xs" color="muted" class="inline">(–%)</Text>
-              </Text>
-              <Text size="sm" weight="semibold">–</Text>
-            </div>
-            <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-              <div class="h-full w-0 rounded-full bg-indigo-500" />
-            </div>
-          </div>
-
-          <div class="space-y-2 py-4">
-            <div class="flex items-center justify-between">
-              <Text size="sm" weight="medium" class="text-slate-500 dark:text-slate-400">
-                Sub-segmento 3
-                <Text size="xs" color="muted" class="inline">(–%)</Text>
-              </Text>
-              <Text size="sm" weight="semibold">–</Text>
-            </div>
-            <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-              <div class="h-full w-0 rounded-full bg-slate-400" />
-            </div>
-          </div>
-        </div>
-      </SectionCard>
+      <SavingsDistribution @open-form="createSavingDistributionForm" />
     </div>
     <div class="px-4">
       <ExpensePlannedSection :budget-id="budgetId" @open-form="openForm" />
@@ -367,6 +329,10 @@
 
     <ModalWizard v-model:show="showForm">
       <ExpensePlannedForm :budget-id="budgetId" @on-close="closeForm" />
+    </ModalWizard>
+
+    <ModalWizard v-model:show="showSavingDistributionForm">
+      <SavingDistributionForm @on-close="closeSavingDistributionForm" />
     </ModalWizard>
   </div>
   <div v-else class="flex flex-col items-center gap-4 py-20 text-center">

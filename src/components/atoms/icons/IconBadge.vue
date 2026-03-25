@@ -3,12 +3,13 @@
   import { Icon } from '@/components/atoms'
 
   const props = withDefaults(defineProps<IconBadgeProps>(), {
-    size: 'md',
+    size: 'md' as 'md' | 'sm' | 'lg',
     variant: 'neutral',
-    icon: 'square'
+    icon: 'square',
+    iconClass: ''
   })
 
-  const paddingClasses = {
+  const paddingClasses: { sm: string; md: string; lg: string } = {
     sm: 'p-1.5',
     md: 'p-2',
     lg: 'p-2.5'
@@ -21,7 +22,7 @@
   } as const
 
   const variantClass = {
-    primary: 'bg-primary-50 text-primary-600',
+    primary: 'bg-primary-900 text-primary-100',
     secondary: 'bg-secondary-50 text-secondary-600',
     success: 'bg-green-50 text-green-600',
     warning: 'bg-yellow-50 text-yellow-600',
@@ -36,7 +37,14 @@
 </script>
 
 <template>
-  <div :class="['flex w-fit shrink-0 rounded-lg', paddingClasses[size], variantClass[variant]]">
+  <div
+    :class="[
+      'flex w-fit shrink-0 rounded-lg',
+      paddingClasses[size],
+      variantClass[variant],
+      iconClass
+    ]"
+  >
     <Icon :name="icon" :size="iconSizeMap[size]" :class-name="iconResponsive" />
   </div>
 </template>

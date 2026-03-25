@@ -4,8 +4,10 @@
  * Follows strict architectural rules - no API types, only domain models
  */
 
+import type { FetchError } from 'ofetch'
 import { defineStore } from 'pinia'
 
+import type { BudgetListResponse, CurrentBudget } from '~/types/api'
 import type {
   Budget,
   BudgetPeriod,
@@ -14,6 +16,8 @@ import type {
   Category,
   CurrentBudgetPlan
 } from '~/types/domain'
+
+import { useFinancesStore } from './finances.store'
 
 export const useBudgetStore = defineStore('budget', {
   state: (): BudgetState => ({
@@ -84,21 +88,121 @@ export const useBudgetStore = defineStore('budget', {
         .filter(allocation => allocation.isOverBudget)
         .reduce((total, allocation) => total + Math.abs(allocation.remainingAmount), 0)
     }
-
-    /*  savingsPercentage: (state): number => {
-      if (!state.activeBudget || state.activeBudget.totalIncome === 0) return 0
-
-      const savingsAmount = state.activeBudget.totalIncome - state.activeBudget.totalActual
-      return (savingsAmount / state.activeBudget.totalIncome) * 100
-    } */
   },
 
   actions: {
+    async fetchCurrentBudget() {
+      const financesStore = useFinancesStore()
+      const financeId = financesStore.profile?.id
+      if (!financeId) return
+
+      this.setLoading(true)
+      this.setError(null)
+
+      try {
+        const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/current/${financeId}`)
+
+        if (!success || !result) return
+
+        this.setCurrentBudget({
+          id: result.id,
+          name: result.name,
+          month: result.month,
+          year: result.year,
+          isShared: result.isShared,
+          limits: result.limits,
+          financesId: result.financesId,
+          status: result.status,
+          ownerId: result.ownerId,
+          partnerId: result.partnerId,
+          strategy: result.strategy,
+          frequency: result.frequency
+        })
+      } catch (err) {
+        console.error('❌ Error fetching current budget:', err)
+        this.handleError(err as FetchError)
+      } finally {
+        this.setLoading(false)
+      }
+    },
+    async fetchBudgets(year?: number) {
+      const financesStore = useFinancesStore()
+      const financeId = financesStore.profile?.id
+      if (!financeId) return
+
+      this.setLoading(true)
+      this.setError(null)
+
+      try {
+        const { success, result } = await $fetch<BudgetListResponse>(
+          `/api/budgets/finances/${financeId}`,
+          {
+            query: year !== undefined ? { year } : {}
+          }
+        )
+
+        if (!success || !result) return
+
+        this.setBudgetPlans(
+          result.map(item => ({
+            id: item.id,
+            name: item.name,
+            month: item.month,
+            year: item.year,
+            isShared: item.isShared,
+            status: item.status,
+            limits: item.limits,
+            ownerId: item.ownerId,
+            financesId: item.financesId,
+            partnerId: item.partnerId,
+            strategy: item.strategy,
+            frequency: item.frequency
+          }))
+        )
+      } catch (err) {
+        console.error('❌ Error fetching budgets:', err)
+        this.handleError(err as FetchError)
+      } finally {
+        this.setLoading(false)
+      }
+    },
+
+    async fetchBudgetById(budgetId: string) {
+      this.setLoading(true)
+      this.setError(null)
+
+      try {
+        const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/plan/${budgetId}`)
+
+        if (!success || !result) return
+
+        this.setBudgetSelected({
+          id: result.id,
+          name: result.name,
+          month: result.month,
+          year: result.year,
+          isShared: result.isShared,
+          limits: result.limits,
+          financesId: result.financesId,
+          status: result.status,
+          ownerId: result.ownerId,
+          partnerId: result.partnerId,
+          strategy: result.strategy,
+          frequency: result.frequency
+        })
+      } catch (err) {
+        console.error('❌ Error fetching current budget:', err)
+        this.handleError(err as FetchError)
+      } finally {
+        this.setLoading(false)
+      }
+    },
+
     setLoading(loading: boolean) {
       this.isLoading = loading
     },
 
-    setError(error: string | null) {
+    setError(error: { title: string; message: string; status?: number } | null) {
       this.error = error
     },
 
@@ -208,6 +312,23 @@ export const useBudgetStore = defineStore('budget', {
       }
 
       this.updateBudget(updatedBudget)
+    },
+
+    handleError(error: FetchError) {
+      if (error.status === 401) {
+        this.error = {
+          status: error.status,
+          title: 'Tu sesión ha expirado.',
+          message:
+            'Por seguridad, tu sesión ha caducado debido a la inactividad. Por favor, inicia sesión nuevamente para continuar.'
+        }
+      } else {
+        this.error = {
+          title: '¡Ups! Algo no salió como esperábamos',
+          message:
+            ' Lo sentimos, no pudimos completar esta acción. Si el problema persiste, contacta con nuestro equipo de soporte.'
+        }
+      }
     }
   }
 })

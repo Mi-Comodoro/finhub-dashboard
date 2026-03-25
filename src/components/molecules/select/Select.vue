@@ -49,7 +49,8 @@
       :html-for="name"
       :required="required"
       variant="form"
-      color="muted"
+      color="black"
+      weight="bold"
       :class-name="variant === 'admin-inline' ? 'inline-label' : ''"
     >
       {{ label }}

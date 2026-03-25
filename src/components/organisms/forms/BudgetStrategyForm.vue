@@ -197,8 +197,18 @@ OPTIONS
 <template>
   <form class="strategy-form space-y-6" @submit.prevent>
     <div class="w-full flex-col items-center px-4 py-2">
-      <AlertBanner :title="ON_BOARDING_CONFIG.budgetStrategy.banner" variant="info" />
-      <Label variant="section" size="sm" class-name="form-field__label ">
+      <AlertBanner
+        :title="ON_BOARDING_CONFIG.budgetStrategy.banner"
+        variant="warning"
+        icon="info"
+      />
+      <Label
+        variant="section"
+        size="sm"
+        color="black"
+        weight="bold"
+        class-name="form-field__label "
+      >
         ¿Cómo quieres manejar tu presupuesto?
       </Label>
 

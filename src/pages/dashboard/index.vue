@@ -7,8 +7,6 @@
   import { OnboardingWizard } from '@/components/organisms'
   import { useModalNotification } from '@/components/organisms/modal-notification/useModalNotification'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
-  import { useBudget } from '@/composables/useBudget'
-  import { usePlannedIncomes } from '@/composables/usePlannedIncome'
   import { useAuthStore } from '@/stores/auth.store'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
@@ -53,16 +51,15 @@
     breadcrumb: 'Dashboard'
   })
 
-  const { fetchCurrentBudget } = useBudget()
-
-  const { fetchPlannedIncomeByBudgetId } = usePlannedIncomes()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
   const plannedIncomeStore = usePlannedIncomeStore()
 
   onMounted(async () => {
-    await fetchCurrentBudget()
-    await fetchPlannedIncomeByBudgetId(budgetStore.currentBudgetPlan?.id as string)
+    await budgetStore.fetchCurrentBudget()
+    await plannedIncomeStore.fetchPlannedIncomeByBudgetId(
+      budgetStore.currentBudgetPlan?.id as string
+    )
 
     // Mostrar wizard si el usuario necesita onboarding
     setTimeout(() => {
@@ -124,7 +121,7 @@
       }
     ]
   })
-  const currentDate = new Date()
+
   const router = useRouter()
 </script>
 
@@ -135,7 +132,10 @@
     <!-- Quick Actions -->
     <div class="flex items-center justify-between">
       <div class="md:pr-4 xl:pr-0">
-        <div class="mb-2 flex gap-2">
+        <div class="mb-2 flex items-center gap-2">
+          <Heading level="h1" size="2xl" weight="extrabold" class="mb-1">
+            Tu Plan Financiero
+          </Heading>
           <Badge
             bold
             :rounded="false"
@@ -146,18 +146,8 @@
               budgetStore.currentBudgetPlan?.status === 'PLANNED' ? 'Planificado' : 'En Ejecución'
             }}
           </Badge>
-          <Text size="sm" color="muted">
-            {{
-              Intl.DateTimeFormat('es-CO', {
-                month: 'long',
-                year: 'numeric'
-              })
-                .format(currentDate)
-                .toUpperCase()
-            }}
-          </Text>
         </div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="mb-1">Tu Plan Financiero</Heading>
+
         <Text size="sm" color="muted">
           Conoce el estado de tus finanzas y toma decisiones inteligentes con datos en tiempo real.
         </Text>

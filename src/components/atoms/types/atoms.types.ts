@@ -23,16 +23,24 @@ interface BaseUIProps {
 // 2. Iconos
 export interface IconProps extends BaseUIProps {
   name: string
-  size?: ComponentSize | '2xl' | '3xl' | '4xl' | '5xl' | '6xl'
+  size?:
+    | Extract<Omit<ComponentSize, 'xs'>, 'sm' | 'md' | 'lg'>
+    | '2xl'
+    | '3xl'
+    | '4xl'
+    | '5xl'
+    | '6xl'
+    | string
   variant?: 'outlined' | 'filled' | 'sharp' | 'rounded'
   ariaLabel?: string
 }
 
 export interface IconBadgeProps extends Pick<IconProps, 'className'> {
   icon: string
-  size?: Extract<ComponentSize, 'sm' | 'md' | 'lg'>
+  size?: 'sm' | 'md' | 'lg'
   iconClass?: string
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'neutral'
+  className?: string
 }
 
 // 3. Botones y Etiquetas

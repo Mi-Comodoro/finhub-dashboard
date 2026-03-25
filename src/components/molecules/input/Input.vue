@@ -147,7 +147,8 @@
           :html-for="inputId"
           variant="form"
           size="sm"
-          color="muted"
+          color="black"
+          weight="bold"
           :required="required"
           :class="[variant === 'row' ? 'inline-label' : '', sizeClasses.label]"
         >

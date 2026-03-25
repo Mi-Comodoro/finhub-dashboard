@@ -10,13 +10,14 @@
 
   const onChange = (event: Event) => {
     const target = event.target as HTMLInputElement
+
     emit('update:modelValue', Number(target.value))
   }
   // Estado reactivo para el valor del slider
 </script>
 
 <template>
-  <div class="mx-auto w-full p-8 shadow-sm">
+  <div class="mx-auto w-full">
     <!-- Cabecera con Título y Valor -->
     <div class="mb-6 flex items-center justify-between">
       <h2 class="text-xs font-bold uppercase tracking-wider text-gray-500">

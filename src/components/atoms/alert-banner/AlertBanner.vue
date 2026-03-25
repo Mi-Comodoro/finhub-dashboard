@@ -25,9 +25,10 @@
 
   const VARIANT_CLASSES: Record<AlertVariant, VariantClasses> = {
     info: {
-      wrapper: 'bg-primary-50 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800/40',
-      icon: 'text-primary-500 dark:text-primary-400',
-      title: 'text-primary-800 dark:text-primary-200'
+      wrapper:
+        'bg-primary-100 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800/40',
+      icon: 'text-primary-900 dark:text-primary-400',
+      title: 'text-primary-900 dark:text-primary-200'
     },
     success: {
       wrapper: 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800/40',
@@ -36,8 +37,8 @@
     },
     warning: {
       wrapper: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800/40',
-      icon: 'text-yellow-500 dark:text-yellow-400',
-      title: 'text-yellow-800 dark:text-yellow-200'
+      icon: 'text-yellow-900  dark:text-yellow-400',
+      title: 'text-yellow-900 dark:text-yellow-200'
     },
     danger: {
       wrapper: 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800/40',
@@ -98,7 +99,7 @@
     @apply box-content min-w-0 flex-1;
   }
   .alert-banner__title {
-    @apply mb-0.5 text-sm font-normal;
+    @apply mb-0.5 text-sm font-bold;
   }
   .alert-banner__body {
     @apply text-sm text-slate-600 dark:text-slate-400;

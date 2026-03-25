@@ -57,7 +57,7 @@
 <template>
   <div class="form-wrapper">
     <form class="form-income">
-      <AlertBanner :title="incomes.banner" variant="info" />
+      <AlertBanner :title="incomes.banner" variant="warning" icon="info" />
 
       <div v-if="budgetFrequency === 'monthly'" class="form-income__monthly">
         <div class="form-income__grid">

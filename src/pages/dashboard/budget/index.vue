@@ -4,11 +4,12 @@
   import { Button, Heading, MetricCard, Text } from '@/components/atoms'
   import { ProgressBar, Select } from '@/components/molecules'
   import { type Column, DataTable } from '@/components/organisms'
-  import { useBudget } from '@/composables/useBudget'
   import { getBudgetStatus, monthShort } from '@/composables/useBudgetPeriod'
   import { type PlannedIncomeData, usePlannedIncomes } from '@/composables/usePlannedIncome'
+  import { useAuthStore } from '@/stores/auth.store'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
+  import { useModalStore } from '@/stores/modal.store'
 
   import type { CurrentBudgetPlan } from '../../../types/domain/budget.domain'
 
@@ -19,11 +20,11 @@
     breadcrumb: 'Presupuesto'
   })
 
-  const { fetchBudgets } = useBudget()
   const { getExpectedAmount, fetchPlannedIncome } = usePlannedIncomes()
+  const authStore = useAuthStore()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
-
+  const modalStore = useModalStore()
   const router = useRouter()
 
   // ─── Year filter ─────────────────────────────────────────────────────────────
@@ -32,13 +33,30 @@
   const availableYears = Array.from({ length: 5 }, (_, i) => currentYear - 3 + i)
   const selectedYear = ref<number>(currentYear)
   const allPlannedIncomes = ref<PlannedIncomeData[]>([])
+
+  const handleActions = () => {
+    if (budgetStore.error?.status === 401) {
+      authStore.clearAuth()
+      return navigateTo('/', { replace: true })
+    } else {
+      modalStore.hideModal()
+    }
+  }
   onMounted(async () => {
-    await fetchBudgets(selectedYear.value)
+    await budgetStore.fetchBudgets(selectedYear.value)
+    if (budgetStore.error) {
+      modalStore.showModal('error', {
+        title: budgetStore.error.title,
+        message: budgetStore.error.message,
+        actionLabel: 'Aceptar',
+        onAction: handleActions
+      })
+    }
     const { result } = await fetchPlannedIncome()
     allPlannedIncomes.value = result!
   })
   defineEmits(['view', 'duplicate', 'delete'] as const)
-  watch(selectedYear, year => fetchBudgets(year))
+  watch(selectedYear, year => budgetStore.fetchBudgets(year))
 
   const currency = computed(() => financesStore.defaultCurrency)
 
@@ -221,7 +239,7 @@
       v-else-if="budgetStore.error"
       class="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20"
     >
-      <Text size="sm" class="text-red-700 dark:text-red-300">{{ budgetStore.error }}</Text>
+      <Text size="sm" class="text-red-700 dark:text-red-300">{{ budgetStore.error.message }}</Text>
     </div>
 
     <!-- ── Empty ──────────────────────────────────────────────────────────── -->

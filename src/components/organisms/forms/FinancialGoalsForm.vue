@@ -150,7 +150,9 @@
     <div class="space-y-4">
       <!-- Currency -->
       <div class="form-field">
-        <Label variant="form" size="sm">Selecciona tu moneda</Label>
+        <Label variant="form" size="sm" weight="bold" color="black" require>
+          Selecciona tu moneda
+        </Label>
         <Select
           id="currency"
           v-model="formModel.currency"
@@ -174,7 +176,7 @@
 
       <!-- Budget Frequency -->
       <div v-if="!formModel.budgetFrequency" class="form-field">
-        <Label variant="form" size="sm">
+        <Label variant="form" size="sm" color="black" require>
           ¿Con qué frecuencia quieres configurar tu presupuesto?
         </Label>
 
@@ -190,7 +192,15 @@
       <!-- Fechas de pago -->
       <div v-if="showPaymentDates" class="form-field">
         <div v-if="formModel.budgetFrequency === 'monthly'" class="min-w-full">
-          <Label variant="form" size="sm" class-name="form-field__label">Fecha de pago</Label>
+          <Label
+            variant="form"
+            size="sm"
+            color="black"
+            weight="bold"
+            class-name="form-field__label"
+          >
+            Fecha de pago
+          </Label>
           <DatePickerInput
             v-model="formModel.monthPayment"
             mode="single"

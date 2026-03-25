@@ -44,7 +44,7 @@
   <div class="flex h-full w-full flex-col gap-6 rounded-md bg-white p-4">
     <CardInfo
       title="Nueva Meta"
-      title-size="2xl"
+      title-size="xl"
       weight="extrabold"
       level="h1"
       color="black"

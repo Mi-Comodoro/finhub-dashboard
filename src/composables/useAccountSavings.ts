@@ -43,17 +43,17 @@ export const useAccountSavings = () => {
     if (annualRate >= 10.0) {
       return {
         level: 'Alta',
-        description: 'Rendimiento superior (Neobancos/Cuentas de alto rendimiento)'
+        description: 'Rendimiento superior'
       }
     } else if (annualRate >= 5.0) {
       return {
         level: 'Media',
-        description: 'Rendimiento competitivo (Supera la inflación)'
+        description: 'Rendimiento competitivo'
       }
     } else if (annualRate >= 1.0) {
       return {
         level: 'Baja',
-        description: 'Rendimiento estándar (Banca tradicional)'
+        description: 'Rendimiento estándar'
       }
     } else {
       return {

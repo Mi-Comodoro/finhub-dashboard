@@ -110,7 +110,7 @@
 </script>
 <template>
   <form class="basic-information-form space-y-6" @submit.prevent>
-    <AlertBanner type="info" :title="ON_BOARDING_CONFIG.personalInfo.banner" />
+    <AlertBanner icon="info" variant="warning" :title="ON_BOARDING_CONFIG.personalInfo.banner" />
 
     <div class="flex-col gap-2">
       <!-- Display Name (read-only, pre-filled from store) -->
