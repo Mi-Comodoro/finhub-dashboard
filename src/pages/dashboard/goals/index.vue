@@ -1,18 +1,16 @@
 <script setup lang="ts">
   import { useAccountSavings } from '@/composables/useAccountSavings'
-  import { useSavingGoals } from '@/composables/useSavingGoals'
   import { useAccountStore } from '@/stores/account.store'
   import { useAuthStore } from '@/stores/auth.store'
-  import { useFinancesStore } from '@/stores/finances.store'
   import { useGoalsStore } from '@/stores/goals.store'
   import { useModalStore } from '@/stores/modal.store'
   import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
-  import { AlertBanner, Button, Text } from '~/components/atoms'
+  import { Button, Text } from '~/components/atoms'
   import { AccountSavingForm, GoalsForm } from '~/components/business'
+  import { CardInfo } from '~/components/molecules'
   import { ModalWizard } from '~/components/organisms'
   import { useToast } from '~/components/organisms/toast/useToast'
   import type { CompoundingFrequency } from '~/types/api'
-  import DateUtils from '~/utils/date'
 
   const accountStore = useAccountStore()
   const goalsStore = useGoalsStore()
@@ -27,7 +25,6 @@
       modalStore.hideModal()
     }
   }
-  const { sumAmountTarget, lastUpdate } = useSavingGoals()
 
   const { frequencyMap, getRateCategory } = useAccountSavings()
   const goals = computed(() => goalsStore.goals)
@@ -62,20 +59,7 @@
     showAccountSavingsForm.value = true
   }
   const { show } = useToast()
-  const closeAccountSavings = (success: boolean | unknown) => {
-    if (success) {
-      show({
-        title: 'Cuenta creada',
-        description: 'Se registró correctamente',
-        type: 'success'
-      })
-    } else {
-      show({
-        title: 'Error al guardar',
-        description: 'Error al crear cuentas',
-        type: 'error'
-      })
-    }
+  const closeAccountSavings = () => {
     showAccountSavingsForm.value = false
   }
 
@@ -117,8 +101,6 @@
       })
     }
   }
-  const financesStore = useFinancesStore()
-  const currency = computed(() => financesStore.defaultCurrency)
 
   const reasonTextMap: Record<string, string> = {
     emergency: 'text-red-600',
@@ -165,8 +147,15 @@
   }
   const isAccountExits = computed(() => accountStore.accounts.length >= 1)
   const isGoalsExists = computed(() => goals.value.length >= 1)
-  const showBanner = computed(() => goals.value.length >= 2)
 
+  const goalsSetupCompleted = computed(() => goals.value.length >= 4 && goals.value.length < 5)
+  const savingsAllocationSetupComplete = computed(
+    () =>
+      savingsAllocationsStore.savingAllocations.reduce(
+        (acc, sa) => acc + Number(sa.percentage),
+        0
+      ) === 100
+  )
   const showSavingDistributionForm = ref(false)
   const createSavingDistributionForm = () => {
     showSavingDistributionForm.value = true
@@ -174,6 +163,32 @@
   const closeSavingDistributionForm = () => {
     showSavingDistributionForm.value = false
   }
+
+  const showGoalsForm = ref(false)
+  const createGoalsForm = () => {
+    showGoalsForm.value = true
+  }
+  const closeGoalsForm = () => {
+    showGoalsForm.value = false
+  }
+  const goalCards = computed(() =>
+    goals.value.slice(0, 6).map(goal => ({
+      title: goal.name,
+      subtitle: goal.accountName,
+      iconName: goal.reason,
+      iconTextClass: reasonTextMap[goal.reason],
+      iconBgClass: reasonBgMap[goal.reason],
+      amount: null,
+      targetAmount: goal.targetAmount,
+      targetDate: String(goal.targetDate),
+      status: goal.isActive ? 'active' : 'paused',
+      showProgressbar: true,
+      progressPercentage: 0 // luego dinámico
+    }))
+  )
+  const savingAllocationTotal = computed(() =>
+    savingsAllocationsStore.savingAllocations.reduce((acc, sa) => acc + Number(sa.percentage), 0)
+  )
 </script>
 
 <template>
@@ -184,85 +199,205 @@
           Define tus Propositos
         </Heading>
         <Text size="sm" color="muted">
-          Organiza tu futuro financiero creando propósitos específicos. Elige un nombre, asocia una
-          cuenta y define cuánto quieres alcanzar.
+          Organiza tu futuro financiero creando propósitos específicos.
         </Text>
       </div>
       <div>
-        <Button size="sm" icon="segment" disabled variant="primary">Ver distribucion</Button>
+        <Button
+          size="sm"
+          icon="add_task"
+          variant="primary"
+          :disabled="!isAccountExits"
+          :onclick="createGoalsForm"
+        >
+          Nueva Meta
+        </Button>
       </div>
     </div>
-    <div class="space-y-2 py-2">
-      <AllocationSummary />
+    <AllocationSummary />
 
-      <div v-if="showBanner" class="w-full">
-        <Card class="flex w-full items-start gap-2">
-          <IconBadge icon="celebration" variant="primary" size="md" />
-          <div class="w-full leading-relaxed">
-            <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
-              ¡Felicidades!
-            </Heading>
-            <Text size="xs" color="muted" class="w-full">
-              Haz haz creado tus primeras {{ goals.length }} metas por un total de:
-              <strong class="text-primary-800">
-                {{ formatCurrency(sumAmountTarget(goals.length), currency) }}
-              </strong>
-              puedes seguir, creando metas o pasar al siguiente paso.
-            </Text>
+    <div>
+      <Card class="flex w-full items-start gap-2">
+        <IconBadge icon="lightbulb_2" variant="primary" size="md" />
+        <div class="w-full leading-relaxed">
+          <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
+            Divide y Venceras
+          </Heading>
+          <Text size="xs" color="muted" class="w-full">
+            Si tienes metas a largo plazo, dividelas en objetivos, cada objetivo te acerca mas a la
+            meta.
+          </Text>
+        </div>
+      </Card>
+    </div>
+    <div class="grid w-full grid-cols-12 gap-4">
+      <div v-if="isGoalsExists" class="col-span-8 flex flex-col gap-4">
+        <div class="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+          <FinancialProgressCard v-for="(card, index) in goalCards" :key="index" v-bind="card" />
+        </div>
+        <Card
+          v-if="goals.length > 6"
+          class="relative flex h-40 w-full flex-col space-y-2 overflow-hidden rounded-md !bg-primary-900"
+          class-name="!p-0"
+        >
+          <div class="relative z-10 p-4">
+            <div class="flex flex-col justify-between">
+              <div class="flex items-center gap-1">
+                <Heading level="h3" title-size="sm" weight="extrabold" color="white">¡Wow!</Heading>
+              </div>
+              <div class="flex w-full flex-col">
+                <Text size="sm" class="leading-relaxed" color="white">
+                  ¡Increíble progreso! Estás visualizando tu futuro con más de 6 metas activas.
+                </Text>
+                <Button variant="ghost" size="sm" class="ml-auto">Ver mas</Button>
+              </div>
+            </div>
           </div>
-          <div class="flex w-full justify-end self-center">
-            <Button
-              size="sm"
-              variant="primary"
-              icon="segment"
-              @click="createSavingDistributionForm"
-            >
-              Distribuir mi Ahorro
-            </Button>
+          <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-20">
+            <span class="material-symbols-outlined -rotate-90 !text-[150px] text-white">
+              celebration
+            </span>
           </div>
         </Card>
       </div>
-    </div>
-    <div class="grid w-full grid-cols-2 items-start gap-4">
-      <div class="grid h-96 min-h-fit grid-cols-2 gap-4">
-        <GoalsForm
-          v-if="accountStore.accounts.length > 1"
-          @on-success="onSuccess"
-          @on-error="onError"
-        />
-        <div class="rounded-md bg-white px-2 py-3">
-          <div class="relative z-10 flex flex-col gap-2 p-2">
-            <div class="flex items-center gap-2 py-2">
-              <Icon name="lightbulb" size="base" class-name="text-yellow-500" />
-              <Heading
-                level="h1"
-                size="sm"
-                weight="extrabold"
-                class="uppercase leading-tight text-primary-700"
-              >
-                Recomendaciones
-              </Heading>
-            </div>
 
-            <AlertBanner
-              title="Cuentas de Alta Rentabilidad > 10% EA"
-              variant="warning"
-              icon="info"
-            >
-              <Text size="xs" class="flex items-start gap-1 text-yellow-900">
-                <strong>
-                  Uso:
-                  <span class="font-normal">
-                    Fondo de emergencia, ahorro a la vista y metas a corto plazo.
-                  </span>
+      <div class="col-span-4 flex flex-col gap-4">
+        <!--  -->
+        <div class="w-full">
+          <Heading level="h1" size="sm" weight="extrabold" class="p-1 !text-primary-800">
+            Configuración Paso a Paso
+          </Heading>
+          <Card v-if="!isAccountExits" class="flex w-full items-start gap-2">
+            <IconBadge icon="account_balance" variant="primary" size="md" />
+            <div class="w-full leading-relaxed">
+              <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
+                Configuracion de Cuentas
+              </Heading>
+              <Text size="xs" color="muted" class="w-full">
+                Configura tu primera cuenta, para desbloquear el siguiente paso. ¡No te preocupes no
+                te pediremos datos de tu cuenta!
+              </Text>
+            </div>
+          </Card>
+
+          <Card v-if="isAccountExits && !goalsSetupCompleted" class="flex w-full items-start gap-2">
+            <IconBadge icon="flag" variant="primary" size="md" />
+            <div class="w-full leading-relaxed">
+              <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
+                Define para qué estás ahorrando
+              </Heading>
+              <Text size="xs" color="muted" class="w-full">
+                Crea metas específicas para darle propósito a tu dinero. Entre más claras sean, más
+                fácil será mantener el hábito.
+                <strong class="text-primary-800">
+                  ¡Configura al menos 4 para avanzar al siguiente paso!
                 </strong>
               </Text>
-            </AlertBanner>
-          </div>
+            </div>
+          </Card>
+
+          <Card
+            v-if="goalsSetupCompleted && !savingsAllocationSetupComplete"
+            class="flex w-full items-start gap-2"
+          >
+            <IconBadge icon="celebration" variant="primary" size="md" />
+            <div class="w-full leading-relaxed">
+              <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
+                Distribuye tu ahorro mensual
+              </Heading>
+              <Text size="xs" color="muted" class="w-full">
+                ¡Decide cómo repartir tu ahorro entre tus metas. Este cálculo se basa en el 20% de
+                tu ingreso estimado!
+              </Text>
+            </div>
+            <div class="flex w-full justify-end self-center">
+              <Button
+                size="sm"
+                variant="primary"
+                icon="segment"
+                @click="createSavingDistributionForm"
+              >
+                Distribuir mi Ahorro
+              </Button>
+            </div>
+          </Card>
+
+          <Card v-if="savingsAllocationSetupComplete" class="flex w-full items-start gap-2">
+            <IconBadge icon="celebration" variant="primary" size="md" />
+            <div class="w-full leading-relaxed">
+              <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
+                Tu estrategia de ahorro está definida
+              </Heading>
+              <Text size="xs" color="muted" class="w-full">
+                Así se distribuirá tu ahorro cada mes según tu ingreso estimado. Podrás ajustarlo en
+                cualquier momento.
+              </Text>
+            </div>
+          </Card>
+        </div>
+        <!--  -->
+        <div>
+          <FinancialProgressCard
+            :title="'Setup'"
+            title-color="white"
+            :subtitle="'Configura tu estrategia'"
+            sub-title-color="white"
+            icon-name="settings_slow_motion"
+            icon-text-class="text-primary-600"
+            currency-text-class="text-primary-600"
+            show-alert
+            class="!bg-primary-900"
+          >
+            <template #body>
+              <SetupProgressCard
+                :accounts-count="accountStore.accounts.length"
+                :goals-count="goals.length"
+                :distribution-percentage="savingAllocationTotal"
+                @completed="() => console.log('Ir a presupuesto')"
+              >
+                <template #action>
+                  <div class="flex flex-col justify-between">
+                    <Text color="white" size="xs">
+                      ¡Todo listo para comenzar! Ya definiste tu ahorro y organización inicial.
+                      Ahora es momento de planificar tus gastos.
+                      <span
+                        class="mt-1 flex justify-center gap-2 rounded-md border border-neutral-300 bg-neutral-100 p-1 text-black"
+                      >
+                        <Icon name="rocket_launch" size="xs" />
+                        <p>Activar Presupuesto</p>
+                      </span>
+                    </Text>
+                  </div>
+                </template>
+              </SetupProgressCard>
+            </template>
+          </FinancialProgressCard>
+        </div>
+        <!--  -->
+        <div class="rounded-md bg-white px-2 py-3">
           <div
             v-if="isAccountExits"
-            class="flex max-h-[335px] min-h-[335px] flex-col justify-between p-2"
+            class="flex max-h-[335px] min-h-[335px] flex-col space-y-4 p-2"
           >
+            <div class="flex justify-between">
+              <CardInfo
+                title="Mis Cuentas"
+                level="h2"
+                weight="extrabold"
+                sub-title="Gestiona tus cuentas"
+                sub-title-size="sm"
+                sub-title-color="muted"
+              />
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                icon="add"
+                icon-only
+                @click="createAccountSavings"
+              />
+            </div>
             <div class="flex max-h-80 flex-col space-y-2 overflow-y-auto rounded-md">
               <Card
                 v-for="(account, index) in accountStore.accounts"
@@ -270,26 +405,28 @@
                 class-name="!p-2"
               >
                 <div class="flex w-full flex-col">
-                  <div class="flex items-start gap-2">
-                    <Badge
-                      :rounded="false"
-                      class="!py-3"
-                      :class-name="getLevelRateClass(getRateCategory(account.interestRate).level)"
-                    >
-                      {{ getInitials(account.name) }}
-                    </Badge>
-                    <CardInfo
-                      level="h3"
-                      title-size="sm"
-                      weight="extrabold"
-                      :title="account.name"
-                      :sub-title="
-                        account.description ||
-                        getRateCategory(Number(account.interestRate)).description
-                      "
-                      sub-title-size="xs"
-                      sub-title-color="muted"
-                    />
+                  <div class="flex flex-col items-start gap-2">
+                    <div class="flex items-center gap-2">
+                      <Badge
+                        :rounded="false"
+                        class="!py-3"
+                        :class-name="getLevelRateClass(getRateCategory(account.interestRate).level)"
+                      >
+                        {{ getInitials(account.name) }}
+                      </Badge>
+                      <CardInfo
+                        level="h3"
+                        title-size="sm"
+                        weight="extrabold"
+                        :title="account.name"
+                        :sub-title="
+                          account.description ||
+                          getRateCategory(Number(account.interestRate)).description
+                        "
+                        sub-title-size="xs"
+                        sub-title-color="muted"
+                      />
+                    </div>
                     <div class="ml-auto flex items-center gap-2">
                       <span
                         class="rounded-md px-2 py-0.5 text-xs font-semibold"
@@ -303,10 +440,8 @@
                 </div>
               </Card>
             </div>
-            <div class="mt-2 flex flex-col space-y-2 rounded-md">
-              <Button type="submit" variant="primary" @click="createAccountSavings">Agregar</Button>
-            </div>
           </div>
+
           <div
             v-else
             class="flex max-h-[335px] min-h-[335px] flex-col items-center justify-center p-2"
@@ -338,163 +473,12 @@
           </div>
         </div>
       </div>
-      <!-- Empty State  -->
-      <div
-        v-if="!isGoalsExists"
-        class="flex flex-col items-center justify-center space-y-2 rounded-md border border-dashed border-neutral-400 bg-neutral-100"
-      >
-        <div class="flex flex-col items-center space-y-2">
-          <IconBadge icon="add_task" size="md" />
-          <Heading level="h1" size="sm" weight="extrabold" color="primary" class="leading-tight">
-            Aqui veras tus Metas
-          </Heading>
-
-          <Text size="xs" color="muted" class="!text-center">
-            Aqui Empieza el camino a tu Futuro
-          </Text>
-        </div>
-      </div>
-      <div class="mb-8 grid w-full grid-cols-1 items-start gap-4">
-        <div
-          v-if="isGoalsExists"
-          class="box-content grid w-full grid-cols-1 gap-4 xl:grid-cols-[auto_1fr]"
-        >
-          <Card class="relative h-40 w-[385px] space-y-4 overflow-hidden" class-name="!p-0">
-            <div class="relative z-10 p-4">
-              <div class="flex flex-col gap-2 space-y-2">
-                <div class="flex items-center gap-1">
-                  <IconBadge
-                    size="md"
-                    icon="savings"
-                    class="w-fit"
-                    icon-class="bg-transparent text-yellow-600 text-primary-500 dark:bg-yellow-900/30 dark:text-yellow-400"
-                  />
-                  <CardInfo
-                    level="h3"
-                    title-size="sm"
-                    weight="extrabold"
-                    title="TOTAL"
-                    sub-title="Proyeccion de ahorros"
-                    sub-title-size="xs"
-                    sub-title-color="muted"
-                  />
-                </div>
-
-                <Heading size="3xl" weight="bold" class="flex items-end">
-                  {{ formatCurrency(sumAmountTarget(goals.length), currency) }}
-                  <span class="mx-2 text-base text-neutral-600">{{ currency }}</span>
-                </Heading>
-
-                <Text size="sm" class="truncate" color="muted">{{ lastUpdate()! }}</Text>
-              </div>
-            </div>
-            <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-20">
-              <span class="material-symbols-outlined rotate-12 !text-[150px] text-yellow-600">
-                savings
-              </span>
-            </div>
-          </Card>
-
-          <Card
-            v-for="(goal, index) in goals.slice(0, 6)"
-            :key="index"
-            class="relative flex h-40 w-[385px] flex-col space-y-2 overflow-hidden rounded-md"
-          >
-            <div class="relative z-10 flex h-full flex-col justify-between">
-              <div class="flex items-center gap-2">
-                <div class="flex items-center gap-2">
-                  <Icon
-                    :name="goal.reason"
-                    size="2xl"
-                    :class-name="`rounded-md p-2 ${reasonTextMap[goal.reason]} ${reasonBgMap[goal.reason]}`"
-                  />
-                  <CardInfo
-                    level="h3"
-                    title-size="sm"
-                    weight="extrabold"
-                    :title="goal.name.toUpperCase()"
-                    :sub-title="goal.accountName"
-                    sub-title-size="xs"
-                    sub-title-color="muted"
-                  />
-                </div>
-                <Text color="primary" size="xs" class="ml-auto self-start">
-                  {{ goal.isActive ? 'Activo' : 'Pausado' }}
-                </Text>
-              </div>
-              <div class="flex flex-col">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex min-w-0 items-center gap-2">
-                    <Text size="sm" class="truncate">
-                      Objetivo
-                      <span class="text-slate-400">(0%)</span>
-                    </Text>
-                  </div>
-                  <Text size="sm" weight="semibold" class="shrink-0">
-                    {{ formatCurrency(goal.targetAmount, currency) }}
-                    <span class="text-xs">{{ currency }}</span>
-                  </Text>
-                </div>
-                <div
-                  class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700"
-                >
-                  <!-- fills with cat.spent / cat.budgeted × 100 once transactions load -->
-                  <div
-                    :class="['h-full rounded-full bg-teal-500 transition-all duration-700']"
-                    :style="{
-                      width:
-                        goal.targetAmount > 0
-                          ? `${Math.min((0 / goal.targetAmount) * 100, 100)}%`
-                          : '0%'
-                    }"
-                  />
-                </div>
-              </div>
-              <div class="flex w-full justify-between">
-                <Text size="xs">
-                  Fecha de Meta: {{ DateUtils.formatDate(goal.targetDate, 'numeric') }}
-                </Text>
-              </div>
-            </div>
-
-            <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-20">
-              <span
-                class="material-symbols-outlined rotate-12 !text-[150px]"
-                :class="reasonTextMap[goal.reason]"
-              >
-                {{ goal.reason }}
-              </span>
-            </div>
-          </Card>
-          <Card
-            v-if="goals.length > 5"
-            class="relative h-40 w-[385px] space-y-4 overflow-hidden !bg-primary-900"
-            class-name="!p-0"
-          >
-            <div class="relative z-10 p-4">
-              <div class="flex flex-col justify-between">
-                <div class="flex items-center gap-1">
-                  <Heading level="h3" title-size="sm" weight="extrabold" color="white">
-                    ¡Wow!
-                  </Heading>
-                </div>
-                <div class="flex w-full flex-col">
-                  <Text size="sm" class="leading-relaxed" color="white">
-                    ¡Increíble progreso! Estás visualizando tu futuro con más de 6 metas activas.
-                  </Text>
-                  <Button variant="ghost" size="sm" class="ml-auto">Ver mas</Button>
-                </div>
-              </div>
-            </div>
-            <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-20">
-              <span class="material-symbols-outlined -rotate-90 !text-[150px] text-white">
-                celebration
-              </span>
-            </div>
-          </Card>
-        </div>
-      </div>
     </div>
+    <ModalWizard v-model:show="showGoalsForm">
+      <div>
+        <GoalsForm @on-success="onSuccess" @on-error="onError" @on-close="closeGoalsForm" />
+      </div>
+    </ModalWizard>
     <ModalWizard v-model:show="showAccountSavingsForm">
       <AccountSavingForm @on-close="closeAccountSavings" />
     </ModalWizard>

@@ -58,7 +58,10 @@ export const useAuthStore = defineStore('auth', {
     setOnboarding(onboarding: OnboardingStatus | null) {
       this.onboarding = onboarding
     },
-
+    // Helper method to check if user needs onboarding
+    needsOnboarding(): boolean {
+      return this.isAuthenticated && !this.isOnboardingCompleted
+    },
     setAccountType(accountType: AccountType | null) {
       this.accountType = accountType
     },
@@ -73,11 +76,6 @@ export const useAuthStore = defineStore('auth', {
       this.accountType = null
       this.error = null
       // Keep isInitialized true to avoid re-initialization loops
-    },
-
-    // Helper method to check if user needs onboarding
-    needsOnboarding(): boolean {
-      return this.isAuthenticated && !this.isOnboardingCompleted
     },
 
     async updateUserProfile(updates: Partial<AuthSession['user']>) {

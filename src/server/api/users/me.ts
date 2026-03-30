@@ -1,14 +1,14 @@
+import { ACCESS_TOKEN } from '~/common/constants'
 import type { BackendUserMe } from '~/types/api'
 
 import { validateError } from '../utils/auth.error'
 
 export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
-  const auth = getHeader(event, 'authorization')
-
+  const token = getCookie(event, ACCESS_TOKEN)
   const { success, data } = await $fetch<BackendUserMe>(`${config.public.apiBase}/users/me`, {
     headers: {
-      authorization: auth ?? ''
+      authorization: `Bearer ${token}`
     },
     onResponseError: ({ response }) => {
       validateError(event, response.status)

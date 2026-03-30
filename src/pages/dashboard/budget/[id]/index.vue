@@ -17,7 +17,6 @@
     SavingsDistribution
   } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
-  import { usePlannedIncomes } from '@/composables/usePlannedIncome'
   import { useAuthStore } from '@/stores/auth.store'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
@@ -41,7 +40,6 @@
   const financesStore = useFinancesStore()
   const plannedIncomeStore = usePlannedIncomeStore()
   const modalStore = useModalStore()
-  const { fetchPlannedIncomeByBudgetId } = usePlannedIncomes()
 
   // ─── Load data if navigated directly (store empty) ────────────────────────
   const budgetId = route.params['id'] as string
@@ -55,7 +53,7 @@
   }
   onMounted(async () => {
     await budgetStore.fetchBudgetById(budgetId)
-    await fetchPlannedIncomeByBudgetId(budgetId)
+    await plannedIncomeStore.fetchPlannedIncomeByBudgetId(budgetId)
 
     if (budgetStore.error) {
       modalStore.showModal('error', {

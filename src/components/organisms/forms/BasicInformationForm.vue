@@ -109,7 +109,7 @@
   })
 </script>
 <template>
-  <form class="basic-information-form space-y-6" @submit.prevent>
+  <form class="basic-information-form space-y-4" @submit.prevent>
     <AlertBanner icon="info" variant="warning" :title="ON_BOARDING_CONFIG.personalInfo.banner" />
 
     <div class="flex-col gap-2">
@@ -163,7 +163,7 @@
 
 <style scoped lang="postcss">
   .basic-information-form {
-    @apply mx-auto box-content h-96 min-h-96 w-full max-w-2xl space-y-6 overflow-y-auto px-1;
+    @apply mx-auto box-content h-96 min-h-96 w-full max-w-2xl space-y-4 overflow-y-auto px-1;
   }
   .basic-information-form__fields {
     @apply space-y-4;

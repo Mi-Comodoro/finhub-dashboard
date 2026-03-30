@@ -17,8 +17,6 @@ import type {
   CurrentBudgetPlan
 } from '~/types/domain'
 
-import { useFinancesStore } from './finances.store'
-
 export const useBudgetStore = defineStore('budget', {
   state: (): BudgetState => ({
     budgets: [],
@@ -91,15 +89,12 @@ export const useBudgetStore = defineStore('budget', {
   },
 
   actions: {
-    async fetchCurrentBudget() {
-      const financesStore = useFinancesStore()
-      const financeId = financesStore.profile?.id
-      if (!financeId) return
-
-      this.setLoading(true)
-      this.setError(null)
-
+    async fetchCurrentBudget(financeId: string) {
       try {
+        if (!financeId) return
+
+        this.setLoading(true)
+        this.setError(null)
         const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/current/${financeId}`)
 
         if (!success || !result) return
@@ -125,9 +120,7 @@ export const useBudgetStore = defineStore('budget', {
         this.setLoading(false)
       }
     },
-    async fetchBudgets(year?: number) {
-      const financesStore = useFinancesStore()
-      const financeId = financesStore.profile?.id
+    async fetchBudgets(financeId: string, year?: number) {
       if (!financeId) return
 
       this.setLoading(true)

@@ -59,7 +59,6 @@ export const useAuth = () => {
       financesStore.setFinancialProfile(result.finances)
       financesStore.updateConfig({ defaultCurrency: result.finances.currency })
     }
-
     return result.onboarding
   }
 
@@ -179,6 +178,7 @@ export const useAuth = () => {
     loginWithGoogle,
     logout,
     observeAuth,
+    populateSessionFromServer,
     user,
     error
   }

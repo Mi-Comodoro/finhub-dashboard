@@ -18,15 +18,14 @@
     isLoading.value = true
     error.value = null
 
-    const { success, onboardingStatus } = await loginWithGoogle()
+    const { success } = await loginWithGoogle()
 
     if (!success) {
       error.value = authError.value || 'Error desconocido durante la autenticación'
     } else {
       // Navigate based on onboarding status
       isLoading.value = false
-      const onboardingCompleted = onboardingStatus === 'COMPLETED'
-      const destination = onboardingCompleted ? '/dashboard' : '/onboarding'
+      const destination = '/dashboard'
       await navigateTo(destination)
     }
   }
@@ -39,14 +38,14 @@
     isLoading.value = true
     error.value = null
 
-    const { success, onboardingStatus } = await login(email.value, password.value)
+    const { success } = await login(email.value, password.value)
 
     if (!success) {
       error.value = authError.value || 'Error desconocido durante la autenticación'
     } else {
       // Navigate based on onboarding status
-      const onboardingCompleted = onboardingStatus === 'COMPLETED'
-      const destination = onboardingCompleted ? '/dashboard' : '/onboarding'
+
+      const destination = '/dashboard'
       await navigateTo(destination)
 
       // Clear form on successful login

@@ -5,9 +5,7 @@
   const modalStore = useModalStore()
 </script>
 <template>
-  <div
-    class="flex h-screen w-full flex-col bg-slate-200/25 transition-colors duration-200 dark:bg-slate-950"
-  >
+  <div class="flex h-screen w-full overflow-hidden bg-neutral-100 dark:bg-slate-950">
     <ModalNotification
       :show="modalStore.state.show"
       :type="modalStore.state.type"
@@ -16,18 +14,20 @@
     />
     <ToastContainer />
 
-    <!-- Header (top, full width) -->
+    <aside class="fixed inset-y-0 left-0 z-20 w-64 border-r border-slate-200 dark:border-slate-800">
+      <DashboardSidebar />
+    </aside>
 
-    <!-- Body: sidebar + main -->
-    <div class="flex min-h-0 flex-1">
-      <!-- Sidebar (left) -->
-      <aside class="w-72 flex-shrink-0 overflow-y-auto">
-        <DashboardSidebar />
-      </aside>
-
-      <!-- Main content (right) -->
-      <main class="flex-1 overflow-y-auto bg-slate-100/25 dark:bg-slate-950">
+    <div class="flex min-w-0 flex-1 flex-col pl-64">
+      <!-- Header con ancho dinámico -->
+      <header
+        class="fixed right-0 top-0 z-20 h-16 w-[calc(100%-16rem)] border-b bg-white/80 backdrop-blur-md dark:bg-slate-950/80"
+      >
         <DashboardHeader />
+      </header>
+
+      <main class="flex-1 overflow-y-auto pt-16">
+        <!-- El Container ahora recibirá un ancho calculado correctamente -->
         <Container>
           <slot />
         </Container>

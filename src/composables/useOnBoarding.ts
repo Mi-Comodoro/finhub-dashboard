@@ -6,6 +6,7 @@ export const useOnBoarding = () => {
   const error = ref<string | null>(null)
   const completeOnboarding = async (data: OnboardingFormData): Promise<boolean> => {
     try {
+      isLoading.value = true
       const onboardingData = {
         ...data
       }
@@ -22,6 +23,7 @@ export const useOnBoarding = () => {
       authStore.setOnboarding({
         isCompleted: result.onboarding === 'COMPLETED'
       })
+
       isLoading.value = false
       return true
     } catch (err) {

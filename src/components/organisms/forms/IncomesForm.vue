@@ -1,11 +1,13 @@
 <script lang="ts" setup>
+  import { useFinancesStore } from '@/stores/finances.store'
   import { ON_BOARDING_CONFIG, SOURCE_INCOMES_OPTIONS } from '~/common/constants'
+  import { MoneyInput } from '~/components/molecules'
   import type { BudgetFrequency } from '~/types/domain'
   const { incomes } = ON_BOARDING_CONFIG
   defineProps<{
     budgetFrequency: string
   }>()
-
+  const financeStore = useFinancesStore()
   const emit = defineEmits(['update:modelValue', 'valid'])
   const formModel = ref<{
     incomes: [
@@ -61,11 +63,12 @@
 
       <div v-if="budgetFrequency === 'monthly'" class="form-income__monthly">
         <div class="form-income__grid">
-          <Input
+          <MoneyInput
             id="income"
             v-model="formModel.incomes[0].amount"
+            :prefix="financeStore.defaultCurrency"
+            pattern="/^\d+(\.\d{1,2})?$/"
             name="income"
-            type="number"
             placeholder="Ej. 3000000"
             label="¿Cuánto dinero recibes normalmente?"
             required
@@ -99,13 +102,14 @@
           />
         </div>
         <div v-if="formModel.isAnotherIncomesSource" class="form-income__grid">
-          <Input
+          <MoneyInput
             id="anotherIncome"
             v-model="formModel.incomes[1].amount"
             name="anotherIncome"
-            type="number"
             placeholder="Ej. 3000000"
             label="Ingresos adicionales"
+            :prefix="financeStore.defaultCurrency"
+            pattern="/^\d+(\.\d{1,2})?$/"
             required
           />
 

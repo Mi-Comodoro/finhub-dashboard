@@ -7,6 +7,8 @@
 
   import type { DashboardHeaderProps } from './types/dashboard-header.types'
   const router = useRouter()
+  const route = useRoute()
+
   // Initialize auto breadcrumb navigation
   useBreadcrumbNavigation({
     autoUpdate: true,
@@ -26,24 +28,21 @@
 <template>
   <header
     :class="[
-      'z-10 max-h-[56px] border-b border-slate-200 bg-white px-4 py-2 transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900',
+      'fixed top-0 z-20 h-16 w-full border-b border-slate-200 bg-white px-4 py-2 transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900',
       className
     ]"
   >
-    <div class="flex h-full items-center justify-between">
+    <div class="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between">
       <!-- Last connections info -->
-      <div class="flex items-center space-x-1">
-        <div class="container mx-auto flex gap-2">
-          <Icon name="arrow_back" class="cursor-pointer" @click="router.back()" />
-          <Breadcrumbs :max-items="4" class="hidden xl:flex" />
-        </div>
-        <!--  <div class="flex flex-col">
-          <Heading level="h1" size="lg" weight="bold">Hola, {{ userName }}!</Heading>
-          <Text size="xs" color="muted">
-            <Icon name="schedule" size="xs" class="mr-1" />
-            <span>Resumen de tus Finanzas Hoy, {{ lastConnection }}</span>
-          </Text>
-        </div> -->
+      <div class="flex min-w-0 items-center gap-4">
+        <Icon
+          v-if="route.path !== '/dashboard'"
+          name="arrow_back"
+          class="cursor-pointer text-neutral-500"
+          size="sm"
+          @click="router.back()"
+        />
+        <Breadcrumbs :max-items="4" class="hidden xl:flex" />
       </div>
       <div class="flex items-center gap-4">
         <div>

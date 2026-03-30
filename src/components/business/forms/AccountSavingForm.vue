@@ -53,6 +53,8 @@
 
     <AlertBanner
       title="Registra tus cuentas solo como referencia. La información es para tu uso manual y no se conecta con tu entidad bancaria."
+      variant="warning"
+      icon="info"
     />
 
     <div class="w-full">

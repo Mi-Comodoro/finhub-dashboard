@@ -1,10 +1,6 @@
 <script setup lang="ts">
   import { OnboardingStepIntro, ProgressBar } from '@/components/molecules'
-  import {
-    BasicInformationForm,
-    BudgetStrategyForm,
-    FinancialGoalsForm
-  } from '@/components/organisms'
+  import { BudgetStrategyForm, FinancialGoalsForm } from '@/components/organisms'
   import { ON_BOARDING_CONFIG } from '~/common/constants'
   import type { OnboardingFormData } from '~/types/ui'
 
@@ -86,9 +82,7 @@
   const isDataComplete = () => {
     const hasPersonalInfo =
       wizardData.personalInfo.displayName.trim() !== '' &&
-      wizardData.personalInfo.email.trim() !== '' &&
-      wizardData.personalInfo.phone.trim() !== '' &&
-      wizardData.personalInfo.gender.trim() !== ''
+      wizardData.personalInfo.phone.trim() !== ''
 
     const hasFinances =
       wizardData.finances.currency.trim() !== '' &&
@@ -171,7 +165,7 @@
         :description="ON_BOARDING_CONFIG.personalInfo.description"
       />
 
-      <BasicInformationForm @update:model-value="onboardingBasicData" @valid="enableNextButton" />
+      <BasicFormData @update:model-value="onboardingBasicData" @valid="enableNextButton" />
     </div>
     <div v-if="currentStep === 2" class="onboarding-wizard__step">
       <OnboardingStepIntro

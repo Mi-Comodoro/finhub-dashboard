@@ -13,7 +13,7 @@
     <div class="card-info__header">
       <IconBadge v-if="icon" :icon="icon" :size="iconSize" :variant="iconVariant" />
 
-      <div :class="verticalSpace ? 'flex flex-col space-y-2' : 'flex flex-col -space-y-1'">
+      <div :class="verticalSpace ? 'flex flex-col space-y-2' : 'flex flex-col'">
         <Heading :level="level" :size="titleSize" :weight="weight" :color="color">
           {{ title }}
         </Heading>

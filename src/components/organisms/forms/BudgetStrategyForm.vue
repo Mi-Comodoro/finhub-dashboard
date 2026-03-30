@@ -4,9 +4,6 @@
 -->
 
 <script setup lang="ts">
-  import { ON_BOARDING_CONFIG } from '~/common/constants'
-  import { AlertBanner } from '~/components/atoms'
-
   import type {
     BudgetStrategyFormProps,
     CanonicalStrategy,
@@ -49,10 +46,18 @@ STATE
     savings: 20
   })
 
-  const selectedBudgetStrategy = ref<'BALANCED' | 'CUSTOM' | null>(formModel.value.strategy)
+  const selectedBudgetStrategy = computed(() => formModel.value.strategy)
 
   const errors = ref<Record<string, string>>({})
-  const isValid = ref(false)
+  const isValid = computed(() => {
+    const hasStrategy = !!formModel.value.strategy
+    const hasUsage = !!formModel.value.usage
+    const total = totalPercentage.value
+
+    const isCustom = formModel.value.strategy === 'CUSTOM'
+
+    return hasStrategy && hasUsage && (!isCustom || total <= 100)
+  })
 
   /*
 ---------------------------------------
@@ -78,12 +83,9 @@ VALIDATION
       errors.value.strategy = 'Debes seleccionar una estrategia de presupuesto'
     }
 
-    const hasErrors = Object.keys(errors.value).length > 0
-    const hasValidStrategy = !!formModel.value.strategy
-    const total = totalPercentage.value
-    isValid.value = !hasErrors && hasValidStrategy && total <= 100
-
-    emit('valid', isValid.value)
+    if (!formModel.value.usage) {
+      errors.value.usage = 'Debes seleccionar cómo usarás el presupuesto'
+    }
   }
 
   /*
@@ -91,10 +93,10 @@ VALIDATION
 STRATEGY ACTIONS
 ---------------------------------------
 */
-
+  const isTouched = ref(false)
   const selectStrategy = (strategy: CanonicalStrategy) => {
+    isTouched.value = true
     formModel.value.strategy = strategy
-    selectedBudgetStrategy.value = strategy
 
     if (strategy === 'CUSTOM') {
       formModel.value.customAllocations = { ...customAllocations.value }
@@ -105,8 +107,6 @@ STRATEGY ACTIONS
         savings: 20
       }
     }
-
-    validateForm()
   }
 
   const handleBudgetStrategySelect = (strategy: 'BALANCED' | 'CUSTOM') => {
@@ -119,13 +119,12 @@ STRATEGY ACTIONS
     wants: number
     savings: number
   }) => {
+    isTouched.value = true
     customAllocations.value = { ...allocation }
 
     if (formModel.value.strategy === 'CUSTOM') {
       formModel.value.customAllocations = { ...allocation }
     }
-
-    validateForm()
   }
 
   const handleChangeStrategy = () => {
@@ -142,6 +141,7 @@ WATCHERS
   watch(
     formModel,
     newValue => {
+      validateForm()
       emit('update:modelValue', {
         strategy: newValue.strategy,
         usage: newValue.usage,
@@ -160,6 +160,10 @@ WATCHERS
       formModel.value.usage = newValue.usage ?? null
     }
   )
+  watch(isValid, value => {
+    if (!isTouched.value) return
+    emit('valid', value)
+  })
 
   /*
 ---------------------------------------
@@ -197,18 +201,7 @@ OPTIONS
 <template>
   <form class="strategy-form space-y-6" @submit.prevent>
     <div class="w-full flex-col items-center px-4 py-2">
-      <AlertBanner
-        :title="ON_BOARDING_CONFIG.budgetStrategy.banner"
-        variant="warning"
-        icon="info"
-      />
-      <Label
-        variant="section"
-        size="sm"
-        color="black"
-        weight="bold"
-        class-name="form-field__label "
-      >
+      <Label variant="form" size="sm" color="black" weight="bold" class-name="form-field__label ">
         ¿Cómo quieres manejar tu presupuesto?
       </Label>
 
@@ -219,6 +212,7 @@ OPTIONS
         class="flex-1 items-center justify-center"
         direction="row"
         :options="OPTIONS"
+        @update:model-value="isTouched = true"
       />
     </div>
 

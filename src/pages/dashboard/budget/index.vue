@@ -5,11 +5,12 @@
   import { ProgressBar, Select } from '@/components/molecules'
   import { type Column, DataTable } from '@/components/organisms'
   import { getBudgetStatus, monthShort } from '@/composables/useBudgetPeriod'
-  import { type PlannedIncomeData, usePlannedIncomes } from '@/composables/usePlannedIncome'
   import { useAuthStore } from '@/stores/auth.store'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
   import { useModalStore } from '@/stores/modal.store'
+  import { usePlannedIncomeStore } from '@/stores/planned-income.store'
+  import type { PlannedIncomeSummary } from '~/types/domain'
 
   import type { CurrentBudgetPlan } from '../../../types/domain/budget.domain'
 
@@ -20,11 +21,11 @@
     breadcrumb: 'Presupuesto'
   })
 
-  const { getExpectedAmount, fetchPlannedIncome } = usePlannedIncomes()
   const authStore = useAuthStore()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
   const modalStore = useModalStore()
+  const plannedIncomeStore = usePlannedIncomeStore()
   const router = useRouter()
 
   // ─── Year filter ─────────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@
   const currentYear = now.getFullYear()
   const availableYears = Array.from({ length: 5 }, (_, i) => currentYear - 3 + i)
   const selectedYear = ref<number>(currentYear)
-  const allPlannedIncomes = ref<PlannedIncomeData[]>([])
+  const allPlannedIncomes = ref<PlannedIncomeSummary[]>([])
 
   const handleActions = () => {
     if (budgetStore.error?.status === 401) {
@@ -52,7 +53,7 @@
         onAction: handleActions
       })
     }
-    const { result } = await fetchPlannedIncome()
+    const { result } = await plannedIncomeStore.fetchPlannedIncome()
     allPlannedIncomes.value = result!
   })
   defineEmits(['view', 'duplicate', 'delete'] as const)
@@ -139,7 +140,7 @@
 
     const avgValue = avgExecution.value
     const incomes = allPlannedIncomes.value || []
-    const expectedValue = getExpectedAmount(incomes)
+    const expectedValue = plannedIncomeStore.getExpectedAmount(incomes)
 
     return incomes.flatMap(planned => {
       const bId = String(planned.budgetId)

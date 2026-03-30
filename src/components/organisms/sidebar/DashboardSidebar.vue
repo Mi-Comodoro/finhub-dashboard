@@ -68,13 +68,13 @@
       <NavigationSection title="CONFIGURACIÓN" :items="settingsMenuItems" />
     </nav>
     <div class="dashboard-sidebar__version">
-      <div class="my-2 rounded-md border border-warning-200 bg-warning-50 p-4">
+      <div class="my-2 rounded-md border border-slate-300 bg-slate-300 p-4">
         <CardInfo
           level="h3"
           title-size="sm"
           title="Estado"
           weight="bold"
-          color="warning"
+          color="black"
           :sub-title="
             accountType?.toUpperCase() === 'TRIAL'
               ? 'Periodo de Prueba'
@@ -82,7 +82,7 @@
                 ? 'Premium'
                 : 'FREE'
           "
-          sub-title-color="warning"
+          sub-title-color="black"
           sub-title-size="xs"
         />
       </div>

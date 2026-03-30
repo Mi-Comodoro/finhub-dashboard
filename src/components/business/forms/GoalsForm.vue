@@ -9,7 +9,7 @@
   const accountStore = useAccountStore()
   const goalsStore = useGoalsStore()
 
-  const emit = defineEmits(['onSuccess', 'onError'])
+  const emit = defineEmits(['onSuccess', 'onError', 'onClose'])
 
   const accounts = computed(() =>
     accountStore.accounts.map(item => ({
@@ -41,7 +41,7 @@
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-col gap-6 rounded-md bg-white p-4">
+  <div class="flex h-full w-full flex-col gap-2 rounded-md bg-white">
     <CardInfo
       title="Nueva Meta"
       title-size="xl"
@@ -56,10 +56,26 @@
       icon-size="md"
     />
 
+    <div class="relative z-10 mt-2 flex flex-col">
+      <AlertBanner title="Cuentas de Alta Rentabilidad > 10% EA" variant="warning" icon="info">
+        <Text size="xs" class="flex items-start gap-1 text-yellow-900">
+          <strong>
+            Uso:
+            <span class="font-normal">
+              Fondo de emergencia, ahorro a la vista y metas a corto plazo.
+            </span>
+          </strong>
+        </Text>
+      </AlertBanner>
+    </div>
+
     <div v-if="accounts.length > 0" class="w-full">
       <Form :key="formKey" v-model="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
-          <Button type="submit" variant="primary">Guardar</Button>
+          <div class="flex justify-end gap-2">
+            <Button type="button" variant="ghost" @click.stop="emit('onClose')">Cancelar</Button>
+            <Button type="submit" variant="primary">Guardar</Button>
+          </div>
         </template>
       </Form>
     </div>

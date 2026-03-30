@@ -164,15 +164,6 @@
           placeholder="Selecciona tu moneda"
         />
       </div>
-      <AlertBanner
-        v-if="formModel.budgetFrequency === 'biweekly'"
-        variant="info"
-        size="sm"
-        class="mb-4"
-      >
-        Al seleccionar una frecuencia quincenal, organizaremos tu presupuesto para cubrir tus gastos
-        fijos divididos entre ambos pagos.
-      </AlertBanner>
 
       <!-- Budget Frequency -->
       <div v-if="!formModel.budgetFrequency" class="form-field">
@@ -209,7 +200,7 @@
         </div>
         <div v-else-if="formModel.budgetFrequency === 'biweekly'" class="flex min-w-full gap-4">
           <div class="flex-1 flex-col">
-            <Label variant="form" size="sm" class-name="form-field__label">
+            <Label variant="form" size="sm" color="black" class-name="form-field__label">
               Primera Fecha de pago
             </Label>
             <DatePickerInput
@@ -219,7 +210,7 @@
             />
           </div>
           <div class="flex-1 flex-col">
-            <Label variant="form" size="sm" class-name="form-field__label">
+            <Label variant="form" size="sm" color="black" class-name="form-field__label">
               Segunda Fecha de pago
             </Label>
             <DatePickerInput
@@ -250,7 +241,7 @@
 
 <style scoped lang="postcss">
   .finances-config-form {
-    @apply mx-auto box-content h-96 min-h-96 w-full max-w-2xl space-y-6 overflow-y-auto;
+    @apply mx-auto box-content min-h-fit w-full max-w-2xl space-y-6 overflow-y-auto;
   }
   .form-field {
     @apply w-full px-2;

@@ -35,19 +35,45 @@
   )
 
   function handleInput(value: string) {
-    const valorLimpio = value.replace(/\D/g, '')
+    // Permitir solo números, coma y punto
+    let clean = value.replace(/[^\d.,]/g, '')
 
-    if (!valorLimpio) {
-      internal.value = '' // Vacío en lugar de '0' para mejor UX
-      emit('update:modelValue', 0)
+    // Quitar separadores de miles (.)
+    clean = clean.replace(/\./g, '')
+
+    // Convertir coma a punto decimal
+    clean = clean.replace(',', '.')
+
+    // Evitar múltiples puntos decimales
+    const parts = clean.split('.')
+    if (parts.length > 2) {
+      clean = parts[0] + '.' + parts.slice(1).join('')
+    }
+
+    if (!clean) {
+      internal.value = ''
+      emit('update:modelValue', null)
       return
     }
 
-    const numero = parseInt(valorLimpio, 10)
-    emit('update:modelValue', numero)
+    const [integerPart, decimalPart] = clean.split('.')
 
-    // Esto ahora sí forzará el formato al 4to dígito
-    internal.value = formatter.format(numero)
+    // Formatear miles correctamente
+    const formattedInteger = Number(integerPart || 0).toLocaleString('es-CO')
+
+    let formatted = formattedInteger
+
+    if (decimalPart !== undefined) {
+      formatted += ',' + decimalPart
+    }
+
+    const number = parseFloat(clean)
+
+    if (!isNaN(number)) {
+      emit('update:modelValue', number)
+    }
+
+    internal.value = formatted
   }
 </script>
 

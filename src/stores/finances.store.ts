@@ -5,7 +5,7 @@ import type { Currency } from '@/utils/currency'
 // Financial Profile from API - this is what comes from backend
 interface FinancialProfile {
   id: string
-  profile: string // 'conservative' | 'moderate' | 'aggressive'
+  profile: string
   usage: string // 'personal' | 'business' | 'family'
   currency: Currency
 }

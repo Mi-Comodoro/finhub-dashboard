@@ -28,9 +28,9 @@ export type OnBoardingFinances = {
 export type OnboardingFormData = {
   personalInfo: {
     displayName: string
-    email: string
     phone: string
-    gender: 'male' | 'female' | 'prefer_not_to_say'
+    email: string
+    gender: string
   }
   finances: OnBoardingFinances
   budget: {

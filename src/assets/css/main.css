@@ -9,3 +9,15 @@
     @apply bg-background-light font-sans text-slate-900;
   }
 }
+
+* {
+  box-sizing: border-box;
+}
+
+img,
+video,
+table {
+  max-width: 100%;
+  height: auto;
+  /* Mantiene la proporción */
+}

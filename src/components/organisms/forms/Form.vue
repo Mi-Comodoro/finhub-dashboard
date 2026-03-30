@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, reactive, watch } from 'vue'
+  import { reactive, watch } from 'vue'
 
   import {
     DatePickerInput,
@@ -37,6 +37,7 @@
       | 'textarea'
       | 'money'
       | 'slider-percentage'
+      | 'radio-card'
     label: string
     placeholder?: string
     required?: boolean
@@ -44,10 +45,22 @@
     errorMessage?: string
     prefix?: string
     options?: FieldOption[]
+
+    // eslint-disable-next-line no-unused-vars
+    visibleWhen?: (form: Record<string, commonField>) => boolean
+    // Nuevas propiedades para campos compuestos
+    groupFields?: {
+      firstDate: FieldSchema
+      secondDate: FieldSchema
+    }
+    alertVariant?: 'info' | 'warning' | 'success' | 'error'
+    alertMessage?: string
+    summaryTitle?: string
+    summaryAction?: string
   }
 
-  const props = defineProps<{ schema: FormSchema }>()
-  const emit = defineEmits(['submit', 'update:modelValue'])
+  const props = defineProps<{ schema: FormSchema; modelValue?: Record<string, commonField> }>()
+  const emit = defineEmits(['submit', 'update:modelValue', 'update:isValid'])
   const formData = reactive<Record<string, commonField>>({})
   const errors = reactive<Record<string, string>>({})
   function validateField(key: string, value: commonField) {
@@ -86,31 +99,47 @@
 
     return valid
   }
-  // Inicializar formData con claves vacías
-  onMounted(() => {
-    Object.entries(props.schema.fields).forEach(([key, field]) => {
-      switch (field.type) {
-        case 'slider-percentage':
-          formData[key] = 0
-          break
-        case 'date':
-          formData[key] = null
-          break
-        case 'switch':
-          formData[key] = false
-          break
-        default:
-          formData[key] = ''
-      }
-    })
-  })
+
+  watch(
+    () => props.modelValue,
+    newValue => {
+      Object.entries(props.schema.fields).forEach(([key, field]) => {
+        const incomingValue = newValue?.[key]
+
+        if (incomingValue !== undefined) {
+          formData[key] = incomingValue
+        } else if (!(key in formData)) {
+          // solo si no existe aún
+          switch (field.type) {
+            case 'slider-percentage':
+              formData[key] = 0
+              break
+            case 'date':
+              formData[key] = null
+              break
+            case 'switch':
+              formData[key] = false
+              break
+            default:
+              formData[key] = ''
+          }
+        }
+      })
+    },
+    { immediate: true, deep: true }
+  )
   watch(
     formData,
     value => {
+      let valid = true
+
       Object.entries(value).forEach(([key, val]) => {
-        validateField(key, val)
+        const fieldValid = validateField(key, val)
+        if (!fieldValid) valid = false
       })
+
       emit('update:modelValue', { ...value })
+      emit('update:isValid', valid)
     },
     { deep: true }
   )
@@ -188,10 +217,20 @@
             v-model="formData[fieldKey] as number"
             label="Porcentaje de Distribucion"
           />
+
+          <RadioButton
+            v-else-if="schema.fields[fieldKey]!.type === 'radio-card'"
+            v-model="formData[fieldKey] as string"
+            v-bind="schema.fields[fieldKey]"
+            name="budgetFrequency"
+            variant="card"
+            direction="row"
+            :options="schema.fields[fieldKey]?.options!"
+          />
         </template>
       </div>
     </template>
-
+    <slot name="fields" />
     <slot name="actions" />
   </form>
 </template>
