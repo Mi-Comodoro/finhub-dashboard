@@ -17,7 +17,7 @@
   const emit = defineEmits(['update:modelValue'])
 
   const selectedValue = computed({
-    get: () => props.modelValue || props.initialOption?.value || '',
+    get: () => props.modelValue ?? '',
     set: val => emit('update:modelValue', val)
   })
 
@@ -73,7 +73,7 @@
         }"
         @change="onChange"
       >
-        <option v-if="initialOption?.value" :value="initialOption.value" hidden>
+        <option v-if="initialOption?.label" value="" disabled hidden>
           {{ initialOption.label }}
         </option>
         <option v-else value="" hidden>Selecciona una opción</option>

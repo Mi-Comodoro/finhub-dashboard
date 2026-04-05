@@ -1,5 +1,6 @@
 export const ACCESS_TOKEN = `access-token`
 export const ACCOUNT_TYPE = `account-type`
+export const TOKEN_EXPIRES_AT = `token-expires-at`
 
 // Client-accessible user data storage (non-sensitive)
 export const USER_DATA = `user-data`

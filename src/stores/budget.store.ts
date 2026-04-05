@@ -7,7 +7,7 @@
 import type { FetchError } from 'ofetch'
 import { defineStore } from 'pinia'
 
-import type { BudgetListResponse, CurrentBudget } from '~/types/api'
+import type { BudgetListResponse, CurrentBudget, SingleBudget } from '~/types/api'
 import type {
   Budget,
   BudgetPeriod,
@@ -89,13 +89,18 @@ export const useBudgetStore = defineStore('budget', {
   },
 
   actions: {
-    async fetchCurrentBudget(financeId: string) {
+    async fetchCurrentBudget(financeId: string, month?: number, year?: number) {
       try {
         if (!financeId) return
 
         this.setLoading(true)
         this.setError(null)
-        const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/current/${financeId}`)
+        const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/current/${financeId}`, {
+          query: {
+            ...(month !== undefined ? { month } : {}),
+            ...(year !== undefined ? { year } : {})
+          }
+        })
 
         if (!success || !result) return
 
@@ -114,6 +119,11 @@ export const useBudgetStore = defineStore('budget', {
           frequency: result.frequency
         })
       } catch (err) {
+        if ((err as FetchError).status === 404) {
+          this.setCurrentBudget(null)
+          this.setError(null)
+          return
+        }
         console.error('❌ Error fetching current budget:', err)
         this.handleError(err as FetchError)
       } finally {
@@ -254,7 +264,7 @@ export const useBudgetStore = defineStore('budget', {
       this.error = null
     },
 
-    setCurrentBudget(plan: CurrentBudgetPlan) {
+    setCurrentBudget(plan: CurrentBudgetPlan | null) {
       this.currentBudgetPlan = plan
       this.error = null
     },
@@ -278,6 +288,31 @@ export const useBudgetStore = defineStore('budget', {
       this.error = null
     },
 
+    async enableBudget(budgetId: string) {
+      this.setLoading(true)
+      this.setError(null)
+
+      try {
+        const { success, result } = await $fetch<CurrentBudget>(`/api/budgets/enable/${budgetId}`)
+        if (!success || !result) return
+
+        // Actualiza el plan actual
+        this.setCurrentBudget(result)
+        const mappedBudget = this.mapSingleBudgetToBudget(result)
+        // Actualiza la lista de presupuestos
+        this.updateBudget(mappedBudget)
+
+        // Si es el presupuesto activo, también lo actualizamos
+        if (this.activeBudget?.id === budgetId) {
+          this.setActiveBudget(mappedBudget)
+        }
+      } catch (err) {
+        console.error('❌ Error enabling budget:', err)
+        this.handleError(err as FetchError)
+      } finally {
+        this.setLoading(false)
+      }
+    },
     // Helper method to update specific allocation
     updateAllocation(budgetId: string, categoryId: string, plannedAmount: number) {
       const budget = this.budgets.find(b => b.id === budgetId)
@@ -321,6 +356,24 @@ export const useBudgetStore = defineStore('budget', {
           message:
             ' Lo sentimos, no pudimos completar esta acción. Si el problema persiste, contacta con nuestro equipo de soporte.'
         }
+      }
+    },
+
+    mapSingleBudgetToBudget(single: SingleBudget): Budget {
+      return {
+        id: single.id,
+        userId: single.ownerId ?? '', // por si es null en el backend
+        period: {
+          month: Number(single.month),
+          year: Number(single.year)
+        },
+        frequency: single.frequency,
+        status: single.status,
+        allocations: [], // inicial vacío, o si el backend devuelve allocations, mapéalos aquí
+        strategy: single.strategy,
+        isEditable: true, // define tu lógica según reglas de negocio
+        createdAt: new Date(), // o si el backend devuelve fecha, úsala
+        updatedAt: new Date()
       }
     }
   }

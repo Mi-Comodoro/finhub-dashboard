@@ -39,11 +39,13 @@
         v-if="title"
         level="h4"
         :title="title"
+        :sub-title="subTitle"
+        sub-title-size="xs"
+        weight="extrabold"
         :icon="icon"
         :color="textColor"
         :icon-variant="iconVariant"
       />
-
       <slot name="action" />
     </div>
 

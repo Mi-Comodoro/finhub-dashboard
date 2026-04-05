@@ -1,3 +1,5 @@
+import type { StoreError } from './common.domain'
+
 /**
  * Domain Types - Income Module
  * Core business logic for income management
@@ -39,21 +41,42 @@ export interface PlannedIncomeSummary {
   id: string
   amount: number
   source: string
-  date: Date
+  date: Date | string
   status: 'PENDING' | 'RECEIVED' | 'SKIPPED'
   budgetId: string
-  updatedAt: Date
+  incomeSourceId?: string
+  createdAt?: Date | string
+  updatedAt: Date | string
+}
+
+export interface PlannedSavingSummary {
+  id: string
+  amount: number
+  date: Date | string
+  status: 'pending' | 'completed'
+  savingGoal?: { id: string; name: string; reason: string }
+  account?: { id: string; name: string }
+  plannedIncome?: { id: string; amount: number; date: string; source: string }
+  accountId?: string
+  budgetId: string
+  plannedIncomeId?: string
+  savingGoalId?: string
+}
+
+export interface PlannedSavingState {
+  items: PlannedSavingSummary[] | null
+  budgetId: string
+  isLoading: boolean
+  error: StoreError | null
 }
 
 export interface PlannedIncomeState {
   budgetId: string
   summary: PlannedIncomeSummary[] | null
   isLoading: boolean
-  error: string | null
+  processingIncomeId: string | null
+  error: StoreError | null
   expectedIncome: number
-  needsAmount: number
-  savingsAmount: number
-  wantsAmount: number
 }
 
 export interface IncomeState {

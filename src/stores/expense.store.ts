@@ -2,6 +2,8 @@
 // stores/useExpensesStore.ts
 
 import { defineStore } from 'pinia'
+
+import type { ExpenseData } from '~/types/domain'
 type ExpenseStatus = 'PLANNED' | 'PAID' | 'CANCELED' | 'SKIPPED'
 export const useExpensesStore = defineStore('expenses', () => {
   const expenses = ref<
@@ -39,7 +41,36 @@ export const useExpensesStore = defineStore('expenses', () => {
 
   const loading = ref(false)
   const error = ref('')
+  const addExpensed = async (data: ExpenseData) => {
+    loading.value = true
+    const { success } = await $fetch<{
+      success: boolean
+      result: {
+        id: string
+        budgetId: string
+        categoryId: string
+        name: string
+        expectedAmount: number
+        dueDate: Date
+        status: string
+        isEssential: boolean
+        notes: string
+        billsId: string | null
+        createdAt: Date
+        updatedAt: Date
+      }
+    }>('/api/expenses', {
+      method: 'POST',
+      body: data
+    })
 
+    loading.value = false
+    if (!success) {
+      error.value = 'Error al crear gastos planificados'
+    }
+    await fetchExpenses()
+    return success
+  }
   // 🚀 Fetch principal
   const fetchExpenses = async () => {
     try {
@@ -95,6 +126,7 @@ export const useExpensesStore = defineStore('expenses', () => {
     filters,
     loading,
     error,
+    addExpensed,
     fetchExpenses,
     setSearch,
     setStatus,

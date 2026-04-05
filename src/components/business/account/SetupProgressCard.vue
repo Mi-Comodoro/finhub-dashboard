@@ -22,13 +22,14 @@
       {
         id: 'goals',
         label: 'Metas creadas',
-        status: props.accountsCount > 0 ? (props.goalsCount > 3 ? 'success' : 'loading') : 'pending'
+        status:
+          props.accountsCount > 0 ? (props.goalsCount >= 3 ? 'success' : 'loading') : 'pending'
       },
       {
         id: 'distribution',
         label: 'Distribución de ahorro',
         status:
-          props.goalsCount > 3
+          props.goalsCount >= 3
             ? props.distributionPercentage === 100
               ? 'success'
               : 'loading'

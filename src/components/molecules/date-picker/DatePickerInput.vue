@@ -9,7 +9,8 @@
     mode: 'single',
     locale: 'es',
     label: '',
-    placeholder: 'Seleccionar fecha'
+    placeholder: 'Seleccionar fecha',
+    required: false
   })
 
   const emit = defineEmits(['update:modelValue'])
@@ -52,7 +53,7 @@
       :label="label"
       :model-value="displayValue ? displayValue : ''"
       :placeholder="placeholder"
-      required
+      :required="required"
       readonly
     >
       <template #suffix>

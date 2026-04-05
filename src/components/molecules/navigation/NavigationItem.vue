@@ -3,14 +3,27 @@
 
   import type { NavigationItemProps } from './types/navigation-item.types'
 
-  withDefaults(defineProps<NavigationItemProps>(), {
+  const props = withDefaults(defineProps<NavigationItemProps>(), {
     isActive: false,
     className: ''
   })
+
+  const emit = defineEmits<{
+    click: []
+  }>()
+
+  const handleClick = async () => {
+    emit('click')
+
+    if (props.onClick) {
+      await props.onClick()
+    }
+  }
 </script>
 
 <template>
   <Link
+    v-if="path"
     :to="path"
     :class="['nav-item', isActive ? 'nav-item--active' : 'nav-item--inactive', className]"
   >
@@ -19,6 +32,17 @@
       {{ name }}
     </Text>
   </Link>
+  <button
+    v-else
+    type="button"
+    :class="['nav-item nav-item--inactive w-full', className]"
+    @click="handleClick"
+  >
+    <Icon :name="icon" size="lg" />
+    <Text size="sm" color="inherit" weight="medium">
+      {{ name }}
+    </Text>
+  </button>
 </template>
 
 <style lang="postcss" scoped>

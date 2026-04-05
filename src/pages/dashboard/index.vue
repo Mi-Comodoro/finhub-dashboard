@@ -2,18 +2,18 @@
   // =========================
   // Imports
   // =========================
-  import { computed, onMounted } from 'vue'
+  import { computed, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
 
   // UI
-  import { Button, Heading, Text } from '@/components/atoms'
+  import { AlertBanner, Button, Heading, Text } from '@/components/atoms'
   import { BudgetDonutChart } from '@/components/molecules'
   import { OnboardingWizard } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
+  import { useCommon } from '@/composables/useCommon'
   // Composables
   import { useSetup } from '@/composables/useSetup'
   // Stores
-  import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
   import { usePlannedIncomeStore } from '@/stores/planned-income.store'
   // Utils
@@ -26,7 +26,6 @@
   // =========================
   const router = useRouter()
 
-  const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
   const plannedIncomeStore = usePlannedIncomeStore()
 
@@ -34,10 +33,17 @@
   // Composables
   // =========================
 
-  const { load, handleCompleteSetup, openOnboarding } = useSetup()
-  // =========================
-  // State
-  // =========================
+  const {
+    budgetMissingMessage,
+    budgetWarningMessage,
+    isUsingPreviousBudget,
+    load,
+    handleCompleteSetup,
+    openOnboarding
+  } = useSetup()
+  const { currentBudget, budgetStatus } = useCommon()
+
+  const isPageLoading = ref(true)
 
   // =========================
   // Computeds
@@ -55,10 +61,8 @@
     )
   )
 
-  const budgetPlan = computed(() => budgetStore.currentBudgetPlan)
-
   const categories = computed(() => {
-    if (!budgetPlan.value) return []
+    if (!currentBudget.value) return []
 
     const cur = currency.value
 
@@ -67,34 +71,51 @@
         id: 'needs',
         name: 'Gastos Fijos',
         type: 'needs' as const,
-        budgeted: percentOf(expectedAmount.value, budgetPlan.value.limits.needs, cur),
+        budgeted: percentOf(expectedAmount.value, currentBudget.value.limits.needs, cur),
         spent: 0,
-        percentage: budgetPlan.value.limits.needs
+        percentage: currentBudget.value.limits.needs
       },
       {
         id: 'wants',
         name: 'Gastos Variables u Ocasionales',
         type: 'wants' as const,
-        budgeted: percentOf(expectedAmount.value, budgetPlan.value.limits.wants, cur),
+        budgeted: percentOf(expectedAmount.value, currentBudget.value.limits.wants, cur),
         spent: 0,
-        percentage: budgetPlan.value.limits.wants
+        percentage: currentBudget.value.limits.wants
       },
       {
         id: 'savings',
         name: 'Ahorro e Inversiones',
         type: 'savings' as const,
-        budgeted: percentOf(expectedAmount.value, budgetPlan.value.limits.savings, cur),
+        budgeted: percentOf(expectedAmount.value, currentBudget.value.limits.savings, cur),
         spent: 0,
-        percentage: budgetPlan.value.limits.savings
+        percentage: currentBudget.value.limits.savings
       }
     ]
+  })
+
+  const strategyInfo = computed(() => {
+    if (!currentBudget.value) return null
+    const isBalanced = currentBudget.value.strategy === 'BALANCED'
+    return {
+      label: isBalanced ? '50/30/20' : 'Personalizada',
+      icon: isBalanced ? 'auto_awesome' : 'tune',
+      title: isBalanced ? 'Regla del 50/30/20' : 'Distribución personalizada',
+      description: isBalanced
+        ? 'Método de presupuesto diseñado por Elizabeth Warren: la mitad del ingreso cubre necesidades esenciales, el 30% para gastos flexibles y el 20% se destina al ahorro e inversión. Ideal para construir hábitos financieros saludables.'
+        : `Este presupuesto usa una distribución ajustada a tus necesidades: ${currentBudget.value.limits.needs}% para gastos fijos, ${currentBudget.value.limits.wants}% para gastos variables y ${currentBudget.value.limits.savings}% para ahorro. Puedes modificar los porcentajes en cualquier momento.`
+    }
   })
 
   // =========================
   // Lifecycle
   // =========================
   onMounted(async () => {
-    await load()
+    try {
+      await load()
+    } finally {
+      isPageLoading.value = false
+    }
   })
 
   // =========================
@@ -121,12 +142,10 @@
           <Badge
             bold
             :rounded="false"
-            :variant="budgetStore.currentBudgetPlan?.status === 'PLANNED' ? 'warning' : 'secondary'"
+            :variant="budgetStatus === 'PLANNED' ? 'warning' : 'secondary'"
             class-name="uppercase"
           >
-            {{
-              budgetStore.currentBudgetPlan?.status === 'PLANNED' ? 'Planificado' : 'En Ejecución'
-            }}
+            {{ budgetStatus === 'PLANNED' ? 'Planificado' : 'En Ejecución' }}
           </Badge>
         </div>
 
@@ -134,17 +153,45 @@
           Conoce el estado de tus finanzas y toma decisiones inteligentes con datos en tiempo real.
         </Text>
       </div>
-      <div
-        v-if="budgetStore.currentBudgetPlan?.status !== 'PLANNED'"
-        class="flex items-center gap-2"
-      >
+      <div v-if="budgetStatus !== 'PLANNED'" class="flex items-center gap-2">
         <Button variant="ghost" size="sm" icon="download">Reporte</Button>
         <Button variant="primary" size="sm" icon="add">Nueva Transacción</Button>
       </div>
     </div>
+    <AlertBanner
+      v-if="isUsingPreviousBudget"
+      title="Presupuesto desactualizado"
+      variant="warning"
+      icon="warning"
+    >
+      <Text size="sm" color="warning">
+        {{ budgetWarningMessage }}
+      </Text>
+    </AlertBanner>
+
+    <AlertBanner
+      v-else-if="budgetMissingMessage"
+      title="Presupuesto pendiente"
+      variant="warning"
+      icon="warning"
+    >
+      <Text size="sm" color="warning">
+        {{ budgetMissingMessage }}
+      </Text>
+    </AlertBanner>
+    <div
+      v-if="isPageLoading"
+      class="mb-8 grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4"
+    >
+      <div
+        v-for="item in 4"
+        :key="item"
+        class="h-36 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"
+      />
+    </div>
 
     <div
-      v-if="expectedAmount"
+      v-else-if="expectedAmount"
       class="mb-8 grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4"
     >
       <FinancialProgressCard
@@ -180,28 +227,58 @@
         class="!bg-primary-900"
         variant="accent"
       />
+
       <FinancialProgressCard
+        v-if="budgetStatus === 'PLANNED'"
         title-color="white"
         text-color="white"
         icon-mark="savings"
         icon-text-class="text-primary-500"
       >
         <template #body>
-          <div class="p-2">
-            <Text color="muted" size="sm" class="leading-relaxed">
-              Ahora es el momento de definir cómo vas a ahorrar tu
-              <strong>{{ budgetPlan?.limits.savings }}%</strong>
-            </Text>
+          <div class="flex flex-col justify-between">
+            <div class="p-1">
+              <Text color="muted" size="sm" class="leading-relaxed">
+                Ahora es el momento de definir cómo vas a ahorrar tu
+                <strong>{{ currentBudget?.limits.savings }}%</strong>
+              </Text>
+            </div>
+            <div class="z-10 flex items-center justify-end gap-2">
+              <Button size="sm" @click="router.push(`/dashboard/goals`)">Definir Metas</Button>
+            </div>
           </div>
-
-          <div class="z-10 flex items-center gap-2">
-            <Button size="sm" @click="router.push(`/dashboard/goals`)">Definir Metas</Button>
+        </template>
+      </FinancialProgressCard>
+      <FinancialProgressCard
+        v-else
+        title-color="white"
+        text-color="white"
+        icon-mark="savings"
+        icon-text-class="text-primary-500"
+      >
+        <template #body>
+          <div class="flex flex-col justify-between">
+            <div class="p-1">
+              <Text color="muted" size="sm" class="leading-relaxed">
+                El Presupuesto esta en
+                <strong>Ejecucion</strong>
+                , puedes gestionar tu presupesto
+              </Text>
+            </div>
+            <div class="z-10 flex items-center justify-end gap-2">
+              <Button size="sm" @click="router.push(`/dashboard/budget/${currentBudget?.id}`)">
+                Ver Presupuesto
+              </Button>
+            </div>
           </div>
         </template>
       </FinancialProgressCard>
     </div>
     <!--  -->
-    <div class="mb-8 grid grid-cols-1">
+    <Tips v-if="strategyInfo" :icon="strategyInfo.icon" :title="strategyInfo.title">
+      <Text size="sm" class="mb-3 leading-relaxed">{{ strategyInfo.description }}</Text>
+    </Tips>
+    <div v-if="currentBudget" class="mb-8 grid grid-cols-1">
       <!-- Budget Distribution -->
       <div
         class="rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
@@ -209,7 +286,7 @@
         <div class="flex border-b border-slate-100 px-5 py-4 dark:border-slate-700">
           <Heading level="h3" size="lg" weight="semibold">
             {{
-              budgetStore.currentBudgetPlan?.status === 'PLANNED'
+              budgetStatus === 'PLANNED'
                 ? 'Planificacion del Presupuesto'
                 : 'Estado del Presupuesto'
             }}
@@ -217,13 +294,9 @@
           <Badge
             size="sm"
             class="ml-2"
-            :variant="
-              budgetStore.currentBudgetPlan?.strategy === 'BALANCED' ? 'primary' : 'secondary'
-            "
+            :variant="currentBudget?.strategy === 'BALANCED' ? 'primary' : 'secondary'"
           >
-            {{
-              budgetStore.currentBudgetPlan?.strategy === 'BALANCED' ? '50/30/20' : 'Personalizada'
-            }}
+            {{ currentBudget?.strategy === 'BALANCED' ? '50/30/20' : 'Personalizada' }}
           </Badge>
         </div>
 
@@ -289,6 +362,24 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div
+      v-else-if="!isPageLoading"
+      class="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800"
+    >
+      <Heading level="h3" size="lg" weight="semibold" class="mb-2">
+        No hay un presupuesto cargado para mostrar
+      </Heading>
+      <Text size="sm" color="muted" class="mx-auto max-w-2xl">
+        {{
+          budgetMissingMessage ||
+          'Todavia no encontramos un presupuesto disponible para este periodo. Revisa tus presupuestos y crea manualmente el nuevo mes cuando corresponda.'
+        }}
+      </Text>
+      <div class="mt-4 flex justify-center">
+        <Button size="sm" @click="router.push('/dashboard/budget')">Ir a Presupuestos</Button>
       </div>
     </div>
     <!-- Onboarding Wizard -->

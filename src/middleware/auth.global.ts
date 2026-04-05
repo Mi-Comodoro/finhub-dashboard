@@ -3,18 +3,14 @@ export default defineNuxtRouteMiddleware(async to => {
 
   await initSession()
 
-  if (authStore.isInitialized) return
-
   const isLoggedIn = authStore.isAuthenticated
   const isDashboard = to.path.startsWith('/dashboard')
   const isHome = to.path === '/'
 
-  // 1. Si NO está logueado e intenta entrar al dashboard -> Al Home
   if (!isLoggedIn && isDashboard) {
     return navigateTo('/', { replace: true })
   }
 
-  // 2. Si SI está logueado e intenta ir al Home -> Al Dashboard
   if (isLoggedIn && isHome) {
     return navigateTo('/dashboard', { replace: true })
   }

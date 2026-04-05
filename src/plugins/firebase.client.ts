@@ -1,5 +1,5 @@
 // plugins/firebase.client.ts
-import { initializeApp } from 'firebase/app'
+import { getApp, getApps, initializeApp } from 'firebase/app'
 import {
   getAuth,
   GoogleAuthProvider,
@@ -14,7 +14,7 @@ export default defineNuxtPlugin(async nuxtApp => {
     if (import.meta.server) return
     const FIREBASE_CONFIG_PATH = '/api/firebase'
     const firebaseConfig: FirebaseConfig = await $fetch<FirebaseConfig>(FIREBASE_CONFIG_PATH)
-    const app = initializeApp(firebaseConfig)
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig)
 
     const auth = getAuth(app)
     const googleProvider = new GoogleAuthProvider()

@@ -1,7 +1,15 @@
+import { ACCESS_TOKEN } from '~/common/constants'
+
+import { validateError } from '../utils/auth.error'
+
 export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
-  const auth = getHeader(event, 'authorization')
+  const token = getCookie(event, ACCESS_TOKEN)
   const body = await readBody(event)
+
+  if (!token) {
+    throw createError({ statusCode: 401, message: 'No autenticado' })
+  }
 
   const { success, data } = await $fetch<{ success: boolean; data: { onboarding: string } }>(
     `${config.public.apiBase}/users/onboarding`,
@@ -34,7 +42,12 @@ export default defineEventHandler(async event => {
           paymentsDates: body.incomes.paymentsDates
         }
       },
-      headers: { Authorization: auth ?? '' }
+      headers: {
+        authorization: `Bearer ${token}`
+      },
+      onResponseError: ({ response }) => {
+        validateError(event, response.status)
+      }
     }
   )
 

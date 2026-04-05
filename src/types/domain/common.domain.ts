@@ -9,6 +9,12 @@ export interface DomainError {
   readonly details?: Record<string, unknown>
 }
 
+export interface StoreError {
+  title: string
+  message: string
+  status?: number
+}
+
 export interface LoadingState {
   readonly isLoading: boolean
   readonly error: DomainError | null

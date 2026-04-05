@@ -3,44 +3,37 @@
  * Validates authentication and session validity for dashboard access
  */
 import { useSession } from '@/composables/useSession'
+
 export default defineNuxtRouteMiddleware(async to => {
-  // Only apply to dashboard routes
   if (!to.path.startsWith('/dashboard')) {
     return
   }
 
   const { authStore, initSession } = useSession()
 
-  // Initialize and validate session with server
   try {
-    if (!authStore.isInitialized) {
-      await initSession()
-    }
+    await initSession({ force: true })
   } catch (error) {
     console.error('Session initialization failed:', error)
-    return navigateTo('/login')
+    return navigateTo('/')
   }
 
-  // Check if session exists and is valid after initialization
   if (!authStore.session) {
-    return navigateTo('/login')
+    return navigateTo('/')
   }
 
-  // Check if session has expired
   if (authStore.isSessionExpired) {
     authStore.clearAuth()
-    return navigateTo('/login')
+    return navigateTo('/')
   }
 
-  // Must be authenticated to access dashboard
   if (!authStore.isAuthenticated) {
-    return navigateTo('/login')
+    return navigateTo('/')
   }
 
-  // Validate user data exists
   if (!authStore.user) {
     authStore.clearAuth()
-    return navigateTo('/login')
+    return navigateTo('/')
   }
 
   return

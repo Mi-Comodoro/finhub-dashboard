@@ -7,24 +7,24 @@
     type ButtonVariant,
     Heading,
     Icon,
-    MetricCard,
     Text
   } from '@/components/atoms'
   import {
     BudgetDistribution,
     ExpensePlannedForm,
     ExpensePlannedSection,
-    SavingsDistribution
+    PlannedSavingList,
+    Tips,
+    TransactionList
   } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
-  import { useAuthStore } from '@/stores/auth.store'
+  import { useApiHandler } from '@/composables/useApiHandler'
+  import { useFeedback } from '@/composables/useFeedBack'
+  import { usePlannedIncome } from '@/composables/usePlannedIncome'
   import { useBudgetStore } from '@/stores/budget.store'
   import { useFinancesStore } from '@/stores/finances.store'
-  import { useModalStore } from '@/stores/modal.store'
   import { usePlannedIncomeStore } from '@/stores/planned-income.store'
-  import { useToast } from '~/components/organisms/toast/useToast'
   import DateUtils from '~/utils/date'
-
   definePageMeta({
     layout: 'dashboard',
     title: 'Detalles',
@@ -35,59 +35,26 @@
   const route = useRoute()
   const router = useRouter()
 
-  const authStore = useAuthStore()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
   const plannedIncomeStore = usePlannedIncomeStore()
-  const modalStore = useModalStore()
+  const { success: successToast } = useFeedback()
+  const { handleError } = useApiHandler()
+  const { lastUpdate } = usePlannedIncome()
 
-  // ─── Load data if navigated directly (store empty) ────────────────────────
   const budgetId = route.params['id'] as string
-  const handleActions = () => {
-    if (budgetStore.error?.status === 401) {
-      authStore.clearAuth()
-      return navigateTo('/', { replace: true })
-    } else {
-      modalStore.hideModal()
-    }
-  }
+
   onMounted(async () => {
     await budgetStore.fetchBudgetById(budgetId)
     await plannedIncomeStore.fetchPlannedIncomeByBudgetId(budgetId)
-
-    if (budgetStore.error) {
-      modalStore.showModal('error', {
-        title: budgetStore.error.title,
-        message: budgetStore.error.message,
-        actionLabel: 'Aceptar',
-        onAction: handleActions
-      })
-    }
+    const error = budgetStore.error || plannedIncomeStore.error
+    if (error) handleError(error)
   })
 
-  const { show } = useToast()
   const budgetStart = () => {
-    show({
-      title: 'Gasto guardado',
-      description: 'Se registró correctamente',
-      type: 'success'
-    })
+    successToast('Gasto Registrado', 'Se registró correctamente')
   }
-  const currency = computed(() => financesStore.defaultCurrency)
-  const sources = computed(() => {
-    function sourceMap(source: string) {
-      let item
-      if (source === 'salary') {
-        item = 'Salario'
-      }
-      if (source === 'freelance') {
-        item = 'Freelance'
-      }
-      return item
-    }
-    const sources = plannedIncomeStore.summary?.map(item => sourceMap(item.source))
-    return sources
-  })
+
   const strategyInfo = computed(() => {
     if (!plan.value) return null
     const isBalanced = plan.value.strategy === 'BALANCED'
@@ -138,25 +105,6 @@
   const planStatus = computed(() => plan.value?.status)
   const expectedAmount = computed(() => plannedIncomeStore.expectedIncome)
 
-  const needsAmount = computed(() => plannedIncomeStore.buckets.needsAmount)
-  const wantsAmount = computed(() => plannedIncomeStore.buckets.wantsAmount)
-  const savingsAmount = computed(() => plannedIncomeStore.buckets.savingsAmount)
-
-  // ─── Spending data — placeholder until transactions are linked ────────────
-  // TODO: replace with real values from transactions store once integrated
-  const spentNeeds = computed(() => 0)
-  const spentWants = computed(() => 0)
-
-  const remainingNeeds = computed(() => needsAmount.value - spentNeeds.value)
-  const remainingWants = computed(() => wantsAmount.value - spentWants.value)
-
-  const needsUsedPct = computed(() =>
-    needsAmount.value > 0 ? Math.round((spentNeeds.value / needsAmount.value) * 100) : 0
-  )
-  const wantsUsedPct = computed(() =>
-    wantsAmount.value > 0 ? Math.round((spentWants.value / wantsAmount.value) * 100) : 0
-  )
-
   const showForm = ref(false)
   const openForm = () => {
     showForm.value = true
@@ -165,63 +113,8 @@
     showForm.value = false
   }
 
-  const lastUpdate = computed(
-    () => plannedIncomeStore.summary?.find(item => item.updatedAt != undefined)?.updatedAt
-  )
-  type MetricCardVariant = 'neutral' | 'income' | 'expense' | 'available'
-
-  interface MetricCardData {
-    id: string
-    title: string
-    value: number
-    currencyCode: Currency
-    icon: string
-    variant: MetricCardVariant
-    percentage?: number
-    percentageText?: string
-    subtitle?: string
-    iconClass: string
-  }
-
-  const metricCards = computed<MetricCardData[]>(() => [
-    {
-      id: 'fixed-expenses',
-      title: 'Gastos Fijos',
-      value: remainingNeeds.value,
-      currencyCode: currency.value,
-      icon: 'home',
-      variant: 'expense',
-      percentage: needsUsedPct.value,
-      percentageText: `de ${formatCurrency(needsAmount.value, currency.value)}`,
-      iconClass: 'bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400'
-    },
-    {
-      id: 'variable-expenses',
-      title: 'Gastos Variables',
-      value: remainingWants.value,
-      currencyCode: currency.value,
-      icon: 'shopping_bag',
-      variant: 'expense',
-      percentage: wantsUsedPct.value,
-      percentageText: `de ${formatCurrency(wantsAmount.value, currency.value)}`,
-      iconClass: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'
-    },
-    {
-      id: 'savings',
-      title: 'Ahorro e Inversiones',
-      value: savingsAmount.value,
-      currencyCode: currency.value,
-      icon: 'savings',
-      variant: 'available', // o el variant que corresponda según las opciones disponibles
-      subtitle: `${plan.value?.limits?.savings || 0}% del ingreso`,
-      iconClass: 'bg-yellow-100 text-yellow-500 dark:bg-yellow-900/30 dark:text-yellow-400'
-    }
-  ])
-
   const showSavingDistributionForm = ref(false)
-  const createSavingDistributionForm = () => {
-    showSavingDistributionForm.value = true
-  }
+
   const closeSavingDistributionForm = () => {
     showSavingDistributionForm.value = false
   }
@@ -229,8 +122,6 @@
 
 <template>
   <div v-if="plan?.id" class="space-y-4">
-    <!-- ── Main content ────────────────────────────────────────────────────── -->
-
     <!-- Header -->
     <div class="flex w-full flex-wrap items-start p-4">
       <div class="flex items-center gap-2">
@@ -244,7 +135,7 @@
               <Badge :variant="planStatus === 'ACTIVE' ? 'success' : 'warning'" size="sm">
                 {{ planStatus === 'ACTIVE' ? 'Activo' : 'PLANIFICADO' }}
               </Badge>
-
+              <Badge variant="secondary" size="xs">{{ strategyInfo?.label }}</Badge>
               <Badge v-if="plan.isShared" variant="warning" size="xs">
                 <Icon name="group" size="xs" />
                 Compartido
@@ -252,10 +143,12 @@
             </div>
           </div>
 
-          <Text size="sm" color="muted" class="flex items-center gap-1">
-            Análisis mensual · Estrategia
-            <Badge variant="secondary" size="xs">{{ strategyInfo?.label }}</Badge>
-          </Text>
+          <div class="">
+            <Text size="sm" color="muted" weight="bold" class="flex items-center gap-1">
+              Actualizado {{ DateUtils.formatSmartDate(lastUpdate!) }}
+            </Text>
+            <Text color="muted" size="sm"></Text>
+          </div>
         </div>
       </div>
 
@@ -275,54 +168,23 @@
       </div>
     </div>
 
-    <div class="px-4">
-      <Card class="flex p-4">
-        <div class="flex flex-1 items-center gap-2">
-          <IconBadge icon="account_balance" variant="primary" size="md" />
-          <div>
-            <Label variant="section" text="Ingreso total esperado" color="muted" />
-            <Text color="black" size="xl" weight="bold">
-              {{ formatCurrency(expectedAmount!, financesStore.defaultCurrency, 2) }}
-              <span class="text-sm uppercase text-slate-500">
-                {{ financesStore.defaultCurrency }}
-              </span>
-            </Text>
-          </div>
-        </div>
+    <div class="grid w-full grid-cols-12 gap-4 px-4">
+      <div class="col-span-8 flex flex-col gap-4">
+        <BudgetInsights />
+        <PlannedSavingList :budget-id="budgetId" />
+        <ExpensePlannedSection :budget-id="budgetId" @open-form="openForm" />
+      </div>
 
-        <div class="flex gap-4">
-          <div class="place-items-end">
-            <Label variant="form" text="Fuentes de ingreso" color="muted" />
-            <Text color="muted" size="sm" weight="bold">
-              {{ sources?.join(', ') }}
-            </Text>
-          </div>
-          <div class="place-items-end text-end">
-            <Label variant="form" text="Ultima actualización" color="muted" />
-            <Text color="muted" size="sm" weight="bold">
-              {{ DateUtils.formatSmartDate(lastUpdate!) }}
-            </Text>
-          </div>
-        </div>
-      </Card>
-    </div>
-
-    <!-- ── Summary metric cards ─────────────────────────────────────────── -->
-    <div class="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 xl:grid-cols-4">
-      <MetricCard v-for="card in metricCards" :key="card.id" v-bind="card" />
-    </div>
-
-    <!-- ── Strategy insight ────────────────────────────────────────────── -->
-
-    <div class="grid gap-6 px-4 lg:grid-cols-2">
-      <!-- LEFT: Distribución -->
-      <BudgetDistribution />
-
-      <!-- RIGHT: Desglose de Ahorros -->
-      <SavingsDistribution @open-form="createSavingDistributionForm" />
-    </div>
-    <div class="px-4">
-      <ExpensePlannedSection :budget-id="budgetId" @open-form="openForm" />
+      <div class="col-span-4 flex flex-col gap-4">
+        <Tips icon="show_chart" title="Optimizacion Inteligente">
+          El ahorro del {{ plan?.limits?.savings || 0 }}% del
+          <strong>({{ formatCurrency(expectedAmount!, financesStore.defaultCurrency, 2) }})</strong>
+          , se activará automáticamente cuando confirmes tu primer ingreso.
+        </Tips>
+        <BudgetIncome />
+        <BudgetDistribution />
+        <TransactionList :budget-id="budgetId" />
+      </div>
     </div>
 
     <ModalWizard v-model:show="showForm">

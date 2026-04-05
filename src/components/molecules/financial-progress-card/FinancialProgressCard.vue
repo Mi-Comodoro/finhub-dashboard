@@ -58,7 +58,7 @@
   )
 
   const progressWidth = computed(() => {
-    return Math.min((props.progressPercentage / props.targetAmount) * 100, 100)
+    return Math.min(props.progressPercentage, 100)
   })
 
   const statusText = computed(() =>
@@ -179,7 +179,7 @@
 </script>
 <template>
   <Card
-    class="relative flex h-44 w-full max-w-[385px] flex-col space-y-2 overflow-hidden rounded-md"
+    class="relative flex h-auto w-full flex-col space-y-2 overflow-hidden rounded-md"
     :class="styles.background"
   >
     <div ref="containerRef" class="relative z-10 flex h-full flex-col">

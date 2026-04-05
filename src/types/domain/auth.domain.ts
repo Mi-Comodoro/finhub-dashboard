@@ -16,7 +16,7 @@ export interface User {
 
 export interface AuthSession {
   readonly user: User
-  readonly isAuthenticated: boolean
+  isAuthenticated: boolean
   readonly sessionExpiresAt: Date
 }
 

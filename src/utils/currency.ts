@@ -119,3 +119,7 @@ export function formatCompactCurrency(amount: number, currency: Currency): strin
 export function getCurrencyLabel(currency: Currency): string {
   return CURRENCY_CONFIG[currency].label
 }
+
+export function getPercentage(total: number, current: number) {
+  return Math.round((current / total) * 100)
+}

@@ -4,7 +4,7 @@ export const replaceUnderscoresWithSpaces = (str: string): string => {
 
 export const capitalizeFirstLetter = (str: string): string => {
   if (!str) return ''
-  return str.charAt(0).toUpperCase() + str.slice(1)
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
 export const formatEnumValue = (str: string): string => {
@@ -24,3 +24,4 @@ export const getInitials = (name: string): string => {
     .join('')
     .slice(0, 2)
 }
+export const upperCase = (value: string) => value.toUpperCase()

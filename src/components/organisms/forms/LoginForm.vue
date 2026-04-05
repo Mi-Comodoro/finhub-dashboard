@@ -18,17 +18,20 @@
     isLoading.value = true
     error.value = null
 
-    const { success } = await loginWithGoogle()
+    try {
+      const { success } = await loginWithGoogle()
 
-    if (!success) {
-      error.value = authError.value || 'Error desconocido durante la autenticación'
-    } else {
-      // Navigate based on onboarding status
+      if (!success) {
+        error.value = authError.value || 'Error desconocido durante la autenticacion'
+        return
+      }
+
+      await navigateTo('/dashboard')
+    } finally {
       isLoading.value = false
-      const destination = '/dashboard'
-      await navigateTo(destination)
     }
   }
+
   const handleEmailLogin = async (): Promise<void> => {
     if (!email.value || !password.value) {
       error.value = 'Por favor completa todos los campos'
@@ -41,14 +44,11 @@
     const { success } = await login(email.value, password.value)
 
     if (!success) {
-      error.value = authError.value || 'Error desconocido durante la autenticación'
+      error.value = authError.value || 'Error desconocido durante la autenticacion'
     } else {
-      // Navigate based on onboarding status
-
       const destination = '/dashboard'
       await navigateTo(destination)
 
-      // Clear form on successful login
       email.value = ''
       password.value = ''
     }
@@ -71,13 +71,12 @@
           title="Bienvenido"
           color="black"
           weight="extrabold"
-          sub-title="Inicia sesión en tu panel de FinHub"
+          sub-title="Inicia sesion en tu panel de FinHub"
           sub-title-size="base"
           sub-title-color="muted"
         />
       </div>
 
-      <!-- Error Display -->
       <div
         v-if="error"
         class="rounded-lg border border-red-200 bg-red-50 p-4 transition-colors duration-200 dark:border-red-800 dark:bg-red-900/20"
@@ -89,7 +88,6 @@
         </div>
       </div>
 
-      <!-- Google Login -->
       <Button
         variant="outline"
         class="w-full transition-colors duration-200"
@@ -99,11 +97,10 @@
       >
         <GoogleIcon class="mr-2" :size="20" />
         <span>
-          {{ isLoading ? 'Conectando...' : 'Iniciar sesión con Google' }}
+          {{ isLoading ? 'Conectando...' : 'Iniciar sesion con Google' }}
         </span>
       </Button>
 
-      <!-- Divider -->
       <div class="relative my-4">
         <div class="absolute inset-0 flex items-center">
           <div
@@ -116,21 +113,20 @@
             color="muted"
             class="bg-white px-4 transition-colors duration-200 dark:bg-neutral-800"
           >
-            O continúa con tu correo
+            O continua con tu correo
           </Text>
         </div>
       </div>
 
-      <!-- Email / Password (mock por ahora) -->
       <form class="w-full space-y-6" @submit.prevent="handleSubmit">
         <Input
           id="email"
           v-model="email"
           name="email"
-          label="Correo electrónico"
+          label="Correo electronico"
           required
           placeholder="nombre@empresa.com"
-          error-message="Correo inválido"
+          error-message="Correo invalido"
         />
 
         <Input
@@ -138,13 +134,13 @@
           v-model="password"
           name="password"
           type="password"
-          placeholder="Ingresa tu contraseñaa"
+          placeholder="Ingresa tu contrasena"
           required
-          label="Contraseña"
-          error-message="La contraseña debe tener al menos 6 caracteres"
+          label="Contrasena"
+          error-message="La contrasena debe tener al menos 6 caracteres"
           show-password-toggle
           forgot-password
-          forgot-password-text="¿Olvidaste tu contraseña?"
+          forgot-password-text="Olvidaste tu contrasena?"
         />
 
         <Button
@@ -154,18 +150,18 @@
           :loading="isLoading"
           :disabled="isLoading"
         >
-          Iniciar Sesión
+          Iniciar Sesion
         </Button>
       </form>
 
       <Text size="sm" color="muted" class="text-center">
-        ¿No tienes una cuenta?
+        No tienes una cuenta?
         <Link
           href="#"
           size="sm"
           class="font-semibold text-teal-600 transition-colors duration-200 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
         >
-          Regístrate
+          Registrate
         </Link>
       </Text>
     </div>

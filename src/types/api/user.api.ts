@@ -52,5 +52,6 @@ export type UserMe = {
     }
     onboarding: string
     accountType: AccountType
+    expiresAt?: number | null
   }
 }

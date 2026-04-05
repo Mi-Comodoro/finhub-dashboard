@@ -54,14 +54,20 @@ export const useAuthStore = defineStore('auth', {
         this.error = null
       }
     },
+    changeAuthenticated(isAuthenticated: boolean) {
+      if (!this.session) {
+        if (isAuthenticated) {
+          console.warn('No puedes autenticar sin sesión')
+        }
+        return
+      }
 
+      this.session.isAuthenticated = isAuthenticated
+    },
     setOnboarding(onboarding: OnboardingStatus | null) {
       this.onboarding = onboarding
     },
     // Helper method to check if user needs onboarding
-    needsOnboarding(): boolean {
-      return this.isAuthenticated && !this.isOnboardingCompleted
-    },
     setAccountType(accountType: AccountType | null) {
       this.accountType = accountType
     },

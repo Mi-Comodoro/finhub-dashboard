@@ -1,7 +1,8 @@
 import type { User } from 'firebase/auth'
 import { computed, ref } from 'vue'
 
-import { ACCESS_TOKEN, ACCOUNT_TYPE, COOKIE_OPTIONS, SESSION_DURATION } from '@/common/constants'
+import { SESSION_DURATION } from '@/common/constants'
+import { useSessionWatcher } from '@/composables/useSessionWatcher'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useUserStore } from '@/stores/user.store'
@@ -10,31 +11,43 @@ import type { AuthResponseResult } from '@/types/auth'
 import type { FirebasePlugin } from '@/types/firebase'
 
 export const useAuth = () => {
-  // Reactive variables
   const error = ref('')
   const user = ref<User | null>(null)
 
   const authStore = useAuthStore()
   const userStore = useUserStore()
   const financesStore = useFinancesStore()
+  const { startWatcher, stopWatcher } = useSessionWatcher()
 
-  const token = useCookie<string | null>(ACCESS_TOKEN, { ...COOKIE_OPTIONS })
-  const accountType = useCookie<string | null>(ACCOUNT_TYPE, { ...COOKIE_OPTIONS })
-
-  // Computed properties
   const isAuthenticated = computed(() => authStore.isAuthenticated)
 
-  /**
-   * Fetches canonical user data from the server and populates all stores.
-   * Single source of truth for session setup after any login method.
-   * Mirrors the logic in useSession.initSession for consistency.
-   */
-  const populateSessionFromServer = async (bearerToken: string): Promise<string> => {
-    const { success, result } = await $fetch<UserMe>('/api/users/me', {
-      headers: { Authorization: `Bearer ${bearerToken}` }
-    })
+  const getReadableError = (err: unknown) => {
+    if (err instanceof Error && err.message) {
+      return err.message
+    }
+
+    if (typeof err === 'object' && err !== null && 'data' in err) {
+      const data = (err as { data?: { message?: string } }).data
+      if (data?.message) return data.message
+    }
+
+    return 'Error de autenticación con Google'
+  }
+
+  const resolveSessionExpiresAt = (expiresAt?: number | null) => {
+    if (expiresAt) {
+      return new Date(expiresAt * 1000)
+    }
+
+    return new Date(Date.now() + SESSION_DURATION)
+  }
+
+  const populateSessionFromServer = async (fallbackExpiresAt?: number | null): Promise<string> => {
+    const { success, result } = await $fetch<UserMe>('/api/users/me')
 
     if (!success || !result) throw new Error('No se pudo obtener datos del usuario')
+
+    const resolvedExpiresAt = result.expiresAt ?? fallbackExpiresAt ?? null
 
     authStore.setSession({
       user: {
@@ -44,7 +57,7 @@ export const useAuth = () => {
         avatar: result.user.photo || null
       },
       isAuthenticated: true,
-      sessionExpiresAt: new Date(Date.now() + SESSION_DURATION)
+      sessionExpiresAt: resolveSessionExpiresAt(resolvedExpiresAt)
     })
 
     userStore.setUser(result.user)
@@ -59,6 +72,7 @@ export const useAuth = () => {
       financesStore.setFinancialProfile(result.finances)
       financesStore.updateConfig({ defaultCurrency: result.finances.currency })
     }
+
     return result.onboarding
   }
 
@@ -79,11 +93,13 @@ export const useAuth = () => {
         return { success: false, onboardingStatus: 'PENDING' }
       }
 
-      token.value = res.token
-      accountType.value = res.accountType
       authStore.setAccountType(res.accountType)
 
-      const onboardingStatus = await populateSessionFromServer(res.token)
+      const onboardingStatus = await populateSessionFromServer(res.expiresAt)
+
+      if (res.expiresAt) {
+        startWatcher(res.expiresAt)
+      }
 
       user.value = createFirebaseUser(authStore.user)
 
@@ -107,47 +123,59 @@ export const useAuth = () => {
 
       const result = await $firebase.signInWithPopup(auth, googleProvider)
       const idToken = await result.user.getIdToken()
+      const fallbackName = result.user.displayName ?? result.user.email?.split('@')[0] ?? 'Usuario'
 
       const { success, result: res } = await $fetch<AuthResponseResult>('/api/auth/google', {
         method: 'POST',
-        body: { data: { idToken, name: result.user.displayName } }
+        body: { data: { idToken, name: fallbackName } }
       })
 
       if (!success || !res) {
         throw new Error('Error de autenticación con Google')
       }
 
-      token.value = res.token
-      accountType.value = res.accountType
       authStore.setAccountType(res.accountType)
 
-      // Fetch canonical user data from server instead of mapping Firebase user directly.
-      // This ensures onboarding status, finances, and profile data are always server-sourced.
-      const onboardingStatus = await populateSessionFromServer(res.token)
+      const onboardingStatus = await populateSessionFromServer(res.expiresAt)
+      startWatcher(res.expiresAt)
 
       user.value = createFirebaseUser(authStore.user)
 
       return { success: true, onboardingStatus }
     } catch (err) {
-      error.value = JSON.stringify(err) /* || 'Error al iniciar sesión con Google' */
+      error.value = getReadableError(err)
 
       return { success: false, onboardingStatus: 'PENDING' }
     }
   }
 
   const logout = async (): Promise<void> => {
-    const { $firebase } = useNuxtApp() as { $firebase: FirebasePlugin }
-    const { auth } = await $firebase.initFirebase()
-    await $firebase.firebaseSignOut(auth!)
-    await $fetch('/api/auth/logout', { method: 'POST' })
+    authStore.setLoading(true)
+    authStore.setError(null)
+    stopWatcher()
 
-    token.value = null
-    accountType.value = null
-    user.value = null
-    authStore.clearAuth()
+    try {
+      const { $firebase } = useNuxtApp() as { $firebase: FirebasePlugin }
+      const { auth } = await $firebase.initFirebase()
+
+      if (auth) {
+        await $firebase.firebaseSignOut(auth)
+      }
+
+      await $fetch('/api/auth/logout', { method: 'POST' })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo cerrar la sesión'
+      authStore.setError(message)
+      throw err
+    } finally {
+      user.value = null
+      userStore.clearUser()
+      financesStore.clearFinances()
+      authStore.clearAuth()
+      authStore.setLoading(false)
+    }
   }
 
-  // Helper function to create Firebase-compatible user from domain User
   const createFirebaseUser = (domainUser: typeof authStore.user): User | null => {
     if (!domainUser) return null
 
@@ -160,13 +188,13 @@ export const useAuth = () => {
   }
 
   const observeAuth = async (): Promise<void> => {
-    // Only run on client-side
     if (import.meta.server) return
 
     const { $firebase } = useNuxtApp() as { $firebase: FirebasePlugin }
 
     const { auth } = await $firebase.initFirebase()
     if (!auth) return
+
     $firebase.onAuthStateChanged(auth, (firebaseUser: User | null) => {
       user.value = firebaseUser
     })

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { useActiveBudget } from '@/composables/useActiveBudget'
   import { useSavingGoals } from '@/composables/useSavingGoals'
   import { useAccountStore } from '@/stores/account.store'
   import { useBudgetStore } from '@/stores/budget.store'
@@ -6,10 +7,10 @@
   import { usePlannedIncomeStore } from '@/stores/planned-income.store'
   import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
 
-  import { subtractPercentage } from '../../../utils/numbers'
-
   const budgetStore = useBudgetStore()
   const plannedIncomeStore = usePlannedIncomeStore()
+  const financeStore = useFinancesStore()
+  const currentBudgetId = computed(() => budgetStore.currentBudgetPlan?.id ?? null)
 
   const savingsAllocationsStore = useSavingAllocationsStore()
   const goalsStore = useGoalsStore()
@@ -17,12 +18,23 @@
   const goals = computed(() => goalsStore.goals)
 
   const { sumAmountTarget, lastUpdate } = useSavingGoals()
-
+  const {
+    pendingAllocationProgress,
+    pendingAssignedAmount,
+    allocationProgress,
+    goalsProgress,
+    savingsAmount
+  } = useActiveBudget()
   onMounted(async () => {
-    await budgetStore.fetchCurrentBudget()
-    await plannedIncomeStore.fetchPlannedIncomeByBudgetId(
-      budgetStore.currentBudgetPlan?.id as string as string
-    )
+    const financeId = financeStore.profile?.id
+    if (financeId) {
+      await budgetStore.fetchCurrentBudget(financeId)
+    }
+
+    if (currentBudgetId.value) {
+      await plannedIncomeStore.fetchPlannedIncomeByBudgetId(currentBudgetId.value)
+    }
+
     if (accountStore.accounts.length < 1) {
       await accountStore.fetchAccounts()
     }
@@ -31,21 +43,6 @@
     }
   })
 
-  const savingsAmount = computed(() => plannedIncomeStore.buckets.savingsAmount)
-
-  const countAssignedSavingAllocation = computed(
-    () => savingsAllocationsStore.savingAllocations.length
-  )
-  const savingAllocationTotal = computed(() =>
-    savingsAllocationsStore.savingAllocations.reduce((acc, sa) => acc + Number(sa.percentage), 0)
-  )
-
-  const pendingAssignedAmount = computed(() =>
-    countAssignedSavingAllocation.value === 0
-      ? savingsAmount.value
-      : subtractPercentage(savingsAmount.value, savingAllocationTotal.value)
-  )
-  const percentageMissing = computed(() => 100 - savingAllocationTotal.value)
   const pendingAmount = computed(() =>
     pendingAssignedAmount.value === savingsAmount.value
       ? savingsAmount.value
@@ -64,14 +61,14 @@
       icon-name="account_balance"
       icon-text-class="text-primary-500"
       currency-text-class="text-primary-500"
-      :progress-percentage="savingAllocationTotal"
+      :progress-percentage="allocationProgress"
       variant="primary"
       show-progressbar
     />
     <FinancialProgressCard
       :title="'Proyeccion'"
       :subtitle="'Basado en tus Metas'"
-      :amount="sumAmountTarget(goals.length)"
+      :amount="sumAmountTarget(goalsProgress)"
       icon-name="savings"
       icon-text-class="text-yellow-500"
       currency-text-class="text-yellow-500"
@@ -84,7 +81,7 @@
       :subtitle="'Pendiente de Asignar'"
       :amount="pendingAmount"
       icon-name="pending_actions"
-      :pending-percentage="percentageMissing"
+      :pending-percentage="pendingAllocationProgress"
       variant="warning"
       show-alert
     />

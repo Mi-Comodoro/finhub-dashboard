@@ -26,6 +26,7 @@
           :icon="item.icon"
           :path="item.path"
           :is-active="item.isActive"
+          :on-click="item.onClick"
         />
       </li>
     </ul>

@@ -9,19 +9,33 @@ export const useSession = () => {
   const financesStore = useFinancesStore()
   const userStore = useUserStore()
 
-  /**
-   * Reusable request para obtener los datos del usuario
-   */
+  const resolveSessionExpiresAt = (expiresAt?: number | null) => {
+    if (expiresAt) {
+      return new Date(expiresAt * 1000)
+    }
+
+    return new Date(Date.now() + SESSION_DURATION)
+  }
+
+  const clearSessionState = () => {
+    authStore.clearAuth()
+    userStore.clearUser()
+    financesStore.clearFinances()
+  }
+
   const fetchUserMe = async () => {
     try {
       const { success, result } = await $fetch<UserMe>('/api/users/me', { credentials: 'include' })
+
       if (!success) return null
+
       if (result.finances) {
         financesStore.setFinancialProfile(result.finances)
         financesStore.updateConfig({
           defaultCurrency: result.finances.currency
         })
       }
+
       userStore.setUser(result.user)
       return result
     } catch (error) {
@@ -30,16 +44,29 @@ export const useSession = () => {
     }
   }
 
-  const initSession = async () => {
-    if (authStore.isInitialized && authStore.isAuthenticated) return
+  const initSession = async (options?: { force?: boolean }) => {
+    const force = options?.force ?? false
+
+    if (
+      !force &&
+      authStore.isInitialized &&
+      authStore.isAuthenticated &&
+      !authStore.isSessionExpired
+    ) {
+      return
+    }
+
     try {
       authStore.setLoading(true)
+
       const result = await fetchUserMe()
+
       if (!result) {
+        clearSessionState()
         return
       }
 
-      const userData: UserMe['result'] = result // 👈 clave
+      const userData: UserMe['result'] = result
 
       authStore.setSession({
         user: {
@@ -49,15 +76,15 @@ export const useSession = () => {
           avatar: userData.user.photo || null
         },
         isAuthenticated: true,
-        sessionExpiresAt: new Date(Date.now() + SESSION_DURATION)
+        sessionExpiresAt: resolveSessionExpiresAt(userData.expiresAt)
       })
 
       authStore.setOnboarding({
-        isCompleted: userData.onboarding === 'COMPLETED' ? true : false
+        isCompleted: userData.onboarding === 'COMPLETED'
       })
       authStore.setAccountType(userData.accountType)
     } catch (error) {
-      authStore.clearAuth()
+      clearSessionState()
       console.error('❌ Error validating token:', error)
     } finally {
       authStore.setInitialized(true)

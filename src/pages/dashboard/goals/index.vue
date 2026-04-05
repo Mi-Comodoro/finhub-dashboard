@@ -1,17 +1,21 @@
 <script setup lang="ts">
+  import { Button, Text } from '@/components/atoms'
+  import { AccountSavingForm, GoalsForm } from '@/components/business'
+  import { CardInfo } from '@/components/molecules'
+  import { ModalWizard } from '@/components/organisms'
+  import { useToast } from '@/components/organisms/toast/useToast'
   import { useAccountSavings } from '@/composables/useAccountSavings'
+  import { useActiveBudget } from '@/composables/useActiveBudget'
+  import { useCommon } from '@/composables/useCommon'
+  import { useSetup } from '@/composables/useSetup'
   import { useAccountStore } from '@/stores/account.store'
   import { useAuthStore } from '@/stores/auth.store'
   import { useGoalsStore } from '@/stores/goals.store'
   import { useModalStore } from '@/stores/modal.store'
   import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
-  import { Button, Text } from '~/components/atoms'
-  import { AccountSavingForm, GoalsForm } from '~/components/business'
-  import { CardInfo } from '~/components/molecules'
-  import { ModalWizard } from '~/components/organisms'
-  import { useToast } from '~/components/organisms/toast/useToast'
-  import type { CompoundingFrequency } from '~/types/api'
+  import type { CompoundingFrequency } from '@/types/api'
 
+  const router = useRouter()
   const accountStore = useAccountStore()
   const goalsStore = useGoalsStore()
   const authStore = useAuthStore()
@@ -27,6 +31,62 @@
   }
 
   const { frequencyMap, getRateCategory } = useAccountSavings()
+
+  const {
+    canActive,
+    isAccountCreated,
+    isGoalsCompleted,
+    isSavingsAllocationCompleted,
+    allocationProgress,
+    goalsProgress,
+    enabled
+  } = useActiveBudget()
+  const { currentBudgetId } = useSetup()
+  const { budgetStatus } = useCommon()
+  const activateBudget = async () => {
+    await enabled()
+
+    if (currentBudgetId.value) {
+      await router.push(`/dashboard/budget/${currentBudgetId.value}`)
+    }
+  }
+  const steps = computed(() => [
+    {
+      key: 'accounts',
+      title: 'Configura tus cuentas',
+      description: 'Crea tu primera cuenta para comenzar.',
+      icon: 'account_balance',
+      condition: !isAccountCreated.value,
+      actionLabel: 'Agregar',
+      event: createAccountSavings
+    },
+    {
+      key: 'goals',
+      title: 'Define tus metas de ahorro',
+      description: 'Crea al menos 3 metas: emergencia, retiro y una adicional.',
+      icon: 'add_task',
+      condition: isAccountCreated.value && !isGoalsCompleted.value,
+      actionLabel: 'Agregar',
+      event: createGoalsForm
+    },
+    {
+      key: 'distribution',
+      title: 'Distribuye tu ahorro',
+      description: 'Decide cómo repartir tu ahorro, debes repartir el 100%',
+      icon: 'segment',
+      condition: isGoalsCompleted.value && !isSavingsAllocationCompleted.value,
+      actionLabel: 'Distribuir',
+      event: createSavingDistributionForm
+    },
+    {
+      key: 'done',
+      title: 'Tu estrategia está lista',
+      description: 'Tu ahorro ya está distribuido.',
+      icon: 'celebration',
+      condition: canActive(), // 🔥 fallback
+      variant: 'success'
+    }
+  ])
   const goals = computed(() => goalsStore.goals)
 
   definePageMeta({
@@ -38,7 +98,7 @@
     if (accountStore.accounts.length < 1) {
       await accountStore.fetchAccounts()
     }
-    if (goalsStore.goals.length < 1) {
+    if (goalsProgress.value < 1) {
       await goalsStore.fetchGoals()
       if (goalsStore.error) {
         modalStore.showModal('error', {
@@ -64,6 +124,7 @@
   }
 
   const onSuccess = () => {
+    showGoalsForm.value = false
     show({
       title: 'Meta Creada',
       description: 'Se registró correctamente',
@@ -80,6 +141,7 @@
     closeSavingDistributionForm()
   }
   const onError = () => {
+    showGoalsForm.value = false
     if (goalsStore.error) {
       modalStore.showModal('error', {
         title: goalsStore.error.title,
@@ -88,7 +150,6 @@
         onAction: handleActions
       })
     }
-    closeSavingDistributionForm()
   }
 
   const onSavingAllocationError = () => {
@@ -146,16 +207,8 @@
     return 'bg-gray-200 text-gray-500'
   }
   const isAccountExits = computed(() => accountStore.accounts.length >= 1)
-  const isGoalsExists = computed(() => goals.value.length >= 1)
+  const isGoalsExists = computed(() => goalsProgress.value >= 1)
 
-  const goalsSetupCompleted = computed(() => goals.value.length >= 4 && goals.value.length < 5)
-  const savingsAllocationSetupComplete = computed(
-    () =>
-      savingsAllocationsStore.savingAllocations.reduce(
-        (acc, sa) => acc + Number(sa.percentage),
-        0
-      ) === 100
-  )
   const showSavingDistributionForm = ref(false)
   const createSavingDistributionForm = () => {
     showSavingDistributionForm.value = true
@@ -186,9 +239,6 @@
       progressPercentage: 0 // luego dinámico
     }))
   )
-  const savingAllocationTotal = computed(() =>
-    savingsAllocationsStore.savingAllocations.reduce((acc, sa) => acc + Number(sa.percentage), 0)
-  )
 </script>
 
 <template>
@@ -207,7 +257,7 @@
           size="sm"
           icon="add_task"
           variant="primary"
-          :disabled="!isAccountExits"
+          :disabled="!isAccountCreated"
           :onclick="createGoalsForm"
         >
           Nueva Meta
@@ -215,7 +265,6 @@
       </div>
     </div>
     <AllocationSummary />
-
     <div>
       <Card class="flex w-full items-start gap-2">
         <IconBadge icon="lightbulb_2" variant="primary" size="md" />
@@ -260,83 +309,33 @@
           </div>
         </Card>
       </div>
+      <div v-else class="col-span-8 flex flex-col items-center gap-4 rounded-md bg-slate-200">
+        <div class="flex h-full flex-col items-center gap-4 py-52">
+          <Icon name="add_task" class="text-slate-400 dark:text-slate-600" size="2xl" />
+          <Heading level="h3" color="muted">Aún no tienes metas</Heading>
+          <Text size="sm" color="muted" class="w-96 text-center">
+            Primero crea tus cuentas para poder definir tus metas financieras y comenzar a organizar
+            tus finanzas de manera efectiva.
+          </Text>
+        </div>
+      </div>
 
       <div class="col-span-4 flex flex-col gap-4">
         <!--  -->
-        <div class="w-full">
-          <Heading level="h1" size="sm" weight="extrabold" class="p-1 !text-primary-800">
-            Configuración Paso a Paso
-          </Heading>
-          <Card v-if="!isAccountExits" class="flex w-full items-start gap-2">
-            <IconBadge icon="account_balance" variant="primary" size="md" />
-            <div class="w-full leading-relaxed">
-              <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
-                Configuracion de Cuentas
-              </Heading>
-              <Text size="xs" color="muted" class="w-full">
-                Configura tu primera cuenta, para desbloquear el siguiente paso. ¡No te preocupes no
-                te pediremos datos de tu cuenta!
-              </Text>
-            </div>
-          </Card>
-
-          <Card v-if="isAccountExits && !goalsSetupCompleted" class="flex w-full items-start gap-2">
-            <IconBadge icon="flag" variant="primary" size="md" />
-            <div class="w-full leading-relaxed">
-              <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
-                Define para qué estás ahorrando
-              </Heading>
-              <Text size="xs" color="muted" class="w-full">
-                Crea metas específicas para darle propósito a tu dinero. Entre más claras sean, más
-                fácil será mantener el hábito.
-                <strong class="text-primary-800">
-                  ¡Configura al menos 4 para avanzar al siguiente paso!
-                </strong>
-              </Text>
-            </div>
-          </Card>
-
-          <Card
-            v-if="goalsSetupCompleted && !savingsAllocationSetupComplete"
-            class="flex w-full items-start gap-2"
-          >
-            <IconBadge icon="celebration" variant="primary" size="md" />
-            <div class="w-full leading-relaxed">
-              <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
-                Distribuye tu ahorro mensual
-              </Heading>
-              <Text size="xs" color="muted" class="w-full">
-                ¡Decide cómo repartir tu ahorro entre tus metas. Este cálculo se basa en el 20% de
-                tu ingreso estimado!
-              </Text>
-            </div>
-            <div class="flex w-full justify-end self-center">
-              <Button
-                size="sm"
-                variant="primary"
-                icon="segment"
-                @click="createSavingDistributionForm"
-              >
-                Distribuir mi Ahorro
-              </Button>
-            </div>
-          </Card>
-
-          <Card v-if="savingsAllocationSetupComplete" class="flex w-full items-start gap-2">
-            <IconBadge icon="celebration" variant="primary" size="md" />
-            <div class="w-full leading-relaxed">
-              <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
-                Tu estrategia de ahorro está definida
-              </Heading>
-              <Text size="xs" color="muted" class="w-full">
-                Así se distribuirá tu ahorro cada mes según tu ingreso estimado. Podrás ajustarlo en
-                cualquier momento.
-              </Text>
-            </div>
-          </Card>
+        <div v-if="budgetStatus !== 'ACTIVE'">
+          <div v-for="(step, index) in steps" :key="index" class="flex flex-col">
+            <Tips
+              v-if="step.condition"
+              :title="step.title"
+              :icon="step.icon"
+              :description="step.description"
+              :action-label="step.actionLabel"
+              :event="step.event"
+            />
+          </div>
         </div>
         <!--  -->
-        <div>
+        <div v-if="budgetStatus !== 'ACTIVE'">
           <FinancialProgressCard
             :title="'Setup'"
             title-color="white"
@@ -351,22 +350,26 @@
             <template #body>
               <SetupProgressCard
                 :accounts-count="accountStore.accounts.length"
-                :goals-count="goals.length"
-                :distribution-percentage="savingAllocationTotal"
+                :goals-count="goalsProgress"
+                :distribution-percentage="allocationProgress"
                 @completed="() => console.log('Ir a presupuesto')"
               >
                 <template #action>
-                  <div class="flex flex-col justify-between">
+                  <div v-if="canActive()" class="flex flex-col justify-between">
                     <Text color="white" size="xs">
                       ¡Todo listo para comenzar! Ya definiste tu ahorro y organización inicial.
                       Ahora es momento de planificar tus gastos.
-                      <span
-                        class="mt-1 flex justify-center gap-2 rounded-md border border-neutral-300 bg-neutral-100 p-1 text-black"
-                      >
-                        <Icon name="rocket_launch" size="xs" />
-                        <p>Activar Presupuesto</p>
-                      </span>
                     </Text>
+                    <div class="flex justify-end">
+                      <Button
+                        icon="rocket_launch"
+                        size="sm"
+                        variant="ghost"
+                        @click="activateBudget"
+                      >
+                        Activar
+                      </Button>
+                    </div>
                   </div>
                 </template>
               </SetupProgressCard>

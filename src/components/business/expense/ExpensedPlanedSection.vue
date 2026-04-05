@@ -117,62 +117,64 @@
     <template #action>
       <Button variant="secondary" size="sm" icon="add" @click="openForm">Añadir Gastos</Button>
     </template>
-
-    <template #footer>
+    <template #default>
       <!-- 🔍 SEARCH -->
-      <div class="flex gap-2 p-2 px-4">
-        <Input v-model="search" placeholder="Buscar..." search-icon />
+      <div class="flex w-full flex-col space-y-2">
+        <div class="flex gap-2">
+          <Input v-model="search" placeholder="Buscar..." search-icon />
 
-        <!-- 🪣 BUCKET FILTER -->
-        <Select
-          v-model="selectedBucket"
-          name="bucked"
-          multiple
-          :options="bucketFilter"
-          placeholder="Filtrar por grupo"
-        />
+          <!-- 🪣 BUCKET FILTER -->
+          <Select
+            v-model="selectedBucket"
+            name="bucked"
+            multiple
+            :options="bucketFilter"
+            placeholder="Filtrar por grupo"
+          />
+        </div>
+
+        <!-- 📊 TABLE -->
+        <DataTable
+          :columns="columns"
+          :data="expenses"
+          :pagination="expenseStore.meta"
+          @page-change="expenseStore.setPage"
+        >
+          <template #cell-category="{ value }">
+            <Badge size="xs">{{ value }}</Badge>
+          </template>
+
+          <template #cell-bucket="{ value }">
+            <Badge :class="getBucketClassName(value)" size="xs">
+              {{ getBucketName(value) }}
+            </Badge>
+          </template>
+
+          <template #cell-status="{ value }">
+            <Badge variant="secondary" size="xs">
+              {{ value }}
+            </Badge>
+          </template>
+
+          <template #actions="{ row }">
+            <div class="flex w-full justify-end gap-4">
+              <Button
+                v-if="row.status === 'PLANNED'"
+                icon="check"
+                icon-only
+                variant="ghost"
+                size="sm"
+                @click="markAsPayed(row)"
+              />
+              <Button icon="edit" icon-only variant="secondary" size="sm" @click="edit(row)" />
+              <Button icon="delete" icon-only variant="danger" size="sm" @click="remove(row)" />
+            </div>
+          </template>
+
+          <template #empty>No hay gastos aún 🚀</template>
+        </DataTable>
       </div>
-
-      <!-- 📊 TABLE -->
-      <DataTable
-        :columns="columns"
-        :data="expenses"
-        :pagination="expenseStore.meta"
-        @page-change="expenseStore.setPage"
-      >
-        <template #cell-category="{ value }">
-          <Badge size="xs">{{ value }}</Badge>
-        </template>
-
-        <template #cell-bucket="{ value }">
-          <Badge :class="getBucketClassName(value)" size="xs">
-            {{ getBucketName(value) }}
-          </Badge>
-        </template>
-
-        <template #cell-status="{ value }">
-          <Badge variant="secondary" size="xs">
-            {{ value }}
-          </Badge>
-        </template>
-
-        <template #actions="{ row }">
-          <div class="flex w-full justify-end gap-4">
-            <Button
-              v-if="row.status === 'PLANNED'"
-              icon="check"
-              icon-only
-              variant="ghost"
-              size="sm"
-              @click="markAsPayed(row)"
-            />
-            <Button icon="edit" icon-only variant="secondary" size="sm" @click="edit(row)" />
-            <Button icon="delete" icon-only variant="danger" size="sm" @click="remove(row)" />
-          </div>
-        </template>
-
-        <template #empty>No hay gastos aún 🚀</template>
-      </DataTable>
     </template>
+    <template #footer></template>
   </SectionCard>
 </template>

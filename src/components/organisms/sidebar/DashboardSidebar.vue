@@ -3,12 +3,18 @@
 
   import { AppLogo, AppVersion } from '@/components/atoms'
   import { NavigationSection } from '@/components/molecules'
+  import { useAuth } from '~/composables/useAuth'
   import { useAuthStore } from '~/stores/auth.store'
 
   import type { MenuItem } from './types/dashboard-sidebar.types'
-  const route = useRoute()
 
-  const { accountType } = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
+
+  const authStore = useAuthStore()
+  const { accountType } = authStore
+  const { logout } = useAuth()
+
   const menuItems: Omit<MenuItem, 'isActive'>[] = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
@@ -23,23 +29,37 @@
   const mainMenuItems = computed<MenuItem[]>(() => {
     return menuItems.map(item => ({
       ...item,
-      isActive: isActiveRoute(item.path, route.path)
+      isActive: isActiveRoute(item.path ?? '', route.path)
     }))
   })
 
   const settingsMenuItems = computed<MenuItem[]>(() => {
     return settingsItems.map(item => ({
       ...item,
-      isActive: isActiveRoute(item.path, route.path)
+      isActive: isActiveRoute(item.path ?? '', route.path)
     }))
   })
 
-  // Helper function to determine if a route is active
+  const accountMenuItems = computed<MenuItem[]>(() => [
+    {
+      name: authStore.isLoading ? 'Cerrando sesión...' : 'Cerrar sesión',
+      icon: 'logout',
+      isActive: false,
+      onClick: async () => {
+        if (authStore.isLoading) return
+
+        try {
+          await logout()
+        } finally {
+          await router.push('/')
+        }
+      }
+    }
+  ])
+
   const isActiveRoute = (itemPath: string, currentPath: string): boolean => {
-    // Exact match
     if (currentPath === itemPath) return true
 
-    // Handle dashboard root special case
     if (
       itemPath === '/dashboard' &&
       (currentPath === '/dashboard/' || currentPath === '/dashboard')
@@ -47,8 +67,6 @@
       return true
     }
 
-    // For other routes, check if current path starts with item path
-    // but make sure we don't match partial paths (e.g., /dashboard/budgets shouldn't match /dashboard/budget)
     if (itemPath !== '/dashboard' && currentPath.startsWith(itemPath)) {
       const remainder = currentPath.slice(itemPath.length)
       return remainder === '' || remainder.startsWith('/')
@@ -66,6 +84,7 @@
     <nav class="dashboard-sidebar__nav">
       <NavigationSection title="MENÚ PRINCIPAL" :items="mainMenuItems" />
       <NavigationSection title="CONFIGURACIÓN" :items="settingsMenuItems" />
+      <NavigationSection title="CUENTA" :items="accountMenuItems" />
     </nav>
     <div class="dashboard-sidebar__version">
       <div class="my-2 rounded-md border border-slate-300 bg-slate-300 p-4">
