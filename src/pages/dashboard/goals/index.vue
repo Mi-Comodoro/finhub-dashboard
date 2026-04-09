@@ -83,7 +83,7 @@
       title: 'Tu estrategia está lista',
       description: 'Tu ahorro ya está distribuido.',
       icon: 'celebration',
-      condition: canActive(), // 🔥 fallback
+      condition: canActive.value, // 🔥 fallback
       variant: 'success'
     }
   ])
@@ -109,9 +109,7 @@
         })
       }
     }
-    if (savingsAllocationsStore.savingAllocations.length < 1) {
-      await savingsAllocationsStore.fetchSavingAllocations()
-    }
+    await savingsAllocationsStore.fetchSavingAllocations()
   })
 
   const showAccountSavingsForm = ref(false)
@@ -355,7 +353,7 @@
                 @completed="() => console.log('Ir a presupuesto')"
               >
                 <template #action>
-                  <div v-if="canActive()" class="flex flex-col justify-between">
+                  <div v-if="canActive" class="flex flex-col justify-between">
                     <Text color="white" size="xs">
                       ¡Todo listo para comenzar! Ya definiste tu ahorro y organización inicial.
                       Ahora es momento de planificar tus gastos.

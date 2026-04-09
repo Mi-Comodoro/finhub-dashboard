@@ -15,10 +15,13 @@ export const useActiveBudget = () => {
   const goalsProgress = computed(() => goalsStore.goals.length)
   const isGoalsCompleted = computed(() => goalsProgress.value >= 3)
   const allocationProgress = computed(() =>
-    savingsAllocationsStore.savingAllocations.reduce((acc, sa) => acc + Number(sa.percentage), 0)
+    savingsAllocationsStore.savingAllocations
+      .filter(item => item.budgetId === budgetStore.currentBudgetPlan?.id)
+      .reduce((acc, sa) => acc + Number(sa.percentage), 0)
   )
   const pendingAllocationProgress = computed(() => 100 - allocationProgress.value)
   const isSavingsAllocationCompleted = computed(() => allocationProgress.value === 100)
+  console.log('TEST', savingsAllocationsStore.savingAllocations)
 
   const pendingAssignedAmount = computed(() =>
     savingsAllocationsStore.savingAllocations.length === 0
@@ -26,9 +29,9 @@ export const useActiveBudget = () => {
       : subtractPercentage(savingsAmount.value, allocationProgress.value)
   )
 
-  const canActive = () => {
+  const canActive = computed(() => {
     return isAccountCreated.value && isGoalsCompleted.value && isSavingsAllocationCompleted.value
-  }
+  })
   const enabled = async () => {
     const budgetId = budgetStore.currentBudgetPlan
       ? (budgetStore.currentBudgetPlan.id as string)

@@ -119,6 +119,37 @@ export const useExpensesStore = defineStore('expenses', () => {
   const setBudget = (budgetId: string) => {
     filters.value.budgetId = budgetId
   }
+  const completeExpense = async (id: string) => {
+    try {
+      loading.value = true
+
+      const { success, result } = await $fetch<{
+        success: boolean
+        result: {
+          plannedExpense: { id: string; status: ExpenseStatus }
+          transaction: { id: string; amount: number; type: string }
+        }
+      }>(`/api/expenses/${id}/complete`, {
+        method: 'PATCH'
+      })
+
+      if (success && result) {
+        const index = expenses.value.findIndex(e => e.id === id)
+        if (index !== -1) {
+          // ← solo mutar el campo status, no reemplazar el objeto
+          expenses.value[index]!.status = result.plannedExpense.status
+        }
+      }
+
+      return { success, result }
+    } catch (err) {
+      console.error(err)
+      error.value = 'Error al marcar gasto como pagado'
+      return { success: false, result: null }
+    } finally {
+      loading.value = false
+    }
+  }
 
   return {
     expenses,
@@ -132,6 +163,7 @@ export const useExpensesStore = defineStore('expenses', () => {
     setStatus,
     setBucket,
     setPage,
-    setBudget
+    setBudget,
+    completeExpense
   }
 })

@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import { Form } from '@/components/organisms/forms'
   import { useCategories } from '@/composables/useCategories'
-  import { useExpense } from '@/composables/useExpense'
   import { useCategoryStore } from '@/stores/categories.store'
   import type { ExpenseData } from '~/types/domain'
 
@@ -28,7 +27,7 @@
     emit('onClose')
   }
 
-  const { addExpensed } = useExpense()
+  const expenseStore = useExpensesStore()
   const handleSubmit = async (data: ExpenseData) => {
     try {
       const buildData = {
@@ -36,7 +35,7 @@
         budgetId: props.budgetId,
         status: 'PLANNED'
       }
-      await addExpensed(buildData)
+      await expenseStore.addExpensed(buildData)
       emit('onClose')
     } catch (error) {
       console.error('Error completo:', error)

@@ -22,6 +22,7 @@
   import { useFeedback } from '@/composables/useFeedBack'
   import { usePlannedIncome } from '@/composables/usePlannedIncome'
   import { useBudgetStore } from '@/stores/budget.store'
+  import { useExpensesStore } from '@/stores/expense.store'
   import { useFinancesStore } from '@/stores/finances.store'
   import { usePlannedIncomeStore } from '@/stores/planned-income.store'
   import DateUtils from '~/utils/date'
@@ -38,6 +39,7 @@
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
   const plannedIncomeStore = usePlannedIncomeStore()
+  const expensesStore = useExpensesStore()
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
   const { lastUpdate } = usePlannedIncome()
@@ -47,7 +49,11 @@
   onMounted(async () => {
     await budgetStore.fetchBudgetById(budgetId)
     await plannedIncomeStore.fetchPlannedIncomeByBudgetId(budgetId)
-    const error = budgetStore.error || plannedIncomeStore.error
+    const error = (budgetStore.error || plannedIncomeStore.error) as {
+      status: number
+      title: string
+      message: string
+    }
     if (error) handleError(error)
   })
 
@@ -118,6 +124,13 @@
   const closeSavingDistributionForm = () => {
     showSavingDistributionForm.value = false
   }
+
+  const markExpenseAsPaid = async (row: { id: string }) => {
+    const { success } = await expensesStore.completeExpense(row.id)
+    if (success) {
+      successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
+    }
+  }
 </script>
 
 <template>
@@ -172,7 +185,11 @@
       <div class="col-span-8 flex flex-col gap-4">
         <BudgetInsights />
         <PlannedSavingList :budget-id="budgetId" />
-        <ExpensePlannedSection :budget-id="budgetId" @open-form="openForm" />
+        <ExpensePlannedSection
+          :budget-id="budgetId"
+          @open-form="openForm"
+          @mark-as-payed="markExpenseAsPaid"
+        />
       </div>
 
       <div class="col-span-4 flex flex-col gap-4">

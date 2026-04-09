@@ -108,7 +108,8 @@
     { key: 'expectedAmount', label: 'Monto', type: 'currency', bold: true },
     { key: 'category', label: 'Categoría', type: 'badge' },
     { key: 'bucket', label: 'Grupo', type: 'badge' },
-    { key: 'dueDate', label: 'Fecha', type: 'date' }
+    { key: 'dueDate', label: 'Fecha', type: 'date' },
+    { key: 'status', label: 'Estado', type: 'badge' }
   ]
 </script>
 
@@ -152,7 +153,7 @@
 
           <template #cell-status="{ value }">
             <Badge variant="secondary" size="xs">
-              {{ value }}
+              {{ translate[value.toLowerCase()] || value.toLowerCase() }}
             </Badge>
           </template>
 
@@ -166,8 +167,30 @@
                 size="sm"
                 @click="markAsPayed(row)"
               />
-              <Button icon="edit" icon-only variant="secondary" size="sm" @click="edit(row)" />
-              <Button icon="delete" icon-only variant="danger" size="sm" @click="remove(row)" />
+              <Button
+                v-if="row.status === 'PAID'"
+                icon="visibility"
+                icon-only
+                variant="secondary"
+                size="sm"
+                @click="edit(row)"
+              />
+              <Button
+                v-if="row.status === 'PLANNED'"
+                icon="edit"
+                icon-only
+                variant="secondary"
+                size="sm"
+                @click="edit(row)"
+              />
+              <Button
+                v-if="row.status === 'PLANNED'"
+                icon="delete"
+                icon-only
+                variant="danger"
+                size="sm"
+                @click="remove(row)"
+              />
             </div>
           </template>
 

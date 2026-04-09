@@ -12,7 +12,7 @@ export default defineEventHandler(async event => {
   }
 
   const { success, data } = await $fetch<GoalsResponseApi>(
-    `${config.public.apiBase}/allocations/:${budgetId}`,
+    `${config.public.apiBase}/allocations/${budgetId}`,
     {
       headers: { authorization: `Bearer ${token}` },
       onResponseError: ({ response }) => {

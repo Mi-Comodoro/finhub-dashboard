@@ -33,6 +33,7 @@ export const useSavingAllocationsStore = defineStore('allocations', {
             method: 'GET'
           }
         )
+        console.log(result)
         this.savingAllocations = result
       } catch (err) {
         this.handleError(err as FetchError)
