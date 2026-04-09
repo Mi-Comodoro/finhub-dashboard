@@ -4,6 +4,10 @@ import type { ComposeOption } from 'echarts/core'
 import { computed, onMounted, ref } from 'vue'
 import VChart from 'vue-echarts'
 
+import { useBudgetComparisonApplication } from '@/composables/application/useBudgetComparisonApplication'
+import { useBudgetDonutPresenter } from '@/composables/presenters/useBudgetDonutPresenter'
+import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
+
 import type { BudgetDonutChartEnhancedProps } from './types/budget-donut-chart-enhanced.types'
 import {
   formatUtilization,
@@ -13,9 +17,6 @@ import {
   getSegmentColor,
   getTooltipData
 } from './utils/donut-chart.utils'
-import { useBudgetComparisonApplication } from '@/composables/application/useBudgetComparisonApplication'
-import { useBudgetDonutPresenter } from '@/composables/presenters/useBudgetDonutPresenter'
-import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
 
 type EChartsOption = ComposeOption<PieSeriesOption>
 
@@ -42,18 +43,20 @@ const enhancedItems = ref(props.items)
 // ─── Load comparison data ────────────────────────────────────────────────────
 
 onMounted(async () => {
+  // Always use spent data from props (already calculated correctly by parent)
+  const spentData = props.items.reduce(
+    (acc, item) => {
+      acc[item.id] = 'spent' in item ? (item as any).spent : 0
+      return acc
+    },
+    {} as Record<string, number>
+  )
+
+  // Only fetch previous period data if comparison is enabled
   if (props.comparisonEnabled && props.items.length > 0) {
-    const { currentSpent, previousSpent } = await loadComparisonData(props.items)
-    enhancedItems.value = enhanceItems(props.items, currentSpent, previousSpent)
+    const { previousSpent } = await loadComparisonData(props.items)
+    enhancedItems.value = enhanceItems(props.items, spentData, previousSpent)
   } else {
-    // If no comparison, just show spent from props (items should already have spent)
-    const spentData = props.items.reduce(
-      (acc, item) => {
-        acc[item.id] = 'spent' in item ? (item as any).spent : 0
-        return acc
-      },
-      {} as Record<string, number>
-    )
     enhancedItems.value = enhanceItems(props.items, spentData)
   }
 })

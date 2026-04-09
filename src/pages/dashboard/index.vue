@@ -7,7 +7,6 @@
   import { BudgetDonutChartEnhanced } from '@/components/molecules'
   import { OnboardingWizard } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
-
   import { useBudgetInsights } from '@/composables/useBudgetInsights'
   import { useCommon } from '@/composables/useCommon'
   import { usePlannedIncome } from '@/composables/usePlannedIncome'
@@ -327,7 +326,7 @@
                 :currency="currency"
                 :show-legend="false"
                 :show-trends="true"
-                :show-health-indicators="true"
+                :show-health-indicators="false"
                 :enable-hover-details="true"
                 :comparison-enabled="true"
               />
