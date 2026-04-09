@@ -1,37 +1,29 @@
 <script setup lang="ts">
-  // =========================
-  // Imports
-  // =========================
-  import { computed, onMounted, ref } from 'vue'
+  import { computed, nextTick, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
 
-  // UI
   import { AlertBanner, Button, Heading, Text } from '@/components/atoms'
-  import { BudgetDonutChart } from '@/components/molecules'
+  import { DashboardBalanceChart } from '@/components/business'
+  import { BudgetDonutChartEnhanced } from '@/components/molecules'
   import { OnboardingWizard } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
+
+  import { useBudgetInsights } from '@/composables/useBudgetInsights'
   import { useCommon } from '@/composables/useCommon'
-  // Composables
+  import { usePlannedIncome } from '@/composables/usePlannedIncome'
   import { useSetup } from '@/composables/useSetup'
-  // Stores
+  import { useExpensesStore } from '@/stores/expense.store'
   import { useFinancesStore } from '@/stores/finances.store'
-  import { usePlannedIncomeStore } from '@/stores/planned-income.store'
-  // Utils
+  import { usePlannedSavingStore } from '@/stores/planned-saving.store'
+  import { useTransactionStore } from '@/stores/transaction.store'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
 
-  // Types
-
-  // =========================
-  // Router & Stores
-  // =========================
   const router = useRouter()
 
   const financesStore = useFinancesStore()
-  const plannedIncomeStore = usePlannedIncomeStore()
-
-  // =========================
-  // Composables
-  // =========================
+  const transactionStore = useTransactionStore()
+  const expensesStore = useExpensesStore()
+  const plannedSavingStore = usePlannedSavingStore()
 
   const {
     budgetMissingMessage,
@@ -43,84 +35,107 @@
   } = useSetup()
   const { currentBudget, budgetStatus } = useCommon()
 
-  const isPageLoading = ref(true)
+  const { expectedAmount, buckets } = usePlannedIncome()
 
-  // =========================
-  // Computeds
-  // =========================
-  const expectedAmount = computed(() => plannedIncomeStore.expectedIncome)
-  const buckets = computed(() => plannedIncomeStore.buckets)
+  const isPageLoading = ref(true)
+  const { ingresoRecibido, ahorroGenerado } = useBudgetInsights()
+
   const currency = computed(() => financesStore.defaultCurrency)
-  const totalExpenses = computed(() => 0)
+  const totalExpenses = computed(() => expensesStore.totalPaid)
+
+  const incomeBase = computed(() =>
+    budgetStatus.value === 'ACTIVE' ? ingresoRecibido.value : expectedAmount.value
+  )
+
+  const savingsBase = computed(() =>
+    budgetStatus.value === 'ACTIVE' ? ahorroGenerado.value : buckets.value.savingsAmount
+  )
 
   const available = computed(() =>
     subtractAmounts(
-      subtractAmounts(expectedAmount.value, buckets.value.savingsAmount, currency.value),
+      subtractAmounts(incomeBase.value, savingsBase.value, currency.value),
       totalExpenses.value,
       currency.value
     )
   )
 
   const categories = computed(() => {
-    if (!currentBudget.value) return []
+    if (!currentBudget.value || !expectedAmount.value) return []
 
-    const cur = currency.value
+    const currentCurrency = currency.value
+    const budgetExpenses = expensesStore.expenses ?? []
+
+    const needsSpent = budgetExpenses
+      .filter(expense => expense.status === 'PAID' && expense.bucket === 'needs')
+      .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0)
+
+    const wantsSpent = budgetExpenses
+      .filter(expense => expense.status === 'PAID' && expense.bucket === 'wants')
+      .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0)
+
+    const savingsSpent = plannedSavingStore.totalSavingGenerated || 0
 
     return [
       {
         id: 'needs',
         name: 'Gastos Fijos',
         type: 'needs' as const,
-        budgeted: percentOf(expectedAmount.value, currentBudget.value.limits.needs, cur),
-        spent: 0,
+        budgeted: percentOf(
+          expectedAmount.value,
+          currentBudget.value.limits.needs,
+          currentCurrency
+        ),
+        spent: needsSpent,
         percentage: currentBudget.value.limits.needs
       },
       {
         id: 'wants',
         name: 'Gastos Variables u Ocasionales',
         type: 'wants' as const,
-        budgeted: percentOf(expectedAmount.value, currentBudget.value.limits.wants, cur),
-        spent: 0,
+        budgeted: percentOf(
+          expectedAmount.value,
+          currentBudget.value.limits.wants,
+          currentCurrency
+        ),
+        spent: wantsSpent,
         percentage: currentBudget.value.limits.wants
       },
       {
         id: 'savings',
         name: 'Ahorro e Inversiones',
         type: 'savings' as const,
-        budgeted: percentOf(expectedAmount.value, currentBudget.value.limits.savings, cur),
-        spent: 0,
+        budgeted: percentOf(
+          expectedAmount.value,
+          currentBudget.value.limits.savings,
+          currentCurrency
+        ),
+        spent: savingsSpent,
         percentage: currentBudget.value.limits.savings
       }
     ]
   })
 
-  const strategyInfo = computed(() => {
-    if (!currentBudget.value) return null
-    const isBalanced = currentBudget.value.strategy === 'BALANCED'
-    return {
-      label: isBalanced ? '50/30/20' : 'Personalizada',
-      icon: isBalanced ? 'auto_awesome' : 'tune',
-      title: isBalanced ? 'Regla del 50/30/20' : 'Distribución personalizada',
-      description: isBalanced
-        ? 'Método de presupuesto diseñado por Elizabeth Warren: la mitad del ingreso cubre necesidades esenciales, el 30% para gastos flexibles y el 20% se destina al ahorro e inversión. Ideal para construir hábitos financieros saludables.'
-        : `Este presupuesto usa una distribución ajustada a tus necesidades: ${currentBudget.value.limits.needs}% para gastos fijos, ${currentBudget.value.limits.wants}% para gastos variables y ${currentBudget.value.limits.savings}% para ahorro. Puedes modificar los porcentajes en cualquier momento.`
-    }
-  })
-
-  // =========================
-  // Lifecycle
-  // =========================
   onMounted(async () => {
     try {
       await load()
+      await nextTick()
+
+      if (currentBudget.value?.id) {
+        expensesStore.setBudget(currentBudget.value.id)
+
+        await Promise.all([
+          transactionStore.fetchByBudget(currentBudget.value.id, { limit: 100 }),
+          expensesStore.fetchExpenses(),
+          plannedSavingStore.fetchByBudget(currentBudget.value.id)
+        ])
+      }
+    } catch (error) {
+      console.error('Error cargando datos del dashboard:', error)
     } finally {
       isPageLoading.value = false
     }
   })
 
-  // =========================
-  // Page Meta
-  // =========================
   definePageMeta({
     layout: 'dashboard',
     title: 'Dashboard',
@@ -130,9 +145,6 @@
 
 <template>
   <div class="space-y-4 p-4">
-    <!-- Dashboard Header -->
-
-    <!-- Quick Actions -->
     <div class="flex items-center justify-between">
       <div class="md:pr-4 xl:pr-0">
         <div class="mb-2 flex items-center gap-2">
@@ -145,7 +157,7 @@
             :variant="budgetStatus === 'PLANNED' ? 'warning' : 'secondary'"
             class-name="uppercase"
           >
-            {{ budgetStatus === 'PLANNED' ? 'Planificado' : 'En Ejecución' }}
+            {{ budgetStatus === 'PLANNED' ? 'Planificado' : 'En Ejecucion' }}
           </Badge>
         </div>
 
@@ -154,10 +166,18 @@
         </Text>
       </div>
       <div v-if="budgetStatus !== 'PLANNED'" class="flex items-center gap-2">
-        <Button variant="ghost" size="sm" icon="download">Reporte</Button>
-        <Button variant="primary" size="sm" icon="add">Nueva Transacción</Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          icon="download"
+          @click="router.push('/dashboard/reports')"
+        >
+          Reporte
+        </Button>
+        <Button variant="primary" size="sm" icon="add">Nueva Transaccion</Button>
       </div>
     </div>
+
     <AlertBanner
       v-if="isUsingPreviousBudget"
       title="Presupuesto desactualizado"
@@ -179,6 +199,7 @@
         {{ budgetMissingMessage }}
       </Text>
     </AlertBanner>
+
     <div
       v-if="isPageLoading"
       class="mb-8 grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4"
@@ -196,34 +217,34 @@
     >
       <FinancialProgressCard
         :title="'Ingresos'"
+        :amount="expectedAmount"
         title-color="white"
         text-color="white"
-        :amount="expectedAmount"
         icon-name="account_balance_wallet"
         icon-text-class="text-primary-500"
-        currency-text-class="text-yellow-300"
+        currency-text-class="text-neutral-400"
         class="!bg-primary-900"
         variant="accent"
       />
       <FinancialProgressCard
         :title="'Ahorro Sugerido/Mes'"
+        :amount="buckets.savingsAmount"
         title-color="white"
         text-color="white"
-        :amount="buckets.savingsAmount"
         icon-name="savings"
         icon-text-class="text-primary-500"
-        currency-text-class="text-yellow-300"
+        currency-text-class="text-neutral-400"
         class="!bg-primary-900"
         variant="accent"
       />
       <FinancialProgressCard
         :title="'Disponible'"
+        :amount="available"
         title-color="white"
         text-color="white"
-        :amount="available"
         icon-name="payments"
         icon-text-class="text-primary-500"
-        currency-text-class="text-yellow-300"
+        currency-text-class="text-neutral-400"
         class="!bg-primary-900"
         variant="accent"
       />
@@ -239,7 +260,7 @@
           <div class="flex flex-col justify-between">
             <div class="p-1">
               <Text color="muted" size="sm" class="leading-relaxed">
-                Ahora es el momento de definir cómo vas a ahorrar tu
+                Ahora es el momento de definir como vas a ahorrar tu
                 <strong>{{ currentBudget?.limits.savings }}%</strong>
               </Text>
             </div>
@@ -274,12 +295,9 @@
         </template>
       </FinancialProgressCard>
     </div>
-    <!--  -->
-    <Tips v-if="strategyInfo" :icon="strategyInfo.icon" :title="strategyInfo.title">
-      <Text size="sm" class="mb-3 leading-relaxed">{{ strategyInfo.description }}</Text>
-    </Tips>
-    <div v-if="currentBudget" class="mb-8 grid grid-cols-1">
-      <!-- Budget Distribution -->
+    <FinancialTipCarousel :tips="FINANCIAL_TIPS.common" />
+
+    <div v-if="currentBudget" class="mb-8 grid grid-cols-1 xl:grid-cols-2">
       <div
         class="rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
       >
@@ -301,14 +319,17 @@
         </div>
 
         <div class="flex items-center gap-6 p-5">
-          <!-- Donut (left, fixed size) -->
           <div class="shrink-0">
             <ClientOnly>
-              <BudgetDonutChart
+              <BudgetDonutChartEnhanced
                 :items="categories"
                 :total="expectedAmount"
                 :currency="currency"
                 :show-legend="false"
+                :show-trends="true"
+                :show-health-indicators="true"
+                :enable-hover-details="true"
+                :comparison-enabled="true"
               />
               <template #fallback>
                 <div class="h-44 w-44 animate-pulse rounded-full bg-slate-100 dark:bg-slate-700" />
@@ -316,7 +337,6 @@
             </ClientOnly>
           </div>
 
-          <!-- Execution bars (right) -->
           <div class="min-w-0 flex-1 space-y-4">
             <div v-for="cat in categories" :key="cat.id" class="space-y-1.5">
               <div class="flex items-center justify-between gap-2">
@@ -325,10 +345,10 @@
                     :class="[
                       'h-3 w-3 shrink-0 rounded-full',
                       cat.type === 'needs'
-                        ? 'bg-teal-500'
+                        ? 'bg-primary-500'
                         : cat.type === 'wants'
-                          ? 'bg-indigo-500'
-                          : 'bg-yellow-400'
+                          ? 'bg-secondary-500'
+                          : 'bg-warning-500'
                     ]"
                   />
                   <Text size="sm" class="truncate">
@@ -340,16 +360,15 @@
                   {{ formatCurrency(cat.budgeted, currency) }}
                 </Text>
               </div>
-              <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                <!-- fills with cat.spent / cat.budgeted × 100 once transactions load -->
+              <div class="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">
                 <div
                   :class="[
                     'h-full rounded-full transition-all duration-700',
                     cat.type === 'needs'
-                      ? 'bg-teal-500'
+                      ? 'bg-primary-500'
                       : cat.type === 'wants'
-                        ? 'bg-indigo-500'
-                        : 'bg-yellow-400'
+                        ? 'bg-secondary-500'
+                        : 'bg-warning-500'
                   ]"
                   :style="{
                     width:
@@ -362,6 +381,18 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div v-if="!isPageLoading && expectedAmount" class="mt-4">
+        <DashboardBalanceChart
+          :expected-income="expectedAmount"
+          :received-income="transactionStore.totalIncomeReceived || 0"
+          :estimated-savings="buckets.savingsAmount || 0"
+          :generated-savings="plannedSavingStore.totalSavingGenerated || 0"
+          :planned-expenses="expensesStore.totalPlanned || 0"
+          :paid-expenses="transactionStore.totalExpensesPaid || 0"
+          :currency="currency"
+        />
       </div>
     </div>
 
@@ -382,7 +413,7 @@
         <Button size="sm" @click="router.push('/dashboard/budget')">Ir a Presupuestos</Button>
       </div>
     </div>
-    <!-- Onboarding Wizard -->
+
     <ModalWizard :show="openOnboarding" class="px-8">
       <OnboardingWizard ref="wizardRef" @completed="handleCompleteSetup" />
     </ModalWizard>
