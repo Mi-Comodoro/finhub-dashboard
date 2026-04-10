@@ -136,6 +136,9 @@ export const useAuth = () => {
 
       authStore.setAccountType(res.accountType)
 
+      // Pequeño delay para asegurar que las cookies se propaguen desde el server al cliente
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       const onboardingStatus = await populateSessionFromServer(res.expiresAt)
       startWatcher(res.expiresAt)
 

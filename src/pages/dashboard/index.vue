@@ -2,9 +2,9 @@
   import { computed, nextTick, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
 
-  import { AlertBanner, Button, Heading, Text } from '@/components/atoms'
-  import { DashboardBalanceChart } from '@/components/business'
-  import { BudgetDonutChartEnhanced } from '@/components/molecules'
+  import { AlertBanner, Badge, Button, Heading, Text } from '@/components/atoms'
+  import { DashboardBalanceChart, FinancialTipCarousel } from '@/components/business'
+  import { BudgetDonutChartEnhanced, FinancialProgressCard } from '@/components/molecules'
   import { OnboardingWizard } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
   import { useBudgetInsights } from '@/composables/useBudgetInsights'
@@ -16,6 +16,7 @@
   import { usePlannedSavingStore } from '@/stores/planned-saving.store'
   import { useTransactionStore } from '@/stores/transaction.store'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
+  import { FINANCIAL_TIPS } from '@/utils/financial-tips'
 
   const router = useRouter()
 

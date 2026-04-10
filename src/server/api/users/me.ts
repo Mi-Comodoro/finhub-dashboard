@@ -7,6 +7,14 @@ export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
   const token = getCookie(event, ACCESS_TOKEN)
   const expiresAt = Number(getCookie(event, TOKEN_EXPIRES_AT) ?? '')
+
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      message: 'No hay sesión activa'
+    })
+  }
+
   const { success, data } = await $fetch<BackendUserMe>(`${config.public.apiBase}/users/me`, {
     headers: {
       authorization: `Bearer ${token}`

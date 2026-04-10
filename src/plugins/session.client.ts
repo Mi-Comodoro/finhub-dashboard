@@ -13,7 +13,12 @@ export default defineNuxtPlugin(async () => {
         startWatcher(Math.floor(expiresAt.getTime() / 1000))
       }
     } catch (error) {
-      console.error('No se pudo restaurar la sesion', error)
+      // Silenciosamente ignorar el error 401 (esperado cuando no hay sesión)
+      // Solo loguear errores inesperados
+      const is401 = error?.statusCode === 401 || error?.response?.status === 401
+      if (!is401) {
+        console.error('No se pudo restaurar la sesion', error)
+      }
     }
   }
 })

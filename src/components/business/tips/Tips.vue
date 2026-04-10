@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { Button, Card, Heading, IconBadge, Text } from '@/components/atoms'
+
   defineProps<{
     title: string
     description?: string

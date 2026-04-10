@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { computed, onMounted } from 'vue'
+  import { computed, onMounted, ref } from 'vue'
 
   import {
+    Badge,
     Button,
     type ButtonSize,
     type ButtonVariant,
@@ -11,9 +12,12 @@
   } from '@/components/atoms'
   import {
     BudgetDistribution,
+    BudgetIncome,
+    BudgetInsights,
     ExpensePlannedForm,
     ExpensePlannedSection,
     PlannedSavingList,
+    SavingDistributionForm,
     Tips,
     TransactionList
   } from '@/components/business'
@@ -25,6 +29,8 @@
   import { useExpensesStore } from '@/stores/expense.store'
   import { useFinancesStore } from '@/stores/finances.store'
   import { usePlannedIncomeStore } from '@/stores/planned-income.store'
+  import { formatCurrency } from '@/utils/currency'
+  import { replaceUnderscoresWithSpaces } from '@/utils/strings'
   import DateUtils from '~/utils/date'
   definePageMeta({
     layout: 'dashboard',

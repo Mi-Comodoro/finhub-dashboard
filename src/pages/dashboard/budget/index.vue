@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from 'vue'
 
-  import { Button, Heading, MetricCard, Text } from '@/components/atoms'
+  import { Badge, Button, Heading, MetricCard, Text } from '@/components/atoms'
   import { ProgressBar, Select } from '@/components/molecules'
   import { type Column, DataTable } from '@/components/organisms'
   import { getBudgetStatus, monthShort } from '@/composables/useBudgetPeriod'
