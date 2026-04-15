@@ -4,33 +4,23 @@
   import { CardInfo } from '@/components/molecules'
   import { ModalWizard } from '@/components/organisms'
   import { useToast } from '@/components/organisms/toast/useToast'
-  import { useAccountSavings } from '@/composables/useAccountSavings'
-  import { useActiveBudget } from '@/composables/useActiveBudget'
+  import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
+  import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
+  import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
-  import { useSetup } from '@/composables/useSetup'
-  import { useAccountStore } from '@/stores/account.store'
-  import { useAuthStore } from '@/stores/auth.store'
-  import { useGoalsStore } from '@/stores/goals.store'
-  import { useModalStore } from '@/stores/modal.store'
-  import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
   import type { CompoundingFrequency } from '@/types/api'
 
   const router = useRouter()
-  const accountStore = useAccountStore()
-  const goalsStore = useGoalsStore()
-  const authStore = useAuthStore()
-  const modalStore = useModalStore()
-  const savingsAllocationsStore = useSavingAllocationsStore()
+
+  const { loadGoalsData, loadSavingAllocations, error: goalsError, goals } = useGoalsApplication()
   const handleActions = () => {
-    if (goalsStore.error?.status === 401) {
-      authStore.clearAuth()
+    if (goalsError.value?.status === 401) {
       return navigateTo('/', { replace: true })
-    } else {
-      modalStore.hideModal()
     }
   }
 
-  const { frequencyMap, getRateCategory } = useAccountSavings()
+  const { frequencyMap, getRateCategory, accounts } = useAccountSavingsApplication()
 
   const {
     canActive,
@@ -40,8 +30,8 @@
     allocationProgress,
     goalsProgress,
     enabled
-  } = useActiveBudget()
-  const { currentBudgetId } = useSetup()
+  } = useActiveBudgetApplication()
+  const { currentBudgetId } = useSetupApplication()
   const { budgetStatus } = useCommon()
   const activateBudget = async () => {
     await enabled()
@@ -87,7 +77,6 @@
       variant: 'success'
     }
   ])
-  const goals = computed(() => goalsStore.goals)
 
   definePageMeta({
     layout: 'dashboard',
@@ -95,21 +84,20 @@
     breadcrumb: 'Metas'
   })
   onMounted(async () => {
-    if (accountStore.accounts.length < 1) {
-      await accountStore.fetchAccounts()
-    }
     if (goalsProgress.value < 1) {
-      await goalsStore.fetchGoals()
-      if (goalsStore.error) {
-        modalStore.showModal('error', {
-          title: goalsStore.error.title,
-          message: goalsStore.error.message,
+      const { success } = await loadGoalsData()
+      if (!success && goalsError.value) {
+        useModalStore().showModal('error', {
+          title: goalsError.value.title,
+          message: goalsError.value.message,
           actionLabel: 'Aceptar',
           onAction: handleActions
         })
       }
     }
-    await savingsAllocationsStore.fetchSavingAllocations()
+    if (currentBudgetId.value) {
+      await loadSavingAllocations(currentBudgetId.value)
+    }
   })
 
   const showAccountSavingsForm = ref(false)
@@ -140,23 +128,21 @@
   }
   const onError = () => {
     showGoalsForm.value = false
-    if (goalsStore.error) {
-      modalStore.showModal('error', {
-        title: goalsStore.error.title,
-        message: goalsStore.error.message,
-        actionLabel: 'Aceptar',
-        onAction: handleActions
+    if (goalsError.value) {
+      show({
+        title: goalsError.value.title,
+        description: goalsError.value.message,
+        type: 'error'
       })
     }
   }
 
   const onSavingAllocationError = () => {
-    if (savingsAllocationsStore.error) {
-      modalStore.showModal('error', {
-        title: savingsAllocationsStore.error.title,
-        message: savingsAllocationsStore.error.message,
-        actionLabel: 'Aceptar',
-        onAction: handleActions
+    if (goalsError.value) {
+      show({
+        title: goalsError.value.title,
+        description: goalsError.value.message,
+        type: 'error'
       })
     }
   }
@@ -204,7 +190,7 @@
 
     return 'bg-gray-200 text-gray-500'
   }
-  const isAccountExits = computed(() => accountStore.accounts.length >= 1)
+  const isAccountExits = computed(() => accounts.value?.length >= 1)
   const isGoalsExists = computed(() => goalsProgress.value >= 1)
 
   const showSavingDistributionForm = ref(false)
@@ -240,10 +226,10 @@
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div class="md:pr-4 xl:pr-0">
-        <Heading level="h1" size="2xl" weight="extrabold" class="mb-1">
+  <div class="goals-page">
+    <div class="goals-page__header">
+      <div class="goals-page__header-text">
+        <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
           Define tus Propositos
         </Heading>
         <Text size="sm" color="muted">
@@ -264,64 +250,64 @@
     </div>
     <AllocationSummary />
     <div>
-      <Card class="flex w-full items-start gap-2">
+      <Card class="goals-page__tip-card">
         <IconBadge icon="lightbulb_2" variant="primary" size="md" />
-        <div class="w-full leading-relaxed">
-          <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
+        <div class="goals-page__tip-content">
+          <Heading level="h1" size="sm" weight="extrabold" class="goals-page__tip-title">
             Divide y Venceras
           </Heading>
-          <Text size="xs" color="muted" class="w-full">
+          <Text size="xs" color="muted" class="goals-page__tip-text">
             Si tienes metas a largo plazo, dividelas en objetivos, cada objetivo te acerca mas a la
             meta.
           </Text>
         </div>
       </Card>
     </div>
-    <div class="grid w-full grid-cols-12 gap-4">
-      <div v-if="isGoalsExists" class="col-span-8 flex flex-col gap-4">
-        <div class="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="goals-page__grid">
+      <div v-if="isGoalsExists" class="goals-page__goals-section">
+        <div class="goals-page__goals-cards">
           <FinancialProgressCard v-for="(card, index) in goalCards" :key="index" v-bind="card" />
         </div>
         <Card
           v-if="goals.length > 6"
-          class="relative flex h-40 w-full flex-col space-y-2 overflow-hidden rounded-md !bg-primary-900"
+          class="goals-page__achievement-card"
           class-name="!p-0"
         >
-          <div class="relative z-10 p-4">
-            <div class="flex flex-col justify-between">
-              <div class="flex items-center gap-1">
+          <div class="goals-page__achievement-content">
+            <div class="goals-page__achievement-header">
+              <div class="goals-page__achievement-title-wrapper">
                 <Heading level="h3" title-size="sm" weight="extrabold" color="white">¡Wow!</Heading>
               </div>
-              <div class="flex w-full flex-col">
-                <Text size="sm" class="leading-relaxed" color="white">
+              <div class="goals-page__achievement-body">
+                <Text size="sm" class="goals-page__achievement-text" color="white">
                   ¡Increíble progreso! Estás visualizando tu futuro con más de 6 metas activas.
                 </Text>
-                <Button variant="ghost" size="sm" class="ml-auto">Ver mas</Button>
+                <Button variant="ghost" size="sm" class="goals-page__achievement-button">Ver mas</Button>
               </div>
             </div>
           </div>
-          <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-20">
-            <span class="material-symbols-outlined -rotate-90 !text-[150px] text-white">
+          <div class="goals-page__achievement-icon">
+            <span class="goals-page__achievement-icon-symbol">
               celebration
             </span>
           </div>
         </Card>
       </div>
-      <div v-else class="col-span-8 flex flex-col items-center gap-4 rounded-md bg-slate-200">
-        <div class="flex h-full flex-col items-center gap-4 py-52">
-          <Icon name="add_task" class="text-slate-400 dark:text-slate-600" size="2xl" />
+      <div v-else class="goals-page__empty-section">
+        <div class="goals-page__empty-content">
+          <Icon name="add_task" class="goals-page__empty-icon" size="2xl" />
           <Heading level="h3" color="muted">Aún no tienes metas</Heading>
-          <Text size="sm" color="muted" class="w-96 text-center">
+          <Text size="sm" color="muted" class="goals-page__empty-text">
             Primero crea tus cuentas para poder definir tus metas financieras y comenzar a organizar
             tus finanzas de manera efectiva.
           </Text>
         </div>
       </div>
 
-      <div class="col-span-4 flex flex-col gap-4">
+      <div class="goals-page__sidebar">
         <!--  -->
         <div v-if="budgetStatus !== 'ACTIVE'">
-          <div v-for="(step, index) in steps" :key="index" class="flex flex-col">
+          <div v-for="(step, index) in steps" :key="index" class="goals-page__tip-step">
             <Tips
               v-if="step.condition"
               :title="step.title"
@@ -343,22 +329,22 @@
             icon-text-class="text-primary-600"
             currency-text-class="text-primary-600"
             show-alert
-            class="!bg-primary-900"
+            class="goals-page__setup-card"
           >
             <template #body>
               <SetupProgressCard
-                :accounts-count="accountStore.accounts.length"
+                :accounts-count="accounts.length"
                 :goals-count="goalsProgress"
                 :distribution-percentage="allocationProgress"
                 @completed="() => console.log('Ir a presupuesto')"
               >
                 <template #action>
-                  <div v-if="canActive" class="flex flex-col justify-between">
+                  <div v-if="canActive" class="goals-page__setup-action">
                     <Text color="white" size="xs">
                       ¡Todo listo para comenzar! Ya definiste tu ahorro y organización inicial.
                       Ahora es momento de planificar tus gastos.
                     </Text>
-                    <div class="flex justify-end">
+                    <div class="goals-page__setup-button">
                       <Button
                         icon="rocket_launch"
                         size="sm"
@@ -375,12 +361,12 @@
           </FinancialProgressCard>
         </div>
         <!--  -->
-        <div class="rounded-md bg-white px-2 py-3">
+        <div class="goals-page__accounts-wrapper">
           <div
             v-if="isAccountExits"
-            class="flex max-h-[335px] min-h-[335px] flex-col space-y-4 p-2"
+            class="goals-page__accounts-section"
           >
-            <div class="flex justify-between">
+            <div class="goals-page__accounts-header">
               <CardInfo
                 title="Mis Cuentas"
                 level="h2"
@@ -399,18 +385,14 @@
                 @click="createAccountSavings"
               />
             </div>
-            <div class="flex max-h-80 flex-col space-y-2 overflow-y-auto rounded-md">
-              <Card
-                v-for="(account, index) in accountStore.accounts"
-                :key="index"
-                class-name="!p-2"
-              >
-                <div class="flex w-full flex-col">
-                  <div class="flex flex-col items-start gap-2">
-                    <div class="flex items-center gap-2">
+            <div class="goals-page__accounts-list">
+              <Card v-for="(account, index) in accounts" :key="index" class-name="!p-2">
+                <div class="goals-page__account-card">
+                  <div class="goals-page__account-info">
+                    <div class="goals-page__account-badge-wrapper">
                       <Badge
                         :rounded="false"
-                        class="!py-3"
+                        class="goals-page__account-badge"
                         :class-name="getLevelRateClass(getRateCategory(account.interestRate).level)"
                       >
                         {{ getInitials(account.name) }}
@@ -428,9 +410,9 @@
                         sub-title-color="muted"
                       />
                     </div>
-                    <div class="ml-auto flex items-center gap-2">
+                    <div class="goals-page__account-stats">
                       <span
-                        class="rounded-md px-2 py-0.5 text-xs font-semibold"
+                        class="goals-page__account-frequency"
                         :class="getFrequencyClass(account.compoundingFrequency)"
                       >
                         {{ frequencyMap(account.compoundingFrequency) }}
@@ -445,26 +427,26 @@
 
           <div
             v-else
-            class="flex max-h-[335px] min-h-[335px] flex-col items-center justify-center p-2"
+            class="goals-page__accounts-empty"
             :class="[
               {
-                'border border-dashed border-neutral-400 bg-neutral-100': !isAccountExits
+                'goals-page__accounts-empty--bordered': !isAccountExits
               }
             ]"
           >
-            <div class="flex flex-col items-center space-y-2">
+            <div class="goals-page__accounts-empty-content">
               <IconBadge icon="account_balance" size="md" />
               <Heading
                 level="h1"
                 size="sm"
                 weight="extrabold"
                 color="primary"
-                class="leading-tight"
+                class="goals-page__accounts-empty-title"
               >
                 No se han creado cuentas
               </Heading>
 
-              <Text size="xs" color="muted" class="!text-center">
+              <Text size="xs" color="muted" class="goals-page__accounts-empty-text">
                 A continuacion crea las cuentas que vas a asociar a tus metas de ahorro
               </Text>
               <Button type="submit" size="sm" variant="ghost" @click="createAccountSavings">
@@ -492,3 +474,181 @@
     </ModalWizard>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.goals-page {
+  @apply space-y-4;
+}
+
+.goals-page__header {
+  @apply flex items-center justify-between;
+}
+
+.goals-page__header-text {
+  @apply md:pr-4 xl:pr-0;
+}
+
+.goals-page__title {
+  @apply mb-1;
+}
+
+.goals-page__tip-card {
+  @apply flex w-full items-start gap-2;
+}
+
+.goals-page__tip-content {
+  @apply w-full leading-relaxed;
+}
+
+.goals-page__tip-title {
+  @apply !text-primary-800;
+}
+
+.goals-page__tip-text {
+  @apply w-full;
+}
+
+.goals-page__grid {
+  @apply grid w-full grid-cols-12 gap-4;
+}
+
+.goals-page__goals-section {
+  @apply col-span-8 flex flex-col gap-4;
+}
+
+.goals-page__goals-cards {
+  @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2;
+}
+
+.goals-page__achievement-card {
+  @apply relative flex h-40 w-full flex-col space-y-2 overflow-hidden rounded-md !bg-primary-900;
+}
+
+.goals-page__achievement-content {
+  @apply relative z-10 p-4;
+}
+
+.goals-page__achievement-header {
+  @apply flex flex-col justify-between;
+}
+
+.goals-page__achievement-title-wrapper {
+  @apply flex items-center gap-1;
+}
+
+.goals-page__achievement-body {
+  @apply flex w-full flex-col;
+}
+
+.goals-page__achievement-text {
+  @apply leading-relaxed;
+}
+
+.goals-page__achievement-button {
+  @apply ml-auto;
+}
+
+.goals-page__achievement-icon {
+  @apply pointer-events-none absolute -bottom-8 -right-8 opacity-20;
+}
+
+.goals-page__achievement-icon-symbol {
+  @apply material-symbols-outlined -rotate-90 !text-[150px] text-white;
+}
+
+.goals-page__empty-section {
+  @apply col-span-8 flex flex-col items-center gap-4 rounded-md bg-slate-200;
+}
+
+.goals-page__empty-content {
+  @apply flex h-full flex-col items-center gap-4 py-52;
+}
+
+.goals-page__empty-icon {
+  @apply text-slate-400 dark:text-slate-600;
+}
+
+.goals-page__empty-text {
+  @apply w-96 text-center;
+}
+
+.goals-page__sidebar {
+  @apply col-span-4 flex flex-col gap-4;
+}
+
+.goals-page__tip-step {
+  @apply flex flex-col;
+}
+
+.goals-page__setup-card {
+  @apply !bg-primary-900;
+}
+
+.goals-page__setup-action {
+  @apply flex flex-col justify-between;
+}
+
+.goals-page__setup-button {
+  @apply flex justify-end;
+}
+
+.goals-page__accounts-wrapper {
+  @apply rounded-md bg-white px-2 py-3;
+}
+
+.goals-page__accounts-section {
+  @apply flex max-h-[335px] min-h-[335px] flex-col space-y-4 p-2;
+}
+
+.goals-page__accounts-header {
+  @apply flex justify-between;
+}
+
+.goals-page__accounts-list {
+  @apply flex max-h-80 flex-col space-y-2 overflow-y-auto rounded-md;
+}
+
+.goals-page__account-card {
+  @apply flex w-full flex-col;
+}
+
+.goals-page__account-info {
+  @apply flex flex-col items-start gap-2;
+}
+
+.goals-page__account-badge-wrapper {
+  @apply flex items-center gap-2;
+}
+
+.goals-page__account-badge {
+  @apply !py-3;
+}
+
+.goals-page__account-stats {
+  @apply ml-auto flex items-center gap-2;
+}
+
+.goals-page__account-frequency {
+  @apply rounded-md px-2 py-0.5 text-xs font-semibold;
+}
+
+.goals-page__accounts-empty {
+  @apply flex max-h-[335px] min-h-[335px] flex-col items-center justify-center p-2;
+}
+
+.goals-page__accounts-empty--bordered {
+  @apply border border-dashed border-neutral-400 bg-neutral-100;
+}
+
+.goals-page__accounts-empty-content {
+  @apply flex flex-col items-center space-y-2;
+}
+
+.goals-page__accounts-empty-title {
+  @apply leading-tight;
+}
+
+.goals-page__accounts-empty-text {
+  @apply !text-center;
+}
+</style>

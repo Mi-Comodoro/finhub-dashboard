@@ -4,7 +4,7 @@
    * User profile management with modern card-based layout
    */
 
-  import { computed, ref, watch } from 'vue'
+  import { ref, watch } from 'vue'
 
   import { Badge } from '@/components/atoms'
   import {
@@ -14,50 +14,35 @@
     ProfileInfoItem,
     Select
   } from '@/components/molecules'
-  import { useAuthStore } from '~/stores/auth.store'
-  import { useFinancesStore } from '~/stores/finances.store'
-  import { useUserStore } from '~/stores/user.store'
+  import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import DateUtils from '~/utils/date'
   definePageMeta({
     layout: 'dashboard',
     middleware: 'dashboard'
   })
 
-  // Stores
-  const userStore = useUserStore()
-  const financesStore = useFinancesStore()
-  const authStore = useAuthStore()
+  // Application layer
+  const { updatePersonalInfo, updateFinancialInfo, user, finances } = useProfileApplication()
 
   // Reactive data
   const isEditingPersonal = ref(false)
   const isEditingFinancial = ref(false)
   const isSaving = ref(false)
 
-  // Form data - initialize from stores
+  // Form data - initialize from application
   const personalForm = ref({
-    displayName: userStore.displayName || '',
-    email: userStore.email || '',
-    phone: userStore.phone || '',
-    gender: userStore.gender || '',
-    country: userStore.country || ''
+    displayName: user.value.displayName || '',
+    email: user.value.email || '',
+    phone: user.value.phoneNumber || '',
+    gender: user.value.gender || '',
+    country: user.value.country || ''
   })
 
   const financialForm = ref({
-    currency: financesStore.defaultCurrency,
-    profile: financesStore.financialProfile,
-    usage: financesStore.financialUsage
+    currency: finances.value.currency,
+    profile: finances.value.profile,
+    usage: finances.value.usage
   })
-
-  // Computed
-  const user = computed(() => ({
-    displayName: userStore.displayName,
-    email: userStore.email,
-    photo: userStore.photo,
-    phoneNumber: userStore.phone,
-    status: userStore.isActive
-  }))
-
-  const finances = computed(() => financesStore.profile)
 
   // Options for selects
   const genderOptions = [
@@ -147,58 +132,48 @@
 
   // Watchers
   watch(
-    () => [
-      userStore.displayName,
-      userStore.email,
-      userStore.phone,
-      userStore.gender,
-      userStore.country
-    ],
-    () => {
+    () => user.value,
+    (newUser) => {
       personalForm.value = {
-        displayName: userStore.displayName || '',
-        email: userStore.email || '',
-        phone: userStore.phone || '',
-        gender: userStore.gender || '',
-        country: userStore.country || ''
+        displayName: newUser.displayName || '',
+        email: newUser.email || '',
+        phone: newUser.phoneNumber || '',
+        gender: newUser.gender || '',
+        country: newUser.country || ''
       }
     },
-    { immediate: true }
+    { immediate: true, deep: true }
   )
 
   watch(
-    () => [
-      financesStore.defaultCurrency,
-      financesStore.financialProfile,
-      financesStore.financialUsage
-    ],
-    () => {
+    () => finances.value,
+    (newFinances) => {
       financialForm.value = {
-        currency: financesStore.defaultCurrency,
-        profile: financesStore.financialProfile,
-        usage: financesStore.financialUsage
+        currency: newFinances.currency,
+        profile: newFinances.profile,
+        usage: newFinances.usage
       }
     },
-    { immediate: true }
+    { immediate: true, deep: true }
   )
 
   // Methods
   const startEditingPersonal = () => {
     personalForm.value = {
-      displayName: userStore.displayName || '',
-      email: userStore.email || '',
-      phone: userStore.phone || '',
-      gender: userStore.gender || '',
-      country: userStore.country || ''
+      displayName: user.value.displayName || '',
+      email: user.value.email || '',
+      phone: user.value.phoneNumber || '',
+      gender: user.value.gender || '',
+      country: user.value.country || ''
     }
     isEditingPersonal.value = true
   }
 
   const startEditingFinancial = () => {
     financialForm.value = {
-      currency: financesStore.defaultCurrency,
-      profile: financesStore.financialProfile,
-      usage: financesStore.financialUsage
+      currency: finances.value.currency,
+      profile: finances.value.profile,
+      usage: finances.value.usage
     }
     isEditingFinancial.value = true
   }
@@ -215,25 +190,11 @@
     try {
       isSaving.value = true
 
-      if (!userStore.id) {
-        console.error('User ID is required to update profile')
-        return
+      const { success } = await updatePersonalInfo(personalForm.value)
+
+      if (success) {
+        isEditingPersonal.value = false
       }
-
-      userStore.setUser({
-        id: userStore.id,
-        name: userStore.userInfo.name || '',
-        displayName: personalForm.value.displayName,
-        email: personalForm.value.email,
-        phone: personalForm.value.phone,
-        gender: personalForm.value.gender,
-        country: personalForm.value.country,
-        photo: userStore.photo || '',
-        trialEndsAt: userStore.trialEndsAt || undefined,
-        isActive: userStore.isActive
-      })
-
-      isEditingPersonal.value = false
     } catch (error) {
       console.error('Error saving personal info:', error)
     } finally {
@@ -245,19 +206,11 @@
     try {
       isSaving.value = true
 
-      if (financesStore.financialProfile) {
-        financesStore.updateFinancialProfile({
-          currency: financialForm.value.currency,
-          profile: financialForm.value.profile,
-          usage: financialForm.value.usage
-        })
+      const { success } = await updateFinancialInfo(financialForm.value)
+
+      if (success) {
+        isEditingFinancial.value = false
       }
-
-      financesStore.updateConfig({
-        defaultCurrency: financialForm.value.currency
-      })
-
-      isEditingFinancial.value = false
     } catch (error) {
       console.error('Error saving financial info:', error)
     } finally {
@@ -269,8 +222,8 @@
   useHead({
     title: 'Profile - FinHub'
   })
-  const endDate = userStore.trialEndsAt ? new Date(userStore.trialEndsAt) : new Date()
-  const startDate = userStore.createdAt ? new Date(userStore.createdAt) : new Date()
+  const endDate = computed(() => user.value.trialEndsAt ? new Date(user.value.trialEndsAt) : new Date())
+  const startDate = computed(() => user.value.createdAt ? new Date(user.value.createdAt) : new Date())
 </script>
 
 <template>
@@ -280,7 +233,7 @@
       :user="{
         displayName: user.displayName || '',
         email: user.email || '',
-        photo: user.photo || authStore.user?.avatar || '',
+        photo: user.photo || '',
         phoneNumber: user.phoneNumber || '',
         status: user.status ? 'active' : 'inactive'
       }"
@@ -313,15 +266,15 @@
                 :value="user?.email"
                 fallback="miguel@ejemplo.com"
               />
-              <ProfileInfoItem label="Teléfono" :value="userStore.phone" fallback="220138076" />
+              <ProfileInfoItem label="Teléfono" :value="user.phoneNumber" fallback="220138076" />
               <ProfileInfoItem
                 label="Género"
-                :value="getGenderLabel(userStore?.gender || '')"
+                :value="getGenderLabel(user.gender || '')"
                 fallback="Masculino"
               />
               <ProfileInfoItem
                 label="País"
-                :value="`${getCountryFlag(userStore.country!)} ${getCountryLabel(userStore.country!)}`"
+                :value="`${getCountryFlag(user.country!)} ${getCountryLabel(user.country!)}`"
                 fallback="Colombia"
               />
             </div>
@@ -387,18 +340,18 @@
             <div class="divide-y divide-slate-100">
               <ProfileInfoItem label="Moneda Predeterminada">
                 <Text as="span" size="sm" weight="medium" class="text-right">
-                  {{ finances?.currency || 'COP' }} —
-                  {{ getCurrencyName(finances?.currency) || 'Peso Colombiano' }}
+                  {{ finances.currency || 'COP' }} —
+                  {{ getCurrencyName(finances.currency) || 'Peso Colombiano' }}
                 </Text>
               </ProfileInfoItem>
               <ProfileInfoItem label="Perfil">
                 <Badge variant="warning" size="sm">
-                  {{ finances?.profile }}
+                  {{ finances.profile }}
                 </Badge>
               </ProfileInfoItem>
               <ProfileInfoItem label="Tipo de Uso">
                 <Badge class="uppercase" variant="secondary" size="sm">
-                  {{ finances?.usage || 'Personal' }}
+                  {{ finances.usage || 'Personal' }}
                 </Badge>
               </ProfileInfoItem>
             </div>
@@ -439,9 +392,9 @@
       <!-- Account Status Card - Full Width -->
       <AccountInfoSection
         :account-info="{
-          accountType: authStore.accountType || 'Gratuita',
-          status: userStore.isActive ? 'active' : 'inactive',
-          expirationDate: userStore.trialEndsAt ? DateUtils.formatDate(endDate) : 'No especificada',
+          accountType: 'Gratuita',
+          status: user.status ? 'active' : 'inactive',
+          expirationDate: user.trialEndsAt ? DateUtils.formatDate(endDate) : 'No especificada',
           progress: DateUtils.getProgress(startDate, endDate).percentage,
           progressText: `Quedan ${DateUtils.getProgress(startDate, endDate).remainingDays} días de prueba`,
           isPromo: false

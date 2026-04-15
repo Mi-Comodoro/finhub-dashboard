@@ -22,13 +22,10 @@
     TransactionList
   } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
+  import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
+  import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { useApiHandler } from '@/composables/useApiHandler'
-  import { useFeedback } from '@/composables/useFeedBack'
-  import { usePlannedIncome } from '@/composables/usePlannedIncome'
-  import { useBudgetStore } from '@/stores/budget.store'
-  import { useExpensesStore } from '@/stores/expense.store'
-  import { useFinancesStore } from '@/stores/finances.store'
-  import { usePlannedIncomeStore } from '@/stores/planned-income.store'
+  import { useFeedback } from '@/composables/useFeedback'
   import { formatCurrency } from '@/utils/currency'
   import { replaceUnderscoresWithSpaces } from '@/utils/strings'
   import DateUtils from '~/utils/date'
@@ -42,25 +39,17 @@
   const route = useRoute()
   const router = useRouter()
 
-  const budgetStore = useBudgetStore()
-  const financesStore = useFinancesStore()
-  const plannedIncomeStore = usePlannedIncomeStore()
-  const expensesStore = useExpensesStore()
+  const { loadBudgetDetail, markExpenseAsPaid, budgetSelected, expectedIncome, defaultCurrency } =
+    useBudgetDetailApplication()
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
-  const { lastUpdate } = usePlannedIncome()
+  const { lastUpdate } = usePlannedIncomeApplication()
 
   const budgetId = route.params['id'] as string
 
   onMounted(async () => {
-    await budgetStore.fetchBudgetById(budgetId)
-    await plannedIncomeStore.fetchPlannedIncomeByBudgetId(budgetId)
-    const error = (budgetStore.error || plannedIncomeStore.error) as {
-      status: number
-      title: string
-      message: string
-    }
-    if (error) handleError(error)
+    const { success, error } = await loadBudgetDetail(budgetId)
+    if (!success && error) handleError(error)
   })
 
   const budgetStart = () => {
@@ -112,10 +101,10 @@
     }
   ])
 
-  const plan = computed(() => budgetStore.budgetSelected)
+  const plan = computed(() => budgetSelected.value)
 
   const planStatus = computed(() => plan.value?.status)
-  const expectedAmount = computed(() => plannedIncomeStore.expectedIncome)
+  const expectedAmount = computed(() => expectedIncome.value)
 
   const showForm = ref(false)
   const openForm = () => {
@@ -131,8 +120,8 @@
     showSavingDistributionForm.value = false
   }
 
-  const markExpenseAsPaid = async (row: { id: string }) => {
-    const { success } = await expensesStore.completeExpense(row.id)
+  const handleMarkExpenseAsPaid = async (row: { id: string }) => {
+    const { success } = await markExpenseAsPaid(row.id)
     if (success) {
       successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
     }
@@ -140,17 +129,17 @@
 </script>
 
 <template>
-  <div v-if="plan?.id" class="space-y-4">
+  <div v-if="plan?.id" class="budget-detail">
     <!-- Header -->
-    <div class="flex w-full flex-wrap items-start p-4">
-      <div class="flex items-center gap-2">
-        <div class="flex flex-col">
-          <div class="flex flex-wrap items-center gap-2">
-            <Heading level="h1" size="2xl" weight="extrabold" class="leading-tight">
+    <div class="budget-detail__header">
+      <div class="budget-detail__header-info">
+        <div class="budget-detail__header-content">
+          <div class="budget-detail__header-title">
+            <Heading level="h1" size="2xl" weight="extrabold" class="budget-detail__header-name">
               {{ replaceUnderscoresWithSpaces(plan.name) }}
             </Heading>
 
-            <div class="hidden gap-2 xl:flex">
+            <div class="budget-detail__header-badges">
               <Badge :variant="planStatus === 'ACTIVE' ? 'success' : 'warning'" size="sm">
                 {{ planStatus === 'ACTIVE' ? 'Activo' : 'PLANIFICADO' }}
               </Badge>
@@ -162,8 +151,8 @@
             </div>
           </div>
 
-          <div class="">
-            <Text size="sm" color="muted" weight="bold" class="flex items-center gap-1">
+          <div class="budget-detail__header-meta">
+            <Text size="sm" color="muted" weight="bold" class="budget-detail__header-updated">
               Actualizado {{ DateUtils.formatSmartDate(lastUpdate!) }}
             </Text>
             <Text color="muted" size="sm"></Text>
@@ -172,7 +161,7 @@
       </div>
 
       <!-- Action buttons -->
-      <div class="ml-auto flex items-center gap-2">
+      <div class="budget-detail__header-actions">
         <template v-for="(action, index) in headerButtonActions" :key="index">
           <Button
             v-if="action.condition"
@@ -187,21 +176,21 @@
       </div>
     </div>
 
-    <div class="grid w-full grid-cols-12 gap-4 px-4">
-      <div class="col-span-8 flex flex-col gap-4">
+    <div class="budget-detail__layout">
+      <div class="budget-detail__main">
         <BudgetInsights />
         <PlannedSavingList :budget-id="budgetId" />
         <ExpensePlannedSection
           :budget-id="budgetId"
           @open-form="openForm"
-          @mark-as-payed="markExpenseAsPaid"
+          @mark-as-payed="handleMarkExpenseAsPaid"
         />
       </div>
 
-      <div class="col-span-4 flex flex-col gap-4">
+      <div class="budget-detail__sidebar">
         <Tips icon="show_chart" title="Optimizacion Inteligente">
           El ahorro del {{ plan?.limits?.savings || 0 }}% del
-          <strong>({{ formatCurrency(expectedAmount!, financesStore.defaultCurrency, 2) }})</strong>
+          <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
           , se activará automáticamente cuando confirmes tu primer ingreso.
         </Tips>
         <BudgetIncome />
@@ -218,15 +207,15 @@
       <SavingDistributionForm @on-close="closeSavingDistributionForm" />
     </ModalWizard>
   </div>
-  <div v-else class="flex flex-col items-center gap-4 py-20 text-center">
-    <Icon name="search_off" class="text-slate-400 dark:text-slate-600" size="2xl" />
+  <div v-else class="budget-detail__empty">
+    <Icon name="search_off" class="budget-detail__empty-icon" size="2xl" />
     <Heading level="h3" color="muted">Presupuesto no encontrado</Heading>
     <Text size="sm" color="muted">No se encontró un presupuesto con el ID indicado.</Text>
     <Button
       variant="ghost"
       size="sm"
       icon="arrow_back"
-      class="mt-2"
+      class="budget-detail__empty-button"
       @click="router.push('/dashboard/budget')"
     >
       Volver a Presupuestos
@@ -235,23 +224,83 @@
 </template>
 
 <style lang="postcss" scoped>
-  .coming-soon-card {
-    @apply p-8 text-center;
-    @apply dark:border-neutral-700 dark:bg-neutral-800;
-  }
+.budget-detail {
+  @apply space-y-4;
+}
 
-  .coming-soon-card__icon {
-    @apply mx-auto mb-4 w-fit bg-neutral-100 text-neutral-600;
-    @apply dark:bg-neutral-700 dark:text-neutral-300;
-  }
+.budget-detail__header {
+  @apply flex w-full flex-wrap items-start p-4;
+}
 
-  .coming-soon-card__title {
-    @apply mb-2 text-neutral-900;
-    @apply dark:text-white;
-  }
+.budget-detail__header-info {
+  @apply flex items-center gap-2;
+}
 
-  .coming-soon-card__description {
-    @apply text-neutral-500;
-    @apply dark:text-neutral-400;
-  }
+.budget-detail__header-content {
+  @apply flex flex-col;
+}
+
+.budget-detail__header-title {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+.budget-detail__header-name {
+  @apply leading-tight;
+}
+
+.budget-detail__header-badges {
+  @apply hidden gap-2 xl:flex;
+}
+
+.budget-detail__header-updated {
+  @apply flex items-center gap-1;
+}
+
+.budget-detail__header-actions {
+  @apply ml-auto flex items-center gap-2;
+}
+
+.budget-detail__layout {
+  @apply grid w-full grid-cols-12 gap-4 px-4;
+}
+
+.budget-detail__main {
+  @apply col-span-8 flex flex-col gap-4;
+}
+
+.budget-detail__sidebar {
+  @apply col-span-4 flex flex-col gap-4;
+}
+
+.budget-detail__empty {
+  @apply flex flex-col items-center gap-4 py-20 text-center;
+}
+
+.budget-detail__empty-icon {
+  @apply text-slate-400 dark:text-slate-600;
+}
+
+.budget-detail__empty-button {
+  @apply mt-2;
+}
+
+.coming-soon-card {
+  @apply p-8 text-center;
+  @apply dark:border-neutral-700 dark:bg-neutral-800;
+}
+
+.coming-soon-card__icon {
+  @apply mx-auto mb-4 w-fit bg-neutral-100 text-neutral-600;
+  @apply dark:bg-neutral-700 dark:text-neutral-300;
+}
+
+.coming-soon-card__title {
+  @apply mb-2 text-neutral-900;
+  @apply dark:text-white;
+}
+
+.coming-soon-card__description {
+  @apply text-neutral-500;
+  @apply dark:text-neutral-400;
+}
 </style>

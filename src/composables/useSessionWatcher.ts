@@ -1,10 +1,12 @@
+import { useAuthApi } from '@/composables/api/useAuthApi'
 import { TOKEN_EXPIRES_AT } from '~/common/constants'
-import type { RefreshResponse } from '~/types/auth'
 
 const REFRESH_BEFORE_MS = 5 * 60 * 1000
 let timer: ReturnType<typeof setTimeout> | null = null
 
 export function useSessionWatcher() {
+  const authApi = useAuthApi()
+
   function stopWatcher() {
     if (timer) {
       clearTimeout(timer)
@@ -14,10 +16,7 @@ export function useSessionWatcher() {
 
   async function executeRefresh() {
     try {
-      const { success, result } = await $fetch<{
-        success: boolean
-        result: RefreshResponse
-      }>('/api/auth/refresh', { method: 'POST' })
+      const { success, result } = await authApi.refreshToken()
 
       if (success && result?.expiresAt) {
         scheduleRefresh(result.expiresAt)

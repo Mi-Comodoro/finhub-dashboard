@@ -3,6 +3,7 @@
   import VChart from 'vue-echarts'
 
   import { Card, Heading } from '@/components/atoms'
+  import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
@@ -13,7 +14,7 @@
     generatedSavings: number
     plannedExpenses: number
     paidExpenses: number
-    currency: string
+    currency: Currency
   }
 
   const props = defineProps<Props>()
@@ -25,17 +26,21 @@
         axisPointer: {
           type: 'shadow'
         },
-        formatter: (params: any) => {
-          let result = `<div style="font-weight: bold; margin-bottom: 8px;">${params[0].axisValue}</div>`
-          params.forEach((param: any) => {
-            const value = formatCurrency(param.value, props.currency)
-            result += `
+        formatter: (
+          params: { value: number; axisValue: number; seriesName: string; color: string }[]
+        ) => {
+          let result = `<div style="font-weight: bold; margin-bottom: 8px;">${params[0]!.axisValue}</div>`
+          params.forEach(
+            (param: { value: number; axisValue: number; seriesName: string; color: string }) => {
+              const value = formatCurrency(param.value, props.currency)
+              result += `
               <div style="display: flex; align-items: center; margin: 4px 0;">
                 <span style="display: inline-block; width: 10px; height: 10px; background-color: ${param.color}; border-radius: 50%; margin-right: 8px;"></span>
                 <span>${param.seriesName}: <strong>${value}</strong></span>
               </div>
             `
-          })
+            }
+          )
           return result
         }
       },
@@ -89,18 +94,36 @@
 </script>
 
 <template>
-  <Card class="p-5">
-    <div class="mb-4 flex items-center justify-between">
-      <Heading level="h3" size="lg" weight="semibold"> Balance Financiero </Heading>
+  <Card class="balance-chart">
+    <div class="balance-chart__header">
+      <Heading level="h3" size="lg" weight="semibold">Balance Financiero</Heading>
     </div>
 
     <ClientOnly>
       <VChart :option="chartOption" style="height: 300px" autoresize />
       <template #fallback>
-        <div class="flex h-[300px] items-center justify-center">
-          <div class="h-32 w-32 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-700" />
+        <div class="balance-chart__fallback">
+          <div class="balance-chart__fallback-loader" />
         </div>
       </template>
     </ClientOnly>
   </Card>
 </template>
+
+<style scoped lang="postcss">
+.balance-chart {
+  @apply p-5;
+}
+
+.balance-chart__header {
+  @apply mb-4 flex items-center justify-between;
+}
+
+.balance-chart__fallback {
+  @apply flex h-[300px] items-center justify-center;
+}
+
+.balance-chart__fallback-loader {
+  @apply h-32 w-32 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-700;
+}
+</style>

@@ -1,13 +1,11 @@
 <script setup lang="ts">
   import { CardInfo } from '@/components/molecules'
-  import { useAccountSavings } from '@/composables/useAccountSavings'
-  import { useAccountStore } from '@/stores/account.store'
+  import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
   import { IconBadge } from '~/components/atoms'
   import type { CompoundingFrequency } from '~/types/api'
 
   const emit = defineEmits(['open-form'])
-  const accountStore = useAccountStore()
-  const { frequencyMap, getRateCategory } = useAccountSavings()
+  const { frequencyMap, getRateCategory, accounts } = useAccountSavingsApplication()
 
   const getRateClass = (annualRate: number) => {
     const { level } = getRateCategory(annualRate)
@@ -40,29 +38,26 @@
     return 'bg-gray-200 text-gray-500'
   }
   const rentabiliies = ['Alta', 'Media', 'Baja', 'Muy Baja']
-  onMounted(async () => {
-    await accountStore.fetchAccounts()
-  })
 </script>
 <template>
-  <div class="h-full">
+  <div class="account-savings">
     <SectionCard
       title="Cuentas"
       icon="list_alt_add"
       icon-variant="secondary"
-      class="h-full space-y-2 overflow-auto"
+      class="account-savings__section"
     >
       <template #action>
-        <div class="flex items-center gap-2">
-          <Badge variant="secondary" size="xs">{{ accountStore.accounts.length }} Activas</Badge>
+        <div class="account-savings__action">
+          <Badge variant="secondary" size="xs">{{ accounts?.length ?? 0 }} Activas</Badge>
         </div>
       </template>
 
-      <div v-if="!accountStore.accounts" class="m-auto flex flex-col items-center space-y-2">
-        <div class="flex flex-col items-center">
+      <div v-if="!accounts || accounts.length === 0" class="account-savings__empty">
+        <div class="account-savings__empty-content">
           <IconBadge icon="list_alt_add" />
           <Heading level="h3" size="lg" weight="semibold">Metas de Ahorro</Heading>
-          <Text color="muted" size="sm" class="coming-soon-card__description">
+          <Text color="muted" size="sm" class="account-savings__empty-description">
             Aun no haz creado tus metas de Ahorro
           </Text>
         </div>
@@ -70,24 +65,24 @@
       </div>
       <div>
         <Card>
-          <Text color="muted" size="xs" class="coming-soon-card__description">
+          <Text color="muted" size="xs" class="account-savings__legend-description">
             Identifica la rentabilidad de tus cuentas segun los colores
           </Text>
 
           <span
             v-for="(rentability, index) in rentabiliies"
             :key="index"
-            class="mr-2 rounded-md px-2 py-0.5 text-xs font-semibold"
+            class="account-savings__legend-badge"
             :class="getLevelRateClass(rentability)"
           >
             {{ rentability }}
           </span>
         </Card>
       </div>
-      <div v-for="(account, index) in accountStore.accounts" :key="index">
+      <div v-for="(account, index) in accounts" :key="index">
         <Card class-name="!p-2">
-          <div class="flex w-full flex-col">
-            <div class="flex items-center justify-between gap-2">
+          <div class="account-savings__card">
+            <div class="account-savings__card-header">
               <CardInfo
                 level="h3"
                 title-size="sm"
@@ -97,15 +92,15 @@
                 sub-title-size="xs"
                 sub-title-color="muted"
               />
-              <div class="flex items-center gap-2">
+              <div class="account-savings__card-badges">
                 <span
-                  class="rounded-md px-2 py-0.5 text-xs font-semibold"
+                  class="account-savings__badge"
                   :class="getFrequencyClass(account.compoundingFrequency)"
                 >
                   {{ frequencyMap(account.compoundingFrequency) }}
                 </span>
                 <span
-                  class="rounded-md px-2 py-0.5 text-xs font-semibold"
+                  class="account-savings__badge"
                   :class="getRateClass(Number(account.interestRate))"
                 >
                   {{ account.interestRate.toFixed(2) }}% EA
@@ -123,3 +118,53 @@
     </SectionCard>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.account-savings {
+  @apply h-full;
+}
+
+.account-savings__section {
+  @apply h-full space-y-2 overflow-auto;
+}
+
+.account-savings__action {
+  @apply flex items-center gap-2;
+}
+
+.account-savings__empty {
+  @apply m-auto flex flex-col items-center space-y-2;
+}
+
+.account-savings__empty-content {
+  @apply flex flex-col items-center;
+}
+
+.account-savings__empty-description {
+  /* coming-soon-card__description class preserved */
+}
+
+.account-savings__legend-description {
+  /* coming-soon-card__description class preserved */
+}
+
+.account-savings__legend-badge {
+  @apply mr-2 rounded-md px-2 py-0.5 text-xs font-semibold;
+}
+
+.account-savings__card {
+  @apply flex w-full flex-col;
+}
+
+.account-savings__card-header {
+  @apply flex items-center justify-between gap-2;
+}
+
+.account-savings__card-badges {
+  @apply flex items-center gap-2;
+}
+
+.account-savings__badge {
+  @apply rounded-md px-2 py-0.5 text-xs font-semibold;
+}
+</style>

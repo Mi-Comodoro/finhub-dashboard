@@ -108,6 +108,15 @@ export interface CurrentBudgetPlan {
   frequency: BudgetFrequency
 }
 
+export interface BudgetHistoricalSummaryItem {
+  month: string
+  receivedIncome: number
+  expectedIncome: number
+  totalExpenses: number
+  totalSavings: number
+  savingsRate: number
+}
+
 export interface BudgetState {
   budgets: Budget[]
   budgetPlans: CurrentBudgetPlan[]

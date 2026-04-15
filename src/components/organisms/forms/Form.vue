@@ -25,6 +25,9 @@
   interface FieldOption {
     label: string
     value: string | number
+    description?: string
+    title?: string
+    badge?: string
   }
   type commonField = string | number | boolean | Date | null
   interface FieldSchema {

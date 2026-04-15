@@ -1,18 +1,6 @@
-import type {
-  BudgetDonutItemEnhanced,
-  HealthStatus
-} from '../types/budget-donut-chart-enhanced.types'
+import type { BudgetDonutItemEnhanced, HealthStatus } from '@/components/molecules'
+import type { Currency } from '@/utils/currency'
 import { CHART_COLORS } from '@/utils/design-tokens'
-
-/**
- * Visual utility helpers for budget donut chart
- */
-
-/**
- * Get segment color based on category type
- * @param type - Category type
- * @returns Hex color code
- */
 export const getSegmentColor = (type: 'needs' | 'wants' | 'savings'): string => {
   const colorMap = {
     needs: CHART_COLORS.income,
@@ -80,7 +68,7 @@ export const getUtilizationColorClass = (health: HealthStatus): string => {
  * @param currency - Currency code
  * @returns Tooltip data object
  */
-export const getTooltipData = (item: BudgetDonutItemEnhanced, currency: string) => {
+export const getTooltipData = (item: BudgetDonutItemEnhanced, currency: Currency) => {
   const remaining = item.budgeted - item.spent
   const isOverBudget = remaining < 0
 

@@ -1,15 +1,11 @@
 <script setup lang="ts">
-  import { useFinancesStore } from '@/stores/finances.store'
-  import { useTransactionStore } from '@/stores/transaction.store'
+  import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
+  import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
   import DateUtils from '~/utils/date'
-  const { markAsReceived, error, summary, processingIncomeId } = usePlannedIncome()
+  const { markAsReceived, error, summary, processingIncomeId } = usePlannedIncomeApplication()
+  const { currency, receivedIncome } = useBudgetInsightsPresenter()
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
-
-  const financesStore = useFinancesStore()
-  const transactionStore = useTransactionStore()
-  const receivedIncome = computed(() => transactionStore.totalIncomeReceived)
-  const currency = computed(() => financesStore.defaultCurrency)
   const markPlannedIncomeAsReceived = async (incomeId: string) => {
     const { success } = await markAsReceived(incomeId)
 
@@ -17,12 +13,14 @@
       successToast('Ingreso recibido', 'El ingreso planificado se actualizó correctamente.')
       return
     }
-    handleError(error)
+    if (error.value && error.value.status) {
+      handleError({ status: error.value.status, title: error.value.title, message: error.value.message })
+    }
   }
 </script>
 <template>
-  <div>
-    <Card class="space-y-2">
+  <div class="budget-income">
+    <Card class="budget-income__card">
       <CardInfo
         title="Ingresos del Mes"
         sub-title="Marca tus ingresos como recibidos"
@@ -35,17 +33,17 @@
         level="h3"
       />
 
-      <div v-for="(item, index) in summary" :key="index" class="flex w-full">
-        <Card class="flex w-full gap-4">
-          <div class="flex w-full flex-col space-y-2">
+      <div v-for="(item, index) in summary" :key="index" class="budget-income__item-wrapper">
+        <Card class="budget-income__item-card">
+          <div class="budget-income__item-info">
             <Label color="muted">{{ translate[item.source] }}</Label>
             <div>
-              <Text size="xs" class="flex w-full">
+              <Text size="xs" class="budget-income__item-date">
                 {{ `Vence: ${DateUtils.formatDate(item.date)}` }}
               </Text>
             </div>
           </div>
-          <div class="flex w-full flex-col items-end justify-between gap-2">
+          <div class="budget-income__item-actions">
             <Heading weight="extrabold" size="sm">
               {{ formatCurrency(item.amount, currency) }}
             </Heading>
@@ -63,7 +61,7 @@
           </div>
         </Card>
       </div>
-      <div class="flex items-center justify-between">
+      <div class="budget-income__total">
         <Text size="sm">Total Recibido:</Text>
         <Heading weight="extrabold" size="xl">
           {{ formatCurrency(receivedIncome, currency) }}
@@ -72,3 +70,33 @@
     </Card>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.budget-income__card {
+  @apply space-y-2;
+}
+
+.budget-income__item-wrapper {
+  @apply flex w-full;
+}
+
+.budget-income__item-card {
+  @apply flex w-full gap-4;
+}
+
+.budget-income__item-info {
+  @apply flex w-full flex-col space-y-2;
+}
+
+.budget-income__item-date {
+  @apply flex w-full;
+}
+
+.budget-income__item-actions {
+  @apply flex w-full flex-col items-end justify-between gap-2;
+}
+
+.budget-income__total {
+  @apply flex items-center justify-between;
+}
+</style>

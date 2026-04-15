@@ -2,7 +2,7 @@
   import { useDebounceFn } from '@vueuse/core'
 
   import type { Column, RowData } from '@/components/organisms'
-  import { useExpensesStore } from '@/stores/expense.store'
+  import { useExpenseSectionApplication } from '@/composables/application/useExpenseSectionApplication'
 
   const emit = defineEmits(['open-form', 'edit', 'remove', 'mark-as-payed'])
 
@@ -10,7 +10,16 @@
     budgetId: string
   }>()
 
-  const expenseStore = useExpensesStore()
+  const {
+    setBudget,
+    fetchExpenses,
+    setSearch,
+    setBucket,
+    setPage,
+    expenses,
+    filters,
+    meta
+  } = useExpenseSectionApplication()
 
   // 🔍 search local (UI)
   const search = ref('')
@@ -19,14 +28,14 @@
   const selectedBucket = ref<string>('')
 
   onMounted(() => {
-    expenseStore.setBudget(props.budgetId)
-    expenseStore.fetchExpenses()
+    setBudget(props.budgetId)
+    fetchExpenses()
   })
 
   const debouncedSearch = useDebounceFn(() => {
     // Simplemente enviamos el valor actual (sea texto o "")
-    expenseStore.setSearch(search.value.trim())
-    expenseStore.fetchExpenses()
+    setSearch(search.value.trim())
+    fetchExpenses()
   }, 400)
 
   watch(search, debouncedSearch)
@@ -36,17 +45,17 @@
 ========================= */
   watch(selectedBucket, value => {
     // 'value' ya es un array gracias al 'multiple' del Select
-    expenseStore.setBucket(value)
-    expenseStore.fetchExpenses()
+    setBucket(value)
+    fetchExpenses()
   })
 
   /* =========================
    📄 PAGINATION
 ========================= */
   watch(
-    () => expenseStore.filters.page,
+    () => filters.value.page,
     () => {
-      expenseStore.fetchExpenses()
+      fetchExpenses()
     }
   )
 
@@ -91,8 +100,6 @@
    📊 DATA
 ========================= */
 
-  const expenses = computed(() => expenseStore.expenses)
-
   const bucket = ['needs', 'wants', 'savings']
   const bucketFilter = computed(() =>
     bucket.map(item => {
@@ -120,8 +127,8 @@
     </template>
     <template #default>
       <!-- 🔍 SEARCH -->
-      <div class="flex w-full flex-col space-y-2">
-        <div class="flex gap-2">
+      <div class="expense-section">
+        <div class="expense-section__filters">
           <Input v-model="search" placeholder="Buscar..." search-icon />
 
           <!-- 🪣 BUCKET FILTER -->
@@ -138,8 +145,8 @@
         <DataTable
           :columns="columns"
           :data="expenses"
-          :pagination="expenseStore.meta"
-          @page-change="expenseStore.setPage"
+          :pagination="meta"
+          @page-change="setPage"
         >
           <template #cell-category="{ value }">
             <Badge size="xs">{{ value }}</Badge>
@@ -158,7 +165,7 @@
           </template>
 
           <template #actions="{ row }">
-            <div class="flex w-full justify-end gap-4">
+            <div class="expense-section__actions">
               <Button
                 v-if="row.status === 'PLANNED'"
                 icon="check"
@@ -201,3 +208,17 @@
     <template #footer></template>
   </SectionCard>
 </template>
+
+<style scoped lang="postcss">
+.expense-section {
+  @apply flex w-full flex-col space-y-2;
+}
+
+.expense-section__filters {
+  @apply flex gap-2;
+}
+
+.expense-section__actions {
+  @apply flex w-full justify-end gap-4;
+}
+</style>

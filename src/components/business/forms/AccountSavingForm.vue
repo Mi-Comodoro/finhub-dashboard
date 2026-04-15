@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { Form } from '@/components/organisms'
   import { AlertBanner } from '~/components/atoms'
-  import { useAccountSavings } from '~/composables/useAccountSavings'
+  import { useAccountSavingsApplication } from '~/composables/application/useAccountSavingsApplication'
   import type { CompoundingFrequency } from '~/types/api'
 
   import { accountFieldsSchema } from './schema/account.fields.schema'
@@ -10,7 +10,7 @@
     emit('onClose')
   }
 
-  const { addAccount } = useAccountSavings()
+  const { addAccount } = useAccountSavingsApplication()
 
   const formSchema = computed(() => accountFieldsSchema())
 
@@ -36,7 +36,7 @@
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-col gap-6">
+  <div class="account-saving-form">
     <CardInfo
       title="Registro de Cuenta Bancaria para Referencia"
       title-size="2xl"
@@ -57,10 +57,10 @@
       icon="info"
     />
 
-    <div class="w-full">
+    <div class="account-saving-form__content">
       <Form :schema="formSchema" @submit="handleSubmit">
         <template #actions>
-          <div class="flex justify-end gap-2">
+          <div class="account-saving-form__actions">
             <Button type="button" variant="ghost" @click.stop="close">Cancelar</Button>
             <Button type="submit" variant="primary">Guardar</Button>
           </div>
@@ -69,3 +69,17 @@
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.account-saving-form {
+  @apply flex h-full w-full flex-col gap-6;
+}
+
+.account-saving-form__content {
+  @apply w-full;
+}
+
+.account-saving-form__actions {
+  @apply flex justify-end gap-2;
+}
+</style>

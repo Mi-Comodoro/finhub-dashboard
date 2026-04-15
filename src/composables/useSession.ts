@@ -1,3 +1,4 @@
+import { useUserApi } from '@/composables/api/useUserApi'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useUserStore } from '@/stores/user.store'
@@ -8,6 +9,7 @@ export const useSession = () => {
   const authStore = useAuthStore()
   const financesStore = useFinancesStore()
   const userStore = useUserStore()
+  const userApi = useUserApi()
 
   const resolveSessionExpiresAt = (expiresAt?: number | null) => {
     if (expiresAt) {
@@ -25,7 +27,7 @@ export const useSession = () => {
 
   const fetchUserMe = async () => {
     try {
-      const { success, result } = await $fetch<UserMe>('/api/users/me', { credentials: 'include' })
+      const { success, result } = await userApi.getUserMeWithCredentials()
 
       if (!success) return null
 

@@ -1,20 +1,20 @@
 <script setup lang="ts">
   import { Form } from '@/components/organisms/forms'
-  import { useCategories } from '@/composables/useCategories'
-  import { useCategoryStore } from '@/stores/categories.store'
+  import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
+  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import type { ExpenseData } from '~/types/domain'
 
   import { expensedPlannedFieldsSchema } from './schema/expense.fields.schema'
 
-  const { fetchCategories } = useCategories()
-  const categoryStore = useCategoryStore()
+  const { fetchCategories, categories } = useCategoryApplication()
+  const { addExpense } = useExpenseApplication()
 
   const props = defineProps<{ budgetId: string }>()
   onMounted(async () => {
     await fetchCategories()
   })
   const selectOptions = computed(() =>
-    categoryStore.categories.map(item => ({
+    categories.value.map(item => ({
       label: item.isSelectable ? `${item.name}` : ` ${item.name.toUpperCase()}`,
       value: item.id,
       disabled: !item.isSelectable
@@ -27,7 +27,6 @@
     emit('onClose')
   }
 
-  const expenseStore = useExpensesStore()
   const handleSubmit = async (data: ExpenseData) => {
     try {
       const buildData = {
@@ -35,15 +34,17 @@
         budgetId: props.budgetId,
         status: 'PLANNED'
       }
-      await expenseStore.addExpensed(buildData)
-      emit('onClose')
+      const { success } = await addExpense(buildData)
+      if (success) {
+        emit('onClose')
+      }
     } catch (error) {
       console.error('Error completo:', error)
     }
   }
 </script>
 <template>
-  <div class="flex h-full w-full flex-col gap-6">
+  <div class="expense-planned-form">
     <CardInfo
       title="Agregar Gasto Planificado"
       title-size="2xl"
@@ -58,10 +59,10 @@
       icon-size="md"
     />
 
-    <div class="w-full">
+    <div class="expense-planned-form__content">
       <Form :schema="formSchema" @submit="handleSubmit">
         <template #actions>
-          <div class="flex justify-end gap-2">
+          <div class="expense-planned-form__actions">
             <Button type="button" variant="ghost" @click.stop="close">Cancelar</Button>
             <Button type="submit" variant="primary">Guardar</Button>
           </div>
@@ -70,4 +71,17 @@
     </div>
   </div>
 </template>
-<style lang="postcss" scoped></style>
+
+<style lang="postcss" scoped>
+.expense-planned-form {
+  @apply flex h-full w-full flex-col gap-6;
+}
+
+.expense-planned-form__content {
+  @apply w-full;
+}
+
+.expense-planned-form__actions {
+  @apply flex justify-end gap-2;
+}
+</style>

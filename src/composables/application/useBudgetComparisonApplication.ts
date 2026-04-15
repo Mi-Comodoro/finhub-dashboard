@@ -51,7 +51,8 @@ export function useBudgetComparisonApplication() {
       // Fetch expenses for this budget if not already loaded
       if (expensesStore.filters.budgetId !== budgetId) {
         expensesStore.setBudget(budgetId)
-        await expensesStore.fetchExpenses()
+        const { fetchExpenses } = await import('./useExpenseApplication')
+        await fetchExpenses().fetchExpenses()
       }
 
       // Fetch planned savings for this budget

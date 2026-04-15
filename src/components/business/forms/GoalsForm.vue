@@ -1,22 +1,22 @@
 <script lang="ts" setup>
   import { Form } from '@/components/organisms'
-  import { useAccountStore } from '@/stores/account.store'
-  import { useGoalsStore } from '@/stores/goals.store'
+  import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import type { GoalsData } from '~/types/api'
 
   import { goalsFieldsSchema } from './schema/goals.fiels.schema'
 
-  const accountStore = useAccountStore()
-  const goalsStore = useGoalsStore()
+  const { accounts: accountsData } = useAccountSavingsApplication()
+  const { addGoal, error } = useGoalsApplication()
 
   const emit = defineEmits(['onSuccess', 'onError', 'onClose'])
 
   const accounts = computed(() =>
-    accountStore.accounts.map(item => ({
+    accountsData.value?.map(item => ({
       label: item.name,
       value: item.id,
       disabled: !item.isActive
-    }))
+    })) ?? []
   )
   const formSchema = computed(() => goalsFieldsSchema(accounts.value))
 
@@ -28,20 +28,21 @@
       ...formData.value,
       isActive: true
     } as GoalsData
-    await goalsStore.addSavingGoals(buildData)
+
+    const { success } = await addGoal(buildData)
     formData.value = {}
     formKey.value++
 
-    if (!goalsStore.error) {
+    if (success) {
       emit('onSuccess')
     } else {
-      emit('onError', goalsStore.error)
+      emit('onError', error.value)
     }
   }
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-col gap-2 rounded-md bg-white">
+  <div class="goals-form">
     <CardInfo
       title="Nueva Meta"
       title-size="xl"
@@ -56,12 +57,12 @@
       icon-size="md"
     />
 
-    <div class="relative z-10 mt-2 flex flex-col">
+    <div class="goals-form__alert">
       <AlertBanner title="Cuentas de Alta Rentabilidad > 10% EA" variant="warning" icon="info">
-        <Text size="xs" class="flex items-start gap-1 text-yellow-900">
+        <Text size="xs" class="goals-form__alert-text">
           <strong>
             Uso:
-            <span class="font-normal">
+            <span class="goals-form__alert-text--normal">
               Fondo de emergencia, ahorro a la vista y metas a corto plazo.
             </span>
           </strong>
@@ -69,10 +70,10 @@
       </AlertBanner>
     </div>
 
-    <div v-if="accounts.length > 0" class="w-full">
+    <div v-if="accounts.length > 0" class="goals-form__content">
       <Form :key="formKey" v-model="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
-          <div class="flex justify-end gap-2">
+          <div class="goals-form__actions">
             <Button type="button" variant="ghost" @click.stop="emit('onClose')">Cancelar</Button>
             <Button type="submit" variant="primary">Guardar</Button>
           </div>
@@ -82,4 +83,28 @@
   </div>
 </template>
 
-<style lang="postcss" scoped></style>
+<style lang="postcss" scoped>
+.goals-form {
+  @apply flex h-full w-full flex-col gap-2 rounded-md bg-white;
+}
+
+.goals-form__alert {
+  @apply relative z-10 mt-2 flex flex-col;
+}
+
+.goals-form__alert-text {
+  @apply flex items-start gap-1 text-yellow-900;
+}
+
+.goals-form__alert-text--normal {
+  @apply font-normal;
+}
+
+.goals-form__content {
+  @apply w-full;
+}
+
+.goals-form__actions {
+  @apply flex justify-end gap-2;
+}
+</style>

@@ -1,17 +1,17 @@
 import { defineStore } from 'pinia'
 
-import type { AccountData, AccountResponse } from '@/types/api'
+import { useAccountApi } from '@/composables/api/useAccountApi'
+import type { AccountData } from '@/types/api'
 
 export const useAccountStore = defineStore('accounts', () => {
   const loading = ref(false)
   const error = ref('')
   const accounts = ref<AccountData[]>([])
   const fetchAccounts = async () => {
+    const { getAccounts } = useAccountApi()
     try {
       loading.value = true
-      const { result } = await $fetch<AccountResponse>('/api/accounts/find', {
-        method: 'GET'
-      })
+      const { result } = await getAccounts()
       accounts.value = result
     } catch (err) {
       console.error(err)

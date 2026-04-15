@@ -1,29 +1,19 @@
 <script setup lang="ts">
-  import { usePlannedIncome } from '@/composables/usePlannedIncome'
-  import { useBudgetStore } from '@/stores/budget.store'
-  import { useFinancesStore } from '@/stores/finances.store'
-  import { usePlannedSavingStore } from '@/stores/planned-saving.store'
-  import { useTransactionStore } from '@/stores/transaction.store'
+  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
+  import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
+  import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
 
   import type { BudgetInsightsData } from './types'
 
-  const financesStore = useFinancesStore()
-  const budgetStore = useBudgetStore()
-  const transactionStore = useTransactionStore()
-  const plannedSavingStore = usePlannedSavingStore()
-
-  const currency = computed(() => financesStore.defaultCurrency)
-  const plan = computed(() => budgetStore.budgetSelected)
+  const { currency, plan, receivedIncome, generatedSavings, pendingSavings } =
+    useBudgetInsightsPresenter()
   const { budgetStatus } = useCommon()
-  const { expenses } = useExpense()
+  const { expenses } = useExpenseApplication()
 
   // --- PLANNED (base estática del mes) ---
-  const { expectedAmount, savingsAmount, needsAmount, wantsAmount } = usePlannedIncome()
+  const { expectedAmount, savingsAmount, needsAmount, wantsAmount } = usePlannedIncomeApplication()
 
   // --- REAL (crece al recibir ingresos) ---
-  const receivedIncome = computed(() => transactionStore.totalIncomeReceived)
-
-  const generatedSavings = computed(() => plannedSavingStore.totalSavingGenerated)
 
   const actualAvailableBase = computed(() =>
     subtractAmounts(receivedIncome.value, generatedSavings.value, currency.value)
@@ -42,11 +32,7 @@
 
   const pctSavingsExecuted = computed(() =>
     generatedSavings.value > 0
-      ? Math.round(
-          ((generatedSavings.value - plannedSavingStore.totalSavingPending) /
-            generatedSavings.value) *
-            100
-        )
+      ? Math.round(((generatedSavings.value - pendingSavings.value) / generatedSavings.value) * 100)
       : 0
   )
 

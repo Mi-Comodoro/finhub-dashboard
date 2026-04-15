@@ -1,0 +1,64 @@
+import { useAccountStore } from '@/stores/account.store'
+import { useBudgetStore } from '@/stores/budget.store'
+import { useFinancesStore } from '@/stores/finances.store'
+import { useGoalsStore } from '@/stores/goals.store'
+import { usePlannedIncomeStore } from '@/stores/planned-income.store'
+import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
+import { percentOf } from '@/utils/currency'
+import { subtractPercentage } from '@/utils/numbers'
+
+export const useActiveBudgetApplication = () => {
+  const accountStore = useAccountStore()
+  const goalsStore = useGoalsStore()
+  const savingsAllocationsStore = useSavingAllocationsStore()
+  const plannedIncomeStore = usePlannedIncomeStore()
+  const budgetStore = useBudgetStore()
+  const financesStore = useFinancesStore()
+
+  const savingsAmount = computed(() => {
+    const limits = budgetStore.currentBudgetPlan?.limits
+    const expected = plannedIncomeStore.expectedIncome
+    const currency = financesStore.defaultCurrency
+    return percentOf(expected, limits?.savings ?? 0, currency)
+  })
+  const isAccountCreated = computed(() => accountStore.accounts.length >= 1)
+  const goalsProgress = computed(() => goalsStore.goals.length)
+  const isGoalsCompleted = computed(() => goalsProgress.value >= 3)
+  const allocationProgress = computed(() =>
+    savingsAllocationsStore.savingAllocations
+      .filter(item => item.budgetId === budgetStore.currentBudgetPlan?.id)
+      .reduce((acc, sa) => acc + Number(sa.percentage), 0)
+  )
+  const pendingAllocationProgress = computed(() => 100 - allocationProgress.value)
+  const isSavingsAllocationCompleted = computed(() => allocationProgress.value === 100)
+
+  const pendingAssignedAmount = computed(() =>
+    savingsAllocationsStore.savingAllocations.length === 0
+      ? savingsAmount.value
+      : subtractPercentage(savingsAmount.value, allocationProgress.value)
+  )
+
+  const canActive = computed(() => {
+    return isAccountCreated.value && isGoalsCompleted.value && isSavingsAllocationCompleted.value
+  })
+  const enabled = async () => {
+    const budgetId = budgetStore.currentBudgetPlan
+      ? (budgetStore.currentBudgetPlan.id as string)
+      : ''
+    const { enableBudget } = await import('./useBudgetActions')
+    await enableBudget().enableBudget(budgetId)
+  }
+
+  return {
+    isAccountCreated,
+    isGoalsCompleted,
+    isSavingsAllocationCompleted,
+    pendingAllocationProgress,
+    allocationProgress,
+    goalsProgress,
+    pendingAssignedAmount,
+    savingsAmount,
+    enabled,
+    canActive
+  }
+}

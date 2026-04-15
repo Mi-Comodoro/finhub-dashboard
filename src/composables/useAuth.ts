@@ -2,12 +2,12 @@ import type { User } from 'firebase/auth'
 import { computed, ref } from 'vue'
 
 import { SESSION_DURATION } from '@/common/constants'
+import { useAuthApi } from '@/composables/api/useAuthApi'
+import { useUserApi } from '@/composables/api/useUserApi'
 import { useSessionWatcher } from '@/composables/useSessionWatcher'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useUserStore } from '@/stores/user.store'
-import type { UserMe } from '@/types/api'
-import type { AuthResponseResult } from '@/types/auth'
 import type { FirebasePlugin } from '@/types/firebase'
 
 export const useAuth = () => {
@@ -18,6 +18,8 @@ export const useAuth = () => {
   const userStore = useUserStore()
   const financesStore = useFinancesStore()
   const { startWatcher, stopWatcher } = useSessionWatcher()
+  const authApi = useAuthApi()
+  const userApi = useUserApi()
 
   const isAuthenticated = computed(() => authStore.isAuthenticated)
 
@@ -43,7 +45,7 @@ export const useAuth = () => {
   }
 
   const populateSessionFromServer = async (fallbackExpiresAt?: number | null): Promise<string> => {
-    const { success, result } = await $fetch<UserMe>('/api/users/me')
+    const { success, result } = await userApi.getUserMe()
 
     if (!success || !result) throw new Error('No se pudo obtener datos del usuario')
 
@@ -83,10 +85,7 @@ export const useAuth = () => {
     error.value = ''
 
     try {
-      const { success, result: res } = await $fetch<AuthResponseResult>('/api/auth/login', {
-        method: 'POST',
-        body: { email, password }
-      })
+      const { success, result: res } = await authApi.loginWithCredentials(email, password)
 
       if (!success || !res) {
         error.value = 'Credenciales inválidas'
@@ -125,10 +124,7 @@ export const useAuth = () => {
       const idToken = await result.user.getIdToken()
       const fallbackName = result.user.displayName ?? result.user.email?.split('@')[0] ?? 'Usuario'
 
-      const { success, result: res } = await $fetch<AuthResponseResult>('/api/auth/google', {
-        method: 'POST',
-        body: { data: { idToken, name: fallbackName } }
-      })
+      const { success, result: res } = await authApi.loginWithGoogleToken(idToken, fallbackName)
 
       if (!success || !res) {
         throw new Error('Error de autenticación con Google')
@@ -165,7 +161,7 @@ export const useAuth = () => {
         await $firebase.firebaseSignOut(auth)
       }
 
-      await $fetch('/api/auth/logout', { method: 'POST' })
+      await authApi.logout()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo cerrar la sesión'
       authStore.setError(message)

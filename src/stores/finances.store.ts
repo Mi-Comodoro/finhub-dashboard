@@ -32,6 +32,8 @@ export const useFinancesStore = defineStore('finances', {
 
   getters: {
     // Financial Profile
+    financeId: state => state.profile?.id || '',
+
     financialProfile: state => state.profile?.profile || 'moderate',
 
     defaultCurrency: state => state.profile?.currency || state.config?.defaultCurrency || 'COP',

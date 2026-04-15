@@ -2,20 +2,13 @@
   "name": "finhub-dashboard",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "author": "Miguel J. Alvarez",
+  "license": "ISC",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/migueljalvarez/finhub-dashboard.git"
   },
-  "keywords": [
-    "nuxt",
-    "tailwindcss",
-    "dashboard",
-    "finance"
-  ],
-  "author": "Miguel J. Alvarez",
-  "license": "ISC",
-  "type": "module",
   "bugs": {
     "url": "https://github.com/migueljalvarez/finhub-dashboard/issues"
   },
@@ -33,42 +26,41 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@heroicons/vue": "2.2.0",
     "@nuxt/image": "^2.0.0",
-    "@nuxt/kit": "4.3.1",
+    "@nuxtjs/tailwindcss": "^6.13.0",
     "@pinia/nuxt": "^0.11.3",
     "@vueuse/core": "^14.2.1",
     "chart.js": "^4.5.1",
     "echarts": "^6.0.0",
+    "vue-chartjs": "^5.3.3",
+    "vue-echarts": "^8.0.1",
     "firebase": "^12.9.0",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.4",
-    "tailwind-merge": "^3.5.0",
-    "vue-chartjs": "^5.3.3",
-    "vue-echarts": "^8.0.1"
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.6.0",
+    "@eslint/js": "^9.39.0",
     "@nuxt/eslint": "^1.14.0",
-    "@nuxt/eslint-config": "^1.14.0",
-    "@types/node": "20.11.30",
-    "@typescript-eslint/eslint-plugin": "^8.54.0",
-    "@typescript-eslint/parser": "^8.54.0",
-    "autoprefixer": "10.4.23",
+    "@typescript-eslint/eslint-plugin": "^8.36.0",
+    "@typescript-eslint/parser": "^8.36.0",
+    "@types/node": "^20.19.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-vue": "^10.7.0",
-    "postcss": "8.5.6",
-    "prettier": "3.7.4",
-    "prettier-plugin-tailwindcss": "0.7.2",
-    "tailwindcss": "3.4.17",
-    "typescript": "5.4.5",
-    "vue-eslint-parser": "10.2.0",
-    "vue-tsc": "2.1.6"
+    "prettier": "^3.7.4",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "typescript": "^5.5.4",
+    "vue-eslint-parser": "^10.2.0",
+    "postcss": "^8.5.6",
+    "autoprefixer": "^10.4.23",
+    "tailwindcss": "^3.4.17",
+    "vue-tsc": "^2.1.6"
   },
   "overrides": {
     "serialize-javascript": "^7.0.3"
   },
   "engines": {
-    "node": ">=20.19 <22"
+    "node": ">=20.19 <23"
   }
 }

@@ -1,0 +1,320 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Commands
+
+**Development:**
+```bash
+npm run dev          # Start Nuxt dev server
+npm run build        # Build for production
+npm run preview      # Preview production build
+```
+
+**Code Quality:**
+```bash
+npm run lint         # Run ESLint
+npm run lint:fix     # Fix ESLint errors automatically
+npm run format       # Format code with Prettier
+```
+
+**Requirements:**
+- Node.js >= 20.19 < 22
+
+## Architecture Overview
+
+This is a **Nuxt 3** financial dashboard that enforces **strict architectural layering** to maintain separation of concerns.
+
+### Frontend Architecture (CRITICAL)
+
+**Mandatory data flow:**
+```
+UI (pages/components) → application → store → api → server/api → backend
+```
+
+**Layer responsibilities:**
+
+1. **composables/api/** — ONLY layer allowed to use `$fetch`
+   - Wraps all HTTP calls to server routes
+   - No business logic, no state management
+   - Returns raw server responses
+
+2. **composables/application/** — Business logic and use cases
+   - Coordinates between stores and API layer
+   - Contains business rules and workflows
+   - Never calls `$fetch` directly
+
+3. **composables/presenters/** — UI presentation logic
+   - Transforms data for display (labels, colors, variants)
+   - No business logic, no API calls
+   - Pure functions for UI concerns
+
+4. **stores/** (Pinia) — State management ONLY
+   - State, getters, and setter actions only
+   - Never calls `$fetch` directly (uses api composables)
+   - No business logic
+
+5. **pages/ & components/** — Rendering and user interaction
+   - Call application composables, never stores directly
+   - No `$fetch`, no business logic
+   - Handle user input and display data
+
+**Architectural violations are REJECTED:**
+- ❌ `$fetch` anywhere except `composables/api/`
+- ❌ Business logic in components, pages, or stores
+- ❌ Pages/components calling stores directly without application layer
+- ❌ Stores calling other stores
+
+### Backend Integration
+
+**Server routes** (`src/server/api/`) act as a BFF (Backend for Frontend):
+- Proxy to external NestJS backend
+- Handle authentication cookies (httpOnly)
+- Transform backend responses if needed
+
+**Backend architecture** (NestJS):
+- Hexagonal: `domain/` → `application/` → `infrastructure/`
+- All responses wrapped in `{ success, data }`
+- Token injection always uses string: `@Inject('RepositoryName')`
+
+## Component Structure
+
+**Atomic Design hierarchy:**
+```
+components/
+├── atoms/       # Button, Badge, Text, Heading, Icon
+├── molecules/   # Select, Input, ProgressBar, DatePickerInput
+├── organisms/   # DataTable, Form, ModalWizard
+└── business/    # Domain-specific components (ALWAYS in feature folder)
+```
+
+**CRITICAL rules for business components:**
+- ✅ `components/business/budget/BudgetForm.vue`
+- ❌ `components/business/BudgetForm.vue` (never in root)
+
+**Component file structure:**
+```
+atoms/button/
+├── Button.vue
+├── types/
+│   └── button.types.ts
+└── index.ts
+```
+
+**Props must be defined in types:**
+```typescript
+// types/button.types.ts
+export interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'danger'
+  size?: 'sm' | 'md' | 'lg'
+}
+
+// Button.vue
+<script setup lang="ts">
+import type { ButtonProps } from './types/button.types'
+const props = withDefaults(defineProps<ButtonProps>(), {
+  variant: 'primary',
+  size: 'md'
+})
+</script>
+```
+
+**Component structure order:**
+```vue
+<script setup lang="ts">
+// 1. Imports
+// 2. Props/emits
+// 3. Logic
+</script>
+
+<template>
+  <!-- 2. Template -->
+</template>
+
+<style scoped lang="postcss">
+/* 3. Styles */
+</style>
+```
+
+## Styling & Design System
+
+**Tailwind is used via @apply in PostCSS, NOT directly in templates:**
+
+❌ Bad:
+```vue
+<div class="flex items-center gap-2 bg-primary-50">
+```
+
+✅ Good:
+```vue
+<div class="card-header">
+
+<style scoped lang="postcss">
+.card-header {
+  @apply flex items-center gap-2 bg-primary-50;
+}
+</style>
+```
+
+**BEM naming convention:**
+```css
+.block { }
+.block__element { }
+.block--modifier { }
+```
+
+**Semantic color system:**
+```
+Income/Needs  → primary   (teal)     bg-primary-50   text-primary-700
+Expenses      → danger    (red)      bg-danger-50    text-danger-700
+Savings       → warning   (amber)    bg-warning-50   text-warning-700
+Wants         → secondary (indigo)   bg-secondary-50 text-secondary-700
+Success       → success   (green)    bg-success-50   text-success-700
+Neutral       → neutral   (slate)    bg-neutral-100  text-neutral-600
+```
+
+**Chart colors:**
+- Use `CHART_COLORS` from `utils/design-tokens.ts`
+- Always wrap `VChart` in `<ClientOnly>`
+- Always set explicit height on charts
+
+## Forms
+
+**Use the dynamic Form.vue component:**
+- Schema defined in `components/business/[feature]/forms/schema/`
+- Field types: text, number, select, date, switch, textarea, money, slider-percentage, radio-card
+- See `ExpensePlannedForm.vue` for reference pattern
+
+## Key Patterns
+
+**Composables naming:**
+- Start with `use`: `useAuth.ts`, `useBudgetApi.ts`
+- API composables return functions that make `$fetch` calls
+- Application composables coordinate business logic
+- Presenter composables transform data for UI
+
+**Store patterns:**
+```typescript
+defineStore('feature', {
+  state: () => ({ items: [], isLoading: false, error: null }),
+  getters: { /* derive data from state */ },
+  actions: {
+    setLoading(loading: boolean) { this.isLoading = loading },
+    setItems(items) { this.items = items }
+    // NO $fetch here - use api composables
+  }
+})
+```
+
+**Always return `{ success, result }` from application composables:**
+```typescript
+const loadBudgets = async (year: number) => {
+  await budgetStore.fetchBudgets(year)
+  return { success: !budgetStore.error }
+}
+```
+
+## Code Standards
+
+### Language Rules (CRITICAL)
+
+**All code must be written in English:**
+- ❌ Variable names in Spanish: `const nombreUsuario = ...`
+- ❌ Function names in Spanish: `function obtenerDatos() { }`
+- ❌ Constant names in Spanish: `const MENSAJE_ERROR = ...`
+- ❌ Interface/Type names in Spanish: `interface UsuarioDTO { }`
+- ❌ Class names in Spanish: `class ManejadorPagos { }`
+
+**Only UI text/content is allowed in Spanish:**
+- ✅ Template literals: `'Bienvenido al sistema'`
+- ✅ i18n keys/translations: `{ title: 'Configuración' }`
+- ✅ User-facing messages: `error: 'Ocurrió un error'`
+- ✅ Comments explaining business logic (optional)
+
+**Examples:**
+
+❌ Bad:
+```typescript
+const nombreCompleto = ref('')
+const obtenerUsuario = async (id: string) => {
+  const usuario = await api.cargarUsuario(id)
+  return usuario
+}
+```
+
+✅ Good:
+```typescript
+const fullName = ref('')
+const getUser = async (id: string) => {
+  const user = await api.loadUser(id)
+  return user
+}
+```
+
+**Why:** Maintaining English for all code identifiers ensures:
+- International collaboration
+- Consistency with libraries and frameworks
+- Better IDE autocomplete and tooling
+- Clear separation between code and content
+
+## Important Files
+
+**Source of truth for architecture:**
+- `CONTEXT.md` — Full project context and conventions
+- `.ai/agents/` — Agent guidelines for code review
+
+**Design system:**
+- `tailwind.config.ts` — Semantic color palette
+- `utils/design-tokens.ts` — Chart colors (ECharts)
+
+**Authentication:**
+- Cookies managed server-side only
+- Access token in httpOnly cookie
+- Firebase for Google OAuth
+
+## Charts & Visualization
+
+**Stack:** ECharts + vue-echarts
+
+**Pattern:**
+```vue
+<template>
+  <ClientOnly>
+    <VChart :option="chartOptions" style="height: 300px" />
+  </ClientOnly>
+</template>
+
+<script setup>
+import VChart from 'vue-echarts'
+import { CHART_COLORS } from '@/utils/design-tokens'
+</script>
+```
+
+## What NOT to Do
+
+- Never use `$fetch` outside `composables/api/`
+- Never put business logic in components, pages, or stores
+- Never skip the application layer (pages must call application, not stores)
+- Never put business components in `components/business/` root
+- Never use Tailwind classes directly in templates (use @apply)
+- Never use Chart.js (use ECharts)
+- Never skip `ClientOnly` wrapper for VChart
+- Never modify existing component public APIs without checking usage
+- Never use Spanish for variable names, function names, constants, types, or classes (only UI text allowed in Spanish)
+
+## Common Patterns
+
+**Creating a new feature:**
+1. Create API composable in `composables/api/use[Feature]Api.ts`
+2. Create application composable in `composables/application/use[Feature]Application.ts`
+3. Create presenter if needed in `composables/presenters/use[Feature]Presenter.ts`
+4. Update store to use API composable (not $fetch)
+5. Create UI components in `components/business/[feature]/`
+6. Create page that uses application composable
+
+**Refactoring violations:**
+1. Check `.ai/agents/architecture-agent.md` for violation rules
+2. Create missing API layer first
+3. Migrate logic incrementally
+4. Verify compilation after each step
+5. Never refactor everything at once

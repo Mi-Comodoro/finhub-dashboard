@@ -1,46 +1,21 @@
 <script setup lang="ts">
-  import { useActiveBudget } from '@/composables/useActiveBudget'
-  import { useSavingGoals } from '@/composables/useSavingGoals'
-  import { useAccountStore } from '@/stores/account.store'
-  import { useBudgetStore } from '@/stores/budget.store'
-  import { useGoalsStore } from '@/stores/goals.store'
-  import { usePlannedIncomeStore } from '@/stores/planned-income.store'
-  import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
+  import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
+  import { useSavingGoalsPresenter } from '@/composables/presenters/useSavingGoalsPresenter'
 
-  const budgetStore = useBudgetStore()
-  const plannedIncomeStore = usePlannedIncomeStore()
-  const financeStore = useFinancesStore()
-  const currentBudgetId = computed(() => budgetStore.currentBudgetPlan?.id ?? null)
+  const { loadAllocationSummaryData, updateNewSavingAmount, goals } = useGoalsApplication()
 
-  const savingsAllocationsStore = useSavingAllocationsStore()
-  const goalsStore = useGoalsStore()
-  const accountStore = useAccountStore()
-  const goals = computed(() => goalsStore.goals)
-
-  const { sumAmountTarget, lastUpdate } = useSavingGoals()
+  const { sumAmountTarget, lastUpdate } = useSavingGoalsPresenter()
   const {
     pendingAllocationProgress,
     pendingAssignedAmount,
     allocationProgress,
     goalsProgress,
     savingsAmount
-  } = useActiveBudget()
+  } = useActiveBudgetApplication()
+
   onMounted(async () => {
-    const financeId = financeStore.profile?.id
-    if (financeId) {
-      await budgetStore.fetchCurrentBudget(financeId)
-    }
-
-    if (currentBudgetId.value) {
-      await plannedIncomeStore.fetchPlannedIncomeByBudgetId(currentBudgetId.value)
-    }
-
-    if (accountStore.accounts.length < 1) {
-      await accountStore.fetchAccounts()
-    }
-    if (savingsAllocationsStore.savingAllocations.length < 1) {
-      await savingsAllocationsStore.fetchSavingAllocations()
-    }
+    await loadAllocationSummaryData()
   })
 
   const pendingAmount = computed(() =>
@@ -49,15 +24,15 @@
       : pendingAssignedAmount.value
   )
 
-  savingsAllocationsStore.setNewSavingAmount(pendingAmount.value)
+  updateNewSavingAmount(pendingAmount.value)
 </script>
 
 <template>
-  <div class="grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+  <div class="allocation-summary">
     <FinancialProgressCard
       :title="'Ahorro esperado'"
       :subtitle="'Basado en tu seleccion'"
-      :amount="plannedIncomeStore.buckets.savingsAmount"
+      :amount="savingsAmount"
       icon-name="account_balance"
       icon-text-class="text-primary-500"
       currency-text-class="text-primary-500"
@@ -94,7 +69,7 @@
       variant="secondary"
     >
       <template #body>
-        <div class="flex h-full items-center gap-2">
+        <div class="allocation-summary__goals">
           <Heading size="5xl" weight="extrabold">
             {{ goals.filter(item => item.isActive).length }}
           </Heading>
@@ -104,3 +79,13 @@
     </FinancialProgressCard>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.allocation-summary {
+  @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4;
+}
+
+.allocation-summary__goals {
+  @apply flex h-full items-center gap-2;
+}
+</style>

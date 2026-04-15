@@ -16,8 +16,6 @@ export default defineEventHandler(async event => {
   deleteCookie(event, ACCOUNT_TYPE)
   deleteCookie(event, TOKEN_EXPIRES_AT)
 
-  console.log('🔐 Iniciando autenticación con Google...')
-
   const response = await $fetch<AuthResponse>(`${config.public.apiBase}/auth/google`, {
     method: 'POST',
     body,
@@ -29,13 +27,9 @@ export default defineEventHandler(async event => {
 
   const { token, accountType, expiresAt } = response.data
 
-  console.log('✅ Respuesta del backend recibida, estableciendo cookies...')
-
   setCookie(event, ACCESS_TOKEN, token, COOKIE_OPTIONS)
   setCookie(event, ACCOUNT_TYPE, accountType, COOKIE_OPTIONS)
   setCookie(event, TOKEN_EXPIRES_AT, String(expiresAt), COOKIE_OPTIONS)
-
-  console.log('✅ Cookies establecidas correctamente')
 
   return { success: response.success, result: response.data }
 })

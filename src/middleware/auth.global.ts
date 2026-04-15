@@ -1,7 +1,13 @@
 export default defineNuxtRouteMiddleware(async to => {
   const { authStore, initSession } = useSession()
-
-  await initSession()
+  if (!authStore.isInitialized) {
+    try {
+      await initSession()
+    } catch (e) {
+      authStore.setError(JSON.stringify(e))
+      throw e
+    }
+  }
 
   const isLoggedIn = authStore.isAuthenticated
   const isDashboard = to.path.startsWith('/dashboard')

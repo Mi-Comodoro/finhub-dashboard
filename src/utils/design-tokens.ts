@@ -2,6 +2,9 @@ export const CHART_COLORS = {
   needs: '#3b82f6',
   wants: '#8b5cf6',
   savings: '#10b981',
+  planned: '#94a3b8',
+  income: '#10b981',
+  expense: '#ef4444',
   health: {
     good: '#10b981',
     warning: '#f59e0b',

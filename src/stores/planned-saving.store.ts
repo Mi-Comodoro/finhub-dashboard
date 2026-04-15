@@ -1,6 +1,7 @@
 import type { FetchError } from 'ofetch'
 import { defineStore } from 'pinia'
 
+import { useSavingsApi } from '@/composables/api/useSavingsApi'
 import type { PlannedSavingState, PlannedSavingSummary } from '~/types/domain'
 
 export const usePlannedSavingStore = defineStore('plannedSaving', {
@@ -42,13 +43,11 @@ export const usePlannedSavingStore = defineStore('plannedSaving', {
     },
 
     async fetchByBudget(budgetId: string) {
+      const { getPlannedSavingsByBudget } = useSavingsApi()
       try {
         this.setLoading(true)
 
-        const { success, result } = await $fetch<{
-          success: boolean
-          result: PlannedSavingSummary[]
-        }>(`/api/savings/planned/by-budget/${budgetId}`)
+        const { success, result } = await getPlannedSavingsByBudget(budgetId)
 
         if (success && result) {
           this.setItems(result)
@@ -66,20 +65,14 @@ export const usePlannedSavingStore = defineStore('plannedSaving', {
     },
 
     async markAsCompleted(itemId: string) {
-      const transactionStore = useTransactionStore()
+      const { updatePlannedSaving } = useSavingsApi()
       try {
         this.setLoading(true)
 
-        const { success, result } = await $fetch<{
-          success: boolean
-          result: PlannedSavingSummary
-        }>(`/api/savings/planned/${itemId}`, {
-          method: 'PATCH'
-        })
+        const { success, result } = await updatePlannedSaving(itemId)
 
         if (success && result) {
           await this.fetchByBudget(this.budgetId)
-          await transactionStore.fetchByBudget(this.budgetId)
         }
 
         return { success, result }

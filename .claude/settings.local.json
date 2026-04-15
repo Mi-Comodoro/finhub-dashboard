@@ -3,7 +3,15 @@
     "allow": [
       "Bash(git ls-tree:*)",
       "Bash(netstat:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(npm run build:*)",
+      "Bash(test:*)",
+      "Bash(echo:*)",
+      "Bash(npx nuxi typecheck:*)",
+      "Bash(grep:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }

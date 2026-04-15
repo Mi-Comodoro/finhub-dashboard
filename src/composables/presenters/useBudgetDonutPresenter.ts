@@ -1,9 +1,9 @@
+import type { BudgetDonutItem } from '@/components/molecules/budget-donut-chart/types/budget-donut-chart.types'
 import type {
   BudgetDonutItemEnhanced,
   HealthStatus,
   TrendDirection
 } from '@/components/molecules/budget-donut-chart/types/budget-donut-chart-enhanced.types'
-import type { BudgetDonutItem } from '@/components/molecules/budget-donut-chart/types/budget-donut-chart.types'
 
 /**
  * Presentation composable for budget donut chart analytics

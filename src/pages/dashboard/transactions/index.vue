@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import type { Column } from '@/components/organisms'
-  import { useTransaction } from '@/composables/useTransaction'
-  import { useTransactionFilters } from '@/composables/useTransactionFilters'
-  import { useTransactionMetrics } from '@/composables/useTransactionMetrics'
+  import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
+  import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'
+  import { useTransactionMetricsPresenter } from '@/composables/presenters/useTransactionMetricsPresenter'
   import { translate } from '@/utils/translateToUI'
   import type { TransactionSummary } from '~/types/domain'
   definePageMeta({
@@ -12,13 +12,19 @@
   })
 
   const route = useRoute()
-  const budgetStore = useBudgetStore()
-  const financesStore = useFinancesStore()
-  const categoryStore = useCategoryStore()
-  const currency = computed(() => financesStore.defaultCurrency)
 
-  const { transactions, pagination, fetchTransaction } = useTransaction()
-  const { fetchCategories } = useCategories()
+  const {
+    transactions,
+    pagination,
+    currency,
+    financeId,
+    budgetSelected,
+    budgetPlans,
+    budgetOptions,
+    categoryOptions,
+    fetchTransaction,
+    loadInitialData
+  } = useTransactionApplication()
 
   const budgetSelect = ref<string>('')
 
@@ -30,30 +36,14 @@
   }
 
   // --- Composables ---
-  const filters = useTransactionFilters(loadTransactions)
-  const metrics = useTransactionMetrics(
+  const filters = useTransactionFiltersPresenter(loadTransactions)
+  const metrics = useTransactionMetricsPresenter(
     transactions,
     pagination,
     filters.currentPage,
     filters.pageSize
   )
 
-  // --- Opciones ---
-  const budgetOptions = computed(() =>
-    budgetStore.budgetPlans.map(item => ({
-      label: replaceUnderscoresWithSpaces(item.name),
-      value: item.id,
-      selectable: true
-    }))
-  )
-
-  const categoryOptions = computed(() =>
-    categoryStore.categories.map(item => ({
-      label: item.isSelectable ? item.name : item.name.toUpperCase(),
-      value: item.id,
-      disabled: !item.isSelectable
-    }))
-  )
 
   // --- Tabla ---
   const columns: Column[] = [
@@ -85,13 +75,11 @@
 
   // --- Init ---
   onMounted(async () => {
-    const financeId = financesStore.profile?.id as string
-    await budgetStore.fetchBudgets(financeId, 2026)
-    await fetchCategories()
+    await loadInitialData(financeId.value, 2026)
 
     const queryBudgetId = route.query.budgetId as string | undefined
     budgetSelect.value =
-      queryBudgetId || budgetStore.budgetSelected?.id || budgetStore.budgetPlans[0]?.id || ''
+      queryBudgetId || budgetSelected.value?.id || budgetPlans.value[0]?.id || ''
 
     await loadTransactions()
   })
@@ -104,10 +92,10 @@
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
+  <div class="transactions-page">
+    <div class="transactions-page__header">
       <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="mb-1">Transacciones</Heading>
+        <Heading level="h1" size="2xl" weight="extrabold" class="transactions-page__title">Transacciones</Heading>
         <Text size="sm" color="muted">Historial completo de movimientos</Text>
       </div>
       <Select v-model="budgetSelect" name="budgetId" label="Presupuesto" :options="budgetOptions" />
@@ -141,18 +129,18 @@
         <Text
           size="sm"
           weight="bold"
-          class="whitespace-nowrap"
+          class="transactions-page__amount"
           :class="getFormattedAmount(row).colorClass"
         >
           {{ getFormattedAmount(row).text }}
-          <span class="text-xs uppercase" :class="getFormattedAmount(row).colorClass">
+          <span class="transactions-page__currency" :class="getFormattedAmount(row).colorClass">
             {{ currency }}
           </span>
         </Text>
       </template>
 
       <template #cell-source="{ value, row }">
-        <div class="flex items-center gap-2">
+        <div class="transactions-page__source">
           <span>{{ capitalizeFirstLetter(translate[value] ?? value) }}</span>
           <Badge v-if="!row.plannedIncomeId && row.type === 'income'" size="xs">
             No planificado
@@ -173,7 +161,7 @@
       </template>
 
       <template #empty>
-        <div class="flex flex-col items-center gap-2 py-10 text-center">
+        <div class="transactions-page__empty">
           <Text size="sm" color="muted">No hay transacciones para estos filtros</Text>
           <Button variant="ghost" size="sm" @click="filters.clearFilters">Limpiar filtros</Button>
         </div>
@@ -182,9 +170,9 @@
       <template #footer>
         <div
           v-if="metrics.showPagination.value"
-          class="flex items-center justify-between border-t border-slate-100 px-5 py-3.5"
+          class="transactions-page__footer"
         >
-          <div class="flex items-center gap-3">
+          <div class="transactions-page__footer-info">
             <Text size="xs" color="muted">{{ metrics.countLabel.value }}</Text>
             <Select
               v-model="filters.pageSize.value"
@@ -192,7 +180,7 @@
               :options="filters.pageSizeOptions"
             />
           </div>
-          <div class="flex items-center gap-1">
+          <div class="transactions-page__footer-actions">
             <Button
               size="sm"
               variant="outline"
@@ -215,3 +203,45 @@
     </DataTable>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.transactions-page {
+  @apply space-y-4;
+}
+
+.transactions-page__header {
+  @apply flex items-center justify-between;
+}
+
+.transactions-page__title {
+  @apply mb-1;
+}
+
+.transactions-page__amount {
+  @apply whitespace-nowrap;
+}
+
+.transactions-page__currency {
+  @apply text-xs uppercase;
+}
+
+.transactions-page__source {
+  @apply flex items-center gap-2;
+}
+
+.transactions-page__empty {
+  @apply flex flex-col items-center gap-2 py-10 text-center;
+}
+
+.transactions-page__footer {
+  @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5;
+}
+
+.transactions-page__footer-info {
+  @apply flex items-center gap-3;
+}
+
+.transactions-page__footer-actions {
+  @apply flex items-center gap-1;
+}
+</style>

@@ -1,315 +1,415 @@
 <script setup lang="ts">
-  import { computed, onMounted, ref, watch } from 'vue'
+  import { BudgetCloneForm, BudgetForm } from '@/components/business'
+  import { ModalWizard } from '@/components/organisms'
+  import { useBudgetActions } from '@/composables/application/useBudgetActions'
+  import { useBudgetListApplication } from '@/composables/application/useBudgetListApplication'
+  import { useBudgetListPresenter } from '@/composables/presenters/useBudgetListPresenter'
+  import { useFeedback } from '@/composables/useFeedback'
+  import type { CurrentBudgetPlan,PlannedIncomeSummary } from '~/types/domain'
 
-  import { Badge, Button, Heading, MetricCard, Text } from '@/components/atoms'
-  import { ProgressBar, Select } from '@/components/molecules'
-  import { type Column, DataTable } from '@/components/organisms'
-  import { getBudgetStatus, monthShort } from '@/composables/useBudgetPeriod'
-  import { useAuthStore } from '@/stores/auth.store'
-  import { useBudgetStore } from '@/stores/budget.store'
-  import { useFinancesStore } from '@/stores/finances.store'
-  import { useModalStore } from '@/stores/modal.store'
-  import { usePlannedIncomeStore } from '@/stores/planned-income.store'
-  import type { PlannedIncomeSummary } from '~/types/domain'
-
-  import type { CurrentBudgetPlan } from '../../../types/domain/budget.domain'
-
-  useRoute()
   definePageMeta({
     layout: 'dashboard',
-    title: 'Presupuesto',
-    breadcrumb: 'Presupuesto'
+    title: 'Presupuestos',
+    breadcrumb: 'Presupuestos'
   })
 
-  const authStore = useAuthStore()
-  const budgetStore = useBudgetStore()
-  const financesStore = useFinancesStore()
-  const modalStore = useModalStore()
-  const plannedIncomeStore = usePlannedIncomeStore()
   const router = useRouter()
+  const { success: successToast, error: errorToast } = useFeedback()
 
-  // ─── Year filter ─────────────────────────────────────────────────────────────
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  const availableYears = Array.from({ length: 5 }, (_, i) => currentYear - 3 + i)
-  const selectedYear = ref<number>(currentYear)
-  const allPlannedIncomes = ref<PlannedIncomeSummary[]>([])
+  const {
+    loadBudgets,
+    loadPlannedIncomes,
+    getExpectedIncomeForBudget,
+    budgets,
+    isLoading,
+    error,
+    currency
+  } = useBudgetListApplication()
 
-  const handleActions = () => {
-    if (budgetStore.error?.status === 401) {
-      authStore.clearAuth()
-      return navigateTo('/', { replace: true })
-    } else {
-      modalStore.hideModal()
+  const { handleDelete } = useBudgetActions()
+
+  const {
+    getStatusVariant,
+    getStatusLabel,
+    getCardBorderClass,
+    getMonthName,
+    getYearOptions,
+    getStrategyLabel
+  } = useBudgetListPresenter()
+
+  const selectedYear = ref(new Date().getFullYear())
+  const allIncomes = ref<PlannedIncomeSummary[]>([])
+  const showCreateModal = ref(false)
+  const showEditModal = ref(false)
+  const showCloneModal = ref(false)
+  const selectedBudget = ref<CurrentBudgetPlan | null>(null)
+
+  const yearOptions = computed(() => getYearOptions())
+
+  const budgetInitialData = computed(() => {
+    if (!selectedBudget.value) return undefined
+    return {
+      name: selectedBudget.value.name,
+      month: parseInt(selectedBudget.value.month),
+      year: selectedBudget.value.year,
+      strategy: selectedBudget.value.strategy,
+      needsLimit: selectedBudget.value.limits.needs,
+      wantsLimit: selectedBudget.value.limits.wants,
+      savingsLimit: selectedBudget.value.limits.savings
     }
-  }
+  })
+
+  const getExpected = (budgetId: string) => getExpectedIncomeForBudget(budgetId, allIncomes.value)
+
+  const getEstimatedSavings = (budgetId: string, savingsLimit: number) =>
+    Math.round(getExpected(budgetId) * (savingsLimit / 100))
+
   onMounted(async () => {
-    await budgetStore.fetchBudgets(selectedYear.value)
-    if (budgetStore.error) {
-      modalStore.showModal('error', {
-        title: budgetStore.error.title,
-        message: budgetStore.error.message,
-        actionLabel: 'Aceptar',
-        onAction: handleActions
-      })
-    }
-    const { result } = await plannedIncomeStore.fetchPlannedIncome()
-    allPlannedIncomes.value = result!
+    await loadBudgets(selectedYear.value)
+    allIncomes.value = await loadPlannedIncomes()
   })
-  defineEmits(['view', 'duplicate', 'delete'] as const)
-  watch(selectedYear, year => budgetStore.fetchBudgets(year))
 
-  const currency = computed(() => financesStore.defaultCurrency)
-
-  // % executed = 0 until transactions are loaded
-  const avgExecution = computed(() => 0)
-
-  const getNextClosing = (budget: CurrentBudgetPlan) => {
-    const active = getBudgetStatus(budget.year, budget.month) === 'active'
-    if (!active) return null
-    const m = new Date(`${budget.year}-${budget.month}-01`).getMonth() + 1
-    const lastDay = new Date(budget.year, m, 0)
-    return `${lastDay.getDate()} ${monthShort(budget.month)} ${budget.year}`
-  }
-  const currentNextClosingDate = computed(() => {
-    const active = budgetStore.budgetPlans.find(p => getBudgetStatus(p.year, p.month) === 'active')
-    if (!active) return null
-    const m = new Date(`${active.year}-${active.month}-01`).getMonth() + 1
-    const lastDay = new Date(active.year, m, 0)
-    return `${lastDay.getDate()} ${monthShort(active.month)} ${active.year}`
+  watch(selectedYear, async year => {
+    await loadBudgets(year)
   })
-  type MetricVariant = 'income' | 'expense' | 'available' | 'neutral' | 'undefined'
-  type MetricSize = 'sm' | 'md' | 'lg'
-  const metricData = [
-    {
-      title: 'TOTAL PRESUPUESTADO',
-      value: '1000000000',
-      icon: 'account_balance_wallet',
-      variant: 'income' as MetricVariant,
-      size: 'sm' as MetricSize
-    },
-    {
-      title: 'EJECUCIÓN PROMEDIO',
-      value: `${avgExecution.value}%`,
-      icon: 'trending_up',
-      variant: 'neutral' as MetricVariant,
-      size: 'sm' as MetricSize,
-      currency: false,
-      iconClass:
-        'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-400'
-    },
-    {
-      title: currentNextClosingDate.value ? 'PRÓXIMO CIERRE' : 'SIN PERIODO ACTIVO',
-      value: currentNextClosingDate.value ?? '—',
-      icon: 'event',
-      variant: 'neutral' as MetricVariant,
-      size: 'sm' as MetricSize,
-      currency: false,
-      iconClass: 'bg-warning-50 text-warning-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-    }
-  ]
-  const budgetDetails = (id: string) => {
-    router.push(`/dashboard/budget/${id}`)
+
+  const goToDetail = (id: string) => router.push(`/dashboard/budget/${id}`)
+
+  const openEdit = (budget: CurrentBudgetPlan) => {
+    selectedBudget.value = budget
+    showEditModal.value = true
   }
 
-  const columns: Column[] = [
-    { key: 'period', label: 'Periodo', bold: true },
-    { key: 'status', label: 'Estado', type: 'badge' },
-    { key: 'nextClosingDate', label: 'Proximo Cierre', type: 'date' },
-    { key: 'avgExecution', label: 'Ejecucion' },
-    { key: 'expectedIncome', label: 'Monto esperado', type: 'currency' }
-  ]
+  const openClone = (budget: CurrentBudgetPlan) => {
+    selectedBudget.value = budget
+    showCloneModal.value = true
+  }
 
-  const budgetPlan = ref<
-    {
-      id: string
-      period: string
-      status: string
-      nextClosingDate: string | null
-      avgExecution: number
-      expectedIncome: number
-    }[]
-  >([])
+  const confirmDelete = async (budgetId: string) => {
+    const { success } = await handleDelete(budgetId)
+    if (success) {
+      successToast('Eliminado', 'El presupuesto fue eliminado.')
+      await loadBudgets(selectedYear.value)
+    } else {
+      errorToast('Error', 'No se pudo eliminar el presupuesto.')
+    }
+  }
 
-  const result = computed(() => {
-    // 1. Indexamos presupuestos para búsqueda rápida O(1)
-    const budgetMap = new Map(budgetStore.budgetPlans.map(b => [String(b.id), b]))
-
-    // 2. Set para rastrear IDs ya procesados y evitar duplicados
-    const seenIds = new Set<string>()
-
-    const avgValue = avgExecution.value
-    const incomes = allPlannedIncomes.value || []
-    const expectedValue = plannedIncomeStore.getExpectedAmount(incomes)
-
-    return incomes.flatMap(planned => {
-      const bId = String(planned.budgetId)
-      const budget = budgetMap.get(bId)
-
-      // Filtramos si: no existe el presupuesto O ya lo procesamos
-      if (!budget || seenIds.has(bId)) return []
-
-      // Marcamos como "visto"
-      seenIds.add(bId)
-
-      return [
-        {
-          id: budget.id,
-          period: `${budget.month}/${budget.year}`,
-          status: budget.status,
-          nextClosingDate: getNextClosing(budget),
-          avgExecution: avgValue,
-          expectedIncome: expectedValue
-        }
-      ]
-    })
-  })
-  const plans = computed(() => budgetPlan.value)
-
-  const currentPage = ref(1)
-  const pageSize = ref(10)
-  const totalPages = computed(() => Math.ceil(plans.value.length / pageSize.value))
-  const showPagination = computed(() => totalPages.value > 1)
-
-  const countLabel = computed(() => {
-    const total = result.value.length
-    const unit = `periodo${total !== 1 ? 's' : ''}`
-    if (!showPagination.value) return `${total} ${unit}`
-    const from = (currentPage.value - 1) * pageSize.value + 1
-
-    const to = Math.min(currentPage.value * pageSize.value, total)
-    return `${from}–${to} de ${total} ${unit}`
-  })
+  const onFormSuccess = async () => {
+    showCreateModal.value = false
+    showEditModal.value = false
+    showCloneModal.value = false
+    selectedBudget.value = null
+    await loadBudgets(selectedYear.value)
+    allIncomes.value = await loadPlannedIncomes()
+  }
 </script>
 
 <template>
-  <div class="space-y-4 p-4">
-    <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <div class="flex items-start justify-between gap-4">
+  <div class="budget-index">
+    <div class="budget-index__header">
       <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="mb-1">
-          Presupuestos del Año
-        </Heading>
-        <Text size="sm" color="muted">
-          Listado detallado de periodos presupuestarios en
-          {{ currency === 'COP' ? 'pesos colombianos (COP)' : currency }}
-        </Text>
+        <Heading level="h1" size="2xl" weight="extrabold" class="budget-index__title">Presupuestos</Heading>
+        <Text size="sm" color="muted">Administrá tus períodos presupuestarios</Text>
       </div>
-
-      <div class="flex shrink-0 items-center gap-3">
-        <!-- Year filter -->
-
+      <div class="budget-index__header-actions">
         <Select
           name="year-filter"
           :model-value="selectedYear"
-          :options="availableYears.map(y => ({ label: y.toString(), value: y }))"
-          class="w-28"
+          :options="yearOptions"
+          class="budget-index__year-select"
           @update:model-value="selectedYear = Number($event)"
         />
-
-        <Button variant="primary" size="sm" icon="add">Nuevo Presupuesto</Button>
+        <Button variant="primary" size="sm" icon="add" @click="showCreateModal = true">
+          Nuevo presupuesto
+        </Button>
       </div>
     </div>
 
-    <!-- ── Summary cards ──────────────────────────────────────────────────── -->
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <MetricCard
-        v-for="(data, index) in metricData"
-        :key="index"
-        :title="data.title"
-        :value="data.value"
-        :icon="data.icon"
-        :variant="data.variant"
-        :size="data.size"
-        :currency="data.currency"
-        :icon-class="data.iconClass"
-      />
+    <div v-if="isLoading" class="budget-index__loading">
+      <div v-for="n in 3" :key="n" class="budget-index__skeleton" />
     </div>
 
-    <!-- ── Loading ────────────────────────────────────────────────────────── -->
-    <div v-if="budgetStore.isLoading" class="space-y-2">
+    <div v-else-if="error" class="budget-index__error">
+      <Text size="sm" class="budget-index__error-text">
+        {{ error.message }}
+      </Text>
+    </div>
+
+    <div
+      v-else-if="budgets.length === 0"
+      class="budget-index__empty"
+    >
+      <Icon name="account_balance" size="2xl" class="budget-index__empty-icon" />
+      <Heading level="h3" size="lg" color="muted" class="budget-index__empty-title">
+        No hay presupuestos para {{ selectedYear }}
+      </Heading>
+      <Text size="sm" color="muted" class="budget-index__empty-text">
+        Creá tu primer presupuesto para empezar a planificar.
+      </Text>
+      <Button variant="primary" size="sm" @click="showCreateModal = true">Crear presupuesto</Button>
+    </div>
+
+    <div v-else class="budget-index__grid">
       <div
-        v-for="n in 4"
-        :key="n"
-        class="h-14 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800"
-      />
-    </div>
-
-    <!-- ── Error ──────────────────────────────────────────────────────────── -->
-    <div
-      v-else-if="budgetStore.error"
-      class="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20"
-    >
-      <Text size="sm" class="text-red-700 dark:text-red-300">{{ budgetStore.error.message }}</Text>
-    </div>
-
-    <!-- ── Empty ──────────────────────────────────────────────────────────── -->
-    <div
-      v-else-if="budgetStore.budgetPlans.length === 0"
-      class="rounded-xl border border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-800"
-    >
-      <Text color="muted">No hay presupuestos registrados para {{ selectedYear }}.</Text>
-    </div>
-
-    <!-- ── Table ──────────────────────────────────────────────────────────── -->
-
-    <DataTable :columns="columns" :data="result!">
-      <template #cell-status="{ value }">
-        <Badge size="xs">{{ value }}</Badge>
-      </template>
-      <template #cell-avgExecution="{ value }">
-        <ProgressBar :progress="value" />
-      </template>
-      <template #actions="{ row }">
-        <div class="flex w-full justify-end gap-4">
-          <Button
-            variant="primary"
-            icon="visibility"
-            icon-only
-            @click="budgetDetails(row.id as string)"
-          >
-            Ver
-          </Button>
-          <Button
-            variant="secondary"
-            icon="content_copy"
-            icon-only
-            @click="$emit('duplicate', row.id)"
-          >
-            Duplicar
-          </Button>
-          <Button variant="danger" icon="delete" icon-only @click="$emit('delete', row.id)">
-            Eliminar
-          </Button>
-        </div>
-      </template>
-      <template #empty>No hay datos</template>
-      <template #footer>
-        <div
-          v-if="showPagination"
-          class="flex items-center justify-between border-t border-slate-100 px-5 py-3.5 dark:border-slate-700"
-        >
-          <Text size="xs" color="muted">Mostrando {{ countLabel }}</Text>
-          <div class="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="outline"
-              :disabled="currentPage === 1"
-              @click="currentPage--"
-            >
-              Anterior
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              :disabled="currentPage === totalPages"
-              @click="currentPage++"
-            >
-              Siguiente
-            </Button>
+        v-for="budget in budgets"
+        :key="budget.id"
+        class="budget-index__card"
+        :class="getCardBorderClass(budget.status)"
+      >
+        <div class="budget-index__card-header">
+          <div class="budget-index__card-header-content">
+            <div class="budget-index__card-badges">
+              <Text size="sm" weight="bold" class="budget-index__card-title">
+                {{ replaceUnderscoresWithSpaces(budget.name) }}
+              </Text>
+              <Badge :variant="getStatusVariant(budget.status)" size="xs">
+                {{ getStatusLabel(budget.status) }}
+              </Badge>
+              <Badge variant="secondary" size="xs">
+                {{ getStrategyLabel(budget.strategy) }}
+              </Badge>
+            </div>
+            <Text size="xs" color="muted" class="budget-index__card-date">
+              {{ getMonthName(budget.month) }} {{ budget.year }}
+            </Text>
           </div>
         </div>
-      </template>
-    </DataTable>
+
+        <div class="budget-index__card-metrics">
+          <div class="budget-index__metric">
+            <Text size="xs" color="muted" class="budget-index__metric-label">
+              Ingreso esperado
+            </Text>
+            <Text size="sm" weight="bold" class="budget-index__metric-value">
+              {{ formatCurrency(getExpected(budget.id), currency) }}
+            </Text>
+          </div>
+          <div class="budget-index__metric">
+            <Text size="xs" color="muted" class="budget-index__metric-label">
+              Ahorro estimado
+            </Text>
+            <Text size="sm" weight="bold" class="budget-index__metric-value--savings">
+              {{
+                formatCurrency(
+                  getEstimatedSavings(budget.id, budget.limits?.savings ?? 0),
+                  currency
+                )
+              }}
+            </Text>
+          </div>
+        </div>
+
+        <div v-if="budget.status !== 'PLANNED'" class="budget-index__card-progress">
+          <div class="budget-index__progress-header">
+            <Text size="xs" color="muted">Ingresos recibidos</Text>
+            <Text size="xs" color="muted">0%</Text>
+          </div>
+          <div class="budget-index__progress-bar">
+            <div class="budget-index__progress-fill" />
+          </div>
+        </div>
+
+        <div class="budget-index__card-actions">
+          <template v-if="budget.status === 'ACTIVE'">
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="visibility"
+              class="budget-index__action--primary"
+              @click="goToDetail(budget.id)"
+            >
+              Ver detalle
+            </Button>
+            <Button variant="primary" size="sm" icon="content_copy" @click="openClone(budget)">
+              Duplicar
+            </Button>
+          </template>
+
+          <template v-else-if="budget.status === 'PLANNED'">
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="visibility"
+              class="budget-index__action--primary"
+              @click="goToDetail(budget.id)"
+            >
+              Ver detalle
+            </Button>
+            <Button variant="secondary" size="sm" icon="edit" icon-only @click="openEdit(budget)" />
+            <Button
+              variant="danger"
+              size="sm"
+              icon="delete"
+              icon-only
+              @click="confirmDelete(budget.id)"
+            />
+          </template>
+
+          <template v-else>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="visibility"
+              class="budget-index__action--primary"
+              @click="goToDetail(budget.id)"
+            >
+              Ver detalle
+            </Button>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <ModalWizard v-model:show="showCreateModal">
+      <BudgetForm mode="create" @on-close="showCreateModal = false" @on-success="onFormSuccess" />
+    </ModalWizard>
+
+    <ModalWizard v-model:show="showEditModal">
+      <BudgetForm
+        v-if="selectedBudget"
+        mode="edit"
+        :budget-id="selectedBudget.id"
+        :initial-data="budgetInitialData"
+        @on-close="showEditModal = false"
+        @on-success="onFormSuccess"
+      />
+    </ModalWizard>
+
+    <ModalWizard v-model:show="showCloneModal">
+      <BudgetCloneForm
+        v-if="selectedBudget"
+        :source-budget-id="selectedBudget.id"
+        :source-budget-name="selectedBudget.name"
+        @on-close="showCloneModal = false"
+        @on-success="onFormSuccess"
+      />
+    </ModalWizard>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.budget-index {
+  @apply space-y-4 p-4;
+}
+
+.budget-index__header {
+  @apply flex items-start justify-between gap-4;
+}
+
+.budget-index__title {
+  @apply mb-1;
+}
+
+.budget-index__header-actions {
+  @apply flex shrink-0 items-center gap-3;
+}
+
+.budget-index__year-select {
+  @apply w-28;
+}
+
+.budget-index__loading {
+  @apply grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3;
+}
+
+.budget-index__skeleton {
+  @apply h-52 animate-pulse rounded-xl bg-neutral-100;
+}
+
+.budget-index__error {
+  @apply rounded-xl border border-danger-200 bg-danger-50 p-6;
+}
+
+.budget-index__error-text {
+  @apply text-danger-700;
+}
+
+.budget-index__empty {
+  @apply rounded-xl border border-neutral-200 bg-white p-12 text-center;
+}
+
+.budget-index__empty-icon {
+  @apply mb-3 text-neutral-300;
+}
+
+.budget-index__empty-title {
+  @apply mb-2;
+}
+
+.budget-index__empty-text {
+  @apply mb-4;
+}
+
+.budget-index__grid {
+  @apply grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3;
+}
+
+.budget-index__card {
+  @apply flex flex-col rounded-xl bg-white p-4 transition-shadow;
+}
+
+.budget-index__card-header {
+  @apply mb-3 flex items-start justify-between gap-2;
+}
+
+.budget-index__card-header-content {
+  @apply min-w-0 flex-1;
+}
+
+.budget-index__card-badges {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+.budget-index__card-title {
+  @apply truncate text-neutral-900;
+}
+
+.budget-index__card-date {
+  @apply mt-0.5;
+}
+
+.budget-index__card-metrics {
+  @apply mb-3 grid grid-cols-2 gap-2;
+}
+
+.budget-index__metric {
+  @apply rounded-lg bg-neutral-50 p-2;
+}
+
+.budget-index__metric-label {
+  @apply mb-0.5 uppercase tracking-wide;
+}
+
+.budget-index__metric-value {
+  @apply text-neutral-900;
+}
+
+.budget-index__metric-value--savings {
+  @apply text-warning-600;
+}
+
+.budget-index__card-progress {
+  @apply mb-3;
+}
+
+.budget-index__progress-header {
+  @apply mb-1 flex justify-between;
+}
+
+.budget-index__progress-bar {
+  @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
+}
+
+.budget-index__progress-fill {
+  @apply h-full w-0 rounded-full bg-primary-500 transition-all;
+}
+
+.budget-index__card-actions {
+  @apply mt-auto flex gap-2 border-t border-neutral-100 pt-3;
+}
+
+.budget-index__action--primary {
+  @apply flex-1;
+}
+</style>

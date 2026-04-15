@@ -1,36 +1,28 @@
 <script setup lang="ts">
   import { AlertBanner } from '@/components/atoms'
   import { Form } from '@/components/organisms'
-  import { useBudgetStore } from '@/stores/budget.store'
-  import { useGoalsStore } from '@/stores/goals.store'
-  import { usePlannedIncomeStore } from '@/stores/planned-income.store'
-  import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
+  import { useSavingDistributionApplication } from '@/composables/application/useSavingDistributionApplication'
   import { subtractPercentage } from '@/utils/numbers'
 
   import { savingDistributionFieldsSchema } from './schema/saving-distribution.fields.schema'
-  const plannedIncomeStore = usePlannedIncomeStore()
-  const goalsStore = useGoalsStore()
-  const budgetStore = useBudgetStore()
 
-  const savingsAllocationsStore = useSavingAllocationsStore()
+  const {
+    initialize,
+    getSavingsAmount,
+    getGoalOptions,
+    getTotalAllocatedPercentage,
+    submitAllocation
+  } = useSavingDistributionApplication()
 
-  const budgetId = ref()
+  const budgetId = ref<string | null>(null)
   onMounted(async () => {
-    await budgetStore.fetchCurrentBudget()
-    budgetId.value = budgetStore?.currentBudgetPlan?.id
-    await plannedIncomeStore.fetchPlannedIncomeByBudgetId(budgetId.value as string)
-    if (savingsAllocationsStore.savingAllocations.length < 1) {
-      await savingsAllocationsStore.fetchSavingAllocations()
-    }
+    const result = await initialize()
+    budgetId.value = result.budgetId
   })
-  const savingsAmount = computed(() => plannedIncomeStore.buckets.savingsAmount)
-  const goals = computed(() =>
-    goalsStore.goals.map(item => ({
-      label: item.name,
-      value: item.id!,
-      disabled: !item.isActive
-    }))
-  )
+
+  const savingsAmount = getSavingsAmount()
+  const goals = getGoalOptions()
+  const savingAllocationTotal = getTotalAllocatedPercentage()
 
   const emit = defineEmits(['onClose', 'onError', 'onSuccess'])
   const formSchema = computed(() => savingDistributionFieldsSchema(goals.value))
@@ -38,9 +30,6 @@
 
   const formKey = ref(0)
   const formData = ref<{ percentage: number; goalId: string }>({ percentage: 0, goalId: '' })
-  const savingAllocationTotal = computed(() =>
-    savingsAllocationsStore.savingAllocations.reduce((acc, sa) => acc + Number(sa.percentage), 0)
-  )
 
   const newAmount = computed(() =>
     subtractPercentage(savingsAmount.value, savingAllocationTotal.value)
@@ -50,21 +39,18 @@
       percentage.value = value?.percentage
     }
   })
-  const handleSubmit = () => {
-    const buildData = {
-      ...formData.value,
-      budgetId: budgetId.value
-    } as { budgetId: string; goalId: string; percentage: number }
+  const handleSubmit = async () => {
+    if (!budgetId.value) return
 
-    savingsAllocationsStore.addSavingAllocation(buildData)
+    const { success, error } = await submitAllocation(formData.value, budgetId.value)
 
     formData.value = { percentage: 0, goalId: '' }
     formKey.value++
 
-    if (!savingsAllocationsStore.error) {
+    if (success) {
       emit('onSuccess')
     } else {
-      emit('onError', goalsStore.error)
+      emit('onError', error)
     }
   }
 
@@ -72,7 +58,7 @@
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-col gap-6">
+  <div class="saving-distribution-form">
     <CardInfo
       title="Agregar Distribucion de Ahorros"
       title-size="2xl"
@@ -86,9 +72,9 @@
       icon-variant="primary"
       icon-size="md"
     />
-    <Text size="xl" weight="bold" class="">
+    <Text size="xl" weight="bold" class="saving-distribution-form__amount">
       Monto disponible
-      <strong class="text-primary-900">
+      <strong class="saving-distribution-form__amount-value">
         {{ formatCurrency(savingDiscount, 'COP') }}
       </strong>
     </Text>
@@ -107,7 +93,7 @@
 
     <Form :key="formKey" v-model="formData" :schema="formSchema">
       <template #actions>
-        <div class="flex justify-end gap-2">
+        <div class="saving-distribution-form__actions">
           <Button type="button" variant="ghost" @click.stop="emit('onClose')">Cancelar</Button>
           <Button type="submit" variant="primary" @click="handleSubmit">Guardar</Button>
         </div>
@@ -115,3 +101,21 @@
     </Form>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.saving-distribution-form {
+  @apply flex h-full w-full flex-col gap-6;
+}
+
+.saving-distribution-form__amount {
+  /* No styles needed - using utility classes only for this text */
+}
+
+.saving-distribution-form__amount-value {
+  @apply text-primary-900;
+}
+
+.saving-distribution-form__actions {
+  @apply flex justify-end gap-2;
+}
+</style>

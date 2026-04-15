@@ -1,15 +1,11 @@
 <script setup lang="ts">
-  import { useBudgetStore } from '@/stores/budget.store'
-  import { useFinancesStore } from '@/stores/finances.store'
+  import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
+  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
+  import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
 
-  const budgetStore = useBudgetStore()
-  const financesStore = useFinancesStore()
-
-  const { savingProgress, savingsAmount } = useSavingPlanned()
-  const { needsProgress, wantsProgress, needsAmount, wantsAmount } = useExpense()
-
-  const currency = computed(() => financesStore.defaultCurrency)
-  const plan = computed(() => budgetStore.budgetSelected)
+  const { budgetSelected: plan, defaultCurrency: currency } = useBudgetDetailApplication()
+  const { savingProgress, savingsAmount } = useSavingPlannedApplication()
+  const { needsProgress, wantsProgress, needsAmount, wantsAmount } = useExpenseApplication()
 
   // ─── Derived amounts ──────────────────────────────────────────────────────
 

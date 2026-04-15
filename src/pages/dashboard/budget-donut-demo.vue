@@ -2,19 +2,18 @@
   import { computed, ref } from 'vue'
 
   import { Heading, Text } from '@/components/atoms'
-  import {
-    BudgetDonutChart,
-    BudgetDonutChartEnhanced
-  } from '@/components/molecules/budget-donut-chart'
   import type {
     BudgetDonutItem,
     BudgetDonutItemEnhanced
   } from '@/components/molecules/budget-donut-chart'
+  import {
+    BudgetDonutChart,
+    BudgetDonutChartEnhanced
+  } from '@/components/molecules/budget-donut-chart'
+  import { useExpenseSectionApplication } from '@/composables/application/useExpenseSectionApplication'
+  import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
+  import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useCommon } from '@/composables/useCommon'
-  import { usePlannedIncome } from '@/composables/usePlannedIncome'
-  import { useExpensesStore } from '@/stores/expense.store'
-  import { useFinancesStore } from '@/stores/finances.store'
-  import { usePlannedSavingStore } from '@/stores/planned-saving.store'
   import { percentOf } from '@/utils/currency'
 
   definePageMeta({
@@ -23,14 +22,10 @@
     breadcrumb: 'Demo'
   })
 
-  const financesStore = useFinancesStore()
-  const expensesStore = useExpensesStore()
-  const plannedSavingStore = usePlannedSavingStore()
-
-  const { currentBudget } = useCommon()
-  const { expectedAmount } = usePlannedIncome()
-
-  const currency = computed(() => financesStore.defaultCurrency)
+  const { currentBudget, currency } = useCommon()
+  const { expectedAmount } = usePlannedIncomeApplication()
+  const { expenses } = useExpenseSectionApplication()
+  const { totalSavingGenerated } = usePlannedSavingApplication()
 
   // Base items for both charts
   const baseItems = computed((): BudgetDonutItem[] => {
@@ -75,7 +70,7 @@
 
   // Enhanced items with spent data
   const enhancedItems = computed((): BudgetDonutItemEnhanced[] => {
-    const budgetExpenses = expensesStore.expenses ?? []
+    const budgetExpenses = expenses.value ?? []
 
     const needsSpent = budgetExpenses
       .filter(expense => expense.status === 'PAID' && expense.bucket === 'needs')
@@ -85,7 +80,7 @@
       .filter(expense => expense.status === 'PAID' && expense.bucket === 'wants')
       .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0)
 
-    const savingsSpent = plannedSavingStore.totalSavingGenerated || 0
+    const savingsSpent = totalSavingGenerated.value || 0
 
     return baseItems.value.map(item => ({
       ...item,

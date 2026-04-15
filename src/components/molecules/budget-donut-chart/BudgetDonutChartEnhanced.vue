@@ -1,116 +1,132 @@
 <script setup lang="ts">
-import type { PieSeriesOption } from 'echarts/charts'
-import type { ComposeOption } from 'echarts/core'
-import { computed, onMounted, ref } from 'vue'
-import VChart from 'vue-echarts'
+  import type { PieSeriesOption } from 'echarts/charts'
+  import type { ComposeOption } from 'echarts/core'
+  // Importamos el tipo específico para los parámetros del formatter
+  import type { CallbackDataParams } from 'echarts/types/dist/shared'
+  import { computed, onMounted, ref } from 'vue'
+  import VChart from 'vue-echarts'
 
-import { useBudgetComparisonApplication } from '@/composables/application/useBudgetComparisonApplication'
-import { useBudgetDonutPresenter } from '@/composables/presenters/useBudgetDonutPresenter'
-import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
+  import { useBudgetComparisonApplication } from '@/composables/application/useBudgetComparisonApplication'
+  import { useBudgetDonutPresenter } from '@/composables/presenters/useBudgetDonutPresenter'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
 
-import type { BudgetDonutChartEnhancedProps } from './types/budget-donut-chart-enhanced.types'
-import {
-  formatUtilization,
-  getEmphasisScale,
-  getHealthRingColor,
-  getSegmentBorderWidth,
-  getSegmentColor,
-  getTooltipData
-} from './utils/donut-chart.utils'
+  import type { BudgetDonutChartEnhancedProps } from './types/budget-donut-chart-enhanced.types'
+  import {
+    formatUtilization,
+    getEmphasisScale,
+    getHealthRingColor,
+    getSegmentBorderWidth,
+    getSegmentColor,
+    getTooltipData
+  } from './utils/donut-chart.utils'
 
-type EChartsOption = ComposeOption<PieSeriesOption>
+  // ─── Interfaces Locales para evitar ANY ─────────────────────────────────────
 
-const props = withDefaults(defineProps<BudgetDonutChartEnhancedProps>(), {
-  items: () => [],
-  total: 0,
-  currency: 'COP',
-  showLegend: true,
-  showTrends: true,
-  showHealthIndicators: true,
-  enableHoverDetails: true,
-  comparisonEnabled: false
-})
+  type HealthStatus = 'healthy' | 'warning' | 'critical' | 'neutral'
+  type TrendDirection = 'up' | 'down' | 'stable' | 'new'
 
-// ─── Composables ─────────────────────────────────────────────────────────────
+  interface BudgetTrend {
+    direction: TrendDirection
+    percentageChange: number
+  }
 
-const { enhanceItems, getTrendIcon, getTrendColor, getHealthColor } = useBudgetDonutPresenter()
-const { loadComparisonData, isLoading } = useBudgetComparisonApplication()
+  interface EnhancedBudgetItem {
+    id: string
+    name: string
+    type: string
+    percentage: number
+    budgeted: number
+    spent: number
+    utilization: number
+    health: HealthStatus
+    trend?: BudgetTrend
+  }
 
-// ─── State ───────────────────────────────────────────────────────────────────
+  type EChartsOption = ComposeOption<PieSeriesOption>
 
-const enhancedItems = ref(props.items)
+  // ─── Props ───────────────────────────────────────────────────────────────────
 
-// ─── Load comparison data ────────────────────────────────────────────────────
+  const props = withDefaults(defineProps<BudgetDonutChartEnhancedProps>(), {
+    items: () => [],
+    total: 0,
+    currency: 'COP',
+    showLegend: true,
+    showTrends: true,
+    showHealthIndicators: true,
+    enableHoverDetails: true,
+    comparisonEnabled: false
+  })
 
-onMounted(async () => {
-  // Always use spent data from props (already calculated correctly by parent)
-  const spentData = props.items.reduce(
-    (acc, item) => {
-      acc[item.id] = 'spent' in item ? (item as any).spent : 0
+  // ─── Composables ─────────────────────────────────────────────────────────────
+
+  const { enhanceItems, getTrendIcon, getTrendColor, getHealthColor } = useBudgetDonutPresenter()
+  const { loadComparisonData, isLoading } = useBudgetComparisonApplication()
+
+  // ─── State ───────────────────────────────────────────────────────────────────
+
+  // Ref tipado estrictamente para que el template reconozca las propiedades
+  const enhancedItems = ref<EnhancedBudgetItem[]>([])
+
+  // ─── Load data ───────────────────────────────────────────────────────────────
+
+  onMounted(async () => {
+    // Tipamos el acumulador como un Record para evitar (item as any)
+    const spentData = props.items.reduce<Record<string, number>>((acc, item) => {
+      // Verificamos si la propiedad existe de forma segura
+      const value = 'spent' in item ? (item as { spent: number }).spent : 0
+      acc[item.id] = value
       return acc
-    },
-    {} as Record<string, number>
-  )
+    }, {})
 
-  // Only fetch previous period data if comparison is enabled
-  if (props.comparisonEnabled && props.items.length > 0) {
-    const { previousSpent } = await loadComparisonData(props.items)
-    enhancedItems.value = enhanceItems(props.items, spentData, previousSpent)
-  } else {
-    enhancedItems.value = enhanceItems(props.items, spentData)
-  }
-})
-
-// ─── Chart option ────────────────────────────────────────────────────────────
-
-const chartOption = computed<EChartsOption>(() => {
-  // Empty state
-  if (enhancedItems.value.length === 0) {
-    return {
-      animation: false,
-      series: [
-        {
-          type: 'pie',
-          radius: ['56%', '78%'],
-          center: ['50%', '50%'],
-          avoidLabelOverlap: false,
-          itemStyle: {
-            borderWidth: 0
-          },
-          label: {
-            show: false
-          },
-          data: [
-            {
-              value: 100,
-              itemStyle: {
-                color: '#e2e8f0'
-              }
-            }
-          ]
-        }
-      ]
+    if (props.comparisonEnabled && props.items.length > 0) {
+      const { previousSpent } = await loadComparisonData(props.items)
+      // Cast al final para asegurar que la salida del presenter cumple con nuestra interfaz
+      enhancedItems.value = enhanceItems(
+        props.items,
+        spentData,
+        previousSpent
+      ) as EnhancedBudgetItem[]
+    } else {
+      enhancedItems.value = enhanceItems(props.items, spentData) as EnhancedBudgetItem[]
     }
-  }
+  })
 
-  // Enhanced state with health indicators
-  return {
-    animation: {
-      duration: 700,
-      easing: 'cubicOut'
-    },
-    tooltip: props.enableHoverDetails
-      ? {
-          trigger: 'item',
-          formatter: (params: any) => {
-            const item = enhancedItems.value.find(i => i.name === params.name)
-            if (!item) return params.name
+  // ─── Chart option ────────────────────────────────────────────────────────────
 
-            const tooltipData = getTooltipData(item, props.currency)
-            const statusText = tooltipData.isOverBudget ? 'Excedido' : 'Disponible'
-            const statusColor = tooltipData.isOverBudget ? '#ef4444' : '#22c55e'
+  const chartOption = computed<EChartsOption>(() => {
+    if (enhancedItems.value.length === 0) {
+      return {
+        animation: false,
+        series: [
+          {
+            type: 'pie',
+            radius: ['56%', '78%'],
+            center: ['50%', '50%'],
+            data: [{ value: 100, itemStyle: { color: '#e2e8f0' } }],
+            label: { show: false }
+          }
+        ]
+      }
+    }
 
-            return `
+    return {
+      animation: { duration: 700, easing: 'cubicOut' },
+      tooltip: props.enableHoverDetails
+        ? {
+            trigger: 'item',
+            formatter: (params: CallbackDataParams | CallbackDataParams[]) => {
+              // Normalizamos params (ECharts puede enviar objeto único o array)
+              const p = Array.isArray(params) ? params[0] : params
+
+              // Buscamos el item en nuestro array tipado usando el nombre como clave
+              const item = enhancedItems.value.find(i => i.name === p.name)
+              if (!item) return p.name
+
+              const tooltipData = getTooltipData(item, props.currency)
+              const statusText = tooltipData.isOverBudget ? 'Excedido' : 'Disponible'
+              const statusColor = tooltipData.isOverBudget ? '#ef4444' : '#22c55e'
+
+              return `
               <div style="padding: 8px;">
                 <div style="font-weight: 600; margin-bottom: 8px;">${tooltipData.name}</div>
                 <div style="display: flex; justify-content: space-between; gap: 16px; margin-bottom: 4px;">
@@ -134,74 +150,64 @@ const chartOption = computed<EChartsOption>(() => {
                     ? `
                 <div style="display: flex; justify-content: space-between; gap: 16px; margin-top: 4px;">
                   <span style="color: #64748b;">Tendencia:</span>
-                  <span style="font-weight: 500;">${tooltipData.trend.direction === 'up' ? '↑' : tooltipData.trend.direction === 'down' ? '↓' : '→'} ${Math.round(tooltipData.trend.percentageChange)}%</span>
-                </div>
-                `
+                  <span style="font-weight: 500;">
+                    ${tooltipData.trend.direction === 'up' ? '↑' : tooltipData.trend.direction === 'down' ? '↓' : '→'} 
+                    ${Math.round(tooltipData.trend.percentageChange)}%
+                  </span>
+                </div>`
                     : ''
                 }
               </div>
             `
-          }
-        }
-      : undefined,
-    series: [
-      {
-        type: 'pie',
-        radius: ['56%', '78%'],
-        center: ['50%', '50%'],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderWidth: 4,
-          borderColor: '#ffffff'
-        },
-        emphasis: {
-          itemStyle: {
-            borderWidth: 4,
-            borderColor: '#ffffff',
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowOffsetY: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.2)'
-          },
-          scale: true,
-          scaleSize: 8
-        },
-        label: {
-          show: false
-        },
-        data: enhancedItems.value.map(item => {
-          const baseColor = getSegmentColor(item.type)
-          const health = item.health || 'neutral'
-          const borderWidth = props.showHealthIndicators
-            ? getSegmentBorderWidth(health)
-            : 4
-
-          return {
-            name: item.name,
-            value: item.percentage,
-            itemStyle: {
-              color: baseColor,
-              borderWidth,
-              borderColor:
-                props.showHealthIndicators && health !== 'neutral'
-                  ? getHealthRingColor(health)
-                  : '#ffffff'
-            },
-            emphasis: {
-              scale: true,
-              scaleSize: getEmphasisScale(health)
             }
           }
-        })
-      }
-    ]
-  }
-})
+        : undefined,
+      series: [
+        {
+          type: 'pie',
+          radius: ['56%', '78%'],
+          center: ['50%', '50%'],
+          avoidLabelOverlap: false,
+          itemStyle: { borderWidth: 4, borderColor: '#ffffff' },
+          emphasis: {
+            itemStyle: {
+              borderWidth: 4,
+              borderColor: '#ffffff',
+              shadowBlur: 10,
+              shadowColor: 'rgba(0, 0, 0, 0.2)'
+            },
+            scale: true,
+            scaleSize: 8
+          },
+          label: { show: false },
+          data: enhancedItems.value.map(item => {
+            const health = item.health || 'neutral'
+            return {
+              name: item.name,
+              value: item.percentage,
+              itemStyle: {
+                color: getSegmentColor(item.type),
+                borderWidth: props.showHealthIndicators ? getSegmentBorderWidth(health) : 4,
+                borderColor:
+                  props.showHealthIndicators && health !== 'neutral'
+                    ? getHealthRingColor(health)
+                    : '#ffffff'
+              },
+              emphasis: {
+                scale: true,
+                scaleSize: getEmphasisScale(health)
+              }
+            }
+          })
+        }
+      ]
+    }
+  })
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+  // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const compactTotal = () => formatCompactCurrency(props.total, props.currency)
-const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
+  const compactTotal = () => formatCompactCurrency(props.total, props.currency)
+  const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
 </script>
 
 <template>
@@ -212,11 +218,7 @@ const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
         : 'budget-donut-chart-enhanced budget-donut-chart-enhanced--center'
     "
   >
-    <!-- Donut + center label -->
-    <div
-      class="budget-donut-chart-enhanced__donut-wrapper"
-      style="width: 180px; height: 180px"
-    >
+    <div class="budget-donut-chart-enhanced__donut-wrapper" style="width: 180px; height: 180px">
       <ClientOnly>
         <VChart
           :option="chartOption"
@@ -229,7 +231,6 @@ const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
         </template>
       </ClientOnly>
 
-      <!-- Center text overlay -->
       <div class="budget-donut-chart-enhanced__center-label">
         <span class="budget-donut-chart-enhanced__center-label-title">TOTAL</span>
         <span class="budget-donut-chart-enhanced__center-label-value">
@@ -238,14 +239,12 @@ const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
       </div>
     </div>
 
-    <!-- Enhanced Legend -->
     <ul v-if="showLegend" class="budget-donut-chart-enhanced__legend">
       <li
         v-for="item in enhancedItems"
         :key="item.id"
         class="budget-donut-chart-enhanced__legend-item"
       >
-        <!-- Dot + label with trend -->
         <div class="budget-donut-chart-enhanced__legend-label">
           <span
             class="budget-donut-chart-enhanced__legend-dot"
@@ -255,22 +254,17 @@ const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
             <div class="flex items-center gap-1.5">
               <span class="budget-donut-chart-enhanced__legend-text">
                 {{ item.name }}
-                <span class="budget-donut-chart-enhanced__legend-percent"
-                  >({{ item.percentage }}%)</span
-                >
+                <span class="budget-donut-chart-enhanced__legend-percent">
+                  ({{ item.percentage }}%)
+                </span>
               </span>
-              <!-- Trend indicator -->
               <span
                 v-if="showTrends && item.trend && item.trend.direction !== 'new'"
-                :class="[
-                  'material-icons text-xs',
-                  getTrendColor(item.trend.direction, item.type)
-                ]"
+                :class="['material-icons text-xs', getTrendColor(item.trend.direction, item.type)]"
               >
                 {{ getTrendIcon(item.trend.direction) }}
               </span>
             </div>
-            <!-- Utilization bar -->
             <div
               v-if="item.utilization !== undefined"
               class="budget-donut-chart-enhanced__utilization"
@@ -296,14 +290,11 @@ const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
             </div>
           </div>
         </div>
-        <!-- Amount -->
         <div class="flex flex-col items-end gap-0.5">
           <span class="budget-donut-chart-enhanced__legend-amount">
             {{ fullAmount(item.budgeted) }}
           </span>
-          <span class="text-xs text-slate-500">
-            {{ fullAmount(item.spent) }} gastado
-          </span>
+          <span class="text-xs text-slate-500">{{ fullAmount(item.spent) }} gastado</span>
         </div>
       </li>
     </ul>
@@ -311,6 +302,7 @@ const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
 </template>
 
 <style lang="postcss" scoped>
+  /* Estilos se mantienen igual que en tu versión original */
   .budget-donut-chart-enhanced {
     @apply w-full;
   }

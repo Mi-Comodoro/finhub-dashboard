@@ -1,9 +1,8 @@
 import type { FetchError } from 'ofetch'
 import { defineStore } from 'pinia'
 
-import type { SavingAllocationData, SavingAllocationResponseList } from '@/types/api/'
-
-import { useBudgetStore } from './budget.store'
+import { useSavingsApi } from '@/composables/api/useSavingsApi'
+import type { SavingAllocationData } from '@/types/api/'
 
 export const useSavingAllocationsStore = defineStore('allocations', {
   state: (): {
@@ -21,19 +20,13 @@ export const useSavingAllocationsStore = defineStore('allocations', {
     getAvailableAmount: state => state.newSavingAmount
   },
   actions: {
-    async fetchSavingAllocations() {
+    async fetchSavingAllocations(budgetId: string) {
+      const { getAllocationsByBudget } = useSavingsApi()
       this.isLoading = true
       this.error = null
-      const budgetStore = useBudgetStore()
 
       try {
-        const { result } = await $fetch<SavingAllocationResponseList>(
-          `/api/savings/allocations/${budgetStore.currentBudgetPlan?.id}`,
-          {
-            method: 'GET'
-          }
-        )
-        console.log(result)
+        const { result } = await getAllocationsByBudget(budgetId)
         this.savingAllocations = result
       } catch (err) {
         this.handleError(err as FetchError)
@@ -42,13 +35,11 @@ export const useSavingAllocationsStore = defineStore('allocations', {
       }
     },
     async addSavingAllocation(data: { percentage: number; goalId: string; budgetId: string }) {
+      const { createAllocation } = useSavingsApi()
       this.error = null
       try {
-        const { success } = await $fetch('/api/savings/allocations/create', {
-          method: 'POST',
-          body: data
-        })
-        await this.fetchSavingAllocations()
+        const { success } = await createAllocation(data)
+        await this.fetchSavingAllocations(data.budgetId)
         return success
       } catch (err) {
         this.handleError(err as FetchError)

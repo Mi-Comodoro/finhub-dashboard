@@ -2,8 +2,7 @@
   import { computed, onMounted, watch } from 'vue'
 
   import { Card, Heading, Icon, Text } from '@/components/atoms'
-  import { useFinancesStore } from '@/stores/finances.store'
-  import { useTransactionStore } from '@/stores/transaction.store'
+  import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { formatCurrency } from '@/utils/currency'
   import type { TransactionSummary } from '~/types/domain'
   import DateUtils from '~/utils/date'
@@ -13,21 +12,20 @@
     type?: TransactionSummary['type']
   }>()
 
-  const transactionStore = useTransactionStore()
-  const financesStore = useFinancesStore()
+  const { transactions, isLoading, currency, fetchTransaction, setBudgetId } = useTransactionApplication()
 
   const router = useRouter()
 
-  const items = computed(() => transactionStore.items ?? [])
+  const items = computed(() => transactions.value ?? [])
 
   const loadItems = async () => {
     if (!props.budgetId) return
-    await transactionStore.fetchByBudget(props.budgetId, { limit: 10 })
+    await fetchTransaction(props.budgetId, { limit: 10 })
   }
 
   // Computed para formatear el monto con prefijo y color
   const getFormattedAmount = (item: TransactionSummary) => {
-    const amount = formatCurrency(item.amount, financesStore.defaultCurrency)
+    const amount = formatCurrency(item.amount, currency.value)
 
     if (item.type === 'income') {
       return {
@@ -61,7 +59,7 @@
     }
   )
   const onViewTransactions = () => {
-    transactionStore.setBudgetId(props.budgetId)
+    setBudgetId(props.budgetId)
     router.push({
       path: '/dashboard/transactions'
     })
@@ -70,53 +68,53 @@
 
 <template>
   <SectionCard icon="swap_vertical_circle" icon-variant="primary" title="Ultimas Transacciones">
-    <template v-if="transactionStore.isLoading">
-      <div class="space-y-3">
+    <template v-if="isLoading">
+      <div class="transaction-list__loading">
         <div
           v-for="index in 4"
           :key="index"
-          class="animate-pulse rounded-md border border-slate-100 bg-slate-50 p-4"
+          class="transaction-list__skeleton"
         >
-          <div class="mb-3 h-4 w-40 rounded bg-slate-200"></div>
-          <div class="mb-2 h-3 w-28 rounded bg-slate-200"></div>
-          <div class="h-3 w-24 rounded bg-slate-200"></div>
+          <div class="transaction-list__skeleton-title"></div>
+          <div class="transaction-list__skeleton-subtitle"></div>
+          <div class="transaction-list__skeleton-text"></div>
         </div>
       </div>
     </template>
 
-    <div v-else-if="items.length === 0" class="flex flex-col items-center gap-3 py-10 text-center">
-      <Icon name="receipt_long" size="2xl" class="text-slate-300" />
+    <div v-else-if="items.length === 0" class="transaction-list__empty">
+      <Icon name="receipt_long" size="2xl" class="transaction-list__empty-icon" />
       <Heading level="h3" size="lg" color="muted">No hay transacciones</Heading>
       <Text size="sm" color="muted">
         Las transacciones asociadas a este presupuesto aparecerán en esta lista.
       </Text>
     </div>
 
-    <div v-else class="space-y-2">
-      <Card v-for="item in items" :key="item.id" class-name="!p-3" class="border border-slate-100">
+    <div v-else class="transaction-list__items">
+      <Card v-for="item in items" :key="item.id" class-name="!p-3" class="transaction-list__card">
         <!-- Fila 1: Fuente y badge -->
-        <div class="flex items-start justify-between gap-2">
-          <Heading level="h3" size="sm" weight="extrabold" class="truncate">
+        <div class="transaction-list__header">
+          <Heading level="h3" size="sm" weight="extrabold" class="transaction-list__header-title">
             {{ translate[item.source]?.toUpperCase() ?? item.source.toUpperCase() }}
           </Heading>
         </div>
 
         <!-- Fila 2: Categoría, monto y fecha -->
-        <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-          <Text size="xs" color="muted" class="truncate">
+        <div class="transaction-list__content">
+          <Text size="xs" color="muted" class="transaction-list__content-info">
             {{ item.category?.name ?? 'Sin categoría' }} -
             {{ DateUtils.formatDate(item.transactionDate) }}
           </Text>
-          <div class="flex shrink-0 items-center gap-2">
+          <div class="transaction-list__content-amount">
             <Text
               size="sm"
               weight="bold"
-              class="whitespace-nowrap"
+              class="transaction-list__amount-text"
               :class="getFormattedAmount(item).colorClass"
             >
               {{ getFormattedAmount(item).text }}
-              <span class="text-xs uppercase" :class="getFormattedAmount(item).colorClass">
-                {{ financesStore.defaultCurrency }}
+              <span class="transaction-list__currency" :class="getFormattedAmount(item).colorClass">
+                {{ currency }}
               </span>
             </Text>
           </div>
@@ -127,3 +125,69 @@
     <Button @click="onViewTransactions">Ver todas las transacciones</Button>
   </SectionCard>
 </template>
+
+<style scoped lang="postcss">
+.transaction-list__loading {
+  @apply space-y-3;
+}
+
+.transaction-list__skeleton {
+  @apply animate-pulse rounded-md border border-slate-100 bg-slate-50 p-4;
+}
+
+.transaction-list__skeleton-title {
+  @apply mb-3 h-4 w-40 rounded bg-slate-200;
+}
+
+.transaction-list__skeleton-subtitle {
+  @apply mb-2 h-3 w-28 rounded bg-slate-200;
+}
+
+.transaction-list__skeleton-text {
+  @apply h-3 w-24 rounded bg-slate-200;
+}
+
+.transaction-list__empty {
+  @apply flex flex-col items-center gap-3 py-10 text-center;
+}
+
+.transaction-list__empty-icon {
+  @apply text-slate-300;
+}
+
+.transaction-list__items {
+  @apply space-y-2;
+}
+
+.transaction-list__card {
+  @apply border border-slate-100;
+}
+
+.transaction-list__header {
+  @apply flex items-start justify-between gap-2;
+}
+
+.transaction-list__header-title {
+  @apply truncate;
+}
+
+.transaction-list__content {
+  @apply flex flex-wrap items-center justify-between gap-2 text-xs;
+}
+
+.transaction-list__content-info {
+  @apply truncate;
+}
+
+.transaction-list__content-amount {
+  @apply flex shrink-0 items-center gap-2;
+}
+
+.transaction-list__amount-text {
+  @apply whitespace-nowrap;
+}
+
+.transaction-list__currency {
+  @apply text-xs uppercase;
+}
+</style>
