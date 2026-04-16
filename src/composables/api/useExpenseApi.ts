@@ -67,9 +67,41 @@ export function useExpenseApi() {
       method: 'PATCH'
     })
 
+  const updateExpense = async (id: string, data: Partial<ExpenseData>) =>
+    $fetch<{
+      success: boolean
+      result: {
+        id: string
+        budgetId: string
+        categoryId: string
+        name: string
+        expectedAmount: number
+        dueDate: Date
+        status: string
+        isEssential: boolean
+        notes: string
+        billsId: string | null
+        createdAt: Date
+        updatedAt: Date
+      }
+    }>(`/api/expenses/${id}`, {
+      method: 'PATCH',
+      body: data
+    })
+
+  const deleteExpense = async (id: string) =>
+    $fetch<{
+      success: boolean
+      result: { id: string }
+    }>(`/api/expenses/${id}`, {
+      method: 'DELETE'
+    })
+
   return {
     createExpense,
     findAllExpenses,
-    completeExpense
+    completeExpense,
+    updateExpense,
+    deleteExpense
   }
 }

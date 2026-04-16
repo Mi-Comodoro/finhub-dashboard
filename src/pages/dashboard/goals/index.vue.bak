@@ -176,17 +176,17 @@
 
   const getFrequencyClass = (frequency: CompoundingFrequency) => {
     const classes: Record<CompoundingFrequency, string> = {
-      daily: ' !text-green-600', // Diario (Alta actividad)
-      monthly: '!text-secondary-600', // Mensual (Estándar)
-      annually: '!bg-ghost-100 !text-ghost-600' // Anual (Largo plazo)
+      daily: 'text-green-600', // Diario (Alta actividad)
+      monthly: 'text-secondary-600', // Mensual (Estándar)
+      annually: 'bg-neutral-100 text-neutral-600' // Anual (Largo plazo)
     }
     return classes[frequency] || 'bg-gray-100 text-gray-600'
   }
   const getLevelRateClass = (level: string) => {
-    if (level === 'Alta') return '!bg-green-200 !text-green-700'
-    if (level === 'Media') return '!bg-secondary-700 !text-secondary-200'
-    if (level === 'Baja') return '!bg-yellow-500 !text-neutral-900'
-    if (level === 'Muy Baja') return '!bg-red-700 !text-red-200'
+    if (level === 'Alta') return 'bg-green-200 text-green-700'
+    if (level === 'Media') return 'bg-secondary-700 text-secondary-200'
+    if (level === 'Baja') return 'bg-yellow-500 text-neutral-900'
+    if (level === 'Muy Baja') return 'bg-red-700 text-red-200'
 
     return 'bg-gray-200 text-gray-500'
   }
@@ -271,7 +271,6 @@
         <Card
           v-if="goals.length > 6"
           class="goals-page__achievement-card"
-          class-name="!p-0"
         >
           <div class="goals-page__achievement-content">
             <div class="goals-page__achievement-header">
@@ -287,7 +286,7 @@
             </div>
           </div>
           <div class="goals-page__achievement-icon">
-            <span class="material-symbols-outlined goals-page__achievement-icon-symbol">
+            <span class="goals-page__achievement-icon-symbol material-symbols-outlined">
               celebration
             </span>
           </div>
@@ -386,7 +385,7 @@
               />
             </div>
             <div class="goals-page__accounts-list">
-              <Card v-for="(account, index) in accounts" :key="index" class-name="!p-2">
+              <Card v-for="(account, index) in accounts" :key="index" class="goals-page__account-card-wrapper">
                 <div class="goals-page__account-card">
                   <div class="goals-page__account-info">
                     <div class="goals-page__account-badge-wrapper">
@@ -501,7 +500,7 @@
 }
 
 .goals-page__tip-title {
-  @apply !text-primary-800;
+  @apply text-primary-800;
 }
 
 .goals-page__tip-text {
@@ -521,7 +520,7 @@
 }
 
 .goals-page__achievement-card {
-  @apply relative flex h-40 w-full flex-col space-y-2 overflow-hidden rounded-md !bg-primary-900;
+  @apply relative flex h-40 w-full flex-col space-y-2 overflow-hidden rounded-md bg-primary-900 p-0;
 }
 
 .goals-page__achievement-content {
@@ -581,7 +580,7 @@
 }
 
 .goals-page__setup-card {
-  @apply !bg-primary-900;
+  @apply bg-primary-900;
 }
 
 .goals-page__setup-action {
@@ -649,6 +648,130 @@
 }
 
 .goals-page__accounts-empty-text {
-  @apply !text-center;
+  @apply text-center;
+}
+
+.goals-page__account-card-wrapper {
+  @apply p-2;
+}
+
+/* Goal icon color modifiers */
+.goal-icon--emergency {
+  @apply text-red-600;
+}
+
+.goal-icon--elderly {
+  @apply text-amber-600;
+}
+
+.goal-icon--home {
+  @apply text-orange-600;
+}
+
+.goal-icon--school {
+  @apply text-blue-600;
+}
+
+.goal-icon--flight {
+  @apply text-sky-600;
+}
+
+.goal-icon--medical {
+  @apply text-rose-600;
+}
+
+.goal-icon--payments {
+  @apply text-green-600;
+}
+
+.goal-icon--trending {
+  @apply text-emerald-600;
+}
+
+.goal-icon--car {
+  @apply text-indigo-600;
+}
+
+.goal-icon--shopping {
+  @apply text-purple-600;
+}
+
+/* Goal background color modifiers */
+.goal-bg--emergency {
+  @apply bg-red-100;
+}
+
+.goal-bg--elderly {
+  @apply bg-amber-100;
+}
+
+.goal-bg--home {
+  @apply bg-orange-100;
+}
+
+.goal-bg--school {
+  @apply bg-blue-100;
+}
+
+.goal-bg--flight {
+  @apply bg-sky-100;
+}
+
+.goal-bg--medical {
+  @apply bg-rose-100;
+}
+
+.goal-bg--payments {
+  @apply bg-green-100;
+}
+
+.goal-bg--trending {
+  @apply bg-emerald-100;
+}
+
+.goal-bg--car {
+  @apply bg-indigo-100;
+}
+
+.goal-bg--shopping {
+  @apply bg-purple-100;
+}
+
+/* Account frequency modifiers */
+.account-frequency--daily {
+  @apply text-green-600;
+}
+
+.account-frequency--monthly {
+  @apply text-secondary-600;
+}
+
+.account-frequency--annually {
+  @apply bg-neutral-100 text-neutral-600;
+}
+
+.account-frequency--default {
+  @apply bg-gray-100 text-gray-600;
+}
+
+/* Account rate level modifiers */
+.account-rate--high {
+  @apply bg-green-200 text-green-700;
+}
+
+.account-rate--medium {
+  @apply bg-secondary-700 text-secondary-200;
+}
+
+.account-rate--low {
+  @apply bg-yellow-500 text-neutral-900;
+}
+
+.account-rate--very-low {
+  @apply bg-red-700 text-red-200;
+}
+
+.account-rate--default {
+  @apply bg-gray-200 text-gray-500;
 }
 </style>

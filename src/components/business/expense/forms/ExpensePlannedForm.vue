@@ -7,12 +7,20 @@
   import { expensedPlannedFieldsSchema } from './schema/expense.fields.schema'
 
   const { fetchCategories, categories } = useCategoryApplication()
-  const { addExpense } = useExpenseApplication()
+  const { addExpense, updateExpense } = useExpenseApplication()
 
-  const props = defineProps<{ budgetId: string }>()
+  const props = defineProps<{
+    budgetId: string
+    expenseId?: string
+    initialData?: Partial<ExpenseData>
+  }>()
+
+  const isEditMode = computed(() => !!props.expenseId)
+
   onMounted(async () => {
     await fetchCategories()
   })
+
   const selectOptions = computed(() =>
     categories.value.map(item => ({
       label: item.isSelectable ? `${item.name}` : ` ${item.name.toUpperCase()}`,
@@ -29,14 +37,21 @@
 
   const handleSubmit = async (data: ExpenseData) => {
     try {
-      const buildData = {
-        ...data,
-        budgetId: props.budgetId,
-        status: 'PLANNED'
-      }
-      const { success } = await addExpense(buildData)
-      if (success) {
-        emit('onClose')
+      if (isEditMode.value && props.expenseId) {
+        const { success } = await updateExpense(props.expenseId, data)
+        if (success) {
+          emit('onClose')
+        }
+      } else {
+        const buildData = {
+          ...data,
+          budgetId: props.budgetId,
+          status: 'PLANNED'
+        }
+        const { success } = await addExpense(buildData)
+        if (success) {
+          emit('onClose')
+        }
       }
     } catch (error) {
       console.error('Error completo:', error)
@@ -46,25 +61,31 @@
 <template>
   <div class="expense-planned-form">
     <CardInfo
-      title="Agregar Gasto Planificado"
+      :title="isEditMode ? 'Editar Gasto Planificado' : 'Agregar Gasto Planificado'"
       title-size="2xl"
       weight="extrabold"
       level="h1"
       color="black"
-      sub-title="Planifica tus gastos futuros para mantener tu presupuesto bajo control."
+      :sub-title="
+        isEditMode
+          ? 'Actualiza la información de tu gasto planificado.'
+          : 'Planifica tus gastos futuros para mantener tu presupuesto bajo control.'
+      "
       sub-title-size="sm"
       sub-title-color="muted"
-      icon="event"
+      :icon="isEditMode ? 'edit' : 'event'"
       icon-variant="primary"
       icon-size="md"
     />
 
     <div class="expense-planned-form__content">
-      <Form :schema="formSchema" @submit="handleSubmit">
+      <Form :schema="formSchema" :initial-data="initialData" @submit="handleSubmit">
         <template #actions>
           <div class="expense-planned-form__actions">
             <Button type="button" variant="ghost" @click.stop="close">Cancelar</Button>
-            <Button type="submit" variant="primary">Guardar</Button>
+            <Button type="submit" variant="primary">
+              {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+            </Button>
           </div>
         </template>
       </Form>

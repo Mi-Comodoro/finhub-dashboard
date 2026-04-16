@@ -164,17 +164,20 @@
   }
 
   const styles = computed(() => {
-    if (!props.variant) {
-      return {
-        icon: `${props.iconBgClass} ${props.iconTextClass}`,
-        currency: props.currencyTextClass,
-        alert: props.iconTextClass,
-        bgAccent: props.iconTextClass,
-        background: ''
-      }
+    const baseStyles = props.variant ? variantStyles[props.variant] : {
+      icon: `${props.iconBgClass} ${props.iconTextClass}`,
+      currency: 'text-neutral-400',
+      alert: props.iconTextClass,
+      bgAccent: props.iconTextClass,
+      background: ''
     }
 
-    return variantStyles[props.variant]
+    // Override currency class if prop is provided
+    return {
+      ...baseStyles,
+      icon: props.iconBgClass || props.iconTextClass ? `${props.iconBgClass} ${props.iconTextClass}` : baseStyles.icon,
+      currency: props.currencyTextClass || baseStyles.currency
+    }
   })
 </script>
 <template>
@@ -256,7 +259,7 @@
 
           <Text size="sm" weight="semibold">
             {{ displayTargetAmount }}
-            <span class="text-xs">{{ currency }}</span>
+            <span class="text-xs" :class="styles.currency">{{ currency }}</span>
           </Text>
         </div>
 

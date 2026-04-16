@@ -93,7 +93,7 @@
 }
 
 .goals-form__alert-text {
-  @apply flex items-start gap-1 text-yellow-900;
+  @apply flex items-start gap-1 text-warning-900;
 }
 
 .goals-form__alert-text--normal {

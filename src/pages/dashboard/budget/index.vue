@@ -5,7 +5,7 @@
   import { useBudgetListApplication } from '@/composables/application/useBudgetListApplication'
   import { useBudgetListPresenter } from '@/composables/presenters/useBudgetListPresenter'
   import { useFeedback } from '@/composables/useFeedback'
-  import type { CurrentBudgetPlan,PlannedIncomeSummary } from '~/types/domain'
+  import type { CurrentBudgetPlan, PlannedIncomeSummary } from '~/types/domain'
 
   definePageMeta({
     layout: 'dashboard',
@@ -103,13 +103,31 @@
     await loadBudgets(selectedYear.value)
     allIncomes.value = await loadPlannedIncomes()
   }
+
+  const getStatusDependentLabel = (status: string, type: 'income' | 'savings') => {
+    const labels = {
+      income: {
+        PLANNED: 'Ingreso Esperado',
+        ACTIVE: 'Ingreso Recibido',
+        CLOSED: 'Ingreso Total'
+      },
+      savings: {
+        PLANNED: 'Ahorro Estimado',
+        ACTIVE: 'Ahorro Generado',
+        CLOSED: 'Ahorro Finalizado'
+      }
+    }
+    return labels[type][status as keyof (typeof labels)['income']] || labels[type]['ACTIVE']
+  }
 </script>
 
 <template>
   <div class="budget-index">
     <div class="budget-index__header">
       <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="budget-index__title">Presupuestos</Heading>
+        <Heading level="h1" size="2xl" weight="extrabold" class="budget-index__title">
+          Presupuestos
+        </Heading>
         <Text size="sm" color="muted">Administrá tus períodos presupuestarios</Text>
       </div>
       <div class="budget-index__header-actions">
@@ -136,10 +154,7 @@
       </Text>
     </div>
 
-    <div
-      v-else-if="budgets.length === 0"
-      class="budget-index__empty"
-    >
+    <div v-else-if="budgets.length === 0" class="budget-index__empty">
       <Icon name="account_balance" size="2xl" class="budget-index__empty-icon" />
       <Heading level="h3" size="lg" color="muted" class="budget-index__empty-title">
         No hay presupuestos para {{ selectedYear }}
@@ -179,7 +194,7 @@
         <div class="budget-index__card-metrics">
           <div class="budget-index__metric">
             <Text size="xs" color="muted" class="budget-index__metric-label">
-              Ingreso esperado
+              {{ getStatusDependentLabel(budget.status, 'income') }}
             </Text>
             <Text size="sm" weight="bold" class="budget-index__metric-value">
               {{ formatCurrency(getExpected(budget.id), currency) }}
@@ -187,7 +202,7 @@
           </div>
           <div class="budget-index__metric">
             <Text size="xs" color="muted" class="budget-index__metric-label">
-              Ahorro estimado
+              {{ getStatusDependentLabel(budget.status, 'savings') }}
             </Text>
             <Text size="sm" weight="bold" class="budget-index__metric-value--savings">
               {{
@@ -200,18 +215,8 @@
           </div>
         </div>
 
-        <div v-if="budget.status !== 'PLANNED'" class="budget-index__card-progress">
-          <div class="budget-index__progress-header">
-            <Text size="xs" color="muted">Ingresos recibidos</Text>
-            <Text size="xs" color="muted">0%</Text>
-          </div>
-          <div class="budget-index__progress-bar">
-            <div class="budget-index__progress-fill" />
-          </div>
-        </div>
-
         <div class="budget-index__card-actions">
-          <template v-if="budget.status === 'ACTIVE'">
+          <template v-if="budget.status === 'ACTIVE' || budget.status === 'CLOSED'">
             <Button
               variant="ghost"
               size="sm"
@@ -221,7 +226,13 @@
             >
               Ver detalle
             </Button>
-            <Button variant="primary" size="sm" icon="content_copy" @click="openClone(budget)">
+            <Button
+              variant="primary"
+              size="sm"
+              icon="content_copy"
+              :disabled="budget.status === 'CLOSED'"
+              @click="openClone(budget)"
+            >
               Duplicar
             </Button>
           </template>
@@ -289,127 +300,127 @@
 </template>
 
 <style scoped lang="postcss">
-.budget-index {
-  @apply space-y-4 p-4;
-}
+  .budget-index {
+    @apply space-y-4 p-4;
+  }
 
-.budget-index__header {
-  @apply flex items-start justify-between gap-4;
-}
+  .budget-index__header {
+    @apply flex items-start justify-between gap-4;
+  }
 
-.budget-index__title {
-  @apply mb-1;
-}
+  .budget-index__title {
+    @apply mb-1;
+  }
 
-.budget-index__header-actions {
-  @apply flex shrink-0 items-center gap-3;
-}
+  .budget-index__header-actions {
+    @apply flex shrink-0 items-center gap-3;
+  }
 
-.budget-index__year-select {
-  @apply w-28;
-}
+  .budget-index__year-select {
+    @apply w-28;
+  }
 
-.budget-index__loading {
-  @apply grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3;
-}
+  .budget-index__loading {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3;
+  }
 
-.budget-index__skeleton {
-  @apply h-52 animate-pulse rounded-xl bg-neutral-100;
-}
+  .budget-index__skeleton {
+    @apply h-52 animate-pulse rounded-xl bg-neutral-100;
+  }
 
-.budget-index__error {
-  @apply rounded-xl border border-danger-200 bg-danger-50 p-6;
-}
+  .budget-index__error {
+    @apply rounded-xl border border-danger-200 bg-danger-50 p-6;
+  }
 
-.budget-index__error-text {
-  @apply text-danger-700;
-}
+  .budget-index__error-text {
+    @apply text-danger-700;
+  }
 
-.budget-index__empty {
-  @apply rounded-xl border border-neutral-200 bg-white p-12 text-center;
-}
+  .budget-index__empty {
+    @apply rounded-xl border border-neutral-200 bg-white p-12 text-center;
+  }
 
-.budget-index__empty-icon {
-  @apply mb-3 text-neutral-300;
-}
+  .budget-index__empty-icon {
+    @apply mb-3 text-neutral-300;
+  }
 
-.budget-index__empty-title {
-  @apply mb-2;
-}
+  .budget-index__empty-title {
+    @apply mb-2;
+  }
 
-.budget-index__empty-text {
-  @apply mb-4;
-}
+  .budget-index__empty-text {
+    @apply mb-4;
+  }
 
-.budget-index__grid {
-  @apply grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3;
-}
+  .budget-index__grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3;
+  }
 
-.budget-index__card {
-  @apply flex flex-col rounded-xl bg-white p-4 transition-shadow;
-}
+  .budget-index__card {
+    @apply flex flex-col rounded-xl bg-white p-4 transition-shadow;
+  }
 
-.budget-index__card-header {
-  @apply mb-3 flex items-start justify-between gap-2;
-}
+  .budget-index__card-header {
+    @apply mb-3 flex items-start justify-between gap-2;
+  }
 
-.budget-index__card-header-content {
-  @apply min-w-0 flex-1;
-}
+  .budget-index__card-header-content {
+    @apply min-w-0 flex-1;
+  }
 
-.budget-index__card-badges {
-  @apply flex flex-wrap items-center gap-2;
-}
+  .budget-index__card-badges {
+    @apply flex flex-wrap items-center gap-2;
+  }
 
-.budget-index__card-title {
-  @apply truncate text-neutral-900;
-}
+  .budget-index__card-title {
+    @apply truncate text-neutral-900;
+  }
 
-.budget-index__card-date {
-  @apply mt-0.5;
-}
+  .budget-index__card-date {
+    @apply mt-0.5;
+  }
 
-.budget-index__card-metrics {
-  @apply mb-3 grid grid-cols-2 gap-2;
-}
+  .budget-index__card-metrics {
+    @apply mb-3 grid grid-cols-2 gap-2;
+  }
 
-.budget-index__metric {
-  @apply rounded-lg bg-neutral-50 p-2;
-}
+  .budget-index__metric {
+    @apply rounded-lg bg-neutral-50 p-2;
+  }
 
-.budget-index__metric-label {
-  @apply mb-0.5 uppercase tracking-wide;
-}
+  .budget-index__metric-label {
+    @apply mb-0.5 uppercase tracking-wide;
+  }
 
-.budget-index__metric-value {
-  @apply text-neutral-900;
-}
+  .budget-index__metric-value {
+    @apply text-neutral-900;
+  }
 
-.budget-index__metric-value--savings {
-  @apply text-warning-600;
-}
+  .budget-index__metric-value--savings {
+    @apply text-warning-600;
+  }
 
-.budget-index__card-progress {
-  @apply mb-3;
-}
+  .budget-index__card-progress {
+    @apply mb-3;
+  }
 
-.budget-index__progress-header {
-  @apply mb-1 flex justify-between;
-}
+  .budget-index__progress-header {
+    @apply mb-1 flex justify-between;
+  }
 
-.budget-index__progress-bar {
-  @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
-}
+  .budget-index__progress-bar {
+    @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
+  }
 
-.budget-index__progress-fill {
-  @apply h-full w-0 rounded-full bg-primary-500 transition-all;
-}
+  .budget-index__progress-fill {
+    @apply h-full w-0 rounded-full bg-primary-500 transition-all;
+  }
 
-.budget-index__card-actions {
-  @apply mt-auto flex gap-2 border-t border-neutral-100 pt-3;
-}
+  .budget-index__card-actions {
+    @apply mt-auto flex gap-2 border-t border-neutral-100 pt-3;
+  }
 
-.budget-index__action--primary {
-  @apply flex-1;
-}
+  .budget-index__action--primary {
+    @apply flex-1;
+  }
 </style>

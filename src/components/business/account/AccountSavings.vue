@@ -14,7 +14,7 @@
     const classes: Record<string, string> = {
       Alta: 'bg-green-200 text-green-700', // Rendimiento superior
       Media: 'bg-blue-200 text-blue-700', // Competitivo
-      Baja: 'bg-yellow-200 text-yellow-700', // Estándar
+      Baja: 'bg-warning-200 text-warning-700', // Estándar
       'Muy Baja': 'bg-red-200 text-red-700' // Casi nulo
     }
 
@@ -32,7 +32,7 @@
   const getLevelRateClass = (level: string) => {
     if (level === 'Alta') return 'bg-green-200 text-green-700'
     if (level === 'Media') return 'bg-blue-200 text-blue-700'
-    if (level === 'Baja') return 'bg-yellow-200 text-yellow-700'
+    if (level === 'Baja') return 'bg-warning-200 text-warning-700'
     if (level === 'Muy Baja') return 'bg-red-200 text-red-700'
 
     return 'bg-gray-200 text-gray-500'

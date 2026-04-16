@@ -4,7 +4,7 @@
    * User profile management with modern card-based layout
    */
 
-  import { ref, watch } from 'vue'
+  import { computed, ref, watch } from 'vue'
 
   import { Badge } from '@/components/atoms'
   import {
@@ -227,7 +227,7 @@
 </script>
 
 <template>
-  <div class="profile-page min-h-screen bg-slate-50">
+  <div class="profile-page">
     <!-- Main Profile Header -->
     <ProfileHeader
       :user="{
@@ -242,20 +242,20 @@
       plan-label="Nivel Pro"
     />
 
-    <div class="mx-auto px-6 py-6">
+    <div class="profile-page__container">
       <!-- Two Column Layout: Personal Info + Financial Profile -->
-      <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="profile-page__grid">
         <!-- Personal Information Card -->
         <EditableInfoCard
           title="Información Personal"
           icon="person"
-          icon-container-class="bg-blue-100 text-blue-600"
+          icon-container-class="bg-secondary-100 text-secondary-600"
           :is-editing="isEditingPersonal"
           :show-edit-button="!isEditingPersonal"
           @edit="startEditingPersonal"
         >
           <template #view>
-            <div class="divide-y divide-slate-100">
+            <div class="profile-page__info-list">
               <ProfileInfoItem
                 label="Nombre para mostrar"
                 :value="user?.displayName"
@@ -288,7 +288,7 @@
               @cancel="cancelPersonalEdit"
               @save="savePersonalInfo"
             />
-            <div class="grid grid-cols-1 gap-4">
+            <div class="profile-page__form">
               <Input
                 v-model="personalForm.displayName"
                 name="displayName"
@@ -330,16 +330,16 @@
         <EditableInfoCard
           title="Perfil Financiero"
           icon="account_balance"
-          icon-container-class="bg-green-100 text-green-600"
+          icon-container-class="bg-success-100 text-success-600"
           variant="compact"
           :is-editing="isEditingFinancial"
           :show-edit-button="!isEditingFinancial"
           @edit="startEditingFinancial"
         >
           <template #view>
-            <div class="divide-y divide-slate-100">
+            <div class="profile-page__info-list">
               <ProfileInfoItem label="Moneda Predeterminada">
-                <Text as="span" size="sm" weight="medium" class="text-right">
+                <Text as="span" size="sm" weight="medium" class="profile-page__currency-text">
                   {{ finances.currency || 'COP' }} —
                   {{ getCurrencyName(finances.currency) || 'Peso Colombiano' }}
                 </Text>
@@ -350,7 +350,7 @@
                 </Badge>
               </ProfileInfoItem>
               <ProfileInfoItem label="Tipo de Uso">
-                <Badge class="uppercase" variant="secondary" size="sm">
+                <Badge class="profile-page__usage-badge" variant="secondary" size="sm">
                   {{ finances.usage || 'Personal' }}
                 </Badge>
               </ProfileInfoItem>
@@ -365,7 +365,7 @@
               @cancel="cancelFinancialEdit"
               @save="saveFinancialInfo"
             />
-            <div class="grid grid-cols-1 gap-4">
+            <div class="profile-page__form">
               <Select
                 v-model="financialForm.currency"
                 name="currency"
@@ -405,8 +405,33 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
   .profile-page {
+    @apply min-h-screen bg-slate-50;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+
+  .profile-page__container {
+    @apply mx-auto px-6 py-6;
+  }
+
+  .profile-page__grid {
+    @apply mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2;
+  }
+
+  .profile-page__info-list {
+    @apply divide-y divide-slate-100;
+  }
+
+  .profile-page__form {
+    @apply grid grid-cols-1 gap-4;
+  }
+
+  .profile-page__currency-text {
+    @apply text-right;
+  }
+
+  .profile-page__usage-badge {
+    @apply uppercase;
   }
 </style>

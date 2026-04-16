@@ -95,7 +95,7 @@ export interface CurrentBudgetPlan {
   month: string
   year: number
   isShared: boolean
-  status: string
+  status: 'PLANNED' | 'ACTIVE' | 'CLOSED'
   limits: {
     needs: number // needsLimit %
     wants: number // wantsLimit %

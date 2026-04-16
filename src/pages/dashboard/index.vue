@@ -217,7 +217,7 @@
         icon-name="account_balance_wallet"
         icon-text-class="text-primary-500"
         currency-text-class="text-neutral-400"
-        class="!bg-primary-900"
+        class="dashboard-page__card--accent"
         variant="accent"
       />
       <FinancialProgressCard
@@ -228,7 +228,7 @@
         icon-name="savings"
         icon-text-class="text-primary-500"
         currency-text-class="text-neutral-400"
-        class="!bg-primary-900"
+        class="dashboard-page__card--accent"
         variant="accent"
       />
       <FinancialProgressCard
@@ -239,7 +239,7 @@
         icon-name="payments"
         icon-text-class="text-primary-500"
         currency-text-class="text-neutral-400"
-        class="!bg-primary-900"
+        class="dashboard-page__card--accent"
         variant="accent"
       />
 
@@ -449,6 +449,10 @@
 
 .dashboard-page__cards {
   @apply mb-8 grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4;
+}
+
+.dashboard-page__card--accent {
+  @apply !bg-primary-900;
 }
 
 .dashboard-page__card-body {

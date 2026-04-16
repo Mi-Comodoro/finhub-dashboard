@@ -11,7 +11,12 @@
       "Bash(grep:*)",
       "Bash(npx tsc:*)",
       "Bash(npx vue-tsc:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(timeout 15 npm run dev:*)",
+      "Bash(timeout 20 npm run dev:*)",
+      "Bash(git mv:*)",
+      "Bash(ls:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

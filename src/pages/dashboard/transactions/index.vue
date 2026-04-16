@@ -1,8 +1,11 @@
 <script setup lang="ts">
   import type { Column } from '@/components/organisms'
+  import { ModalWizard } from '@/components/organisms'
+  import { TransactionForm } from '@/components/business'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'
   import { useTransactionMetricsPresenter } from '@/composables/presenters/useTransactionMetricsPresenter'
+  import { useFeedback } from '@/composables/useFeedback'
   import { translate } from '@/utils/translateToUI'
   import type { TransactionSummary } from '~/types/domain'
   definePageMeta({
@@ -23,10 +26,52 @@
     budgetOptions,
     categoryOptions,
     fetchTransaction,
-    loadInitialData
+    loadInitialData,
+    deleteTransaction
   } = useTransactionApplication()
 
+  const { success: successToast } = useFeedback()
+
   const budgetSelect = ref<string>('')
+  const showForm = ref(false)
+  const editingTransaction = ref<{ id: string; data: any } | null>(null)
+
+  const openForm = () => {
+    editingTransaction.value = null
+    showForm.value = true
+  }
+
+  const closeForm = () => {
+    showForm.value = false
+    editingTransaction.value = null
+  }
+
+  const handleEditTransaction = (row: any) => {
+    editingTransaction.value = {
+      id: row.id,
+      data: {
+        type: row.type,
+        amount: row.amount,
+        transactionDate: row.transactionDate,
+        source: row.source,
+        categoryId: row.category?.id,
+        description: row.description
+      }
+    }
+    showForm.value = true
+  }
+
+  const handleDeleteTransaction = async (row: { id: string; amount: number; type: string }) => {
+    const confirmed = confirm(
+      `¿Estás seguro de eliminar esta transacción de ${formatCurrency(row.amount, currency.value)}?`
+    )
+    if (!confirmed) return
+
+    const { success } = await deleteTransaction(row.id)
+    if (success) {
+      successToast('Transacción eliminada', 'La transacción fue eliminada correctamente.')
+    }
+  }
 
   // --- Fetch centralizado ---
   const loadTransactions = async (resetPage = false) => {
@@ -51,7 +96,8 @@
     { key: 'source', label: 'Fuente', type: 'badge' },
     { key: 'type', label: 'Tipo' },
     { key: 'amount', label: 'Monto', type: 'currency' },
-    { key: 'category', label: 'Categoría' }
+    { key: 'category', label: 'Categoría' },
+    { key: 'actions', label: 'Acciones', type: 'actions' }
   ]
 
   const result = computed(() =>
@@ -98,7 +144,10 @@
         <Heading level="h1" size="2xl" weight="extrabold" class="transactions-page__title">Transacciones</Heading>
         <Text size="sm" color="muted">Historial completo de movimientos</Text>
       </div>
-      <Select v-model="budgetSelect" name="budgetId" label="Presupuesto" :options="budgetOptions" />
+      <div class="transactions-page__header-actions">
+        <Select v-model="budgetSelect" name="budgetId" label="Presupuesto" :options="budgetOptions" />
+        <Button variant="primary" size="sm" icon="add" @click="openForm">Nueva transacción</Button>
+      </div>
     </div>
 
     <TransactionMetricsBar
@@ -160,6 +209,17 @@
         {{ row.type === 'income' || row.type === 'savings' ? 'N/A' : value }}
       </template>
 
+      <template #cell-actions="{ row }">
+        <div class="transactions-page__actions">
+          <Button variant="ghost" size="xs" icon="edit" @click="handleEditTransaction(row)">
+            Editar
+          </Button>
+          <Button variant="ghost" size="xs" icon="delete" @click="handleDeleteTransaction(row)">
+            Eliminar
+          </Button>
+        </div>
+      </template>
+
       <template #empty>
         <div class="transactions-page__empty">
           <Text size="sm" color="muted">No hay transacciones para estos filtros</Text>
@@ -201,6 +261,15 @@
         </div>
       </template>
     </DataTable>
+
+    <ModalWizard v-model:show="showForm">
+      <TransactionForm
+        :budget-id="budgetSelect"
+        :transaction-id="editingTransaction?.id"
+        :initial-data="editingTransaction?.data"
+        @on-close="closeForm"
+      />
+    </ModalWizard>
   </div>
 </template>
 
@@ -213,8 +282,16 @@
   @apply flex items-center justify-between;
 }
 
+.transactions-page__header-actions {
+  @apply flex items-center gap-2;
+}
+
 .transactions-page__title {
   @apply mb-1;
+}
+
+.transactions-page__actions {
+  @apply flex items-center gap-1;
 }
 
 .transactions-page__amount {

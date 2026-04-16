@@ -104,6 +104,48 @@ export const useExpenseApplication = () => {
     }
   }
 
+  // Orchestration: update expense
+  const updateExpense = async (id: string, data: Partial<ExpenseData>) => {
+    try {
+      store.setLoading(true)
+      const { success } = await expenseApi.updateExpense(id, data)
+
+      if (!success) {
+        store.setError('Error al actualizar gasto planificado')
+      }
+
+      await fetchExpenses()
+      return { success }
+    } catch (err) {
+      console.error(err)
+      store.setError('Error al actualizar gasto planificado')
+      return { success: false }
+    } finally {
+      store.setLoading(false)
+    }
+  }
+
+  // Orchestration: delete expense
+  const deleteExpense = async (id: string) => {
+    try {
+      store.setLoading(true)
+      const { success } = await expenseApi.deleteExpense(id)
+
+      if (!success) {
+        store.setError('Error al eliminar gasto planificado')
+      }
+
+      await fetchExpenses()
+      return { success }
+    } catch (err) {
+      console.error(err)
+      store.setError('Error al eliminar gasto planificado')
+      return { success: false }
+    } finally {
+      store.setLoading(false)
+    }
+  }
+
   return {
     expenses,
     needsProgress,
@@ -112,6 +154,8 @@ export const useExpenseApplication = () => {
     wantsAmount,
     fetchExpenses,
     addExpense,
-    completeExpense
+    completeExpense,
+    updateExpense,
+    deleteExpense
   }
 }

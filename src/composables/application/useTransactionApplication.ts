@@ -128,6 +128,78 @@ export const useTransactionApplication = () => {
     }))
   )
 
+  // Orchestration: create transaction
+  const createTransaction = async (data: any) => {
+    try {
+      transactionStore.setLoading(true)
+      const { success } = await transactionApi.createTransaction(data)
+
+      if (!success) {
+        transactionStore.setError({ title: 'Error al crear transacción', message: 'No se pudo crear la transacción' })
+      } else {
+        // Reload transactions for current budget
+        if (transactionStore.budgetId) {
+          await fetchByBudget(transactionStore.budgetId)
+        }
+      }
+
+      return { success }
+    } catch (err) {
+      transactionStore.setError(createErrorMessage(err as FetchError))
+      return { success: false }
+    } finally {
+      transactionStore.setLoading(false)
+    }
+  }
+
+  // Orchestration: update transaction
+  const updateTransaction = async (id: string, data: any) => {
+    try {
+      transactionStore.setLoading(true)
+      const { success } = await transactionApi.updateTransaction(id, data)
+
+      if (!success) {
+        transactionStore.setError({ title: 'Error al actualizar transacción', message: 'No se pudo actualizar la transacción' })
+      } else {
+        // Reload transactions for current budget
+        if (transactionStore.budgetId) {
+          await fetchByBudget(transactionStore.budgetId)
+        }
+      }
+
+      return { success }
+    } catch (err) {
+      transactionStore.setError(createErrorMessage(err as FetchError))
+      return { success: false }
+    } finally {
+      transactionStore.setLoading(false)
+    }
+  }
+
+  // Orchestration: delete transaction
+  const deleteTransaction = async (id: string) => {
+    try {
+      transactionStore.setLoading(true)
+      const { success } = await transactionApi.deleteTransaction(id)
+
+      if (!success) {
+        transactionStore.setError({ title: 'Error al eliminar transacción', message: 'No se pudo eliminar la transacción' })
+      } else {
+        // Reload transactions for current budget
+        if (transactionStore.budgetId) {
+          await fetchByBudget(transactionStore.budgetId)
+        }
+      }
+
+      return { success }
+    } catch (err) {
+      transactionStore.setError(createErrorMessage(err as FetchError))
+      return { success: false }
+    } finally {
+      transactionStore.setLoading(false)
+    }
+  }
+
   return {
     transactions,
     pagination,
@@ -141,6 +213,9 @@ export const useTransactionApplication = () => {
     fetchTransaction,
     loadInitialData,
     setBudgetId,
-    fetchByBudget
+    fetchByBudget,
+    createTransaction,
+    updateTransaction,
+    deleteTransaction
   }
 }

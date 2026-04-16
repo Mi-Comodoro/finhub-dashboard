@@ -23,6 +23,7 @@
   } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
+  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { useApiHandler } from '@/composables/useApiHandler'
   import { useFeedback } from '@/composables/useFeedback'
@@ -41,6 +42,7 @@
 
   const { loadBudgetDetail, markExpenseAsPaid, budgetSelected, expectedIncome, defaultCurrency } =
     useBudgetDetailApplication()
+  const { deleteExpense } = useExpenseApplication()
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
   const { lastUpdate } = usePlannedIncomeApplication()
@@ -103,15 +105,20 @@
 
   const plan = computed(() => budgetSelected.value)
 
-  const planStatus = computed(() => plan.value?.status)
+  const planStatus = computed(() => plan.value?.status ?? 'PLANNED')
   const expectedAmount = computed(() => expectedIncome.value)
 
   const showForm = ref(false)
+  const editingExpense = ref<{ id: string; data: any } | null>(null)
+
   const openForm = () => {
+    editingExpense.value = null
     showForm.value = true
   }
+
   const closeForm = () => {
     showForm.value = false
+    editingExpense.value = null
   }
 
   const showSavingDistributionForm = ref(false)
@@ -124,6 +131,31 @@
     const { success } = await markExpenseAsPaid(row.id)
     if (success) {
       successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
+    }
+  }
+
+  const handleEditExpense = (row: any) => {
+    editingExpense.value = {
+      id: row.id,
+      data: {
+        name: row.name,
+        expectedAmount: row.expectedAmount,
+        dueDate: row.dueDate,
+        categoryId: row.categoryId,
+        isEssential: row.isEssential,
+        notes: row.notes
+      }
+    }
+    showForm.value = true
+  }
+
+  const handleDeleteExpense = async (row: { id: string; name: string }) => {
+    const confirmed = confirm(`¿Estás seguro de eliminar el gasto "${row.name}"?`)
+    if (!confirmed) return
+
+    const { success } = await deleteExpense(row.id)
+    if (success) {
+      successToast('Gasto eliminado', 'El gasto planificado fue eliminado correctamente.')
     }
   }
 </script>
@@ -178,12 +210,14 @@
 
     <div class="budget-detail__layout">
       <div class="budget-detail__main">
-        <BudgetInsights />
+        <BudgetInsights :budget-status="planStatus" />
         <PlannedSavingList :budget-id="budgetId" />
         <ExpensePlannedSection
           :budget-id="budgetId"
           @open-form="openForm"
           @mark-as-payed="handleMarkExpenseAsPaid"
+          @edit="handleEditExpense"
+          @remove="handleDeleteExpense"
         />
       </div>
 
@@ -200,7 +234,12 @@
     </div>
 
     <ModalWizard v-model:show="showForm">
-      <ExpensePlannedForm :budget-id="budgetId" @on-close="closeForm" />
+      <ExpensePlannedForm
+        :budget-id="budgetId"
+        :expense-id="editingExpense?.id"
+        :initial-data="editingExpense?.data"
+        @on-close="closeForm"
+      />
     </ModalWizard>
 
     <ModalWizard v-model:show="showSavingDistributionForm">
@@ -224,83 +263,83 @@
 </template>
 
 <style lang="postcss" scoped>
-.budget-detail {
-  @apply space-y-4;
-}
+  .budget-detail {
+    @apply space-y-4;
+  }
 
-.budget-detail__header {
-  @apply flex w-full flex-wrap items-start p-4;
-}
+  .budget-detail__header {
+    @apply flex w-full flex-wrap items-start p-4;
+  }
 
-.budget-detail__header-info {
-  @apply flex items-center gap-2;
-}
+  .budget-detail__header-info {
+    @apply flex items-center gap-2;
+  }
 
-.budget-detail__header-content {
-  @apply flex flex-col;
-}
+  .budget-detail__header-content {
+    @apply flex flex-col;
+  }
 
-.budget-detail__header-title {
-  @apply flex flex-wrap items-center gap-2;
-}
+  .budget-detail__header-title {
+    @apply flex flex-wrap items-center gap-2;
+  }
 
-.budget-detail__header-name {
-  @apply leading-tight;
-}
+  .budget-detail__header-name {
+    @apply leading-tight;
+  }
 
-.budget-detail__header-badges {
-  @apply hidden gap-2 xl:flex;
-}
+  .budget-detail__header-badges {
+    @apply hidden gap-2 xl:flex;
+  }
 
-.budget-detail__header-updated {
-  @apply flex items-center gap-1;
-}
+  .budget-detail__header-updated {
+    @apply flex items-center gap-1;
+  }
 
-.budget-detail__header-actions {
-  @apply ml-auto flex items-center gap-2;
-}
+  .budget-detail__header-actions {
+    @apply ml-auto flex items-center gap-2;
+  }
 
-.budget-detail__layout {
-  @apply grid w-full grid-cols-12 gap-4 px-4;
-}
+  .budget-detail__layout {
+    @apply grid w-full grid-cols-12 gap-4 px-4;
+  }
 
-.budget-detail__main {
-  @apply col-span-8 flex flex-col gap-4;
-}
+  .budget-detail__main {
+    @apply col-span-8 flex flex-col gap-4;
+  }
 
-.budget-detail__sidebar {
-  @apply col-span-4 flex flex-col gap-4;
-}
+  .budget-detail__sidebar {
+    @apply col-span-4 flex flex-col gap-4;
+  }
 
-.budget-detail__empty {
-  @apply flex flex-col items-center gap-4 py-20 text-center;
-}
+  .budget-detail__empty {
+    @apply flex flex-col items-center gap-4 py-20 text-center;
+  }
 
-.budget-detail__empty-icon {
-  @apply text-slate-400 dark:text-slate-600;
-}
+  .budget-detail__empty-icon {
+    @apply text-slate-400 dark:text-slate-600;
+  }
 
-.budget-detail__empty-button {
-  @apply mt-2;
-}
+  .budget-detail__empty-button {
+    @apply mt-2;
+  }
 
-.coming-soon-card {
-  @apply p-8 text-center;
-  @apply dark:border-neutral-700 dark:bg-neutral-800;
-}
+  .coming-soon-card {
+    @apply p-8 text-center;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
+  }
 
-.coming-soon-card__icon {
-  @apply mx-auto mb-4 w-fit bg-neutral-100 text-neutral-600;
-  @apply dark:bg-neutral-700 dark:text-neutral-300;
-}
+  .coming-soon-card__icon {
+    @apply mx-auto mb-4 w-fit bg-neutral-100 text-neutral-600;
+    @apply dark:bg-neutral-700 dark:text-neutral-300;
+  }
 
-.coming-soon-card__title {
-  @apply mb-2 text-neutral-900;
-  @apply dark:text-white;
-}
+  .coming-soon-card__title {
+    @apply mb-2 text-neutral-900;
+    @apply dark:text-white;
+  }
 
-.coming-soon-card__description {
-  @apply text-neutral-500;
-  @apply dark:text-neutral-400;
-}
+  .coming-soon-card__description {
+    @apply text-neutral-500;
+    @apply dark:text-neutral-400;
+  }
 </style>

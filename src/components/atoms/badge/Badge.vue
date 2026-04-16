@@ -85,23 +85,23 @@
   }
 
   .badge--secondary {
-    @apply bg-indigo-100 text-indigo-800;
+    @apply bg-secondary-100 text-secondary-800;
   }
 
   .badge--success {
-    @apply bg-green-100 text-green-900;
+    @apply bg-success-100 text-success-900;
   }
 
   .badge--warning {
-    @apply bg-yellow-100 text-yellow-800;
+    @apply bg-warning-100 text-warning-800;
   }
 
   .badge--danger {
-    @apply bg-red-100 text-red-800;
+    @apply bg-danger-100 text-danger-800;
   }
 
   .badge--info {
-    @apply bg-blue-100 text-blue-800;
+    @apply bg-secondary-100 text-secondary-800;
   }
 
   /* Outline variants */

@@ -35,11 +35,25 @@ export function useIncomeApi() {
       { method: 'PATCH', body: data }
     )
 
+  const createPlannedIncome = async (data: Record<string, unknown>) =>
+    $fetch<{ success: boolean; result: PlannedIncomeSummary }>(
+      '/api/incomes/planned',
+      { method: 'POST', body: data }
+    )
+
+  const deletePlannedIncome = async (id: string) =>
+    $fetch<{ success: boolean; result: { id: string } }>(
+      `/api/incomes/planned/${id}`,
+      { method: 'DELETE' }
+    )
+
   return {
     getCurrentIncome,
     getPlannedIncomes,
     getPlannedIncomesByBudget,
     markPlannedIncomeAsReceived,
-    updatePlannedIncome
+    updatePlannedIncome,
+    createPlannedIncome,
+    deletePlannedIncome
   }
 }
