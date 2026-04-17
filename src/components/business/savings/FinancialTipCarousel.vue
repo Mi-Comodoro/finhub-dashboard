@@ -46,14 +46,12 @@
 </script>
 
 <template>
-  <!-- Mantenemos tus clases originales y agregamos eventos de mouse -->
   <div
-    class="flex items-start gap-3 overflow-hidden rounded-lg dark:bg-secondary-900/20"
+    class="financial-tip-carousel"
     @mouseenter="isPaused = true"
     @mouseleave="isPaused = false"
   >
     <Transition name="tip-fade" mode="out-in">
-      <!-- Importante: la :key asegura que la transición se dispare -->
       <Tips
         :key="currentIndex"
         :icon="currentTip?.icon!"
@@ -64,7 +62,11 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
+  .financial-tip-carousel {
+    @apply flex items-start gap-3 overflow-hidden rounded-lg dark:bg-secondary-900/20;
+  }
+
   /* Transición suave: Desvanecimiento con un ligero movimiento hacia arriba */
   .tip-fade-enter-active,
   .tip-fade-leave-active {

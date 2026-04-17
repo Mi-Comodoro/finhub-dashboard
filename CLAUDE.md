@@ -260,8 +260,8 @@ const getUser = async (id: string) => {
 ## Important Files
 
 **Source of truth for architecture:**
-- `CONTEXT.md` — Full project context and conventions
-- `.ai/agents/` — Agent guidelines for code review
+- `CLAUDE.md` — Project conventions, architecture rules, and working patterns
+- `docs/ARCHITECTURE.md` — Frontend layering and responsibilities
 
 **Design system:**
 - `tailwind.config.ts` — Semantic color palette
@@ -313,8 +313,86 @@ import { CHART_COLORS } from '@/utils/design-tokens'
 6. Create page that uses application composable
 
 **Refactoring violations:**
-1. Check `.ai/agents/architecture-agent.md` for violation rules
+1. Check `CLAUDE.md` and `docs/ARCHITECTURE.md` for violation rules
 2. Create missing API layer first
 3. Migrate logic incrementally
 4. Verify compilation after each step
 5. Never refactor everything at once
+
+---
+
+## Critical Rules (Learned in Session)
+
+### ADR-008 — Material Icons never in @apply
+`material-symbols-outlined`, `material-symbols-rounded`, `material-icons`
+must ALWAYS stay in the template `class` attribute.
+Never inside `@apply` in `<style>`. Tailwind doesn't know these classes.
+
+### ADR-009 — Dynamic classes never in @apply
+`:class` bindings (conditional or computed) must ALWAYS stay in template.
+Only static Tailwind classes go in `@apply`.
+
+✅ Goes in @apply:    class="flex items-center gap-3 p-4"
+❌ Stays in template: :class="getIconClass(type)"
+❌ Stays in template: :class="{ 'bg-primary-500': isActive }"
+
+### ADR-010 — Composables must be destructured
+ALWAYS destructure before use. NEVER call inline.
+
+✅ const { updateExpense } = useExpenseApplication()
+   await updateExpense(id, data)
+
+❌ await useExpenseApplication().updateExpense(id, data)
+
+### ADR-011 — Category colors derived from type
+Color is determined by `type` field, not a separate color field.
+Implemented in: `composables/presenters/useCategoryPresenter.ts`
+
+  need    → primary   (teal)
+  want    → secondary (indigo)
+  saving  → warning   (amber)
+
+---
+
+## Reference Patterns
+
+### New form component
+Reference: `ExpensePlannedForm.vue`
+Schema in: `components/business/[feature]/forms/schema/`
+Supports create and edit modes via props: `itemId?`, `initialData?`
+
+### New page
+Reference: `pages/dashboard/income/index.vue`
+Structure: header + metrics + table/list + modals
+Load data in onMounted via destructured application composable.
+
+### New presenter
+Reference: `composables/presenters/useCategoryPresenter.ts`
+Pure functions only. No side effects. No store access.
+
+### Delete confirmation
+Reference: `handleDeleteExpense` in `pages/dashboard/budget/[id]/index.vue`
+NEVER use native `confirm()`. Always use `ModalWizard` with reactive state:
+  const itemToDelete = ref(null)
+  const showDeleteModal = ref(false)
+
+---
+
+## Project Status (update each session)
+
+| Module       | Frontend | Backend |
+|--------------|----------|---------|
+| Auth         | ✅ 100%  | ✅ 100% |
+| Dashboard    | ✅ 100%  | ✅ 100% |
+| Budgets      | ✅ 100%  | ✅ 100% |
+| Savings      | ✅ 100%  | ✅ 100% |
+| Profile      | ✅ 100%  | ✅ 100% |
+| Transactions | ✅ 100%  | ✅ 100% |
+| Expenses     | ✅ 100%  | ✅ 100% |
+| Income       | ✅ 100%  | ✅ 100% |
+| Settings     | ✅ 100%  | ⚠️ endpoints pending |
+| Reports      | ❌ 0%    | ❌ 0%   |
+
+Health Score: 98%
+Pending technical debt: Tailwind @apply migration — 22 business components
+

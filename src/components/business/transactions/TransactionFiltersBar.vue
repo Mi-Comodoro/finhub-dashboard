@@ -22,8 +22,8 @@
 
 <template>
   <Card>
-    <div class="flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-2">
+    <div class="filters-bar">
+      <div class="filters-bar__type-buttons">
         <Button
           v-for="btn in typeButtons"
           :key="btn.value"
@@ -35,7 +35,7 @@
         </Button>
       </div>
 
-      <div class="hidden h-5 w-px bg-slate-200 sm:block" />
+      <div class="filters-bar__separator" />
 
       <Select
         v-model="filterCat"
@@ -44,14 +44,32 @@
         :options="[{ label: 'Todas', value: '' }, ...categoryOptions]"
       />
 
-      <div class="hidden h-5 w-px bg-slate-200 sm:block" />
+      <div class="filters-bar__separator" />
 
       <DatePickerInput v-model="filterDateFrom" label="Desde" />
       <DatePickerInput v-model="filterDateTo" label="Hasta" />
 
-      <Button variant="ghost" size="sm" class="ml-auto" @click="emit('clearFilters')">
+      <Button variant="ghost" size="sm" class="filters-bar__clear-button" @click="emit('clearFilters')">
         Limpiar filtros
       </Button>
     </div>
   </Card>
 </template>
+
+<style scoped lang="postcss">
+.filters-bar {
+  @apply flex flex-wrap items-center gap-3;
+}
+
+.filters-bar__type-buttons {
+  @apply flex items-center gap-2;
+}
+
+.filters-bar__separator {
+  @apply hidden h-5 w-px bg-slate-200 sm:block;
+}
+
+.filters-bar__clear-button {
+  @apply ml-auto;
+}
+</style>

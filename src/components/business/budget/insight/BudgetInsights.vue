@@ -124,7 +124,7 @@
 </script>
 
 <template>
-  <div class="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+  <div class="budget-insights">
     <template v-if="budgetStatus === 'PLANNED'">
       <FinancialProgressCard v-for="card in plannedCards" :key="card.id" v-bind="card" />
     </template>
@@ -133,3 +133,9 @@
     </template>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .budget-insights {
+    @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2;
+  }
+</style>

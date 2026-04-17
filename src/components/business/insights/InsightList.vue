@@ -16,7 +16,7 @@
 </script>
 
 <template>
-  <div v-if="insights.length > 0" class="space-y-2">
+  <div v-if="insights.length > 0" class="insight-list">
     <InsightCard
       v-for="insight in insights"
       :key="insight.id"
@@ -24,3 +24,9 @@
     />
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .insight-list {
+    @apply space-y-2;
+  }
+</style>

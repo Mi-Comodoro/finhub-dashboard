@@ -12,7 +12,7 @@
 </script>
 
 <template>
-  <Card class="flex w-full items-start gap-2">
+  <Card class="tips">
     <IconBadge
       v-if="icon"
       :icon="icon"
@@ -20,8 +20,8 @@
       size="md"
     />
 
-    <div class="w-full leading-relaxed">
-      <Heading level="h1" size="sm" weight="extrabold" class="!text-primary-800">
+    <div class="tips__content">
+      <Heading level="h1" size="sm" weight="extrabold" class="tips__title">
         {{ title }}
       </Heading>
 
@@ -31,7 +31,7 @@
       <Text size="xs" color="muted">
         <slot />
       </Text>
-      <div v-if="actionLabel && event" class="flex justify-end">
+      <div v-if="actionLabel && event" class="tips__actions">
         <Button size="sm" variant="primary" @click="event">
           {{ actionLabel }}
         </Button>
@@ -39,3 +39,21 @@
     </div>
   </Card>
 </template>
+
+<style scoped lang="postcss">
+  .tips {
+    @apply flex w-full items-start gap-2;
+  }
+
+  .tips__content {
+    @apply w-full leading-relaxed;
+  }
+
+  .tips__title {
+    @apply !text-primary-800;
+  }
+
+  .tips__actions {
+    @apply flex justify-end;
+  }
+</style>

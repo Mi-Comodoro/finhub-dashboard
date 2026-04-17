@@ -97,7 +97,7 @@
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-col gap-6">
+  <div class="budget-form">
     <CardInfo
       :title="mode === 'create' ? 'Nuevo presupuesto' : 'Editar presupuesto'"
       title-size="2xl"
@@ -116,10 +116,10 @@
       icon-size="md"
     />
 
-    <div class="w-full">
+    <div class="budget-form__content">
       <Form v-model="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
-          <div class="flex justify-end gap-2">
+          <div class="budget-form__actions">
             <Button type="button" variant="ghost" @click="emit('onClose')">Cancelar</Button>
             <Button type="submit" variant="primary">
               {{ mode === 'create' ? 'Crear presupuesto' : 'Guardar cambios' }}
@@ -130,3 +130,17 @@
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .budget-form {
+    @apply flex h-full w-full flex-col gap-6;
+  }
+
+  .budget-form__content {
+    @apply w-full;
+  }
+
+  .budget-form__actions {
+    @apply flex justify-end gap-2;
+  }
+</style>

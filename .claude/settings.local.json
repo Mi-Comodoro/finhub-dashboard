@@ -16,7 +16,9 @@
       "Bash(timeout 20 npm run dev:*)",
       "Bash(git mv:*)",
       "Bash(ls:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(powershell -command:*)",
+      "Bash(powershell:*)"
     ]
   }
 }

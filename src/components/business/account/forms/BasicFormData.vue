@@ -51,8 +51,8 @@
   )
 </script>
 <template>
-  <div class="flex h-full w-full flex-col gap-6">
-    <div class="w-full">
+  <div class="basic-form-data">
+    <div class="basic-form-data__content">
       <Form
         :key="formKey"
         v-model="formData"
@@ -62,4 +62,13 @@
     </div>
   </div>
 </template>
-<style></style>
+
+<style scoped lang="postcss">
+  .basic-form-data {
+    @apply flex h-full w-full flex-col gap-6;
+  }
+
+  .basic-form-data__content {
+    @apply w-full;
+  }
+</style>

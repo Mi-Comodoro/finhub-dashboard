@@ -39,7 +39,7 @@
         class-name=" user-basic-information__avatar"
       />
       <div class="user-basic-information__photo-icon">
-        <Icon name="photo_camera" class="text-sm text-white" />
+        <Icon name="photo_camera" class="user-basic-information__photo-icon-inner" />
       </div>
     </div>
     <div>
@@ -80,5 +80,17 @@
 
   .user-basic-information__photo-icon {
     @apply absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-secondary-600;
+  }
+
+  .user-basic-information__photo-icon-inner {
+    @apply text-sm text-white;
+  }
+
+  .user-basic-information__status {
+    @apply mt-2 flex items-center gap-2;
+  }
+
+  .user-basic-information__status-indicator {
+    @apply flex items-center gap-1;
   }
 </style>
