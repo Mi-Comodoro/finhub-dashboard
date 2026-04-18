@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { Badge, Button, Icon, Text } from '@/components/atoms'
-  import type { CategoriesData } from '@/types/api/categories.api'
   import { useCategoryPresenter } from '@/composables/presenters/useCategoryPresenter'
+  import type { CategoriesData } from '@/types/api/categories.api'
 
   interface CategoryListProps {
     categories: CategoriesData[]

@@ -2,8 +2,8 @@ export interface GoalsData {
   id?: string
   name: string
   reason: string
-  targetAmount: number
-  targetDate: Date
+  targetAmount?: number | null
+  targetDate?: Date | null
   isActive: boolean
   accountId: string
   userId: string

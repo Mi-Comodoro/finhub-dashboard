@@ -43,7 +43,7 @@
       | 'radio-card'
     label: string
     placeholder?: string
-    required?: boolean
+    required?: boolean | ((form: Record<string, commonField>) => boolean)
     pattern?: RegExp
     errorMessage?: string
     prefix?: string
@@ -66,19 +66,41 @@
   const emit = defineEmits(['submit', 'update:modelValue', 'update:isValid'])
   const formData = reactive<Record<string, commonField>>({})
   const errors = reactive<Record<string, string>>({})
+
+  function isFieldVisible(key: string) {
+    const field = props.schema.fields[key]
+
+    if (!field?.visibleWhen) return true
+
+    return field.visibleWhen(formData)
+  }
+
+  function isFieldRequired(key: string) {
+    const field = props.schema.fields[key]
+
+    if (!field) return false
+    if (typeof field.required === 'function') return field.required(formData)
+
+    return !!field.required
+  }
+
   function validateField(key: string, value: commonField) {
     const field = props.schema.fields[key]
 
     if (!field) return
+    if (!isFieldVisible(key)) {
+      errors[key] = ''
+      return true
+    }
 
-    // required
-    if (field.required && (!value || value === '')) {
+    // Required validation
+    if (isFieldRequired(key) && (value === null || value === undefined || value === '')) {
       errors[key] = 'Este campo es obligatorio'
       return false
     }
 
-    // pattern
-    if (field.pattern && value) {
+    // Pattern validation - only validate if value exists
+    if (field.pattern && value && String(value).trim() !== '') {
       const isValid = field.pattern.test(String(value))
 
       if (!isValid) {
@@ -94,8 +116,8 @@
   function validateForm() {
     let valid = true
 
-    Object.entries(formData).forEach(([key, value]) => {
-      const fieldValid = validateField(key, value)
+    Object.keys(props.schema.fields).forEach(key => {
+      const fieldValid = validateField(key, formData[key])
 
       if (!fieldValid) valid = false
     })
@@ -136,8 +158,8 @@
     value => {
       let valid = true
 
-      Object.entries(value).forEach(([key, val]) => {
-        const fieldValid = validateField(key, val)
+      Object.keys(props.schema.fields).forEach(key => {
+        const fieldValid = validateField(key, value[key])
         if (!fieldValid) valid = false
       })
 
@@ -160,6 +182,7 @@
         :class="row.type === 'grid' ? `grid gap-4 grid-cols-${row.columns}` : 'flex flex-col gap-4'"
       >
         <template v-for="fieldKey in row.fields" :key="fieldKey">
+          <template v-if="isFieldVisible(fieldKey)">
           <Input
             v-if="
               schema.fields[fieldKey]!.type === 'text' || schema.fields[fieldKey]!.type === 'number'
@@ -168,23 +191,25 @@
             :type="schema.fields[fieldKey]!.type"
             :label="schema.fields[fieldKey]!.label"
             :placeholder="schema.fields[fieldKey]!.placeholder"
-            :required="schema.fields[fieldKey]!.required"
+            :required="isFieldRequired(fieldKey)"
             :pattern="schema.fields[fieldKey]!.pattern"
             :prefix="schema.fields[fieldKey]!.prefix"
             :error="errors[fieldKey]"
           />
+
           <MoneyInput
             v-else-if="schema.fields[fieldKey]!.type === 'money'"
             v-model="formData[fieldKey] as number"
             :label="schema.fields[fieldKey]!.label"
             :prefix="schema.fields[fieldKey]!.prefix"
-            :required="schema.fields[fieldKey]!.required"
+            :required="isFieldRequired(fieldKey)"
           />
           <Select
             v-else-if="schema.fields[fieldKey]!.type === 'select'"
             v-model="formData[fieldKey] as string"
             :name="fieldKey"
             v-bind="schema.fields[fieldKey]"
+            :required="isFieldRequired(fieldKey)"
             :options="schema.fields[fieldKey]?.options!"
           />
 
@@ -193,7 +218,7 @@
               v-model="formData[fieldKey]! as Date"
               mode="single"
               :label="schema.fields[fieldKey]!.label"
-              :required="schema.fields[fieldKey]!.required"
+              :required="isFieldRequired(fieldKey)"
             />
           </div>
 
@@ -212,8 +237,11 @@
             v-model="formData[fieldKey] as string"
             :name="fieldKey"
             :label="schema.fields[fieldKey]!.label"
+            :required="isFieldRequired(fieldKey)"
+            :pattern="schema.fields[fieldKey]!.pattern"
+            :error="errors[fieldKey]"
+            :error-message="schema.fields[fieldKey]!.errorMessage"
             placeholder="Describe el gasto..."
-            v-bind="schema.fields[fieldKey]"
           />
           <RangeSlider
             v-else-if="schema.fields[fieldKey]!.type === 'slider-percentage'"
@@ -224,12 +252,14 @@
           <RadioButton
             v-else-if="schema.fields[fieldKey]!.type === 'radio-card'"
             v-model="formData[fieldKey] as string"
-            v-bind="schema.fields[fieldKey]"
             name="budgetFrequency"
+            :label="schema.fields[fieldKey]!.label"
+            :required="isFieldRequired(fieldKey)"
             variant="card"
             direction="row"
             :options="schema.fields[fieldKey]?.options!"
           />
+          </template>
         </template>
       </div>
     </template>

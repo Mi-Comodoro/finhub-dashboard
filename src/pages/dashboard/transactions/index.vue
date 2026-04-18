@@ -1,7 +1,7 @@
 <script setup lang="ts">
+  import { TransactionForm } from '@/components/business'
   import type { Column } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms'
-  import { TransactionForm } from '@/components/business'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'
   import { useTransactionMetricsPresenter } from '@/composables/presenters/useTransactionMetricsPresenter'
@@ -89,7 +89,6 @@
     filters.pageSize
   )
 
-
   // --- Tabla ---
   const columns: Column[] = [
     { key: 'transactionDate', label: 'Fecha', type: 'date', bold: true },
@@ -97,7 +96,7 @@
     { key: 'type', label: 'Tipo' },
     { key: 'amount', label: 'Monto', type: 'currency' },
     { key: 'category', label: 'Categoría' },
-    { key: 'actions', label: 'Acciones', type: 'actions' }
+    { key: 'actions', label: 'Acciones' }
   ]
 
   const result = computed(() =>
@@ -124,8 +123,7 @@
     await loadInitialData(financeId.value, 2026)
 
     const queryBudgetId = route.query.budgetId as string | undefined
-    budgetSelect.value =
-      queryBudgetId || budgetSelected.value?.id || budgetPlans.value[0]?.id || ''
+    budgetSelect.value = queryBudgetId || budgetSelected.value?.id || budgetPlans.value[0]?.id || ''
 
     await loadTransactions()
   })
@@ -141,11 +139,18 @@
   <div class="transactions-page">
     <div class="transactions-page__header">
       <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="transactions-page__title">Transacciones</Heading>
+        <Heading level="h1" size="2xl" weight="extrabold" class="transactions-page__title">
+          Transacciones
+        </Heading>
         <Text size="sm" color="muted">Historial completo de movimientos</Text>
       </div>
       <div class="transactions-page__header-actions">
-        <Select v-model="budgetSelect" name="budgetId" label="Presupuesto" :options="budgetOptions" />
+        <Select
+          v-model="budgetSelect"
+          name="budgetId"
+          label="Presupuesto"
+          :options="budgetOptions"
+        />
         <Button variant="primary" size="sm" icon="add" @click="openForm">Nueva transacción</Button>
       </div>
     </div>
@@ -211,10 +216,10 @@
 
       <template #cell-actions="{ row }">
         <div class="transactions-page__actions">
-          <Button variant="ghost" size="xs" icon="edit" @click="handleEditTransaction(row)">
+          <Button variant="ghost" size="sm" icon="edit" @click="handleEditTransaction(row)">
             Editar
           </Button>
-          <Button variant="ghost" size="xs" icon="delete" @click="handleDeleteTransaction(row)">
+          <Button variant="ghost" size="sm" icon="delete" @click="handleDeleteTransaction(row)">
             Eliminar
           </Button>
         </div>
@@ -228,10 +233,7 @@
       </template>
 
       <template #footer>
-        <div
-          v-if="metrics.showPagination.value"
-          class="transactions-page__footer"
-        >
+        <div v-if="metrics.showPagination.value" class="transactions-page__footer">
           <div class="transactions-page__footer-info">
             <Text size="xs" color="muted">{{ metrics.countLabel.value }}</Text>
             <Select
@@ -274,51 +276,51 @@
 </template>
 
 <style scoped lang="postcss">
-.transactions-page {
-  @apply space-y-4;
-}
+  .transactions-page {
+    @apply space-y-4;
+  }
 
-.transactions-page__header {
-  @apply flex items-center justify-between;
-}
+  .transactions-page__header {
+    @apply flex items-center justify-between;
+  }
 
-.transactions-page__header-actions {
-  @apply flex items-center gap-2;
-}
+  .transactions-page__header-actions {
+    @apply flex items-center gap-2;
+  }
 
-.transactions-page__title {
-  @apply mb-1;
-}
+  .transactions-page__title {
+    @apply mb-1;
+  }
 
-.transactions-page__actions {
-  @apply flex items-center gap-1;
-}
+  .transactions-page__actions {
+    @apply flex items-center gap-1;
+  }
 
-.transactions-page__amount {
-  @apply whitespace-nowrap;
-}
+  .transactions-page__amount {
+    @apply whitespace-nowrap;
+  }
 
-.transactions-page__currency {
-  @apply text-xs uppercase;
-}
+  .transactions-page__currency {
+    @apply text-xs uppercase;
+  }
 
-.transactions-page__source {
-  @apply flex items-center gap-2;
-}
+  .transactions-page__source {
+    @apply flex items-center gap-2;
+  }
 
-.transactions-page__empty {
-  @apply flex flex-col items-center gap-2 py-10 text-center;
-}
+  .transactions-page__empty {
+    @apply flex flex-col items-center gap-2 py-10 text-center;
+  }
 
-.transactions-page__footer {
-  @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5;
-}
+  .transactions-page__footer {
+    @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5;
+  }
 
-.transactions-page__footer-info {
-  @apply flex items-center gap-3;
-}
+  .transactions-page__footer-info {
+    @apply flex items-center gap-3;
+  }
 
-.transactions-page__footer-actions {
-  @apply flex items-center gap-1;
-}
+  .transactions-page__footer-actions {
+    @apply flex items-center gap-1;
+  }
 </style>

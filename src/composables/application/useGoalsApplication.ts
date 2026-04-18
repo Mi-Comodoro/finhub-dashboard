@@ -6,6 +6,7 @@ import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useGoalsStore } from '@/stores/goals.store'
 import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
+import type { GoalsData } from '~/types/api'
 
 import { usePlannedIncomeApplication } from './usePlannedIncomeApplication'
 
@@ -50,14 +51,7 @@ export const useGoalsApplication = () => {
   }
 
   // Orchestration: add saving goal
-  const addSavingGoal = async (data: {
-    name: string
-    reason: string
-    targetAmount: number
-    targetDate: Date
-    isActive: boolean
-    accountId: string
-  }) => {
+  const addSavingGoal = async (data: GoalsData) => {
     goalsStore.setError(null)
     try {
       const { success } = await savingsApi.createGoal(data)
@@ -132,14 +126,7 @@ export const useGoalsApplication = () => {
     savingsAllocationsStore.setNewSavingAmount(amount)
   }
 
-  const addGoal = async (data: {
-    name: string
-    reason: string
-    targetAmount: number
-    targetDate: Date
-    isActive: boolean
-    accountId: string
-  }) => {
+  const addGoal = async (data: GoalsData) => {
     try {
       const success = await addSavingGoal(data)
       return { success: !!success }

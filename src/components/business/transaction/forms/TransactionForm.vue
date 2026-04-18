@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { Form } from '@/components/organisms/forms'
+  import type { TransactionData } from '@/composables/api/useTransactionApi'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
-  import type { TransactionData } from '@/composables/api/useTransactionApi'
 
   import { transactionFieldsSchema } from './schema/transaction.fields.schema'
 

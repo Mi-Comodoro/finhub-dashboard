@@ -9,6 +9,11 @@ export class Calendar {
     this.currentMonth = new Date(year ?? now.getFullYear(), month ?? now.getMonth(), 1)
   }
 
+  setMonth(year: number, month: number): Date {
+    this.currentMonth = new Date(year, month, 1)
+    return this.currentMonth
+  }
+
   getMonthDays(
     dynamicMonth: Date | null,
     tempRange: { start: Date | null; end: Date | null } | null,

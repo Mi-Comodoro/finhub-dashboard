@@ -111,7 +111,7 @@
   })
 
   const displayTargetAmount = computed(() => {
-    if (!props.targetAmount) return ''
+    if (!props.targetAmount || props.targetAmount <= 0) return ''
     return isSmallTarget.value
       ? formatCompactCurrency(props.targetAmount, currency.value)
       : formatCurrency(props.targetAmount, currency.value)

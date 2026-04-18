@@ -8,8 +8,10 @@
       modelValue?: number
       currency?: string
       label: string
+      required?: boolean
     }>(),
     {
+      required: false,
       modelValue: 0,
       currency: 'USD'
     }
@@ -81,6 +83,7 @@
   <Input
     :model-value="internal"
     :label="label"
+    :required="required"
     class="text-right"
     @update:model-value="handleInput"
   />

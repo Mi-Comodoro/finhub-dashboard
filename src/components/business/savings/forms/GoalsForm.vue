@@ -4,29 +4,48 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import type { GoalsData } from '~/types/api'
 
-  import { goalsFieldsSchema } from './schema/goals.fiels.schema'
+  import { goalsFieldsSchema, reasonTips } from './schema/goals.fiels.schema'
 
   const { accounts: accountsData } = useAccountSavingsApplication()
   const { addGoal, error } = useGoalsApplication()
 
   const emit = defineEmits(['onSuccess', 'onError', 'onClose'])
 
-  const accounts = computed(() =>
-    accountsData.value?.map(item => ({
-      label: item.name,
-      value: item.id,
-      disabled: !item.isActive
-    })) ?? []
+  const accounts = computed(
+    () =>
+      accountsData.value?.map(item => ({
+        label: item.name,
+        value: item.id,
+        disabled: !item.isActive
+      })) ?? []
   )
   const formSchema = computed(() => goalsFieldsSchema(accounts.value))
 
   const formKey = ref(0)
   const formData = ref({})
 
+  const currentTip = computed(() => {
+    const reason = (formData.value as Record<string, string>).reason
+    if (!reason || !reasonTips[reason]) return null
+    return reasonTips[reason]
+  })
+
   const handleSubmit = async () => {
-    const buildData = {
-      ...formData.value,
-      isActive: true
+    const raw = formData.value as Record<string, unknown>
+
+    const buildData: GoalsData = {
+      name: raw.name as string,
+      reason: raw.reason as string,
+      accountId: raw.accountId as string,
+      isActive: true,
+      // Explicit check for targetAmount (don't use truthy - 0 is falsy!)
+      ...(raw.targetAmount !== undefined && raw.targetAmount !== null && raw.targetAmount !== ''
+        ? { targetAmount: Number(raw.targetAmount) }
+        : {}),
+      // targetDate check
+      ...(raw.targetDate
+        ? { targetDate: raw.targetDate as Date }
+        : {})
     } as GoalsData
 
     const { success } = await addGoal(buildData)
@@ -49,7 +68,7 @@
       weight="extrabold"
       level="h1"
       color="black"
-      sub-title="Ponle fecha a tus metas"
+      sub-title="Define tus propósitos financieros"
       sub-title-size="sm"
       sub-title-color="muted"
       icon="add_task"
@@ -58,14 +77,13 @@
     />
 
     <div class="goals-form__alert">
-      <AlertBanner title="Cuentas de Alta Rentabilidad > 10% EA" variant="warning" icon="info">
+      <AlertBanner
+        :title="currentTip?.title ?? 'Selecciona un motivo'"
+        :variant="currentTip?.variant ?? 'info'"
+        icon="info"
+      >
         <Text size="xs" class="goals-form__alert-text">
-          <strong>
-            Uso:
-            <span class="goals-form__alert-text--normal">
-              Fondo de emergencia, ahorro a la vista y metas a corto plazo.
-            </span>
-          </strong>
+          {{ currentTip?.description ?? 'El motivo que elijas determinará las recomendaciones.' }}
         </Text>
       </AlertBanner>
     </div>
@@ -84,27 +102,23 @@
 </template>
 
 <style lang="postcss" scoped>
-.goals-form {
-  @apply flex h-full w-full flex-col gap-2 rounded-md bg-white;
-}
+  .goals-form {
+    @apply flex h-full w-full flex-col gap-2 rounded-md bg-white;
+  }
 
-.goals-form__alert {
-  @apply relative z-10 mt-2 flex flex-col;
-}
+  .goals-form__alert {
+    @apply relative z-10 mt-2 flex flex-col;
+  }
 
-.goals-form__alert-text {
-  @apply flex items-start gap-1 text-warning-900;
-}
+  .goals-form__alert-text {
+    @apply flex items-start gap-1;
+  }
 
-.goals-form__alert-text--normal {
-  @apply font-normal;
-}
+  .goals-form__content {
+    @apply w-full;
+  }
 
-.goals-form__content {
-  @apply w-full;
-}
-
-.goals-form__actions {
-  @apply flex justify-end gap-2;
-}
+  .goals-form__actions {
+    @apply flex justify-end gap-2;
+  }
 </style>

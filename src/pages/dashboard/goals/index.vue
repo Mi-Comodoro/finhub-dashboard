@@ -216,11 +216,13 @@
       iconTextClass: reasonTextMap[goal.reason],
       iconBgClass: reasonBgMap[goal.reason],
       amount: null,
-      targetAmount: goal.targetAmount,
-      targetDate: String(goal.targetDate),
+      targetAmount: goal.targetAmount ?? null,
+      targetDate: goal.targetDate ? String(goal.targetDate) : '',
       status: goal.isActive ? 'active' : 'paused',
       showProgressbar: true,
-      progressPercentage: 0 // luego dinámico
+      progressPercentage: goal.targetAmount && goal.targetAmount > 0
+        ? Math.round((0 / goal.targetAmount) * 100)
+        : 0
     }))
   )
 </script>

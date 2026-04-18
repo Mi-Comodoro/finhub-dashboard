@@ -17,6 +17,7 @@
 
   const showPicker = ref(false)
   const value = ref<Date | null>(props.modelValue)
+  const pendingDate = ref<Date | null>(props.modelValue)
 
   watch(
     () => props.modelValue,
@@ -29,6 +30,7 @@
   })
 
   function openPicker() {
+    pendingDate.value = value.value
     showPicker.value = true
   }
 
@@ -36,19 +38,25 @@
     showPicker.value = false
   }
 
-  const selectedDate = ref<Date | null>(null)
-  const selectDate = (val: Date) => {
-    value.value = val
-    selectedDate.value = val
-    emit('update:modelValue', val)
+  function onDateSelect(val: Date) {
+    pendingDate.value = val
   }
+
   function handleApply() {
-    emit('update:modelValue', selectedDate.value)
+    if (pendingDate.value) {
+      value.value = pendingDate.value
+      emit('update:modelValue', pendingDate.value)
+    }
+    closePicker()
+  }
+
+  function handleCancel() {
+    pendingDate.value = value.value
     closePicker()
   }
 </script>
 <template>
-  <div class="relative w-full">
+  <div class="date-picker-input">
     <Input
       :label="label"
       :model-value="displayValue ? displayValue : ''"
@@ -57,22 +65,22 @@
       readonly
     >
       <template #suffix>
-        <button type="button" class="text-primary-500" @click="openPicker">
+        <button type="button" class="date-picker-input__button" @click="openPicker">
           <Icon name="calendar_month" size="md" />
         </button>
       </template>
     </Input>
 
     <teleport to="body">
-      <div v-if="showPicker" class="date-picker-overlay" @click="closePicker">
-        <div class="date-picker-popover" @click.stop>
+      <div v-if="showPicker" class="date-picker-input__overlay" @click="closePicker">
+        <div class="date-picker-input__popover" @click.stop>
           <DatePicker
-            :model-value="value"
+            :model-value="pendingDate"
             :mode="mode"
             :locale="locale"
-            @update:model-value="selectDate"
+            @update:model-value="onDateSelect"
             @apply="handleApply"
-            @cancel="closePicker"
+            @cancel="handleCancel"
           />
         </div>
       </div>
@@ -80,11 +88,19 @@
   </div>
 </template>
 <style lang="postcss" scoped>
-  .date-picker-overlay {
+  .date-picker-input {
+    @apply relative w-full;
+  }
+
+  .date-picker-input__button {
+    @apply text-primary-500;
+  }
+
+  .date-picker-input__overlay {
     @apply fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm;
   }
 
-  .date-picker-popover {
+  .date-picker-input__popover {
     @apply mt-24 dark:border-neutral-700 dark:bg-neutral-800;
   }
 </style>

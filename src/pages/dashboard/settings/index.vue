@@ -1,11 +1,11 @@
 <script setup lang="ts">
-  import type { BudgetDefaults, NotificationSettings } from '@/stores/settings.store'
-  import type { CategoriesData } from '@/types/api/categories.api'
   import { CategoryForm, CategoryList } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
-  import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
+  import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useFeedback } from '@/composables/useFeedback'
+  import type { BudgetDefaults, NotificationSettings } from '@/stores/settings.store'
+  import type { CategoriesData } from '@/types/api/categories.api'
 
   definePageMeta({
     layout: 'dashboard',
