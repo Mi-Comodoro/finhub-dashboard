@@ -10,7 +10,7 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
-  import type { CompoundingFrequency } from '@/types/api'
+  import type { CompoundingFrequency, GoalsData } from '@/types/api'
 
   const router = useRouter()
 
@@ -126,13 +126,18 @@
     }
   }
 
-  const onSuccess = () => {
+  const handleGoalFormClose = (success?: boolean) => {
+    const wasEditing = editingGoal.value !== null
     showGoalsForm.value = false
-    show({
-      title: 'Meta Creada',
-      description: 'Se registró correctamente',
-      type: 'success'
-    })
+    editingGoal.value = null
+
+    if (success) {
+      show({
+        title: wasEditing ? 'Meta Actualizada' : 'Meta Creada',
+        description: 'La meta se guardó correctamente',
+        type: 'success'
+      })
+    }
   }
 
   const onSavingAllocationSuccess = () => {
@@ -142,16 +147,6 @@
       type: 'success'
     })
     closeSavingDistributionForm()
-  }
-  const onError = () => {
-    showGoalsForm.value = false
-    if (goalsError.value) {
-      show({
-        title: goalsError.value.title,
-        description: goalsError.value.message,
-        type: 'error'
-      })
-    }
   }
 
   const onSavingAllocationError = () => {
@@ -218,15 +213,20 @@
     showSavingDistributionForm.value = false
   }
 
+  const editingGoal = ref<GoalsData | null>(null)
+
   const showGoalsForm = ref(false)
   const createGoalsForm = () => {
+    editingGoal.value = null
     showGoalsForm.value = true
   }
-  const closeGoalsForm = () => {
-    showGoalsForm.value = false
+  const editGoal = (goal: GoalsData) => {
+    editingGoal.value = goal
+    showGoalsForm.value = true
   }
   const goalCards = computed(() =>
     goals.value.slice(0, 6).map(goal => ({
+      goal,
       title: goal.name,
       subtitle: goal.accountName,
       iconName: goal.reason,
@@ -285,7 +285,17 @@
     <div class="goals-page__grid">
       <div v-if="isGoalsExists" class="goals-page__goals-section">
         <div class="goals-page__goals-cards">
-          <FinancialProgressCard v-for="(card, index) in goalCards" :key="index" v-bind="card" />
+          <div v-for="(card, index) in goalCards" :key="index" class="goals-page__goal-card-wrapper">
+            <FinancialProgressCard v-bind="card" />
+            <Button
+              icon="edit"
+              variant="ghost"
+              size="sm"
+              icon-only
+              class="goals-page__goal-edit-button"
+              @click="editGoal(card.goal)"
+            />
+          </div>
         </div>
         <Card
           v-if="goals.length > 6"
@@ -486,7 +496,11 @@
     </div>
     <ModalWizard v-model:show="showGoalsForm">
       <div>
-        <GoalsForm @on-success="onSuccess" @on-error="onError" @on-close="closeGoalsForm" />
+        <GoalsForm
+          :mode="editingGoal ? 'edit' : 'create'"
+          :initial-data="editingGoal"
+          @on-close="handleGoalFormClose"
+        />
       </div>
     </ModalWizard>
     <ModalWizard v-model:show="showAccountSavingsForm">
@@ -549,6 +563,14 @@
 
 .goals-page__goals-cards {
   @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2;
+}
+
+.goals-page__goal-card-wrapper {
+  @apply relative;
+}
+
+.goals-page__goal-edit-button {
+  @apply absolute right-2 top-2 z-20;
 }
 
 .goals-page__achievement-card {

@@ -136,6 +136,22 @@ export const useGoalsApplication = () => {
     }
   }
 
+  const editGoal = async (
+    id: string,
+    data: Partial<GoalsData>
+  ): Promise<{ success: boolean }> => {
+    try {
+      const response = await savingsApi.updateGoal(id, data)
+      if (response.success) {
+        await fetchGoals()
+      }
+      return response
+    } catch (error) {
+      console.error('Error editing goal:', error)
+      return { success: false }
+    }
+  }
+
   const goals = computed(() => goalsStore.goals)
   const currentBudgetId = computed(() => budgetStore.currentBudgetPlan?.id ?? null)
 
@@ -149,6 +165,7 @@ export const useGoalsApplication = () => {
     loadAllocationSummaryData,
     updateNewSavingAmount,
     addGoal,
+    editGoal,
     goals,
     currentBudgetId,
     error

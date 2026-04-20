@@ -6,10 +6,28 @@
 
   import { goalsFieldsSchema, reasonTips } from './schema/goals.fiels.schema'
 
-  const { accounts: accountsData } = useAccountSavingsApplication()
-  const { addGoal, error } = useGoalsApplication()
+  interface GoalsFormProps {
+    mode?: 'create' | 'edit'
+    initialData?: {
+      id: string
+      name: string
+      reason: string
+      accountId: string
+      targetAmount?: number | null
+      targetDate?: Date | null
+      isActive: boolean
+    } | null
+  }
+
+  const props = withDefaults(defineProps<GoalsFormProps>(), {
+    mode: 'create',
+    initialData: null
+  })
 
   const emit = defineEmits(['onSuccess', 'onError', 'onClose'])
+
+  const { accounts: accountsData } = useAccountSavingsApplication()
+  const { addGoal, editGoal } = useGoalsApplication()
 
   const accounts = computed(
     () =>
@@ -22,7 +40,21 @@
   const formSchema = computed(() => goalsFieldsSchema(accounts.value))
 
   const formKey = ref(0)
-  const formData = ref({})
+  const formData = computed<Record<string, unknown>>(() => {
+    if (props.mode === 'edit' && props.initialData) {
+      return {
+        name: props.initialData.name,
+        reason: props.initialData.reason,
+        accountId: props.initialData.accountId,
+        targetAmount: props.initialData.targetAmount !== null && props.initialData.targetAmount !== undefined
+          ? String(props.initialData.targetAmount)
+          : '',
+        targetDate: props.initialData.targetDate || null,
+        isActive: props.initialData.isActive
+      }
+    }
+    return {}
+  })
 
   const currentTip = computed(() => {
     const reason = (formData.value as Record<string, string>).reason
@@ -30,32 +62,47 @@
     return reasonTips[reason]
   })
 
-  const handleSubmit = async () => {
-    const raw = formData.value as Record<string, unknown>
+  const handleSubmit = async (data: Record<string, unknown>) => {
+    try {
+      const raw = data as {
+        name: string
+        reason: string
+        accountId: string
+        targetAmount?: string | number
+        targetDate?: Date
+        isActive: boolean
+      }
 
-    const buildData: GoalsData = {
-      name: raw.name as string,
-      reason: raw.reason as string,
-      accountId: raw.accountId as string,
-      isActive: true,
-      // Explicit check for targetAmount (don't use truthy - 0 is falsy!)
-      ...(raw.targetAmount !== undefined && raw.targetAmount !== null && raw.targetAmount !== ''
-        ? { targetAmount: Number(raw.targetAmount) }
-        : {}),
-      // targetDate check
-      ...(raw.targetDate
-        ? { targetDate: raw.targetDate as Date }
-        : {})
-    } as GoalsData
+      const buildData: Partial<GoalsData> = {
+        name: raw.name,
+        reason: raw.reason,
+        accountId: raw.accountId,
+        isActive: true,
+        // Explicit null checks for targetAmount (0 is valid!)
+        ...(raw.targetAmount !== undefined &&
+            raw.targetAmount !== null &&
+            raw.targetAmount !== ''
+          ? { targetAmount: Number(raw.targetAmount) }
+          : {}),
+        ...(raw.targetDate
+          ? { targetDate: raw.targetDate }
+          : {})
+      }
 
-    const { success } = await addGoal(buildData)
-    formData.value = {}
-    formKey.value++
+      let success: boolean
 
-    if (success) {
-      emit('onSuccess')
-    } else {
-      emit('onError', error.value)
+      if (props.mode === 'edit' && props.initialData?.id) {
+        const result = await editGoal(props.initialData.id, buildData)
+        success = result.success
+      } else {
+        const result = await addGoal(buildData as GoalsData)
+        success = result.success
+      }
+
+      emit('onClose', success)
+    } catch (error) {
+      emit('onClose', false)
+      console.error('Error in handleSubmit:', error)
     }
   }
 </script>
@@ -63,16 +110,16 @@
 <template>
   <div class="goals-form">
     <CardInfo
-      title="Nueva Meta"
-      title-size="xl"
+      :title="mode === 'edit' ? 'Editar Meta de Ahorro' : 'Crear Nueva Meta de Ahorro'"
+      :sub-title="mode === 'edit' ? 'Actualiza los detalles de tu meta.' : 'Define tu objetivo de ahorro.'"
+      title-size="2xl"
       weight="extrabold"
       level="h1"
       color="black"
-      sub-title="Define tus propósitos financieros"
       sub-title-size="sm"
       sub-title-color="muted"
-      icon="add_task"
-      icon-variant="primary"
+      icon="savings"
+      icon-variant="gold"
       icon-size="md"
     />
 
@@ -89,11 +136,13 @@
     </div>
 
     <div v-if="accounts.length > 0" class="goals-form__content">
-      <Form :key="formKey" v-model="formData" :schema="formSchema" @submit="handleSubmit">
+      <Form :key="formKey" :model-value="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
           <div class="goals-form__actions">
             <Button type="button" variant="ghost" @click.stop="emit('onClose')">Cancelar</Button>
-            <Button type="submit" variant="primary">Guardar</Button>
+            <Button type="submit" variant="primary">
+              {{ mode === 'edit' ? 'Actualizar' : 'Guardar Meta' }}
+            </Button>
           </div>
         </template>
       </Form>
