@@ -20,7 +20,11 @@
       "Bash(powershell -command:*)",
       "Bash(powershell:*)",
       "Bash(npm run dev:*)",
-      "Bash(timeout 15 bash -c 'tail -f C:\\\\Users\\\\Ingmi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-Ingmi-personal-finanzas-finhub-dashboard\\\\tasks\\\\b971b2e.output':*)"
+      "Bash(nvm use:*)",
+      "Bash(node --version:*)",
+      "Bash(nvm list:*)",
+      "Bash(nvm exec:*)",
+      "Bash(cat:*)"
     ]
   }
 }

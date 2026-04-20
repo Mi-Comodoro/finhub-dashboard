@@ -32,11 +32,6 @@
     return monthDate.getFullYear()
   })
 
-  const displayMonthName = computed(() => {
-    const monthDate = dynamicMonth.value || currentMonth.value
-    return monthDate.toLocaleString(props.locale, { month: 'long' })
-  })
-
   const monthNames = computed(() =>
     Array.from({ length: 12 }, (_, i) => ({
       index: i,

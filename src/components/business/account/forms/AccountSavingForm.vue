@@ -5,12 +5,46 @@
   import type { CompoundingFrequency } from '~/types/api'
 
   import { accountFieldsSchema } from './schema/account.fields.schema'
-  const emit = defineEmits(['onClose'])
+
+  interface AccountFormProps {
+    mode?: 'create' | 'edit'
+    initialData?: {
+      id: string
+      name: string
+      description: string
+      interestRate: number
+      compoundingFrequency: CompoundingFrequency
+      isActive: boolean
+    } | null
+  }
+
+  const props = withDefaults(defineProps<AccountFormProps>(), {
+    mode: 'create',
+    initialData: null
+  })
+
+  const emit = defineEmits<{
+    onClose: [success?: boolean]
+  }>()
+
   const close = () => {
     emit('onClose')
   }
 
-  const { addAccount } = useAccountSavingsApplication()
+  const { addAccount, updateAccount } = useAccountSavingsApplication()
+
+  const formData = computed<Record<string, unknown>>(() => {
+    if (props.mode === 'edit' && props.initialData) {
+      return {
+        name: props.initialData.name,
+        description: props.initialData.description,
+        interestRate: String(props.initialData.interestRate),
+        compoundingFrequency: props.initialData.compoundingFrequency,
+        isActive: props.initialData.isActive
+      }
+    }
+    return {}
+  })
 
   const formSchema = computed(() => accountFieldsSchema())
 
@@ -26,10 +60,19 @@
         ...data,
         interestRate: parseFloat(data.interestRate)
       }
-      const success = await addAccount(buildData)
+
+      let success: boolean
+
+      if (props.mode === 'edit' && props.initialData?.id) {
+        const result = await updateAccount(props.initialData.id, buildData)
+        success = result.success
+      } else {
+        success = await addAccount(buildData)
+      }
+
       emit('onClose', success)
     } catch (error) {
-      emit('onClose', error)
+      emit('onClose', false)
       console.error('Error completo:', error)
     }
   }
@@ -38,12 +81,12 @@
 <template>
   <div class="account-saving-form">
     <CardInfo
-      title="Registro de Cuenta Bancaria para Referencia"
+      :title="mode === 'edit' ? 'Editar Cuenta' : 'Registro de Cuenta Bancaria para Referencia'"
       title-size="2xl"
       weight="extrabold"
       level="h1"
       color="black"
-      sub-title="Registro informativo de cuenta de destino."
+      :sub-title="mode === 'edit' ? 'Actualiza la información de tu cuenta.' : 'Registro informativo de cuenta de destino.'"
       sub-title-size="sm"
       sub-title-color="muted"
       icon="account_balance"
@@ -58,11 +101,13 @@
     />
 
     <div class="account-saving-form__content">
-      <Form :schema="formSchema" @submit="handleSubmit">
+      <Form :schema="formSchema" :model-value="formData" @submit="handleSubmit">
         <template #actions>
           <div class="account-saving-form__actions">
             <Button type="button" variant="ghost" @click.stop="close">Cancelar</Button>
-            <Button type="submit" variant="primary">Guardar</Button>
+            <Button type="submit" variant="primary">
+              {{ mode === 'edit' ? 'Actualizar' : 'Guardar' }}
+            </Button>
           </div>
         </template>
       </Form>

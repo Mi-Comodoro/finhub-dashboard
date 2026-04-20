@@ -16,3 +16,12 @@ export interface AccountResponse {
   readonly success: boolean
   readonly result: AccountData[]
 }
+
+export interface AccountRateHistory {
+  id: string
+  accountId: string
+  previousRate: number
+  newRate: number
+  changedAt: string
+  createdAt: string
+}

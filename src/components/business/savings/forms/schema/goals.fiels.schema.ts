@@ -1,7 +1,5 @@
 import type { FormSchema } from '~/components/organisms/forms/Form.vue'
 
-const OPTIONAL_REASONS = ['emergency', 'medical_services', 'trending_up', 'elderly']
-
 const reasonOptions = [
   { label: 'Fondo de Emergencia', value: 'emergency', disabled: false },
   { label: 'Jubilacion o Retiro', value: 'elderly', disabled: false },

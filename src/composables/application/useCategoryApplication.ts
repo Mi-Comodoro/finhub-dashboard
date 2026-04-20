@@ -1,4 +1,3 @@
-import type { CategoriesData } from '@/types/api/categories.api'
 import { useCategoryApi } from '~/composables/api/useCategoryApi'
 import { useCategoryStore } from '~/stores/categories.store'
 import type { CategoriesResponse } from '~/types/api'

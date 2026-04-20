@@ -34,7 +34,7 @@
 
   const budgetSelect = ref<string>('')
   const showForm = ref(false)
-  const editingTransaction = ref<{ id: string; data: any } | null>(null)
+  const editingTransaction = ref<{ id: string; data: Record<string, unknown> } | null>(null)
 
   const openForm = () => {
     editingTransaction.value = null
@@ -46,7 +46,7 @@
     editingTransaction.value = null
   }
 
-  const handleEditTransaction = (row: any) => {
+  const handleEditTransaction = (row: Record<string, unknown>) => {
     editingTransaction.value = {
       id: row.id,
       data: {

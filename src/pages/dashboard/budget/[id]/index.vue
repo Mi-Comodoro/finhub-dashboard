@@ -109,7 +109,7 @@
   const expectedAmount = computed(() => expectedIncome.value)
 
   const showForm = ref(false)
-  const editingExpense = ref<{ id: string; data: any } | null>(null)
+  const editingExpense = ref<{ id: string; data: Record<string, unknown> } | null>(null)
 
   const openForm = () => {
     editingExpense.value = null
@@ -134,7 +134,7 @@
     }
   }
 
-  const handleEditExpense = (row: any) => {
+  const handleEditExpense = (row: Record<string, unknown>) => {
     editingExpense.value = {
       id: row.id,
       data: {

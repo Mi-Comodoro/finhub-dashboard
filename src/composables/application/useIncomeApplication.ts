@@ -2,6 +2,7 @@ import { storeToRefs } from 'pinia'
 
 import { useIncomeApi } from '~/composables/api/useIncomeApi'
 import { useIncomeStore } from '~/stores/income.store'
+import type { Income } from '~/types/domain'
 
 export const useIncomeApplication = () => {
   const incomeStore = useIncomeStore()
@@ -54,7 +55,7 @@ export const useIncomeApplication = () => {
       const { success, result } = await incomeApi.getPlannedIncomes()
 
       if (success && result) {
-        incomeStore.setIncomes(result as any[])
+        incomeStore.setIncomes(result as unknown as Income[])
       }
 
       return { success, result }

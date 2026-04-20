@@ -38,7 +38,7 @@
           emit('onClose')
         }
       }
-    } catch (error) {
+    } catch {
       // Error handling is done in the application layer
     }
   }

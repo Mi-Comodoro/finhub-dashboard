@@ -1,6 +1,6 @@
 import { useAccountApi } from '@/composables/api/useAccountApi'
 import { useAccountStore } from '@/stores/account.store'
-import type { AccountResponse, CompoundingFrequency } from '@/types/api'
+import type { AccountData, AccountResponse, CompoundingFrequency } from '@/types/api'
 export const useAccountSavingsApplication = () => {
   const error = ref('')
   const isLoading = ref(false)
@@ -21,6 +21,26 @@ export const useAccountSavingsApplication = () => {
     }
     await accountStore.fetchAccounts()
     return success
+  }
+
+  const updateAccount = async (
+    id: string,
+    data: Partial<Omit<AccountData, 'id' | 'userId'>>
+  ): Promise<{ success: boolean }> => {
+    try {
+      isLoading.value = true
+      const response = await accountApi.updateAccount(id, data)
+      isLoading.value = false
+      if (response.success) {
+        await accountStore.fetchAccounts()
+      }
+      return { success: response.success }
+    } catch (err) {
+      isLoading.value = false
+      error.value = 'Error al actualizar cuenta'
+      console.error('Error updating account:', err)
+      return { success: false }
+    }
   }
 
   const frequencyMap = (frequency: CompoundingFrequency) => {
@@ -63,5 +83,5 @@ export const useAccountSavingsApplication = () => {
   }
   const accounts = computed(() => accountStore.accounts)
 
-  return { addAccount, getRateCategory, frequencyMap, error, isLoading, accounts }
+  return { addAccount, updateAccount, getRateCategory, frequencyMap, error, isLoading, accounts }
 }

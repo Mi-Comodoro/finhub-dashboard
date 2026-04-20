@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { Button, Text } from '@/components/atoms'
   import { AccountSavingForm, GoalsForm } from '@/components/business'
+  import AccountRateTimeline from '@/components/business/account/AccountRateTimeline.vue'
   import { CardInfo } from '@/components/molecules'
   import { ModalWizard } from '@/components/organisms'
   import { useToast } from '@/components/organisms/toast/useToast'
@@ -21,6 +22,8 @@
   }
 
   const { frequencyMap, getRateCategory, accounts } = useAccountSavingsApplication()
+
+  const editingAccount = ref<typeof accounts.value[number] | null>(null)
 
   const {
     canActive,
@@ -102,11 +105,25 @@
 
   const showAccountSavingsForm = ref(false)
   const createAccountSavings = () => {
+    editingAccount.value = null
+    showAccountSavingsForm.value = true
+  }
+  const editAccount = (account: typeof accounts.value[number]) => {
+    editingAccount.value = account
     showAccountSavingsForm.value = true
   }
   const { show } = useToast()
-  const closeAccountSavings = () => {
+  const closeAccountSavings = (success?: boolean) => {
+    const wasEditing = editingAccount.value !== null
     showAccountSavingsForm.value = false
+    editingAccount.value = null
+    if (success) {
+      show({
+        title: wasEditing ? 'Cuenta Actualizada' : 'Cuenta Creada',
+        description: 'Se registró correctamente',
+        type: 'success'
+      })
+    }
   }
 
   const onSuccess = () => {
@@ -420,8 +437,16 @@
                         {{ frequencyMap(account.compoundingFrequency) }}
                       </span>
                       <Text size="xs">{{ account.interestRate.toFixed(2) }}%EA</Text>
+                      <Button
+                        icon="edit"
+                        variant="ghost"
+                        size="sm"
+                        icon-only
+                        @click="editAccount(account)"
+                      />
                     </div>
                   </div>
+                  <AccountRateTimeline :account-id="account.id" />
                 </div>
               </Card>
             </div>
@@ -465,7 +490,11 @@
       </div>
     </ModalWizard>
     <ModalWizard v-model:show="showAccountSavingsForm">
-      <AccountSavingForm @on-close="closeAccountSavings" />
+      <AccountSavingForm
+        :mode="editingAccount ? 'edit' : 'create'"
+        :initial-data="editingAccount"
+        @on-close="closeAccountSavings"
+      />
     </ModalWizard>
     <ModalWizard v-model:show="showSavingDistributionForm">
       <SavingDistributionForm

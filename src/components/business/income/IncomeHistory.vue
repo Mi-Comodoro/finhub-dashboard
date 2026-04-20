@@ -4,7 +4,7 @@
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
 
-  const props = defineProps<{
+  defineProps<{
     incomes: PlannedIncomeSummary[]
     currency: string
   }>()
@@ -19,15 +19,15 @@
     { key: 'actions', label: 'Acciones', type: 'actions' }
   ]
 
-  const handleEdit = (row: any) => {
+  const handleEdit = (row: PlannedIncomeSummary) => {
     emit('edit', row)
   }
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: PlannedIncomeSummary) => {
     emit('delete', row)
   }
 
-  const handleMarkReceived = (row: any) => {
+  const handleMarkReceived = (row: PlannedIncomeSummary) => {
     emit('markReceived', row)
   }
 

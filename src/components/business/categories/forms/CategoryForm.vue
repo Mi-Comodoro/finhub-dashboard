@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue'
 
-  import { Button, Heading, Icon } from '@/components/atoms'
+  import { Heading, Icon } from '@/components/atoms'
   import { Form } from '@/components/organisms'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useFeedback } from '@/composables/useFeedback'
@@ -14,7 +14,7 @@
   }
 
   interface CategoryFormEmits {
-    (e: 'on-close'): void
+    'on-close': []
   }
 
   const props = defineProps<CategoryFormProps>()

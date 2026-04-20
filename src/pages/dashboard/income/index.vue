@@ -31,7 +31,7 @@
 
   // Modal state
   const showForm = ref(false)
-  const editingIncome = ref<{ id: string; data: any } | null>(null)
+  const editingIncome = ref<{ id: string; data: Record<string, unknown> } | null>(null)
 
   const openForm = () => {
     editingIncome.value = null
@@ -43,7 +43,7 @@
     editingIncome.value = null
   }
 
-  const handleEditIncome = (row: any) => {
+  const handleEditIncome = (row: Record<string, unknown>) => {
     editingIncome.value = {
       id: row.id,
       data: {

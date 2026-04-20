@@ -5,7 +5,7 @@
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useFeedback } from '@/composables/useFeedback'
   import type { BudgetDefaults, NotificationSettings } from '@/stores/settings.store'
-  import type { CategoriesData } from '@/types/api/categories.api'
+  import type { CategoriesData } from '~/types/api'
 
   definePageMeta({
     layout: 'dashboard',
@@ -54,7 +54,7 @@
 
   // Category form state
   const showCategoryForm = ref(false)
-  const editingCategory = ref<{ id: string; data: any } | null>(null)
+  const editingCategory = ref<{ id: string; data: Record<string, unknown> } | null>(null)
 
   // Category delete confirmation state
   const categoryToDelete = ref<CategoriesData | null>(null)

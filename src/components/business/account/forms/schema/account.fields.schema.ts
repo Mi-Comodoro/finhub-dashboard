@@ -22,7 +22,7 @@ export const accountFieldsSchema = (): FormSchema => {
         options: [
           { label: 'Diaria', value: 'daily' },
           { label: 'Mensual', value: 'monthly' },
-          { label: 'Anual', value: 'foannuallyod' }
+          { label: 'Anual', value: 'annually' }
         ],
         required: true
       },

@@ -43,6 +43,7 @@
       | 'radio-card'
     label: string
     placeholder?: string
+    // eslint-disable-next-line no-unused-vars
     required?: boolean | ((form: Record<string, commonField>) => boolean)
     pattern?: RegExp
     errorMessage?: string

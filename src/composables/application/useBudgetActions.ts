@@ -42,7 +42,7 @@ const createErrorMessage = (error: FetchError) => {
 }
 
 // Business logic: mapear CurrentBudget a CurrentBudgetPlan
-const mapCurrentBudgetToPlan = (result: any): CurrentBudgetPlan => ({
+const mapCurrentBudgetToPlan = (result: SingleBudget): CurrentBudgetPlan => ({
   id: result.id,
   name: result.name,
   month: result.month,
@@ -201,7 +201,8 @@ export function useBudgetActions() {
     const { success, result } = await budgetApi.updateBudget(id, data)
 
     if (success && result) {
-      budgetStore.updateBudget(result as any)
+      const mappedBudget = mapSingleBudgetToBudget(result as SingleBudget)
+      budgetStore.updateBudget(mappedBudget)
     }
 
     return { success }

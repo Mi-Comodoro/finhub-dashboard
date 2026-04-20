@@ -1,4 +1,4 @@
-import type { CategoriesData } from '@/types/api/categories.api'
+import type { CategoriesData } from '~/types/api'
 
 export function useCategoryApi() {
 

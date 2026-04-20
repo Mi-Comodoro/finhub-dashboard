@@ -129,7 +129,7 @@ export const useTransactionApplication = () => {
   )
 
   // Orchestration: create transaction
-  const createTransaction = async (data: any) => {
+  const createTransaction = async (data: Record<string, unknown>) => {
     try {
       transactionStore.setLoading(true)
       const { success } = await transactionApi.createTransaction(data)
@@ -153,7 +153,7 @@ export const useTransactionApplication = () => {
   }
 
   // Orchestration: update transaction
-  const updateTransaction = async (id: string, data: any) => {
+  const updateTransaction = async (id: string, data: Record<string, unknown>) => {
     try {
       transactionStore.setLoading(true)
       const { success } = await transactionApi.updateTransaction(id, data)

@@ -1,24 +1,22 @@
 <script setup lang="ts">
   import { Badge, Button, Icon, Text } from '@/components/atoms'
   import { useCategoryPresenter } from '@/composables/presenters/useCategoryPresenter'
-  import type { CategoriesData } from '@/types/api/categories.api'
+  import type { CategoriesData } from '~/types/api'
 
   interface CategoryListProps {
     categories: CategoriesData[]
     isLoading?: boolean
   }
 
-  interface CategoryListEmits {
-    (e: 'edit', category: CategoriesData): void
-    (e: 'delete', category: CategoriesData): void
-    (e: 'add'): void
-  }
-
-  const props = withDefaults(defineProps<CategoryListProps>(), {
+  withDefaults(defineProps<CategoryListProps>(), {
     isLoading: false
   })
 
-  const emit = defineEmits<CategoryListEmits>()
+  const emit = defineEmits<{
+    'edit': [category: CategoriesData]
+    'delete': [category: CategoriesData]
+    'add': []
+  }>()
 
   const { getCategoryTypeLabel, getCategoryTypeVariant, getCategoryColorClasses } =
     useCategoryPresenter()
