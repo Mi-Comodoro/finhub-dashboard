@@ -6,8 +6,8 @@ export interface GoalsData {
   targetDate?: Date | null
   isActive: boolean
   accountId: string
-  userId: string
-  accountName: string
+  userId?: string
+  accountName?: string
   createdAt?: Date
   updatedAt?: Date
 }

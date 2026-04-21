@@ -40,29 +40,43 @@
   const formSchema = computed(() => goalsFieldsSchema(accounts.value))
 
   const formKey = ref(0)
-  const formData = computed<Record<string, unknown>>(() => {
+  const formData = computed(() => {
+    // Estado inicial por defecto para 'create'
+    const baseData = {
+      name: '',
+      reason: '',
+      accountId: '',
+      targetAmount: '',
+      targetDate: null,
+      isActive: true
+    }
+
     if (props.mode === 'edit' && props.initialData) {
       return {
         name: props.initialData.name,
         reason: props.initialData.reason,
         accountId: props.initialData.accountId,
-        targetAmount: props.initialData.targetAmount !== null && props.initialData.targetAmount !== undefined
-          ? String(props.initialData.targetAmount)
-          : '',
-        targetDate: props.initialData.targetDate || null,
+        targetAmount:
+          props.initialData.targetAmount !== null && props.initialData.targetAmount !== undefined
+            ? String(props.initialData.targetAmount)
+            : '',
+        targetDate: props.initialData.targetDate ? new Date(props.initialData.targetDate) : null,
         isActive: props.initialData.isActive
       }
     }
-    return {}
+
+    return baseData
   })
 
   const currentTip = computed(() => {
-    const reason = (formData.value as Record<string, string>).reason
+    const reason = (formData.value as { reason: string }).reason
     if (!reason || !reasonTips[reason]) return null
     return reasonTips[reason]
   })
-
+  const isSubmitting = ref(false)
   const handleSubmit = async (data: Record<string, unknown>) => {
+    if (isSubmitting.value) return
+    isSubmitting.value = true
     try {
       const raw = data as {
         name: string
@@ -79,14 +93,10 @@
         accountId: raw.accountId,
         isActive: true,
         // Explicit null checks for targetAmount (0 is valid!)
-        ...(raw.targetAmount !== undefined &&
-            raw.targetAmount !== null &&
-            raw.targetAmount !== ''
+        ...(raw.targetAmount !== undefined && raw.targetAmount !== null && raw.targetAmount !== ''
           ? { targetAmount: Number(raw.targetAmount) }
           : {}),
-        ...(raw.targetDate
-          ? { targetDate: raw.targetDate }
-          : {})
+        ...(raw.targetDate ? { targetDate: raw.targetDate } : {})
       }
 
       let success: boolean
@@ -103,6 +113,8 @@
     } catch (error) {
       emit('onClose', false)
       console.error('Error in handleSubmit:', error)
+    } finally {
+      isSubmitting.value = false
     }
   }
 </script>
@@ -111,7 +123,9 @@
   <div class="goals-form">
     <CardInfo
       :title="mode === 'edit' ? 'Editar Meta de Ahorro' : 'Crear Nueva Meta de Ahorro'"
-      :sub-title="mode === 'edit' ? 'Actualiza los detalles de tu meta.' : 'Define tu objetivo de ahorro.'"
+      :sub-title="
+        mode === 'edit' ? 'Actualiza los detalles de tu meta.' : 'Define tu objetivo de ahorro.'
+      "
       title-size="2xl"
       weight="extrabold"
       level="h1"
@@ -119,7 +133,6 @@
       sub-title-size="sm"
       sub-title-color="muted"
       icon="savings"
-      icon-variant="gold"
       icon-size="md"
     />
 
@@ -141,7 +154,7 @@
           <div class="goals-form__actions">
             <Button type="button" variant="ghost" @click.stop="emit('onClose')">Cancelar</Button>
             <Button type="submit" variant="primary">
-              {{ mode === 'edit' ? 'Actualizar' : 'Guardar Meta' }}
+              {{ isSubmitting ? 'Guardando...' : mode === 'edit' ? 'Actualizar' : 'Guardar Meta' }}
             </Button>
           </div>
         </template>

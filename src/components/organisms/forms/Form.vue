@@ -118,7 +118,7 @@
     let valid = true
 
     Object.keys(props.schema.fields).forEach(key => {
-      const fieldValid = validateField(key, formData[key])
+      const fieldValid = validateField(key, formData[key]!)
 
       if (!fieldValid) valid = false
     })
@@ -160,7 +160,7 @@
       let valid = true
 
       Object.keys(props.schema.fields).forEach(key => {
-        const fieldValid = validateField(key, value[key])
+        const fieldValid = validateField(key, value[key]!)
         if (!fieldValid) valid = false
       })
 
@@ -184,82 +184,83 @@
       >
         <template v-for="fieldKey in row.fields" :key="fieldKey">
           <template v-if="isFieldVisible(fieldKey)">
-          <Input
-            v-if="
-              schema.fields[fieldKey]!.type === 'text' || schema.fields[fieldKey]!.type === 'number'
-            "
-            v-model="formData[fieldKey] as string | number"
-            :type="schema.fields[fieldKey]!.type"
-            :label="schema.fields[fieldKey]!.label"
-            :placeholder="schema.fields[fieldKey]!.placeholder"
-            :required="isFieldRequired(fieldKey)"
-            :pattern="schema.fields[fieldKey]!.pattern"
-            :prefix="schema.fields[fieldKey]!.prefix"
-            :error="errors[fieldKey]"
-          />
-
-          <MoneyInput
-            v-else-if="schema.fields[fieldKey]!.type === 'money'"
-            v-model="formData[fieldKey] as number"
-            :label="schema.fields[fieldKey]!.label"
-            :prefix="schema.fields[fieldKey]!.prefix"
-            :required="isFieldRequired(fieldKey)"
-          />
-          <Select
-            v-else-if="schema.fields[fieldKey]!.type === 'select'"
-            v-model="formData[fieldKey] as string"
-            :name="fieldKey"
-            v-bind="schema.fields[fieldKey]"
-            :required="isFieldRequired(fieldKey)"
-            :options="schema.fields[fieldKey]?.options!"
-          />
-
-          <div v-else-if="schema.fields[fieldKey]!.type === 'date'" class="flex-1 flex-col">
-            <DatePickerInput
-              v-model="formData[fieldKey]! as Date"
-              mode="single"
+            <Input
+              v-if="
+                schema.fields[fieldKey]!.type === 'text' ||
+                schema.fields[fieldKey]!.type === 'number'
+              "
+              v-model="formData[fieldKey] as string | number"
+              :type="schema.fields[fieldKey]!.type"
               :label="schema.fields[fieldKey]!.label"
+              :placeholder="schema.fields[fieldKey]!.placeholder"
+              :required="isFieldRequired(fieldKey)"
+              :pattern="schema.fields[fieldKey]!.pattern"
+              :prefix="schema.fields[fieldKey]!.prefix"
+              :error="errors[fieldKey]"
+            />
+
+            <MoneyInput
+              v-else-if="schema.fields[fieldKey]!.type === 'money'"
+              v-model="formData[fieldKey] as number"
+              :label="schema.fields[fieldKey]!.label"
+              :prefix="schema.fields[fieldKey]!.prefix"
               :required="isFieldRequired(fieldKey)"
             />
-          </div>
-
-          <div v-else-if="schema.fields[fieldKey]!.type === 'switch'" class="pt-5">
-            <SwitchToggle
-              v-model="formData[fieldKey] as boolean"
-              :label="schema.fields[fieldKey]!.label"
-              icon="verified"
-              label-position="right"
+            <Select
+              v-else-if="schema.fields[fieldKey]!.type === 'select'"
+              v-model="formData[fieldKey] as string"
+              :name="fieldKey"
+              v-bind="schema.fields[fieldKey]"
+              :required="isFieldRequired(fieldKey)"
+              :options="schema.fields[fieldKey]?.options!"
             />
-          </div>
 
-          <TextArea
-            v-else-if="schema.fields[fieldKey]!.type === 'textarea'"
-            :id="fieldKey"
-            v-model="formData[fieldKey] as string"
-            :name="fieldKey"
-            :label="schema.fields[fieldKey]!.label"
-            :required="isFieldRequired(fieldKey)"
-            :pattern="schema.fields[fieldKey]!.pattern"
-            :error="errors[fieldKey]"
-            :error-message="schema.fields[fieldKey]!.errorMessage"
-            placeholder="Describe el gasto..."
-          />
-          <RangeSlider
-            v-else-if="schema.fields[fieldKey]!.type === 'slider-percentage'"
-            v-model="formData[fieldKey] as number"
-            label="Porcentaje de Distribucion"
-          />
+            <div v-else-if="schema.fields[fieldKey]!.type === 'date'" class="flex-1 flex-col">
+              <DatePickerInput
+                v-model="formData[fieldKey]! as Date"
+                mode="single"
+                :label="schema.fields[fieldKey]!.label"
+                :required="isFieldRequired(fieldKey)"
+              />
+            </div>
 
-          <RadioButton
-            v-else-if="schema.fields[fieldKey]!.type === 'radio-card'"
-            v-model="formData[fieldKey] as string"
-            name="budgetFrequency"
-            :label="schema.fields[fieldKey]!.label"
-            :required="isFieldRequired(fieldKey)"
-            variant="card"
-            direction="row"
-            :options="schema.fields[fieldKey]?.options!"
-          />
+            <div v-else-if="schema.fields[fieldKey]!.type === 'switch'" class="pt-5">
+              <SwitchToggle
+                v-model="formData[fieldKey] as boolean"
+                :label="schema.fields[fieldKey]!.label"
+                icon="verified"
+                label-position="right"
+              />
+            </div>
+
+            <TextArea
+              v-else-if="schema.fields[fieldKey]!.type === 'textarea'"
+              :id="fieldKey"
+              v-model="formData[fieldKey] as string"
+              :name="fieldKey"
+              :label="schema.fields[fieldKey]!.label"
+              :required="isFieldRequired(fieldKey)"
+              :pattern="schema.fields[fieldKey]!.pattern"
+              :error="errors[fieldKey]"
+              :error-message="schema.fields[fieldKey]!.errorMessage"
+              placeholder="Describe el gasto..."
+            />
+            <RangeSlider
+              v-else-if="schema.fields[fieldKey]!.type === 'slider-percentage'"
+              v-model="formData[fieldKey] as number"
+              label="Porcentaje de Distribucion"
+            />
+
+            <RadioButton
+              v-else-if="schema.fields[fieldKey]!.type === 'radio-card'"
+              v-model="formData[fieldKey] as string"
+              name="budgetFrequency"
+              :label="schema.fields[fieldKey]!.label"
+              :required="isFieldRequired(fieldKey)"
+              variant="card"
+              direction="row"
+              :options="schema.fields[fieldKey]?.options!"
+            />
           </template>
         </template>
       </div>

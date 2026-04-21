@@ -1,7 +1,8 @@
 import type { FormSchema } from '~/components/organisms/forms/Form.vue'
 
 export const savingDistributionFieldsSchema = (
-  options: { label: string; value: string; disabled: boolean }[]
+  options: { label: string; value: string; disabled: boolean }[],
+  maxPercentage: number = 100
 ): FormSchema => {
   return {
     fields: {
@@ -15,7 +16,8 @@ export const savingDistributionFieldsSchema = (
         type: 'slider-percentage',
         label: 'Porcentaje',
         placeholder: '9%',
-        required: true
+        required: true,
+        max: maxPercentage
       }
     },
 

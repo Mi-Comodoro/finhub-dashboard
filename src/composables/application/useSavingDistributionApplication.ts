@@ -81,11 +81,13 @@ export function useSavingDistributionApplication() {
   }
 
   /**
-   * Get total allocated percentage
+   * Get total allocated percentage for a specific budget
    */
-  const getTotalAllocatedPercentage = (): ComputedRef<number> => {
+  const getTotalAllocatedPercentage = (budgetId: string): ComputedRef<number> => {
     return computed(() =>
-      savingsAllocationsStore.savingAllocations.reduce((acc, sa) => acc + Number(sa.percentage), 0)
+      savingsAllocationsStore.savingAllocations
+        .filter(a => a.budgetId === budgetId)
+        .reduce((acc, sa) => acc + Number(sa.percentage), 0)
     )
   }
 
@@ -97,7 +99,8 @@ export function useSavingDistributionApplication() {
     budgetId: string
   ): Promise<{ success: boolean; error?: { title: string; message: string } | null }> => {
     const buildData = {
-      ...formData,
+      goalId: formData.goalId,
+      percentage: formData.percentage,
       budgetId
     }
 

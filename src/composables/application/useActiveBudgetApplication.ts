@@ -24,11 +24,13 @@ export const useActiveBudgetApplication = () => {
   const isAccountCreated = computed(() => accountStore.accounts.length >= 1)
   const goalsProgress = computed(() => goalsStore.goals.length)
   const isGoalsCompleted = computed(() => goalsProgress.value >= 3)
-  const allocationProgress = computed(() =>
-    savingsAllocationsStore.savingAllocations
+  const allocationProgress = computed(() => {
+    const activeGoalIds = new Set(goalsStore.goals.filter(g => g.isActive).map(g => g.id))
+    return savingsAllocationsStore.savingAllocations
       .filter(item => item.budgetId === budgetStore.currentBudgetPlan?.id)
+      .filter(item => activeGoalIds.has(item.goalId))
       .reduce((acc, sa) => acc + Number(sa.percentage), 0)
-  )
+  })
   const pendingAllocationProgress = computed(() => 100 - allocationProgress.value)
   const isSavingsAllocationCompleted = computed(() => allocationProgress.value === 100)
 
@@ -42,11 +44,11 @@ export const useActiveBudgetApplication = () => {
     return isAccountCreated.value && isGoalsCompleted.value && isSavingsAllocationCompleted.value
   })
   const enabled = async () => {
-    const budgetId = budgetStore.currentBudgetPlan
-      ? (budgetStore.currentBudgetPlan.id as string)
-      : ''
-    const { enableBudget } = await import('./useBudgetActions')
-    await enableBudget().enableBudget(budgetId)
+    const budgetId = budgetStore.currentBudgetPlan?.id ?? ''
+    if (!budgetId) return
+    const { useBudgetActions } = await import('./useBudgetActions')
+    const { enableBudget } = useBudgetActions()
+    await enableBudget(budgetId)
   }
 
   return {

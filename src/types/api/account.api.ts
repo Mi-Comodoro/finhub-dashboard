@@ -6,6 +6,8 @@ export interface AccountData {
   interestRate: number
   compoundingFrequency: CompoundingFrequency
   isActive: boolean
+  isPrimary: boolean
+  type?: string
   userId: string
 }
 export interface AccountResponseApi {

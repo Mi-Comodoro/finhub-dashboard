@@ -23,7 +23,7 @@
 
   const { frequencyMap, getRateCategory, accounts } = useAccountSavingsApplication()
 
-  const editingAccount = ref<typeof accounts.value[number] | null>(null)
+  const editingAccount = ref<(typeof accounts.value)[number] | null>(null)
 
   const {
     canActive,
@@ -108,7 +108,7 @@
     editingAccount.value = null
     showAccountSavingsForm.value = true
   }
-  const editAccount = (account: typeof accounts.value[number]) => {
+  const editAccount = (account: (typeof accounts.value)[number]) => {
     editingAccount.value = account
     showAccountSavingsForm.value = true
   }
@@ -212,15 +212,15 @@
   const closeSavingDistributionForm = () => {
     showSavingDistributionForm.value = false
   }
-
-  const editingGoal = ref<GoalsData | null>(null)
+  type ExistingGoal = GoalsData & { id: string }
+  const editingGoal = ref<ExistingGoal | null>(null)
 
   const showGoalsForm = ref(false)
   const createGoalsForm = () => {
     editingGoal.value = null
     showGoalsForm.value = true
   }
-  const editGoal = (goal: GoalsData) => {
+  const editGoal = (goal: ExistingGoal) => {
     editingGoal.value = goal
     showGoalsForm.value = true
   }
@@ -233,13 +233,12 @@
       iconTextClass: reasonTextMap[goal.reason],
       iconBgClass: reasonBgMap[goal.reason],
       amount: null,
-      targetAmount: goal.targetAmount ?? null,
+      targetAmount: goal.targetAmount ?? undefined,
       targetDate: goal.targetDate ? String(goal.targetDate) : '',
       status: goal.isActive ? 'active' : 'paused',
       showProgressbar: true,
-      progressPercentage: goal.targetAmount && goal.targetAmount > 0
-        ? Math.round((0 / goal.targetAmount) * 100)
-        : 0
+      progressPercentage:
+        goal.targetAmount && goal.targetAmount > 0 ? Math.round((0 / goal.targetAmount) * 100) : 0
     }))
   )
 </script>
@@ -285,7 +284,11 @@
     <div class="goals-page__grid">
       <div v-if="isGoalsExists" class="goals-page__goals-section">
         <div class="goals-page__goals-cards">
-          <div v-for="(card, index) in goalCards" :key="index" class="goals-page__goal-card-wrapper">
+          <div
+            v-for="(card, index) in goalCards"
+            :key="index"
+            class="goals-page__goal-card-wrapper"
+          >
             <FinancialProgressCard v-bind="card" />
             <Button
               icon="edit"
@@ -293,15 +296,11 @@
               size="sm"
               icon-only
               class="goals-page__goal-edit-button"
-              @click="editGoal(card.goal)"
+              @click="editGoal(card.goal as ExistingGoal)"
             />
           </div>
         </div>
-        <Card
-          v-if="goals.length > 6"
-          class="goals-page__achievement-card"
-          class-name="!p-0"
-        >
+        <Card v-if="goals.length > 6" class="goals-page__achievement-card" class-name="!p-0">
           <div class="goals-page__achievement-content">
             <div class="goals-page__achievement-header">
               <div class="goals-page__achievement-title-wrapper">
@@ -311,7 +310,9 @@
                 <Text size="sm" class="goals-page__achievement-text" color="white">
                   ¡Increíble progreso! Estás visualizando tu futuro con más de 6 metas activas.
                 </Text>
-                <Button variant="ghost" size="sm" class="goals-page__achievement-button">Ver mas</Button>
+                <Button variant="ghost" size="sm" class="goals-page__achievement-button">
+                  Ver mas
+                </Button>
               </div>
             </div>
           </div>
@@ -391,10 +392,7 @@
         </div>
         <!--  -->
         <div class="goals-page__accounts-wrapper">
-          <div
-            v-if="isAccountExits"
-            class="goals-page__accounts-section"
-          >
+          <div v-if="isAccountExits" class="goals-page__accounts-section">
             <div class="goals-page__accounts-header">
               <CardInfo
                 title="Mis Cuentas"
@@ -521,187 +519,187 @@
 </template>
 
 <style scoped lang="postcss">
-.goals-page {
-  @apply space-y-4;
-}
+  .goals-page {
+    @apply space-y-4;
+  }
 
-.goals-page__header {
-  @apply flex items-center justify-between;
-}
+  .goals-page__header {
+    @apply flex items-center justify-between;
+  }
 
-.goals-page__header-text {
-  @apply md:pr-4 xl:pr-0;
-}
+  .goals-page__header-text {
+    @apply md:pr-4 xl:pr-0;
+  }
 
-.goals-page__title {
-  @apply mb-1;
-}
+  .goals-page__title {
+    @apply mb-1;
+  }
 
-.goals-page__tip-card {
-  @apply flex w-full items-start gap-2;
-}
+  .goals-page__tip-card {
+    @apply flex w-full items-start gap-2;
+  }
 
-.goals-page__tip-content {
-  @apply w-full leading-relaxed;
-}
+  .goals-page__tip-content {
+    @apply w-full leading-relaxed;
+  }
 
-.goals-page__tip-title {
-  @apply !text-primary-800;
-}
+  .goals-page__tip-title {
+    @apply !text-primary-800;
+  }
 
-.goals-page__tip-text {
-  @apply w-full;
-}
+  .goals-page__tip-text {
+    @apply w-full;
+  }
 
-.goals-page__grid {
-  @apply grid w-full grid-cols-12 gap-4;
-}
+  .goals-page__grid {
+    @apply grid w-full grid-cols-12 gap-4;
+  }
 
-.goals-page__goals-section {
-  @apply col-span-8 flex flex-col gap-4;
-}
+  .goals-page__goals-section {
+    @apply col-span-8 flex flex-col gap-4;
+  }
 
-.goals-page__goals-cards {
-  @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2;
-}
+  .goals-page__goals-cards {
+    @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2;
+  }
 
-.goals-page__goal-card-wrapper {
-  @apply relative;
-}
+  .goals-page__goal-card-wrapper {
+    @apply relative;
+  }
 
-.goals-page__goal-edit-button {
-  @apply absolute right-2 top-2 z-20;
-}
+  .goals-page__goal-edit-button {
+    @apply absolute right-2 top-2 z-20;
+  }
 
-.goals-page__achievement-card {
-  @apply relative flex h-40 w-full flex-col space-y-2 overflow-hidden rounded-md !bg-primary-900;
-}
+  .goals-page__achievement-card {
+    @apply relative flex h-40 w-full flex-col space-y-2 overflow-hidden rounded-md !bg-primary-900;
+  }
 
-.goals-page__achievement-content {
-  @apply relative z-10 p-4;
-}
+  .goals-page__achievement-content {
+    @apply relative z-10 p-4;
+  }
 
-.goals-page__achievement-header {
-  @apply flex flex-col justify-between;
-}
+  .goals-page__achievement-header {
+    @apply flex flex-col justify-between;
+  }
 
-.goals-page__achievement-title-wrapper {
-  @apply flex items-center gap-1;
-}
+  .goals-page__achievement-title-wrapper {
+    @apply flex items-center gap-1;
+  }
 
-.goals-page__achievement-body {
-  @apply flex w-full flex-col;
-}
+  .goals-page__achievement-body {
+    @apply flex w-full flex-col;
+  }
 
-.goals-page__achievement-text {
-  @apply leading-relaxed;
-}
+  .goals-page__achievement-text {
+    @apply leading-relaxed;
+  }
 
-.goals-page__achievement-button {
-  @apply ml-auto;
-}
+  .goals-page__achievement-button {
+    @apply ml-auto;
+  }
 
-.goals-page__achievement-icon {
-  @apply pointer-events-none absolute -bottom-8 -right-8 opacity-20;
-}
+  .goals-page__achievement-icon {
+    @apply pointer-events-none absolute -bottom-8 -right-8 opacity-20;
+  }
 
-.goals-page__achievement-icon-symbol {
-  @apply -rotate-90 !text-[150px] text-white;
-}
+  .goals-page__achievement-icon-symbol {
+    @apply -rotate-90 !text-[150px] text-white;
+  }
 
-.goals-page__empty-section {
-  @apply col-span-8 flex flex-col items-center gap-4 rounded-md bg-slate-200;
-}
+  .goals-page__empty-section {
+    @apply col-span-8 flex flex-col items-center gap-4 rounded-md bg-slate-200;
+  }
 
-.goals-page__empty-content {
-  @apply flex h-full flex-col items-center gap-4 py-52;
-}
+  .goals-page__empty-content {
+    @apply flex h-full flex-col items-center gap-4 py-52;
+  }
 
-.goals-page__empty-icon {
-  @apply text-slate-400 dark:text-slate-600;
-}
+  .goals-page__empty-icon {
+    @apply text-slate-400 dark:text-slate-600;
+  }
 
-.goals-page__empty-text {
-  @apply w-96 text-center;
-}
+  .goals-page__empty-text {
+    @apply w-96 text-center;
+  }
 
-.goals-page__sidebar {
-  @apply col-span-4 flex flex-col gap-4;
-}
+  .goals-page__sidebar {
+    @apply col-span-4 flex flex-col gap-4;
+  }
 
-.goals-page__tip-step {
-  @apply flex flex-col;
-}
+  .goals-page__tip-step {
+    @apply flex flex-col;
+  }
 
-.goals-page__setup-card {
-  @apply !bg-primary-900;
-}
+  .goals-page__setup-card {
+    @apply !bg-primary-900;
+  }
 
-.goals-page__setup-action {
-  @apply flex flex-col justify-between;
-}
+  .goals-page__setup-action {
+    @apply flex flex-col justify-between;
+  }
 
-.goals-page__setup-button {
-  @apply flex justify-end;
-}
+  .goals-page__setup-button {
+    @apply flex justify-end;
+  }
 
-.goals-page__accounts-wrapper {
-  @apply rounded-md bg-white px-2 py-3;
-}
+  .goals-page__accounts-wrapper {
+    @apply rounded-md bg-white px-2 py-3;
+  }
 
-.goals-page__accounts-section {
-  @apply flex max-h-[335px] min-h-[335px] flex-col space-y-4 p-2;
-}
+  .goals-page__accounts-section {
+    @apply flex max-h-[335px] min-h-[335px] flex-col space-y-4 p-2;
+  }
 
-.goals-page__accounts-header {
-  @apply flex justify-between;
-}
+  .goals-page__accounts-header {
+    @apply flex justify-between;
+  }
 
-.goals-page__accounts-list {
-  @apply flex max-h-80 flex-col space-y-2 overflow-y-auto rounded-md;
-}
+  .goals-page__accounts-list {
+    @apply flex max-h-80 flex-col space-y-2 overflow-y-auto rounded-md;
+  }
 
-.goals-page__account-card {
-  @apply flex w-full flex-col;
-}
+  .goals-page__account-card {
+    @apply flex w-full flex-col;
+  }
 
-.goals-page__account-info {
-  @apply flex flex-col items-start gap-2;
-}
+  .goals-page__account-info {
+    @apply flex flex-col items-start gap-2;
+  }
 
-.goals-page__account-badge-wrapper {
-  @apply flex items-center gap-2;
-}
+  .goals-page__account-badge-wrapper {
+    @apply flex items-center gap-2;
+  }
 
-.goals-page__account-badge {
-  @apply !py-3;
-}
+  .goals-page__account-badge {
+    @apply !py-3;
+  }
 
-.goals-page__account-stats {
-  @apply ml-auto flex items-center gap-2;
-}
+  .goals-page__account-stats {
+    @apply ml-auto flex items-center gap-2;
+  }
 
-.goals-page__account-frequency {
-  @apply rounded-md px-2 py-0.5 text-xs font-semibold;
-}
+  .goals-page__account-frequency {
+    @apply rounded-md px-2 py-0.5 text-xs font-semibold;
+  }
 
-.goals-page__accounts-empty {
-  @apply flex max-h-[335px] min-h-[335px] flex-col items-center justify-center p-2;
-}
+  .goals-page__accounts-empty {
+    @apply flex max-h-[335px] min-h-[335px] flex-col items-center justify-center p-2;
+  }
 
-.goals-page__accounts-empty--bordered {
-  @apply border border-dashed border-neutral-400 bg-neutral-100;
-}
+  .goals-page__accounts-empty--bordered {
+    @apply border border-dashed border-neutral-400 bg-neutral-100;
+  }
 
-.goals-page__accounts-empty-content {
-  @apply flex flex-col items-center space-y-2;
-}
+  .goals-page__accounts-empty-content {
+    @apply flex flex-col items-center space-y-2;
+  }
 
-.goals-page__accounts-empty-title {
-  @apply leading-tight;
-}
+  .goals-page__accounts-empty-title {
+    @apply leading-tight;
+  }
 
-.goals-page__accounts-empty-text {
-  @apply !text-center;
-}
+  .goals-page__accounts-empty-text {
+    @apply !text-center;
+  }
 </style>

@@ -1,4 +1,4 @@
-import type { AccountResponseApi } from '@/types/api'
+import type { GoalsData } from '@/types/api'
 import { ACCESS_TOKEN } from '~/common/constants'
 
 import { validateError } from '../../utils/auth.error'
@@ -8,7 +8,7 @@ export default defineEventHandler(async event => {
   const token = getCookie(event, ACCESS_TOKEN)
   const body = await readBody(event)
 
-  const { success, data } = await $fetch<AccountResponseApi>(`${config.public.apiBase}/goals`, {
+  const { success, data } = await $fetch<{ success: boolean; data: GoalsData }>(`${config.public.apiBase}/goals`, {
     headers: { authorization: `Bearer ${token}` },
     method: 'POST',
     body,

@@ -1,3 +1,4 @@
+import type { AccountData } from '@/types/api'
 import { ACCESS_TOKEN } from '~/common/constants'
 
 import { validateError } from '../utils/auth.error'
@@ -16,18 +17,8 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 400, message: 'id es requerido' })
   }
 
-  const { success, data } = await $fetch<{
-    success: boolean
-    data: {
-      id: string
-      name: string
-      description: string
-      interestRate: number
-      compoundingFrequency: 'daily' | 'monthly' | 'annually'
-      isActive: boolean
-      userId: string
-    }
-  }>(`${config.public.apiBase}/account/${id}`, {
+  const { success, data } = await $fetch<{ success: boolean; data: AccountData }>(
+    `${config.public.apiBase}/account/${id}`, {
     headers: { authorization: `Bearer ${token}` },
     method: 'PATCH',
     body,
