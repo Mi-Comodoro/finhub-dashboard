@@ -8,4 +8,5 @@ export type StackedProgressBarProps = {
   allocation: BudgetAllocation
   advanced?: boolean
   selected?: boolean
+  totalIncome?: number
 }

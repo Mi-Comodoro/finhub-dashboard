@@ -44,9 +44,10 @@ export type OnboardingFormData = {
       source: string
       amount: number
       isAdditional: boolean
+      frequency: 'monthly' | 'biweekly'
+      paymentsDates: Date | [Date | null, Date | null] | null
     }[]
-    frequency: 'monthly' | 'biweekly'
-    paymentsDates: Date | [Date, Date] | null
+    isAnotherIncomesSource: boolean
   }
 }
 

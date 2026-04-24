@@ -1,41 +1,39 @@
 <script lang="ts" setup>
+  import { computed, reactive, watch } from 'vue'
+
   import type { BudgetAllocation, StackedProgressBarProps } from './types/stacked.types'
 
   const props = defineProps<StackedProgressBarProps>()
   const emit = defineEmits(['update:allocation'] as const)
+
   // Local reactive allocation for advanced cards
   const localAllocation = reactive({ ...props.allocation })
 
-  // Computed properties for visual representation
-  const allocationPercentages = computed(() => ({
-    needs: `${localAllocation.needs}%`,
-    wants: `${localAllocation.wants}%`,
-    savings: `${localAllocation.savings}%`
+  // Clamped wants: cannot exceed 100 - needs
+  const clampedWants = computed(() => {
+    const max = 100 - localAllocation.needs
+    return Math.min(localAllocation.wants, max)
+  })
+
+  // Derived savings: always calculated to make total = 100
+  const derivedSavings = computed(() => 100 - localAllocation.needs - clampedWants.value)
+
+  // Effective allocation (what's actually displayed/emitted)
+  const effectiveAllocation = computed(() => ({
+    needs: localAllocation.needs,
+    wants: clampedWants.value,
+    savings: derivedSavings.value
   }))
 
-  const allocationInputIds = computed(() => {
-    const base = props.title
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '')
+  // Emit when effectiveAllocation changes
+  watch(
+    effectiveAllocation,
+    val => {
+      if (props.advanced) emit('update:allocation', val)
+    },
+    { deep: true }
+  )
 
-    return {
-      needs: `${base}-needs`,
-      wants: `${base}-wants`,
-      savings: `${base}-savings`
-    }
-  })
-
-  // Update allocation and emit changes
-  const updateAllocation = (field: keyof BudgetAllocation, value: number) => {
-    if (props.advanced && value >= 0 && value <= 100) {
-      localAllocation[field] = value
-      emit('update:allocation', { ...localAllocation })
-    }
-  }
-  const totalAllocation = computed(() => {
-    return localAllocation.needs + localAllocation.wants + localAllocation.savings
-  })
   // Watch for props changes
   watch(
     () => props.allocation,
@@ -44,151 +42,140 @@
     },
     { deep: true }
   )
+
+  // Format as money
+  function toMoney(pct: number): string {
+    if (!props.totalIncome) return `${pct}%`
+    const amount = (props.totalIncome * pct) / 100
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0
+    }).format(amount)
+  }
 </script>
+
 <template>
-  <!-- Allocation Bar -->
   <div class="budget-strategy-card__allocation">
-    <!-- Static Allocation Bar (for non-advanced cards OR unselected advanced cards) -->
-    <div v-if="!advanced || !selected" class="allocation-bar">
+    <!-- BARRA — siempre visible, reactiva en CUSTOM -->
+    <div class="allocation-bar">
       <div
         class="allocation-bar__segment allocation-bar__segment--needs"
-        :style="{ width: allocationPercentages.needs }"
+        :style="{ width: `${effectiveAllocation.needs}%` }"
       >
-        <span class="allocation-bar__label">{{ allocationPercentages.needs }}</span>
+        <span v-if="effectiveAllocation.needs >= 10" class="allocation-bar__label">
+          {{ effectiveAllocation.needs }}%
+        </span>
       </div>
       <div
         class="allocation-bar__segment allocation-bar__segment--wants"
-        :style="{ width: allocationPercentages.wants }"
+        :style="{ width: `${effectiveAllocation.wants}%` }"
       >
-        <span class="allocation-bar__label">{{ allocationPercentages.wants }}</span>
+        <span v-if="effectiveAllocation.wants >= 10" class="allocation-bar__label">
+          {{ effectiveAllocation.wants }}%
+        </span>
       </div>
       <div
         class="allocation-bar__segment allocation-bar__segment--savings"
-        :style="{ width: allocationPercentages.savings }"
+        :style="{ width: `${effectiveAllocation.savings}%` }"
       >
-        <span class="allocation-bar__label">{{ allocationPercentages.savings }}</span>
+        <span v-if="effectiveAllocation.savings >= 10" class="allocation-bar__label">
+          {{ effectiveAllocation.savings }}%
+        </span>
       </div>
     </div>
 
-    <!-- Editable Allocation (only for selected advanced cards) -->
-    <div v-else-if="advanced && selected" class="allocation-editor">
-      <!-- Preview Bar -->
-      <div class="allocation-bar allocation-bar--preview">
-        <div
-          class="allocation-bar__segment allocation-bar__segment--needs"
-          :style="{ width: allocationPercentages.needs }"
-        >
-          <span class="allocation-bar__label">{{ allocationPercentages.needs }}</span>
-        </div>
-        <div
-          class="allocation-bar__segment allocation-bar__segment--wants"
-          :style="{ width: allocationPercentages.wants }"
-        >
-          <span class="allocation-bar__label">{{ allocationPercentages.wants }}</span>
-        </div>
-        <div
-          class="allocation-bar__segment allocation-bar__segment--savings"
-          :style="{ width: allocationPercentages.savings }"
-        >
-          <span class="allocation-bar__label">{{ allocationPercentages.savings }}</span>
-        </div>
-      </div>
-      <span>
-        <Text v-if="totalAllocation > 100" size="xs" variant="paragraph" color="error">
-          El total no puede superar el 100%
-        </Text>
+    <!-- MONTOS debajo de la barra (si hay totalIncome) -->
+    <div v-if="totalIncome" class="allocation-amounts">
+      <span class="allocation-amounts__item allocation-amounts__item--needs">
+        {{ toMoney(effectiveAllocation.needs) }}
       </span>
-      <div>
-        <div class="allocation-input-group">
-          <Label
-            variant="default"
-            size="sm"
-            color="secondary"
-            :html-for="allocationInputIds.needs"
-            class-name="allocation-label"
-          >
-            <span class="flex items-center">
-              <span class="allocation-label__color allocation-label__color--needs"></span>
-              <Text size="xs" variant="paragraph">Gastos Fijos</Text>
-            </span>
-          </Label>
-          <div class="allocation-input-wrapper">
-            <input
-              :id="allocationInputIds.needs"
-              v-model.number="localAllocation.needs"
-              type="number"
-              min="0"
-              max="100"
-              class="allocation-input"
-              @input="updateAllocation('needs', localAllocation.needs)"
-            />
-            <span class="allocation-input__suffix">%</span>
-          </div>
-        </div>
+      <span class="allocation-amounts__item allocation-amounts__item--wants">
+        {{ toMoney(effectiveAllocation.wants) }}
+      </span>
+      <span class="allocation-amounts__item allocation-amounts__item--savings">
+        {{ toMoney(effectiveAllocation.savings) }}
+      </span>
+    </div>
 
-        <div class="allocation-input-group">
-          <Label
-            variant="default"
-            size="sm"
-            color="secondary"
-            :html-for="allocationInputIds.wants"
-            class-name="allocation-label"
-          >
-            <span class="flex items-center">
-              <span class="allocation-label__color allocation-label__color--wants"></span>
-              <Text size="xs" variant="paragraph">Gastos Variables</Text>
+    <!-- SLIDERS — solo en CUSTOM seleccionado -->
+    <div v-if="advanced && selected" class="allocation-sliders">
+      <!-- Necesidades -->
+      <div class="allocation-slider">
+        <div class="allocation-slider__header">
+          <span class="allocation-slider__dot allocation-slider__dot--needs" />
+          <span class="allocation-slider__label">Necesidades</span>
+          <span class="allocation-slider__value">
+            {{ effectiveAllocation.needs }}%
+            <span v-if="totalIncome" class="allocation-slider__money">
+              · {{ toMoney(effectiveAllocation.needs) }}
             </span>
-          </Label>
-          <div class="allocation-input-wrapper">
-            <input
-              :id="allocationInputIds.wants"
-              v-model.number="localAllocation.wants"
-              type="number"
-              min="0"
-              max="100"
-              class="allocation-input"
-              @input="updateAllocation('wants', localAllocation.wants)"
-            />
-            <span class="allocation-input__suffix">%</span>
-          </div>
+          </span>
         </div>
+        <input
+          v-model.number="localAllocation.needs"
+          type="range"
+          min="0"
+          :max="100 - clampedWants"
+          step="1"
+          class="allocation-slider__range allocation-slider__range--needs"
+        />
+      </div>
 
-        <div class="allocation-input-group">
-          <Label
-            variant="default"
-            size="sm"
-            color="secondary"
-            :html-for="allocationInputIds.savings"
-            class-name="allocation-label"
-          >
-            <span class="flex items-center">
-              <span class="allocation-label__color allocation-label__color--savings"></span>
-              <Text size="xs" variant="paragraph">Ahorro e Inversiones</Text>
+      <!-- Deseos -->
+      <div class="allocation-slider">
+        <div class="allocation-slider__header">
+          <span class="allocation-slider__dot allocation-slider__dot--wants" />
+          <span class="allocation-slider__label">Deseos</span>
+          <span class="allocation-slider__value">
+            {{ clampedWants }}%
+            <span v-if="totalIncome" class="allocation-slider__money">
+              · {{ toMoney(clampedWants) }}
             </span>
-          </Label>
-          <div class="allocation-input-wrapper">
-            <input
-              :id="allocationInputIds.savings"
-              v-model.number="localAllocation.savings"
-              type="number"
-              min="0"
-              max="100"
-              class="allocation-input"
-              @input="updateAllocation('savings', localAllocation.savings)"
-            />
-            <span class="allocation-input__suffix">%</span>
-          </div>
+          </span>
         </div>
+        <input
+          v-model.number="localAllocation.wants"
+          type="range"
+          min="0"
+          :max="100 - localAllocation.needs"
+          step="1"
+          class="allocation-slider__range allocation-slider__range--wants"
+        />
+      </div>
+
+      <!-- Ahorros — solo lectura, calculado -->
+      <div class="allocation-slider allocation-slider--readonly">
+        <div class="allocation-slider__header">
+          <span class="allocation-slider__dot allocation-slider__dot--savings" />
+          <span class="allocation-slider__label">Ahorros</span>
+          <span class="allocation-slider__value allocation-slider__value--derived">
+            {{ derivedSavings }}%
+            <span v-if="totalIncome" class="allocation-slider__money">
+              · {{ toMoney(derivedSavings) }}
+            </span>
+          </span>
+        </div>
+        <!-- Barra de progreso visual, no interactiva -->
+        <div class="allocation-slider__readonly-bar">
+          <div
+            class="allocation-slider__readonly-fill allocation-slider__readonly-fill--savings"
+            :style="{ width: `${derivedSavings}%` }"
+          />
+        </div>
+        <span class="allocation-slider__hint"> Calculado automáticamente </span>
       </div>
     </div>
   </div>
 </template>
-<style scope lang="postcss">
+
+<style scoped lang="postcss">
+  /* Barra de asignación */
   .allocation-bar {
     @apply mt-1 flex h-8 w-full overflow-hidden rounded-lg;
   }
   .allocation-bar__segment {
-    @apply flex items-center justify-center text-xs font-semibold text-white;
+    @apply flex items-center justify-center text-xs font-semibold text-white transition-all duration-200;
   }
   .allocation-bar__segment--needs {
     @apply bg-primary-500;
@@ -197,45 +184,82 @@
     @apply bg-success-500;
   }
   .allocation-bar__segment--savings {
-    @apply flex-1 bg-secondary-700;
+    @apply bg-secondary-700;
   }
   .allocation-bar__label {
     @apply font-bold;
   }
-  .allocation-editor {
-    @apply space-y-4;
+
+  /* Montos debajo de la barra */
+  .allocation-amounts {
+    @apply mt-1 flex justify-between px-1;
   }
-  .allocation-input-group {
-    @apply flex justify-between space-y-2;
+  .allocation-amounts__item {
+    @apply text-xs font-semibold;
   }
-  .allocation-label {
-    @apply flex items-center justify-between text-sm font-medium text-neutral-700;
+  .allocation-amounts__item--needs {
+    @apply text-primary-600;
   }
-  .allocation-label__color {
-    @apply mr-2 inline-block h-3 w-3 rounded-full;
+  .allocation-amounts__item--wants {
+    @apply text-success-600;
   }
-  .allocation-label__color--needs {
+  .allocation-amounts__item--savings {
+    @apply text-secondary-700;
+  }
+
+  /* Sliders */
+  .allocation-sliders {
+    @apply mt-4 space-y-4;
+  }
+  .allocation-slider {
+    @apply space-y-1;
+  }
+  .allocation-slider--readonly {
+    @apply opacity-75;
+  }
+  .allocation-slider__header {
+    @apply flex items-center gap-2;
+  }
+  .allocation-slider__dot {
+    @apply h-3 w-3 shrink-0 rounded-full;
+  }
+  .allocation-slider__dot--needs {
     @apply bg-primary-500;
   }
-  .allocation-label__color--wants {
+  .allocation-slider__dot--wants {
     @apply bg-success-500;
   }
-  .allocation-label__color--savings {
+  .allocation-slider__dot--savings {
     @apply bg-secondary-700;
   }
-  .allocation-label__text {
-    @apply flex-1;
+  .allocation-slider__label {
+    @apply flex-1 text-sm font-medium text-neutral-700;
   }
-  .allocation-input-wrapper {
-    @apply relative flex items-center;
+  .allocation-slider__value {
+    @apply text-sm font-semibold text-neutral-900;
   }
-  .allocation-input {
-    @apply w-16 rounded-md border border-neutral-300 px-2 py-1 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500;
+  .allocation-slider__value--derived {
+    @apply text-secondary-700;
   }
-  .allocation-input__suffix {
-    @apply ml-1 text-xs text-neutral-500;
+  .allocation-slider__money {
+    @apply text-xs font-normal text-neutral-500;
   }
-  .allocation-bar--preview {
-    @apply mt-3 opacity-90;
+  .allocation-slider__range {
+    @apply h-2 w-full cursor-pointer appearance-none rounded-lg bg-neutral-200;
+  }
+  .allocation-slider__range--needs {
+    accent-color: theme('colors.primary.500');
+  }
+  .allocation-slider__range--wants {
+    accent-color: theme('colors.success.500');
+  }
+  .allocation-slider__hint {
+    @apply text-xs italic text-neutral-400;
+  }
+  .allocation-slider__readonly-bar {
+    @apply h-2 w-full overflow-hidden rounded-lg bg-neutral-200;
+  }
+  .allocation-slider__readonly-fill--savings {
+    @apply h-full bg-secondary-700 transition-all duration-200;
   }
 </style>

@@ -1,297 +1,371 @@
 <!--
-  Strategy Form
-  Organism component for selecting budget strategy during onboarding
+  Budget Strategy Form - Simplified Single Bar + Sliders
+  Organism component for budget allocation during onboarding
 -->
 
 <script setup lang="ts">
-  import type {
-    BudgetStrategyFormProps,
-    CanonicalStrategy,
-    StrategyFormData
-  } from './types/budget-strategy-form.types'
+  import { computed, onMounted, ref, watch } from 'vue'
 
-  const props = withDefaults(defineProps<BudgetStrategyFormProps>(), {
-    modelValue: () => ({
-      strategy: null,
-      usage: null,
-      customAllocations: {
-        needs: 50,
-        wants: 30,
-        savings: 20
-      }
-    })
-  })
+  import { Button } from '@/components/atoms'
+
+  const props = defineProps<{
+    totalIncome?: number
+  }>()
 
   const emit = defineEmits(['update:modelValue', 'valid'])
 
-  /*
----------------------------------------
-STATE
----------------------------------------
-*/
-
-  const formModel = ref<StrategyFormData>({
-    strategy: props.modelValue?.strategy,
-    usage: props.modelValue?.usage ?? null,
-    customAllocations: {
-      needs: 50,
-      wants: 30,
-      savings: 20
-    }
-  })
-
-  const customAllocations = ref({
+  /* ---------------------------------------------
+   * STATE
+   * --------------------------------------------- */
+  const isCustomizing = ref(false)
+  const allocation = ref({
     needs: 50,
     wants: 30,
     savings: 20
   })
 
-  const selectedBudgetStrategy = computed(() => formModel.value.strategy)
+  /* ---------------------------------------------
+   * COMPUTED
+   * --------------------------------------------- */
+  const total = computed(
+    () => allocation.value.needs + allocation.value.wants + allocation.value.savings
+  )
 
-  const errors = ref<Record<string, string>>({})
-  const isValid = computed(() => {
-    const hasStrategy = !!formModel.value.strategy
-    const hasUsage = !!formModel.value.usage
-    const total = totalPercentage.value
+  const isValid = computed(() => total.value === 100)
 
-    const isCustom = formModel.value.strategy === 'CUSTOM'
+  const totalDiff = computed(() => Math.abs(100 - total.value))
 
-    return hasStrategy && hasUsage && (!isCustom || total === 100)
+  const totalStatus = computed(() => {
+    if (total.value === 100) return 'valid'
+    if (total.value > 100) return 'excess'
+    return 'missing'
   })
 
-  /*
----------------------------------------
-COMPUTED
----------------------------------------
-*/
-
-  /*
----------------------------------------
-VALIDATION
----------------------------------------
-*/
-
-  const totalPercentage = ref(0)
-  const validateTotalPercentage = (total: number) => {
-    totalPercentage.value = total
+  /* ---------------------------------------------
+   * HELPERS
+   * --------------------------------------------- */
+  function toMoney(pct: number): string {
+    if (!props.totalIncome) return ''
+    const amount = (props.totalIncome * pct) / 100
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0
+    }).format(amount)
   }
 
-  const validateForm = () => {
-    errors.value = {}
-
-    if (!formModel.value.strategy) {
-      errors.value.strategy = 'Debes seleccionar una estrategia de presupuesto'
+  /* ---------------------------------------------
+   * ACTIONS
+   * --------------------------------------------- */
+  const toggleCustomize = () => {
+    if (isCustomizing.value) {
+      // Resetear a valores por defecto
+      allocation.value = { needs: 50, wants: 30, savings: 20 }
     }
-
-    if (!formModel.value.usage) {
-      errors.value.usage = 'Debes seleccionar cómo usarás el presupuesto'
-    }
+    isCustomizing.value = !isCustomizing.value
   }
 
-  /*
----------------------------------------
-STRATEGY ACTIONS
----------------------------------------
-*/
-  const isTouched = ref(false)
-  const selectStrategy = (strategy: CanonicalStrategy) => {
-    isTouched.value = true
-    formModel.value.strategy = strategy
-
-    if (strategy === 'CUSTOM') {
-      formModel.value.customAllocations = { ...customAllocations.value }
-    } else {
-      formModel.value.customAllocations = {
-        needs: 50,
-        wants: 30,
-        savings: 20
-      }
-    }
-  }
-
-  const handleBudgetStrategySelect = (strategy: 'BALANCED' | 'CUSTOM') => {
-    const canonical: CanonicalStrategy = strategy === 'CUSTOM' ? 'CUSTOM' : 'BALANCED'
-    selectStrategy(canonical)
-  }
-
-  const handleAllocationUpdate = (allocation: {
-    needs: number
-    wants: number
-    savings: number
-  }) => {
-    isTouched.value = true
-    customAllocations.value = { ...allocation }
-
-    if (formModel.value.strategy === 'CUSTOM') {
-      formModel.value.customAllocations = { ...allocation }
-    }
-  }
-
-  const handleChangeStrategy = () => {
-    const next = formModel.value.strategy === 'BALANCED' ? 'CUSTOM' : 'BALANCED'
-    selectStrategy(next)
-  }
-
-  /*
----------------------------------------
-WATCHERS
----------------------------------------
-*/
-
+  /* ---------------------------------------------
+   * WATCHERS & LIFECYCLE
+   * --------------------------------------------- */
   watch(
-    formModel,
-    newValue => {
-      validateForm()
+    [allocation, isCustomizing],
+    () => {
+      emit('valid', isValid.value)
       emit('update:modelValue', {
-        strategy: newValue.strategy,
-        usage: newValue.usage,
-        customAllocations: { ...newValue.customAllocations }
+        strategy: isCustomizing.value ? 'CUSTOM' : 'BALANCED',
+        usage: 'personal',
+        customAllocations: { ...allocation.value }
       })
     },
     { deep: true }
   )
 
-  watch(
-    () => props.modelValue,
-    newValue => {
-      if (!newValue) return
-
-      formModel.value.strategy = newValue.strategy
-      formModel.value.usage = newValue.usage ?? null
-    }
-  )
-  watch(isValid, value => {
-    emit('valid', value)
-  })
-
-  /*
----------------------------------------
-MOUNT
----------------------------------------
-*/
-
   onMounted(() => {
-    validateForm()
     emit('valid', isValid.value)
+    emit('update:modelValue', {
+      strategy: 'BALANCED',
+      usage: 'personal',
+      customAllocations: { ...allocation.value }
+    })
   })
-
-  /*
----------------------------------------
-OPTIONS
----------------------------------------
-*/
-
-  const OPTIONS = [
-    {
-      label: 'Personal',
-      value: 'personal',
-      title: 'Personal',
-      description: 'Solo para mí',
-      icon: 'person'
-    },
-    {
-      label: 'Compartido',
-      value: 'shared',
-      title: 'Compartido',
-      description: 'Pareja o familia',
-      icon: 'group'
-    }
-  ]
 </script>
+
 <template>
-  <form class="strategy-form space-y-6" @submit.prevent>
-    <div class="w-full flex-col items-center px-4 py-2">
-      <Label variant="form" size="sm" color="black" weight="bold" class-name="form-field__label ">
-        ¿Cómo quieres manejar tu presupuesto?
-      </Label>
+  <div class="strategy-step">
+    <!-- BARRA DE ASIGNACIÓN -->
+    <div class="strategy-step__bar-container">
+      <div class="strategy-step__bar">
+        <div
+          class="strategy-step__segment strategy-step__segment--needs"
+          :style="{ width: `${allocation.needs}%` }"
+        >
+          <span v-if="allocation.needs >= 10" class="strategy-step__segment-label">
+            {{ allocation.needs }}%
+          </span>
+        </div>
+        <div
+          class="strategy-step__segment strategy-step__segment--wants"
+          :style="{ width: `${allocation.wants}%` }"
+        >
+          <span v-if="allocation.wants >= 10" class="strategy-step__segment-label">
+            {{ allocation.wants }}%
+          </span>
+        </div>
+        <div
+          class="strategy-step__segment strategy-step__segment--savings"
+          :style="{ width: `${allocation.savings}%` }"
+        >
+          <span v-if="allocation.savings >= 10" class="strategy-step__segment-label">
+            {{ allocation.savings }}%
+          </span>
+        </div>
+      </div>
 
-      <RadioButton
-        v-model="formModel.usage"
-        name="budgetType"
-        variant="card"
-        class="flex-1 items-center justify-center"
-        direction="row"
-        :options="OPTIONS"
-        @update:model-value="isTouched = true"
-      />
+      <!-- Labels y montos alineados con cada segmento -->
+      <div class="strategy-step__bar-info">
+        <div class="strategy-step__bar-info-cell" :style="{ width: `${allocation.needs}%` }">
+          <span class="strategy-step__info-label">Necesidades</span>
+          <span class="strategy-step__info-value">
+            {{ allocation.needs }}%
+            <span v-if="totalIncome" class="strategy-step__info-money">
+              · {{ toMoney(allocation.needs) }}
+            </span>
+          </span>
+        </div>
+        <div class="strategy-step__bar-info-cell" :style="{ width: `${allocation.wants}%` }">
+          <span class="strategy-step__info-label">Deseos</span>
+          <span class="strategy-step__info-value">
+            {{ allocation.wants }}%
+            <span v-if="totalIncome" class="strategy-step__info-money">
+              · {{ toMoney(allocation.wants) }}
+            </span>
+          </span>
+        </div>
+        <div class="strategy-step__bar-info-cell" :style="{ width: `${allocation.savings}%` }">
+          <span class="strategy-step__info-label">Ahorros</span>
+          <span class="strategy-step__info-value">
+            {{ allocation.savings }}%
+            <span v-if="totalIncome" class="strategy-step__info-money">
+              · {{ toMoney(allocation.savings) }}
+            </span>
+          </span>
+        </div>
+      </div>
     </div>
 
-    <div class="strategy-form__selection">
-      <BudgetStrategyGroup direction="column" gap="md" class="">
-        <BudgetStrategyCard
-          v-if="!selectedBudgetStrategy || selectedBudgetStrategy === 'BALANCED'"
-          title="Equilibrada"
-          description="Regla clásica 50/30/20. Equilibra tus obligaciones con tu disfrute personal y futuro."
-          :allocation="{ needs: 50, wants: 30, savings: 20 }"
-          icon="balance"
-          :recommended="true"
-          :selected="selectedBudgetStrategy === 'BALANCED'"
-          @select="handleBudgetStrategySelect('BALANCED')"
-        />
-
-        <BudgetStrategyCard
-          v-if="!selectedBudgetStrategy || selectedBudgetStrategy === 'CUSTOM'"
-          title="Personalizada"
-          description="Crea tu propia estrategia de presupuesto ajustada a tus necesidades y objetivos."
-          :allocation="customAllocations"
-          icon="tune"
-          :advanced="true"
-          :selected="selectedBudgetStrategy === 'CUSTOM'"
-          @select="handleBudgetStrategySelect('CUSTOM')"
-          @update:allocation="handleAllocationUpdate"
-          @total="validateTotalPercentage"
-        />
-      </BudgetStrategyGroup>
+    <!-- BOTÓN PERSONALIZAR -->
+    <div class="strategy-step__actions">
+      <Button
+        variant="ghost"
+        size="sm"
+        :icon="isCustomizing ? 'expand_less' : 'tune'"
+        @click="toggleCustomize"
+      >
+        {{ isCustomizing ? 'Usar valores por defecto' : 'Personalizar' }}
+      </Button>
     </div>
-    <CardSummary
-      v-if="selectedBudgetStrategy"
-      title="Estrategia Seleccionada"
-      :sub-title="selectedBudgetStrategy === 'BALANCED' ? 'Equilibrada' : 'Personalizada'"
-      action="Cambiar"
-      @action="handleChangeStrategy"
-    />
-  </form>
+
+    <!-- SLIDERS (solo si está personalizando) -->
+    <div v-if="isCustomizing" class="strategy-step__sliders">
+      <!-- Necesidades -->
+      <div class="strategy-step__slider-group">
+        <div class="strategy-step__slider-header">
+          <span class="strategy-step__slider-dot strategy-step__slider-dot--needs" />
+          <span class="strategy-step__slider-name">Necesidades</span>
+          <span class="strategy-step__slider-pct">{{ allocation.needs }}%</span>
+        </div>
+        <input
+          v-model.number="allocation.needs"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          class="strategy-step__slider-range strategy-step__slider-range--needs"
+        />
+      </div>
+
+      <!-- Deseos -->
+      <div class="strategy-step__slider-group">
+        <div class="strategy-step__slider-header">
+          <span class="strategy-step__slider-dot strategy-step__slider-dot--wants" />
+          <span class="strategy-step__slider-name">Deseos</span>
+          <span class="strategy-step__slider-pct">{{ allocation.wants }}%</span>
+        </div>
+        <input
+          v-model.number="allocation.wants"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          class="strategy-step__slider-range strategy-step__slider-range--wants"
+        />
+      </div>
+
+      <!-- Ahorros -->
+      <div class="strategy-step__slider-group">
+        <div class="strategy-step__slider-header">
+          <span class="strategy-step__slider-dot strategy-step__slider-dot--savings" />
+          <span class="strategy-step__slider-name">Ahorros</span>
+          <span class="strategy-step__slider-pct">{{ allocation.savings }}%</span>
+        </div>
+        <input
+          v-model.number="allocation.savings"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          class="strategy-step__slider-range strategy-step__slider-range--savings"
+        />
+      </div>
+
+      <!-- INDICADOR DE TOTAL -->
+      <div
+        :class="['strategy-step__total', `strategy-step__total--${totalStatus}`]"
+      >
+        <span class="material-symbols-outlined">
+          {{ total === 100 ? 'check_circle' : 'error' }}
+        </span>
+        Total: {{ total }}%
+        <span v-if="total !== 100" class="strategy-step__total-hint">
+          {{ total > 100 ? `Excede ${total - 100}%` : `Faltan ${100 - total}%` }}
+        </span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="postcss">
-  .strategy-form {
-    @apply mx-auto h-96 min-h-96 w-full max-w-2xl space-x-2 space-y-6 overflow-y-auto;
-  }
-  .strategy-form__legend {
-    @apply rounded-lg border border-neutral-200 bg-neutral-50 p-4;
-  }
-  .strategy-form__title {
-    @apply mb-3 text-sm font-semibold text-neutral-700;
-  }
-  .strategy-form__items {
-    @apply flex justify-between;
-  }
-  .strategy-form__selection {
-    @apply box-content space-y-6;
-  }
-  .legend-item {
-    @apply flex items-center gap-2;
-  }
-  .legend-item__color {
-    @apply h-3 w-3 rounded-full;
-  }
-  .legend-item__color--needs {
-    @apply bg-primary-500;
-  }
-  .legend-item__color--wants {
-    @apply bg-success-500;
-  }
-  .legend-item__color--savings {
-    @apply bg-secondary-700;
-  }
-  .legend-item__text {
-    @apply text-xs font-medium text-neutral-600;
-  }
-  .error-message {
-    @apply rounded-md bg-red-50 p-3 text-sm font-medium text-red-700;
+  .strategy-step {
+    @apply mx-auto w-full max-w-2xl space-y-6 px-4 py-6;
   }
 
-  .form-field__label {
-    @apply px-2;
+  /* Barra de asignación */
+  .strategy-step__bar-container {
+    @apply space-y-2;
+  }
+
+  .strategy-step__bar {
+    @apply flex h-10 w-full overflow-hidden rounded-lg shadow-sm transition-all duration-300;
+  }
+
+  .strategy-step__segment {
+    @apply flex items-center justify-center transition-all duration-300;
+  }
+
+  .strategy-step__segment--needs {
+    @apply bg-primary-500 dark:bg-primary-600;
+  }
+
+  .strategy-step__segment--wants {
+    @apply bg-success-500 dark:bg-success-600;
+  }
+
+  .strategy-step__segment--savings {
+    @apply bg-secondary-700 dark:bg-secondary-800;
+  }
+
+  .strategy-step__segment-label {
+    @apply text-sm font-bold text-white drop-shadow-sm;
+  }
+
+  /* Info grid alineada con segmentos */
+  .strategy-step__bar-info {
+    @apply mt-2 flex w-full;
+  }
+
+  .strategy-step__bar-info-cell {
+    @apply flex flex-col transition-all duration-300;
+  }
+
+  .strategy-step__info-label {
+    @apply text-xs text-neutral-500 dark:text-neutral-400;
+  }
+
+  .strategy-step__info-value {
+    @apply text-xs font-semibold text-neutral-800 dark:text-neutral-200;
+  }
+
+  .strategy-step__info-money {
+    @apply font-normal text-neutral-500 dark:text-neutral-400;
+  }
+
+  /* Botón actions */
+  .strategy-step__actions {
+    @apply mt-3 flex justify-end;
+  }
+
+  /* Sliders */
+  .strategy-step__sliders {
+    @apply space-y-6 rounded-lg border border-neutral-200 bg-neutral-50 p-6 dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .strategy-step__slider-group {
+    @apply space-y-2;
+  }
+
+  .strategy-step__slider-header {
+    @apply flex items-center gap-2;
+  }
+
+  .strategy-step__slider-dot {
+    @apply h-3 w-3 shrink-0 rounded-full;
+  }
+
+  .strategy-step__slider-dot--needs {
+    @apply bg-primary-500;
+  }
+
+  .strategy-step__slider-dot--wants {
+    @apply bg-success-500;
+  }
+
+  .strategy-step__slider-dot--savings {
+    @apply bg-secondary-700;
+  }
+
+  .strategy-step__slider-name {
+    @apply flex-1 text-sm font-medium text-neutral-700 dark:text-neutral-200;
+  }
+
+  .strategy-step__slider-pct {
+    @apply ml-auto text-sm font-bold text-neutral-900 dark:text-neutral-100;
+  }
+
+  .strategy-step__slider-range {
+    @apply h-2 w-full cursor-pointer appearance-none rounded-lg bg-neutral-200 transition-all dark:bg-neutral-700;
+  }
+
+  .strategy-step__slider-range--needs {
+    accent-color: theme('colors.primary.500');
+  }
+
+  .strategy-step__slider-range--wants {
+    accent-color: theme('colors.success.500');
+  }
+
+  .strategy-step__slider-range--savings {
+    accent-color: theme('colors.secondary.700');
+  }
+
+  /* Indicador de total */
+  .strategy-step__total {
+    @apply mt-4 flex items-center gap-2 rounded-md p-3 text-sm font-medium transition-colors;
+  }
+
+  .strategy-step__total--valid {
+    @apply bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400;
+  }
+
+  .strategy-step__total--excess {
+    @apply bg-danger-50 text-danger-700 dark:bg-danger-900/20 dark:text-danger-400;
+  }
+
+  .strategy-step__total--missing {
+    @apply bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-400;
+  }
+
+  .strategy-step__total-hint {
+    @apply ml-1 text-xs opacity-75;
   }
 </style>

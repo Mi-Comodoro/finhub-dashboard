@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue'
+
   import { OnboardingStepIntro, ProgressBar } from '@/components/molecules'
   import { BudgetStrategyForm, FinancialGoalsForm } from '@/components/organisms'
   import { ON_BOARDING_CONFIG } from '~/common/constants'
@@ -8,6 +10,8 @@
   import type { FinancesData } from '../forms/types/financial-goals-form.types'
   // State
   import type { OnboardingWizardEmits } from './types/onboarding-wizard.types'
+
+  const ONBOARDING_KEY = 'finhub_onboarding_draft'
 
   const emit = defineEmits<OnboardingWizardEmits>()
   // Computed properties
@@ -25,7 +29,7 @@
     },
     budget: {
       strategy: '' as 'BALANCED' | 'CUSTOM',
-      usage: '' as UsageValue,
+      usage: 'personal' as UsageValue,
       customAllocations: {
         needs: 0,
         wants: 0,
@@ -34,13 +38,42 @@
     },
     incomes: {
       incomes: [
-        { amount: 0, source: '', isAdditional: false },
-        { amount: 0, source: '', isAdditional: false }
+        {
+          amount: 0,
+          source: '',
+          isAdditional: false,
+          frequency: 'monthly' as 'monthly' | 'biweekly',
+          paymentsDates: null
+        },
+        {
+          amount: 0,
+          source: '',
+          isAdditional: false,
+          frequency: 'monthly' as 'monthly' | 'biweekly',
+          paymentsDates: null
+        }
       ],
-      frequency: '' as 'monthly' | 'biweekly',
-      paymentsDates: null
+      isAnotherIncomesSource: false
     }
   })
+
+  /* ---------------------------------------------
+   * PERSISTENCIA EN SESSIONSTORAGE
+   * --------------------------------------------- */
+  function parseDraft(data: any): any {
+    // Recorrer incomes y convertir paymentsDates string → Date
+    if (data?.incomes?.incomes) {
+      data.incomes.incomes = data.incomes.incomes.map((income: any) => ({
+        ...income,
+        paymentsDates: income.paymentsDates
+          ? Array.isArray(income.paymentsDates)
+            ? income.paymentsDates.map((d: string | null) => (d ? new Date(d) : null))
+            : new Date(income.paymentsDates)
+          : null
+      }))
+    }
+    return data
+  }
 
   const onboardingBasicData = (data: OnboardingFormData['personalInfo']) => {
     wizardData.personalInfo = data
@@ -95,6 +128,7 @@
   const tryComplete = () => {
     // La completación se activa en el último step (cuando se tienen todos los datos)
     if (currentStep.value === totalSteps.value && isDataComplete()) {
+      sessionStorage.removeItem(ONBOARDING_KEY) // Limpiar draft al completar
       emit('completed', { ...wizardData })
     }
   }
@@ -126,6 +160,52 @@
   const enableNextButton = (isValid: boolean) => {
     disabledNext.value = !isValid
   }
+
+  /* ---------------------------------------------
+   * COMPUTED — Total de ingresos
+   * --------------------------------------------- */
+  const totalOnboardingIncome = computed(() => {
+    const incomes = wizardData.incomes.incomes
+    return incomes.reduce((sum, inc) => {
+      if (inc.amount > 0) return sum + inc.amount
+      return sum
+    }, 0)
+  })
+
+  /* ---------------------------------------------
+   * LIFECYCLE HOOKS — Persistencia
+   * --------------------------------------------- */
+  onMounted(() => {
+    try {
+      const saved = sessionStorage.getItem(ONBOARDING_KEY)
+      if (saved) {
+        const { wizardData: savedData, step } = JSON.parse(saved)
+
+        // Restaurar cada campo individualmente para mantener reactividad
+        const parsed = parseDraft(savedData)
+        Object.assign(wizardData, parsed)
+        currentStep.value = step ?? 1
+      }
+    } catch {
+      sessionStorage.removeItem(ONBOARDING_KEY)
+    }
+  })
+
+  // Guardar en sessionStorage cada vez que cambian los datos
+  watch(
+    [() => ({ ...wizardData }), currentStep],
+    () => {
+      try {
+        sessionStorage.setItem(
+          ONBOARDING_KEY,
+          JSON.stringify({ wizardData: toRaw(wizardData), step: currentStep.value })
+        )
+      } catch {
+        // sessionStorage lleno o bloqueado — ignorar silenciosamente
+      }
+    },
+    { deep: true }
+  )
 </script>
 <template>
   <div class="onboarding-wizard">
@@ -176,6 +256,7 @@
 
       <BudgetStrategyForm
         :strategy-selected="wizardData.budget.strategy"
+        :total-income="totalOnboardingIncome"
         @update:model-value="budgetStrategyData"
         @valid="enableNextButton"
       />

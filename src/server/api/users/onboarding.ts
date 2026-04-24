@@ -11,6 +11,14 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 401, message: 'No autenticado' })
   }
 
+  // Verificar estructura del body antes de enviar
+  console.log('📋 Onboarding body.incomes.incomes[0]:', {
+    frequency: body.incomes.incomes[0]?.frequency,
+    paymentsDates: body.incomes.incomes[0]?.paymentsDates,
+    amount: body.incomes.incomes[0]?.amount,
+    source: body.incomes.incomes[0]?.source
+  })
+
   const { success, data } = await $fetch<{ success: boolean; data: { onboarding: string } }>(
     `${config.public.apiBase}/users/onboarding`,
     {
@@ -29,21 +37,24 @@ export default defineEventHandler(async event => {
           interestRate: body.finances.interestRate,
           usage: body.budget.usage,
           monthPayment:
-            body.incomes.frequency === 'monthly' ? body.incomes.paymentsDates : null,
+            body.incomes.incomes[0].frequency === 'monthly'
+              ? body.incomes.incomes[0].paymentsDates
+              : null,
           biweeklyPayments:
-            body.incomes.frequency === 'biweekly' ? body.incomes.paymentsDates : null
+            body.incomes.incomes[0].frequency === 'biweekly'
+              ? body.incomes.incomes[0].paymentsDates
+              : null
         },
         budget: {
           strategy: body.budget.strategy,
-          budgetFrequency: body.incomes.frequency,
+          budgetFrequency: body.incomes.incomes[0].frequency,
           needs: body.budget.customAllocations.needs,
           wants: body.budget.customAllocations.wants,
           savings: body.budget.customAllocations.savings
         },
         incomes: {
           incomes: body.incomes.incomes,
-          frequency: body.incomes.frequency,
-          paymentsDates: body.incomes.paymentsDates
+          frequency: body.incomes.incomes[0].frequency
         }
       },
       headers: {
