@@ -25,13 +25,17 @@ export default defineEventHandler(async event => {
         finances: {
           profile: body.finances.profile,
           currency: body.finances.currency,
-          usage: body.finances.usage,
-          monthPayment: body.finances.monthPayment,
-          biweeklyPayments: body.finances.biweeklyPayments
+          accountName: body.finances.accountName,
+          interestRate: body.finances.interestRate,
+          usage: body.budget.usage,
+          monthPayment:
+            body.incomes.frequency === 'monthly' ? body.incomes.paymentsDates : null,
+          biweeklyPayments:
+            body.incomes.frequency === 'biweekly' ? body.incomes.paymentsDates : null
         },
         budget: {
           strategy: body.budget.strategy,
-          budgetFrequency: body.finances.budgetFrequency,
+          budgetFrequency: body.incomes.frequency,
           needs: body.budget.customAllocations.needs,
           wants: body.budget.customAllocations.wants,
           savings: body.budget.customAllocations.savings

@@ -9,8 +9,9 @@
    * Collects user basic information during onboarding
    */
 
+  import { Label } from '@/components/atoms'
   import { Select } from '@/components/molecules'
-  import { GENDER_OPTIONS, ON_BOARDING_CONFIG } from '~/common/constants'
+  import { DIAL_CODE_OPTIONS, GENDER_OPTIONS, ON_BOARDING_CONFIG } from '~/common/constants'
   import { useUserStore } from '~/stores/user.store'
 
   import type {
@@ -40,12 +41,17 @@
     : (props.modelValue?.email ?? '')
 
   // Form model
-  const formModel = ref<BasicInformationData>({
+  const formModel = ref<BasicInformationData & { dialCode: string; phoneNumber: string }>({
     ...props.modelValue,
     displayName: prefillDisplayName,
     email: prefillEmail,
-    gender: userStore.userInfo.gender ?? 'prefer_not_to_say'
+    gender: userStore.userInfo.gender ?? 'prefer_not_to_say',
+    dialCode: '+57',
+    phoneNumber: ''
   })
+
+  // Computed phone combining dial code and number
+  const fullPhone = computed(() => `${formModel.value.dialCode}${formModel.value.phoneNumber}`)
 
   // Validation state
   const errors = ref<Record<string, string>>({})
@@ -53,8 +59,19 @@
 
   // Validation rules (only for editable fields)
   const validationRules = {
-    phone: (value: string) => {
-      if (!value.trim()) return 'El teléfono es requerido'
+    displayName: (value: string) => {
+      if (!value.trim()) return 'El nombre es requerido'
+      if (value.trim().length < 2) return 'Mínimo 2 caracteres'
+      if (value.length > 50) return 'Máximo 50 caracteres'
+      if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value))
+        return 'Solo se permiten letras y espacios'
+      return null
+    },
+    phoneNumber: (value: string) => {
+      if (!value.trim()) return 'El número de teléfono es requerido'
+      if (!/^\d+$/.test(value)) return 'Solo se permiten números'
+      if (value.length < 7 || value.length > 15)
+        return 'El teléfono debe tener entre 7 y 15 dígitos'
       return null
     },
     gender: (value: string) => {
@@ -75,7 +92,7 @@
     const hasRequiredFields =
       formModel.value.displayName.trim() &&
       formModel.value.email.trim() &&
-      formModel.value.phone.trim()
+      formModel.value.phoneNumber.trim().length >= 7
 
     isValid.value = !hasErrors && !!hasRequiredFields
     emit('valid', isValid.value)
@@ -98,7 +115,12 @@
     formModel,
     newValue => {
       userStore.displayName = newValue.displayName
-      emit('update:modelValue', { ...newValue })
+      emit('update:modelValue', {
+        displayName: newValue.displayName,
+        email: newValue.email,
+        phone: fullPhone.value,
+        gender: newValue.gender
+      })
       updateFormValidity()
     },
     { deep: true }
@@ -113,7 +135,7 @@
     <AlertBanner icon="info" variant="warning" :title="ON_BOARDING_CONFIG.personalInfo.banner" />
 
     <div class="flex-col gap-2">
-      <!-- Display Name (read-only, pre-filled from store) -->
+      <!-- Display Name -->
       <div class="form-field">
         <Input
           id="displayName"
@@ -122,23 +144,36 @@
           type="text"
           placeholder="Ej. Juan Pérez"
           label="¿Como quieres que te llamemos?"
+          :error="errors.displayName"
+          required
+          @blur="validateField('displayName')"
+          @input="validateField('displayName')"
         />
       </div>
 
       <!-- Phone -->
       <div class="form-field">
-        <Input
-          id="phone"
-          v-model="formModel.phone"
-          name="phone"
-          type="tel"
-          placeholder="+57 300 123 4567"
-          :error="errors.phone"
-          label="Teléfono"
-          required
-          @blur="validateField('phone')"
-          @input="validateField('phone')"
-        />
+        <Label variant="form" size="sm" weight="bold" color="black" require>Teléfono</Label>
+        <div class="flex gap-2">
+          <Select
+            v-model="formModel.dialCode"
+            name="dialCode"
+            :options="DIAL_CODE_OPTIONS"
+            placeholder="+57"
+            class="w-32 flex-shrink-0"
+          />
+          <Input
+            id="phoneNumber"
+            v-model="formModel.phoneNumber"
+            name="phoneNumber"
+            type="tel"
+            placeholder="300 123 4567"
+            :error="errors.phoneNumber"
+            required
+            @blur="validateField('phoneNumber')"
+            @input="validateField('phoneNumber')"
+          />
+        </div>
       </div>
 
       <!-- Gender -->

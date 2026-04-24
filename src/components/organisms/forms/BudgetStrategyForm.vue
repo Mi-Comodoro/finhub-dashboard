@@ -56,7 +56,7 @@ STATE
 
     const isCustom = formModel.value.strategy === 'CUSTOM'
 
-    return hasStrategy && hasUsage && (!isCustom || total <= 100)
+    return hasStrategy && hasUsage && (!isCustom || total === 100)
   })
 
   /*
@@ -161,7 +161,6 @@ WATCHERS
     }
   )
   watch(isValid, value => {
-    if (!isTouched.value) return
     emit('valid', value)
   })
 
@@ -173,6 +172,7 @@ MOUNT
 
   onMounted(() => {
     validateForm()
+    emit('valid', isValid.value)
   })
 
   /*

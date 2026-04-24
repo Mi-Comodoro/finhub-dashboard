@@ -13,11 +13,12 @@
     modelValue: () => ({
       displayName: '',
       email: '',
-      phone: ''
+      phone: '',
+      gender: 'prefer_not_to_say' as 'male' | 'female' | 'prefer_not_to_say'
     })
   })
 
-  const formSchema = computed(() => userBasicDataFieldsSchema())
+  const formSchema = userBasicDataFieldsSchema()
   const formKey = ref(0)
   const isValid = ref(false)
 
@@ -30,7 +31,8 @@
   const formData = ref<BasicInformationData>({
     displayName: prefillDisplayName,
     email: prefillEmail,
-    phone: props.modelValue.phone
+    phone: props.modelValue.phone,
+    gender: props.modelValue.gender || 'prefer_not_to_say'
   })
 
   watch(
@@ -38,14 +40,8 @@
     newValue => {
       if (!newValue) return
 
-      Object.entries(newValue).forEach(([key, value]) => {
-        formData.value[key] = value
-      })
-
       emit('update:modelValue', newValue)
-      if (isValid.value) {
-        emit('valid', isValid.value)
-      }
+      emit('valid', isValid.value)
     },
     { deep: true }
   )

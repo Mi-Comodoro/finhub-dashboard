@@ -1,4 +1,7 @@
 export { default as Input } from './Input.vue'
 export { default as MoneyInput } from './MoneyInput.vue'
 export { default as NumberInput } from './NumberInput.vue'
+export { default as PasswordInput } from './PasswordInput.vue'
+export { default as PhoneInput } from './PhoneInput.vue'
+export { default as SearchInput } from './SearchInput.vue'
 export * from './types'

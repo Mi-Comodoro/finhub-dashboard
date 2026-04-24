@@ -21,9 +21,6 @@ export interface WizardEmits {
 export type OnBoardingFinances = {
   currency: string
   profile: 'employee' | 'freelancer' | 'business_owner'
-  budgetFrequency: 'monthly' | 'biweekly'
-  monthPayment: Date | null
-  biweeklyPayments: [Date | null, Date | null]
 }
 export type OnboardingFormData = {
   personalInfo: {

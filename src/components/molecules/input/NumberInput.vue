@@ -24,6 +24,24 @@
     { immediate: true }
   )
 
+  function handleKeydown(event: KeyboardEvent) {
+    const allowed = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+      'Enter',
+      'Home',
+      'End'
+    ]
+    if (allowed.includes(event.key)) return
+    // Solo dígitos
+    if (!/\d/.test(event.key)) {
+      event.preventDefault()
+    }
+  }
+
   function parseNumber(value: string) {
     return value.replace(/[^\d.-]/g, '')
   }
@@ -46,5 +64,6 @@
     :placeholder="placeholder"
     class="text-right"
     @update:model-value="handleInput"
+    @keydown="handleKeydown"
   />
 </template>

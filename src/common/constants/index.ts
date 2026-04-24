@@ -20,7 +20,7 @@ export const COOKIE_OPTIONS = {
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 export const ON_BOARDING_CONFIG = {
-  stages: [`Bienvenida`, `Configuración`, `Estrategia de Presupuesto`, `Ingresos`, `Completar`],
+  stages: [`Bienvenida`, `Configuración`, `Ingresos`, `Estrategia de Presupuesto`, `Completar`],
   personalInfo: {
     title: `Empieza a tomar control de tu dinero`,
     description: `Esta aplicación te ayudará a organizar tus finanzas, crear disciplina y entender mejor en qué usas tu dinero.
@@ -57,6 +57,29 @@ export const GENDER_OPTIONS = [
   { value: `male`, label: `Masculino` },
   { value: `female`, label: `Femenino` },
   { value: `prefer_not_to_say`, label: `Prefiero no decirlo` }
+]
+
+export const DIAL_CODE_OPTIONS = [
+  { value: `+57`, label: `+57 (Colombia)` },
+  { value: `+1`, label: `+1 (Estados Unidos)` },
+  { value: `+52`, label: `+52 (México)` },
+  { value: `+54`, label: `+54 (Argentina)` },
+  { value: `+56`, label: `+56 (Chile)` },
+  { value: `+51`, label: `+51 (Perú)` },
+  { value: `+58`, label: `+58 (Venezuela)` },
+  { value: `+593`, label: `+593 (Ecuador)` },
+  { value: `+507`, label: `+507 (Panamá)` },
+  { value: `+506`, label: `+506 (Costa Rica)` },
+  { value: `+503`, label: `+503 (El Salvador)` },
+  { value: `+502`, label: `+502 (Guatemala)` },
+  { value: `+504`, label: `+504 (Honduras)` },
+  { value: `+505`, label: `+505 (Nicaragua)` }
+]
+
+export const FINANCIAL_PROFILE_OPTIONS = [
+  { value: `employee`, label: `Empleado` },
+  { value: `freelancer`, label: `Freelancer` },
+  { value: `business_owner`, label: `Dueño de negocio` }
 ]
 
 export const SOURCE_INCOMES_OPTIONS = [

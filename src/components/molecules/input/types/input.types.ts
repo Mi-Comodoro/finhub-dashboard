@@ -14,11 +14,6 @@ export interface InputProps {
   placeHolder?: string
   placeholder?: string
   variant?: InputVariant
-  searchIcon?: boolean
-  forgotPassword?: boolean
-  forgotPasswordText?: string
-  showPasswordToggle?: boolean
-  passwordIconStyle?: PasswordIconStyle
   readonly?: boolean
   label?: string
   id?: string
@@ -26,4 +21,21 @@ export interface InputProps {
   modelValue?: string | number
   prefix?: string
   currency?: string
+  isInsideGroup?: boolean
+}
+
+export type SearchInputProps = Omit<
+  InputProps,
+  | 'searchIcon'
+  | 'showPasswordToggle'
+  | 'forgotPassword'
+  | 'forgotPasswordText'
+  | 'passwordIconStyle'
+>
+
+export interface PasswordInputProps extends Omit<
+  InputProps,
+  'searchIcon' | 'showPasswordToggle' | 'forgotPassword' | 'forgotPasswordText'
+> {
+  iconStyle?: PasswordIconStyle
 }

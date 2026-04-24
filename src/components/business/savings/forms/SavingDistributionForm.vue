@@ -181,10 +181,6 @@
     @apply flex h-full w-full flex-col gap-6;
   }
 
-  .saving-distribution-form__amount {
-    /* No styles needed - using utility classes only for this text */
-  }
-
   .saving-distribution-form__amount-value {
     @apply text-primary-900;
   }

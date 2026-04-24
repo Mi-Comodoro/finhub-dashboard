@@ -1,11 +1,12 @@
 <script setup lang="ts">
+  import { parsePhoneNumberFromString } from 'libphonenumber-js'
   import { reactive, watch } from 'vue'
 
   import {
     DatePickerInput,
     Input,
     MoneyInput,
-    //NumberInput,
+    PhoneInput,
     Select,
     TextArea
   } from '@/components/molecules'
@@ -41,6 +42,7 @@
       | 'money'
       | 'slider-percentage'
       | 'radio-card'
+      | 'phone'
     label: string
     placeholder?: string
     // eslint-disable-next-line no-unused-vars
@@ -98,6 +100,28 @@
     if (isFieldRequired(key) && (value === null || value === undefined || value === '')) {
       errors[key] = 'Este campo es obligatorio'
       return false
+    }
+    // PHONE SPECIAL CASE 🔥
+    if (field.type === 'phone') {
+      const phoneValue = typeof value === 'string' ? value.trim() : ''
+
+      if (isFieldRequired(key) && !phoneValue) {
+        errors[key] = 'Este campo es obligatorio'
+        return false
+      }
+
+      if (phoneValue) {
+        const phone = parsePhoneNumberFromString(phoneValue)
+        const isValidPhone = phone ? phone.isValid() : false
+
+        if (!isValidPhone) {
+          errors[key] = 'Número de teléfono inválido'
+          return false
+        }
+      }
+
+      errors[key] = ''
+      return true
     }
 
     // Pattern validation - only validate if value exists
@@ -260,6 +284,14 @@
               variant="card"
               direction="row"
               :options="schema.fields[fieldKey]?.options!"
+            />
+
+            <PhoneInput
+              v-else-if="schema.fields[fieldKey]!.type === 'phone'"
+              v-model="formData[fieldKey] as string"
+              :label="schema.fields[fieldKey]!.label"
+              :required="isFieldRequired(fieldKey)"
+              :error="errors[fieldKey]"
             />
           </template>
         </template>

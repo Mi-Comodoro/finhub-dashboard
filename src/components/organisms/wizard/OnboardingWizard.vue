@@ -21,10 +21,7 @@
     },
     finances: {
       currency: '' as 'COP' | 'USD',
-      profile: '' as 'employee' | 'freelancer' | 'business_owner',
-      budgetFrequency: '' as 'monthly' | 'biweekly',
-      monthPayment: null,
-      biweeklyPayments: [null, null]
+      profile: '' as 'employee' | 'freelancer' | 'business_owner'
     },
     budget: {
       strategy: '' as 'BALANCED' | 'CUSTOM',
@@ -53,24 +50,14 @@
     wizardData.finances = {
       ...data,
       currency: data.currency,
-      profile: data.profile ?? 'employee',
-      budgetFrequency: data.budgetFrequency ?? 'monthly',
-      monthPayment: data.monthPayment ?? null,
-      biweeklyPayments: data.biweeklyPayments ?? [null, null]
+      profile: data.profile ?? 'employee'
     }
   }
 
   const budgetStrategyData = (data: OnboardingFormData['budget']) => {
-    const total = Object.values(data.customAllocations).reduce((sum, value) => sum + value, 0)
-    if (total <= 100) {
-      wizardData.budget = {
-        ...data,
-        usage: data.usage
-      }
-    } else {
-      // Optionally, you could emit an error event or show a warning here
-      console.warn('Total allocation cannot exceed 100%')
-      disabledNext.value = true
+    wizardData.budget = {
+      ...data,
+      usage: data.usage
     }
   }
 
@@ -85,9 +72,7 @@
       wizardData.personalInfo.phone.trim() !== ''
 
     const hasFinances =
-      wizardData.finances.currency.trim() !== '' &&
-      wizardData.finances.profile.trim() !== '' &&
-      wizardData.finances.budgetFrequency.trim() !== ''
+      wizardData.finances.currency.trim() !== '' && wizardData.finances.profile.trim() !== ''
 
     const hasBudget =
       wizardData.budget.usage &&
@@ -100,11 +85,8 @@
         wizardData.budget.strategy === 'BALANCED')
 
     const hasValidIncomes =
-      wizardData.incomes.incomes.length > 0 &&
-      wizardData.incomes.incomes.every(income => {
-        return income.source.trim() !== '' && income.amount > 0
-      })
-    // Aquí podrías agregar validación extra de cada ingreso si lo necesitas
+      wizardData.incomes.incomes[0].amount > 0 &&
+      wizardData.incomes.incomes[0].source.trim() !== ''
 
     return hasPersonalInfo && hasFinances && hasBudget && hasValidIncomes
   }
@@ -132,9 +114,6 @@
       if (currentStep.value === totalSteps.value) {
         // En el último paso, verificamos si los datos están completos para habilitar el botón de finalizar
         disabledNext.value = !isDataComplete()
-      } else {
-        // Para pasos intermedios, deshabilitamos el botón hasta que se valide el nuevo paso
-        disabledNext.value = true
       }
     }
   }
@@ -181,6 +160,15 @@
     </div>
     <div v-if="currentStep === 3" class="onboarding-wizard__step">
       <OnboardingStepIntro
+        :title="ON_BOARDING_CONFIG.incomes.title"
+        :description="ON_BOARDING_CONFIG.incomes.description"
+      />
+
+      <IncomesForm @update:model-value="incomesData" @valid="enableNextButton" />
+    </div>
+
+    <div v-if="currentStep === 4" class="onboarding-wizard__step">
+      <OnboardingStepIntro
         icon="account_balance_wallet"
         :title="ON_BOARDING_CONFIG.budgetStrategy.title"
         :description="ON_BOARDING_CONFIG.budgetStrategy.description"
@@ -189,19 +177,6 @@
       <BudgetStrategyForm
         :strategy-selected="wizardData.budget.strategy"
         @update:model-value="budgetStrategyData"
-        @valid="enableNextButton"
-      />
-    </div>
-
-    <div v-if="currentStep === 4" class="onboarding-wizard__step">
-      <OnboardingStepIntro
-        :title="ON_BOARDING_CONFIG.incomes.title"
-        :description="ON_BOARDING_CONFIG.incomes.description"
-      />
-
-      <IncomesForm
-        :budget-frequency="wizardData.finances.budgetFrequency"
-        @update:model-value="incomesData"
         @valid="enableNextButton"
       />
     </div>

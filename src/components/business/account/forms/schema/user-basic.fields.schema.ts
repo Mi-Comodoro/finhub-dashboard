@@ -10,12 +10,18 @@ export const userBasicDataFieldsSchema = (): FormSchema => {
         required: true
       },
       phone: {
-        type: 'text',
-        label: 'Telefono',
-        placeholder: '+571234567891',
-        required: true,
-        pattern: /^\+[0-9]{7,15}$/,
-        errorMessage: 'Ingresa un número válido (ej: +57911...) sin espacios ni letras.'
+        type: 'phone', // nuevo tipo
+        label: 'Teléfono',
+        required: true
+      },
+      gender: {
+        type: 'select',
+        label: 'Sexo',
+        options: [
+          { label: 'Masculino', value: 'male' },
+          { label: 'Femenino', value: 'female' },
+          { label: 'Prefiero no decirlo', value: 'prefer_not_to_say' }
+        ]
       }
     },
 
@@ -23,7 +29,12 @@ export const userBasicDataFieldsSchema = (): FormSchema => {
       {
         type: 'grid',
         columns: 1,
-        fields: ['displayName', 'phone']
+        fields: ['displayName']
+      },
+      {
+        type: 'grid',
+        columns: 2,
+        fields: ['phone', 'gender']
       }
     ]
   }

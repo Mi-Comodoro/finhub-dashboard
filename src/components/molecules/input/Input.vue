@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import { computed, ref, useSlots, watch } from 'vue'
 
   import { Label } from '@/components/atoms'
@@ -11,24 +11,20 @@
     disabled: false,
     pattern: () => /.*/,
     error: '',
-    errorMessage: 'Valor inválido',
+    errorMessage: '',
     placeholder: ' ',
     variant: 'column',
-    searchIcon: false,
-    forgotPassword: false,
-    forgotPasswordText: '',
-    showPasswordToggle: false,
-    passwordIconStyle: 'outline',
     size: 'default',
-    readonly: false
+    readonly: false,
+    isInsideGroup: false
   })
 
-  const emit = defineEmits(['update:modelValue', 'blur'])
+  const emit = defineEmits(['update:modelValue', 'blur', 'keydown'])
   const slots = useSlots()
+
   const modelValue = ref(props.modelValue ?? '')
   const internalError = ref(false)
   const touched = ref(false)
-  const showPassword = ref(false)
 
   watch(
     () => props.modelValue,
@@ -80,7 +76,6 @@
 
   function handleInput(event: Event) {
     const value = (event.target as HTMLInputElement).value
-
     modelValue.value = value
 
     if (touched.value) {
@@ -93,57 +88,58 @@
   function handleBlur() {
     touched.value = true
     validate(modelValue.value)
-
     emit('blur')
-  }
-
-  const inputType = computed(() => {
-    if (props.type === 'password' && props.showPasswordToggle) {
-      return showPassword.value ? 'text' : 'password'
-    }
-    return props.type
-  })
-
-  function togglePasswordVisibility() {
-    showPassword.value = !showPassword.value
   }
 
   const sizeClasses = computed(() => {
     if (props.size === 'sm') {
       return {
         input: 'input--sm',
-        icon: 'input__icon--sm',
         label: 'input__label--sm'
       }
     }
 
     return {
       input: 'input--default',
-      icon: 'input__icon--default',
       label: 'input__label--default'
     }
+  })
+
+  /**
+   * 🔥 CLAVE: neutralización sin romper estados
+   */
+  const groupClasses = computed(() => {
+    if (!props.isInsideGroup) return ''
+
+    return [
+      'input--group',
+      // mantiene focus pero sin competir
+      hasError.value ? 'input--group-error' : 'input--group-normal'
+    ]
   })
 
   const inputClasses = computed(() => [
     'input',
     sizeClasses.value.input,
-    { 'input-with-icon-left': props.searchIcon || props.type === 'search' },
-    hasError.value ? 'input--error' : 'input--normal',
+
+    // 👇 SOLO aplica normal/error si NO está en grupo
+    !props.isInsideGroup && (hasError.value ? 'input--error' : 'input--normal'),
+
     props.disabled ? 'input--disabled' : '',
     props.readonly ? 'input--readonly' : '',
     props.prefix ? 'input--with-prefix' : '',
-    props.searchIcon || (props.type === 'password' && props.showPasswordToggle) || !!slots.suffix
-      ? 'input--with-icon '
-      : ''
+
+    !slots.suffix ? 'input--with-suffix' : '',
+
+    groupClasses.value
   ])
 </script>
 
 <template>
   <div class="input-container">
     <div :class="[variant === 'row' ? 'input-row' : 'input-column']">
-      <div v-if="label || forgotPassword" class="input-label-row">
+      <div v-if="label" class="input-label-row">
         <Label
-          v-if="label"
           :html-for="inputId"
           variant="form"
           size="sm"
@@ -154,31 +150,17 @@
         >
           {{ label }}
         </Label>
-
-        <a
-          v-if="forgotPassword && forgotPasswordText"
-          href="#"
-          :class="['input-forgot', sizeClasses.label]"
-        >
-          {{ forgotPasswordText }}
-        </a>
       </div>
 
       <div class="input-field">
         <span v-if="prefix" class="input-prefix">
           {{ prefix }}
         </span>
-        <span
-          v-if="searchIcon"
-          :class="['input-search-icon material-symbols-outlined', sizeClasses.icon]"
-          aria-hidden="true"
-        >
-          search
-        </span>
+
         <input
           :id="inputId"
           :name="name"
-          :type="inputType"
+          :type="type"
           :class="inputClasses"
           :placeholder="placeholder"
           :value="modelValue"
@@ -188,25 +170,12 @@
           autocomplete="off"
           @input="handleInput"
           @blur="handleBlur"
+          @keydown="emit('keydown', $event)"
         />
 
         <div v-if="$slots.suffix" class="input-suffix">
           <slot name="suffix" />
         </div>
-
-        <button
-          v-if="type === 'password' && showPasswordToggle"
-          type="button"
-          class="material-symbols-outlined"
-          :class="[
-            'input-password-toggle',
-            size === 'sm' ? 'input-password-toggle--sm' : 'input-password-toggle--default'
-          ]"
-          :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-          @click="togglePasswordVisibility"
-        >
-          {{ showPassword ? 'visibility_off' : 'visibility' }}
-        </button>
       </div>
 
       <p
@@ -220,96 +189,54 @@
 </template>
 
 <style lang="postcss" scoped>
-  .input-container {
-    @apply w-full;
-  }
-
-  .input-row {
-    @apply flex w-full items-center gap-3;
-  }
-
-  .input-column {
-    @apply flex w-full flex-col gap-1;
-  }
-
-  .input-label-row {
-    @apply flex justify-between;
-  }
-
-  .input__label--sm {
-    @apply text-xs;
-  }
-
-  .input__label--default {
-    @apply text-sm;
-  }
-
-  .input-forgot {
-    @apply font-medium text-teal-600 no-underline transition-colors duration-200 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300;
-  }
-
-  .input-field {
-    @apply relative w-full;
-  }
-
   .input {
-    @apply w-full rounded-md border bg-white text-neutral-900 transition-colors duration-200 placeholder:text-neutral-400 placeholder:opacity-100 focus:outline-none dark:bg-neutral-800 dark:text-white dark:placeholder:text-neutral-500;
+    @apply w-full rounded-md border bg-white text-neutral-900 transition-all duration-200 placeholder:text-neutral-400 focus:outline-none;
   }
 
+  /* tamaños */
   .input--sm {
     @apply px-2 py-1 text-xs;
   }
-
   .input--default {
     @apply px-3 py-2 text-sm;
   }
 
-  .input--error {
-    @apply border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 dark:border-red-400 dark:focus:border-red-400 dark:focus:ring-red-400;
-  }
-
+  /* normal */
   .input--normal {
-    @apply border-neutral-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 dark:border-neutral-600 dark:focus:border-teal-400 dark:focus:ring-teal-400;
+    @apply border-neutral-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500;
   }
 
+  /* error */
+  .input--error {
+    @apply border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500;
+  }
+
+  /* 👇 MODO GROUP (clave real) */
+  .input--group {
+    @apply border-none bg-transparent shadow-none ring-0;
+  }
+
+  /* mantiene feedback pero sin competir */
+  .input--group-normal {
+    @apply focus:ring-0;
+  }
+
+  .input--group-error {
+    @apply text-red-600;
+  }
+
+  /* estados */
   .input--disabled {
-    @apply cursor-not-allowed bg-neutral-100 text-neutral-400 dark:bg-neutral-700 dark:text-neutral-500;
+    @apply cursor-not-allowed bg-neutral-100 text-neutral-400;
   }
 
   .input--readonly {
-    @apply cursor-default border-dashed border-slate-300 bg-slate-50 italic text-slate-500 focus:border-dashed focus:ring-0 dark:border-slate-600 dark:bg-neutral-800 dark:text-slate-400;
+    @apply cursor-default border-dashed bg-slate-50 text-slate-500;
   }
 
-  .input--with-icon {
-    @apply pr-10;
-  }
-
-  .input__icon--sm {
-    @apply text-base;
-  }
-
-  .input__icon--default {
-    @apply text-lg;
-  }
-
-  .input-search-icon {
-    @apply pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400;
-  }
-
-  .input-password-toggle {
-    @apply absolute right-3 top-1/2 -translate-y-1/2 p-1 text-teal-600 transition-colors duration-200 hover:text-teal-700 focus:outline-none dark:text-teal-400 dark:hover:text-teal-300;
-  }
-
-  .input-password-toggle--sm {
-    @apply p-0.5;
-  }
-
-  .input-password-toggle--default {
-    @apply p-1;
-  }
-
+  /* error */
   .input-error {
-    @apply mt-1 block text-red-600 dark:text-red-400;
+    @apply mt-1 text-xs text-red-600;
   }
 
   .input-error--sm {
@@ -317,45 +244,22 @@
   }
 
   .input-error--default {
-    @apply text-xs;
+    @apply text-sm;
   }
 
   .input-prefix {
-    @apply pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500;
+    @apply absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500;
   }
 
   .input--with-prefix {
     @apply pl-12;
   }
 
-  .input--number {
-    @apply text-right;
-  }
-
   .input-suffix {
-    @apply absolute right-3 top-1/2 flex -translate-y-1/2 items-center text-neutral-500 dark:text-neutral-400;
-  }
-  .input-password-toggle--sm {
-    @apply text-sm;
-  }
-</style>
-
-<style scoped>
-  .material-symbols-filled {
-    font-variation-settings: 'FILL' 1;
+    @apply absolute right-3 top-1/2 -translate-y-1/2;
   }
 
-  .input--readonly:focus {
-    outline: none;
-    box-shadow: none;
-  }
-
-  input[type='number']::-webkit-outer-spin-button,
-  input[type='number']::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  .input-with-icon-left {
-    padding-left: 40px !important; /* Espacio suficiente para el icono */
+  .input--with-suffix {
+    @apply pr-10;
   }
 </style>

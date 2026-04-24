@@ -26,7 +26,7 @@
 
   const props = withDefaults(defineProps<LabelProps>(), {
     size: 'sm',
-    color: 'secondary',
+    color: 'black',
     variant: 'default',
     uppercase: false,
     required: false,

@@ -61,7 +61,7 @@ export interface StepDotEmits {
 }
 
 export interface RadioButtonProps {
-  readonly modelValue?: string | number
+  readonly modelValue?: string | number | boolean | null
   readonly value: string | number
   readonly name: string
   readonly disabled?: boolean
