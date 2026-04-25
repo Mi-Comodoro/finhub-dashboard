@@ -25,6 +25,8 @@
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
+  import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
+  import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useApiHandler } from '@/composables/useApiHandler'
   import { useFeedback } from '@/composables/useFeedback'
   import { formatCurrency } from '@/utils/currency'
@@ -43,6 +45,8 @@
   const { loadBudgetDetail, markExpenseAsPaid, budgetSelected, expectedIncome, defaultCurrency } =
     useBudgetDetailApplication()
   const { deleteExpense } = useExpenseApplication()
+  const { fetchByBudget: fetchTransactions } = useTransactionApplication()
+  const { fetchByBudget: fetchPlannedSavings } = usePlannedSavingApplication()
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
   const { lastUpdate } = usePlannedIncomeApplication()
@@ -52,6 +56,11 @@
   onMounted(async () => {
     const { success, error } = await loadBudgetDetail(budgetId)
     if (!success && error) handleError(error)
+
+    // Cargar transacciones y planned savings en paralelo
+    if (budgetId) {
+      await Promise.all([fetchTransactions(budgetId), fetchPlannedSavings(budgetId)])
+    }
   })
 
   const budgetStart = () => {
@@ -227,7 +236,7 @@
           <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
           , se activará automáticamente cuando confirmes tu primer ingreso.
         </Tips>
-        <BudgetIncome />
+        <BudgetIncome :budget-id="budgetId" />
         <BudgetDistribution />
         <TransactionList :budget-id="budgetId" />
       </div>

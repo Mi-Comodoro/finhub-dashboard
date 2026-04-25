@@ -24,6 +24,10 @@
       : pendingAssignedAmount.value
   )
 
+  const completedCount = computed(() =>
+    goals.value.filter(g => g.status === 'COMPLETED').length
+  )
+
   updateNewSavingAmount(pendingAmount.value)
 </script>
 
@@ -62,8 +66,8 @@
     />
 
     <FinancialProgressCard
-      :title="'Metas'"
-      subtitle="En progreso"
+      :title="'Metas completadas'"
+      subtitle="Estado de progreso"
       icon-name="track_changes"
       icon-text-class="text-primary-600"
       variant="secondary"
@@ -71,9 +75,9 @@
       <template #body>
         <div class="allocation-summary__goals">
           <Heading size="5xl" weight="extrabold">
-            {{ goals.filter(item => item.isActive).length }}
+            {{ completedCount }}/{{ goals.length }}
           </Heading>
-          <Text color="muted" size="sm">Metas Activas</Text>
+          <Text color="muted" size="sm">Completadas</Text>
         </div>
       </template>
     </FinancialProgressCard>

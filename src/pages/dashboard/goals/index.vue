@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Button, Text } from '@/components/atoms'
+  import { Badge, Button, Text } from '@/components/atoms'
   import { AccountSavingForm, GoalsForm } from '@/components/business'
   import AccountRateTimeline from '@/components/business/account/AccountRateTimeline.vue'
   import { CardInfo } from '@/components/molecules'
@@ -10,11 +10,23 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
+  import { useFinancesStore } from '@/stores/finances.store'
+  import { usePlannedSavingStore } from '@/stores/planned-saving.store'
   import type { CompoundingFrequency, GoalsData } from '@/types/api'
+  import { formatCurrency } from '@/utils/currency'
+  import {
+    getGoalProgress,
+    getGoalTerm,
+    getStatusVariant,
+    GOAL_STATUS_LABELS,
+    GOAL_TERM_LABELS,
+    type GoalStatus
+  } from '@/utils/goals.utils'
 
   const router = useRouter()
 
-  const { loadGoalsData, loadSavingAllocations, error: goalsError, goals } = useGoalsApplication()
+  const { loadGoalsData, loadSavingAllocations, error: goalsError, goals, removeGoal } =
+    useGoalsApplication()
   const handleActions = () => {
     if (goalsError.value?.status === 401) {
       return navigateTo('/', { replace: true })
@@ -36,6 +48,24 @@
   } = useActiveBudgetApplication()
   const { currentBudgetId } = useSetupApplication()
   const { budgetStatus } = useCommon()
+  const financesStore = useFinancesStore()
+  const plannedSavingStore = usePlannedSavingStore()
+  const currency = computed(() => financesStore.defaultCurrency)
+
+  // Helper functions to calculate progress per goal
+  const getSavedAmountForGoal = (goalId: string): number => {
+    if (!plannedSavingStore.items) return 0
+    return plannedSavingStore.items
+      .filter(item => item.savingGoal?.id === goalId && item.status === 'completed')
+      .reduce((acc, item) => acc + Number(item.amount), 0)
+  }
+
+  const getProgressPercentage = (goalId: string, targetAmount: number | null): number => {
+    if (!targetAmount || targetAmount === 0) return 0
+    const saved = getSavedAmountForGoal(goalId)
+    return Math.min(Math.round((saved / targetAmount) * 100), 100)
+  }
+
   const activateBudget = async () => {
     await enabled()
 
@@ -100,6 +130,8 @@
     }
     if (currentBudgetId.value) {
       await loadSavingAllocations(currentBudgetId.value)
+      // Load planned savings to calculate progress
+      await plannedSavingStore.fetchByBudget(currentBudgetId.value)
     }
   })
 
@@ -224,22 +256,72 @@
     editingGoal.value = goal
     showGoalsForm.value = true
   }
+
+  // Filters and view mode
+  const activeFilter = ref<'all' | 'short' | 'medium' | 'long'>('all')
+  const viewMode = ref<'card' | 'table'>('card')
+  const goalToDelete = ref<string | null>(null)
+  const showDeleteModal = ref(false)
+
+  // Filtered goals
+  const filteredGoals = computed(() => {
+    const allGoals = goals.value
+    if (activeFilter.value === 'all') return allGoals
+    return allGoals.filter(g => getGoalTerm(g.targetDate) === activeFilter.value)
+  })
+
+  // Completed count
+  const completedCount = computed(() =>
+    goals.value.filter(g => g.status === 'COMPLETED').length
+  )
+
+  // Delete handlers
+  const openDeleteModal = (id?: string) => {
+    if (id) {
+      goalToDelete.value = id
+      showDeleteModal.value = true
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!goalToDelete.value) return
+    const { success } = await removeGoal(goalToDelete.value)
+    showDeleteModal.value = false
+    goalToDelete.value = null
+    if (success) {
+      show({
+        title: 'Meta Eliminada',
+        description: 'La meta se eliminó correctamente',
+        type: 'success'
+      })
+    }
+  }
+
+  // Navigation to detail
+  const goToDetail = (goalId: string) => {
+    router.push(`/dashboard/goals/${goalId}`)
+  }
+
   const goalCards = computed(() =>
-    goals.value.slice(0, 6).map(goal => ({
-      goal,
-      title: goal.name,
-      subtitle: goal.accountName,
-      iconName: goal.reason,
-      iconTextClass: reasonTextMap[goal.reason],
-      iconBgClass: reasonBgMap[goal.reason],
-      amount: null,
-      targetAmount: goal.targetAmount ?? undefined,
-      targetDate: goal.targetDate ? String(goal.targetDate) : '',
-      status: goal.isActive ? 'active' : 'paused',
-      showProgressbar: true,
-      progressPercentage:
-        goal.targetAmount && goal.targetAmount > 0 ? Math.round((0 / goal.targetAmount) * 100) : 0
-    }))
+    filteredGoals.value.slice(0, 6).map(goal => {
+      const savedAmount = getSavedAmountForGoal(goal.id)
+      const progressPercentage = getProgressPercentage(goal.id, goal.targetAmount)
+
+      return {
+        goal,
+        title: goal.name,
+        subtitle: goal.accountName,
+        iconName: goal.reason,
+        iconTextClass: reasonTextMap[goal.reason],
+        iconBgClass: reasonBgMap[goal.reason],
+        amount: savedAmount > 0 ? savedAmount : null,
+        targetAmount: goal.targetAmount ?? undefined,
+        targetDate: goal.targetDate ? String(goal.targetDate) : '',
+        status: goal.isActive ? 'active' : 'paused',
+        showProgressbar: true,
+        progressPercentage
+      }
+    })
   )
 </script>
 
@@ -254,7 +336,47 @@
           Organiza tu futuro financiero creando propósitos específicos.
         </Text>
       </div>
-      <div>
+      <div class="goals-page__header-actions">
+        <!-- Filtros de plazo -->
+        <div class="goals-page__filters">
+          <button
+            v-for="f in [
+              { value: 'all', label: 'Todas' },
+              { value: 'short', label: 'Corto plazo' },
+              { value: 'medium', label: 'Mediano plazo' },
+              { value: 'long', label: 'Largo plazo' }
+            ]"
+            :key="f.value"
+            :class="[
+              'goals-page__filter-chip',
+              { 'goals-page__filter-chip--active': activeFilter === f.value }
+            ]"
+            @click="activeFilter = f.value"
+          >
+            {{ f.label }}
+          </button>
+        </div>
+
+        <!-- Toggle vista -->
+        <div class="goals-page__view-toggle">
+          <Button
+            variant="ghost"
+            icon-only
+            size="sm"
+            icon="grid_view"
+            :class="{ 'goals-page__view-btn--active': viewMode === 'card' }"
+            @click="viewMode = 'card'"
+          />
+          <Button
+            variant="ghost"
+            icon-only
+            size="sm"
+            icon="table_rows"
+            :class="{ 'goals-page__view-btn--active': viewMode === 'table' }"
+            @click="viewMode = 'table'"
+          />
+        </div>
+
         <Button
           size="sm"
           icon="add_task"
@@ -283,23 +405,97 @@
     </div>
     <div class="goals-page__grid">
       <div v-if="isGoalsExists" class="goals-page__goals-section">
-        <div class="goals-page__goals-cards">
+        <!-- Vista tarjetas -->
+        <div v-if="viewMode === 'card'" class="goals-page__goals-cards">
           <div
             v-for="(card, index) in goalCards"
             :key="index"
             class="goals-page__goal-card-wrapper"
+            @click="goToDetail(card.goal.id)"
           >
             <FinancialProgressCard v-bind="card" />
-            <Button
-              icon="edit"
-              variant="ghost"
-              size="sm"
-              icon-only
-              class="goals-page__goal-edit-button"
-              @click="editGoal(card.goal as ExistingGoal)"
-            />
+            <div class="goals-page__goal-actions">
+              <Button
+                icon="edit"
+                variant="ghost"
+                size="sm"
+                icon-only
+                @click.stop="editGoal(card.goal as ExistingGoal)"
+              />
+              <Button
+                icon="delete"
+                variant="ghost"
+                size="sm"
+                icon-only
+                @click.stop="openDeleteModal(card.goal.id)"
+              />
+            </div>
           </div>
         </div>
+
+        <!-- Vista tabla -->
+        <table v-else class="goals-page__table">
+          <thead>
+            <tr>
+              <th>Meta</th>
+              <th>Cuenta</th>
+              <th>Estado</th>
+              <th>Plazo</th>
+              <th>Progreso</th>
+              <th>Objetivo</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="goal in filteredGoals"
+              :key="goal.id"
+              class="goals-page__table-row"
+              @click="goToDetail(goal.id)"
+            >
+              <td>{{ goal.name }}</td>
+              <td>{{ goal.accountName }}</td>
+              <td>
+                <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="sm">
+                  {{ GOAL_STATUS_LABELS[goal.status as GoalStatus ?? 'SCHEDULED'] }}
+                </Badge>
+              </td>
+              <td>{{ GOAL_TERM_LABELS[getGoalTerm(goal.targetDate)] }}</td>
+              <td>
+                <div class="goals-page__progress-cell">
+                  <div class="goals-page__progress-bar">
+                    <div
+                      class="goals-page__progress-fill"
+                      :style="{ width: `${getProgressPercentage(goal.id, goal.targetAmount)}%` }"
+                    ></div>
+                  </div>
+                  <span class="goals-page__progress-text">
+                    {{ getProgressPercentage(goal.id, goal.targetAmount) }}%
+                  </span>
+                </div>
+              </td>
+              <td>{{ goal.targetAmount ? formatCurrency(goal.targetAmount, currency) : '—' }}</td>
+              <td>
+                <div class="goals-page__table-actions">
+                  <Button
+                    variant="ghost"
+                    icon="edit"
+                    icon-only
+                    size="sm"
+                    @click.stop="editGoal(goal as ExistingGoal)"
+                  />
+                  <Button
+                    variant="ghost"
+                    icon="delete"
+                    icon-only
+                    size="sm"
+                    @click.stop="openDeleteModal(goal.id)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         <Card v-if="goals.length > 6" class="goals-page__achievement-card" class-name="!p-0">
           <div class="goals-page__achievement-content">
             <div class="goals-page__achievement-header">
@@ -515,6 +711,18 @@
         @on-close="closeSavingDistributionForm"
       />
     </ModalWizard>
+
+    <!-- Modal de confirmación eliminar -->
+    <ModalWizard v-model:show="showDeleteModal">
+      <div class="goals-page__delete-modal">
+        <Heading level="h3" size="lg">¿Eliminar esta meta?</Heading>
+        <Text size="sm" color="muted">Esta acción no se puede deshacer.</Text>
+        <div class="goals-page__delete-actions">
+          <Button variant="danger" @click="handleDelete">Eliminar</Button>
+          <Button variant="ghost" @click="showDeleteModal = false">Cancelar</Button>
+        </div>
+      </div>
+    </ModalWizard>
   </div>
 </template>
 
@@ -524,11 +732,37 @@
   }
 
   .goals-page__header {
-    @apply flex items-center justify-between;
+    @apply flex flex-col gap-4 md:flex-row md:items-center md:justify-between;
   }
 
   .goals-page__header-text {
     @apply md:pr-4 xl:pr-0;
+  }
+
+  .goals-page__header-actions {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  /* Filtros */
+  .goals-page__filters {
+    @apply flex gap-2;
+  }
+
+  .goals-page__filter-chip {
+    @apply rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-all hover:border-primary-500 hover:bg-primary-50;
+  }
+
+  .goals-page__filter-chip--active {
+    @apply border-primary-500 bg-primary-500 text-white hover:bg-primary-600;
+  }
+
+  /* Toggle vista */
+  .goals-page__view-toggle {
+    @apply flex gap-1 rounded-lg border border-neutral-200 bg-neutral-50 p-1;
+  }
+
+  .goals-page__view-btn--active {
+    @apply !bg-primary-500 !text-white;
   }
 
   .goals-page__title {
@@ -564,11 +798,56 @@
   }
 
   .goals-page__goal-card-wrapper {
-    @apply relative;
+    @apply relative cursor-pointer transition-transform hover:scale-[1.02];
   }
 
-  .goals-page__goal-edit-button {
-    @apply absolute right-2 top-2 z-20;
+  .goals-page__goal-actions {
+    @apply absolute right-2 top-2 z-20 flex gap-1;
+  }
+
+  /* Tabla */
+  .goals-page__table {
+    @apply w-full border-collapse overflow-hidden rounded-lg bg-white shadow-sm;
+  }
+
+  .goals-page__table thead {
+    @apply bg-neutral-100;
+  }
+
+  .goals-page__table th {
+    @apply px-4 py-3 text-left text-xs font-semibold text-neutral-700;
+  }
+
+  .goals-page__table td {
+    @apply border-t border-neutral-200 px-4 py-3 text-sm text-neutral-800;
+  }
+
+  .goals-page__table tbody tr:hover {
+    @apply bg-neutral-50;
+  }
+
+  .goals-page__table-row {
+    @apply cursor-pointer transition-colors;
+  }
+
+  .goals-page__table-actions {
+    @apply flex gap-1;
+  }
+
+  .goals-page__progress-cell {
+    @apply flex items-center gap-2;
+  }
+
+  .goals-page__progress-bar {
+    @apply h-2 w-24 overflow-hidden rounded-full bg-neutral-200;
+  }
+
+  .goals-page__progress-fill {
+    @apply h-full bg-primary-500 transition-all duration-300;
+  }
+
+  .goals-page__progress-text {
+    @apply text-xs font-medium text-neutral-600;
   }
 
   .goals-page__achievement-card {
@@ -701,5 +980,14 @@
 
   .goals-page__accounts-empty-text {
     @apply !text-center;
+  }
+
+  /* Modal eliminar */
+  .goals-page__delete-modal {
+    @apply flex flex-col gap-4 p-6;
+  }
+
+  .goals-page__delete-actions {
+    @apply flex gap-2 justify-end;
   }
 </style>

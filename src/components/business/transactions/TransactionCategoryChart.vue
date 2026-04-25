@@ -13,7 +13,7 @@
 
   import { Heading, Text } from '@/components/atoms'
   import type { Currency } from '@/utils/currency'
-  import { formatCurrency } from '@/utils/currency'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
   import type { TransactionSummary } from '~/types/domain'
 
@@ -62,11 +62,7 @@
       axisLabel: {
         color: '#64748b',
         fontSize: 11,
-        formatter: (value: number) => {
-          if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
-          if (value >= 1000) return `${(value / 1000).toFixed(0)}K`
-          return value.toString()
-        }
+        formatter: (value: number) => formatCompactCurrency(value, props.currency)
       },
       splitLine: {
         lineStyle: {
@@ -97,7 +93,7 @@
       formatter: (params: Array<{ name: string; value: number }>) => {
         const item = params[0]
         if (!item) return ''
-        return `${item.name}: <strong>${formatCurrency(Number(item.value || 0), props.currency, 0)}</strong>`
+        return `${item.name}: <strong>${formatCurrency(Number(item.value || 0), props.currency)}</strong>`
       }
     },
     series: [

@@ -185,6 +185,29 @@ Neutral       → neutral   (slate)    bg-neutral-100  text-neutral-600
 - Field types: text, number, select, date, switch, textarea, money, slider-percentage, radio-card
 - See `ExpensePlannedForm.vue` for reference pattern
 
+## Financial Business Logic
+
+### Monetary Display Rules (CRITICAL)
+
+**Cada centavo cuenta:** Ninguna cifra monetaria se expresa como entero. SIEMPRE usar 2 decimales.
+- ✅ `$500.000,00 COP`   ❌ `$500.000`
+- ✅ `$1.250,50 COP`     ❌ `$1.250`
+- ✅ `$0,00 COP`         ❌ `$0`
+
+**Nunca pasar `decimals=0` a `formatCurrency`:**
+- ❌ `formatCurrency(value, currency, 0)`
+- ✅ `formatCurrency(value, currency)`
+
+**Siempre incluir código de moneda en UI:**
+- Usar `formatCurrency()` que incluye símbolo y código
+- En gráficos donde el espacio es limitado, usar `formatCompactCurrency()` que incluye símbolo y código ISO
+- El código ISO (COP, USD) debe ser visible para eliminar ambigüedad — ambos usan `$` como símbolo
+
+**`formatCompactCurrency` para ejes de gráficos:**
+- ✅ `$1.50M COP`   ✅ `$750.00K COP`
+- No construir formatters manuales en los componentes
+- Siempre importar y usar `formatCompactCurrency` de `@/utils/currency`
+
 ## Key Patterns
 
 **Composables naming:**

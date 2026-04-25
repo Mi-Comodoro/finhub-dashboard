@@ -101,18 +101,20 @@ export function formatNumber(
 }
 
 /**
- * Format an amount in compact notation for tight spaces (chart center, badges).
- *   COP 5_000_000 → "$5.0M"
- *   COP   750_000 → "$750K"
- *   USD     1_500 → "$1.5K"
+ * Format an amount in compact notation for tight spaces (chart axes, badges).
+ *   COP 5_000_000 → "$5.00M COP"
+ *   COP   750_000 → "$750.00K COP"
+ *   USD     1_500 → "$1.50K USD"
  */
 export function formatCompactCurrency(amount: number, currency: Currency): string {
   const { symbol } = CURRENCY_CONFIG[currency]
   const abs = Math.abs(amount)
   const sign = amount < 0 ? '-' : ''
-  if (abs >= 1_000_000) return `${sign}${symbol}${round(abs / 1_000_000, 1)}M`
-  if (abs >= 1_000) return `${sign}${symbol}${round(abs / 1_000, 1)}K`
-  return `${sign}${formatCurrency(amount, currency, 0)}`
+  if (abs >= 1_000_000)
+    return `${sign}${symbol}${round(abs / 1_000_000, 2).toFixed(2)}M ${currency}`
+  if (abs >= 1_000)
+    return `${sign}${symbol}${round(abs / 1_000, 2).toFixed(2)}K ${currency}`
+  return `${sign}${formatCurrency(amount, currency)}`
 }
 
 /** Human-readable label for a currency code, e.g. "Peso colombiano". */

@@ -87,8 +87,8 @@ export const useTransactionApplication = () => {
     return fetchByBudget(transactionStore.budgetId)
   } */
 
-  const fetchTransaction = async (budgetId: string, filters: TransactionFilters) => {
-    if (currentBudget.value) await fetchByBudget(budgetId, filters)
+  const fetchTransaction = async (budgetId: string, filters?: Partial<TransactionFilters>) => {
+    await fetchByBudget(budgetId, filters ?? {})
   }
 
   const setBudgetId = (budgetId: string) => {

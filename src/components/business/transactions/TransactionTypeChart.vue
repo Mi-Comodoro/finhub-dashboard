@@ -60,7 +60,7 @@
     tooltip: {
       trigger: 'item',
       formatter: (params: { name: string; value: number }) =>
-        `${params.name}: <strong>${formatCurrency(Number(params.value || 0), props.currency, 0)}</strong>`
+        `${params.name}: <strong>${formatCurrency(Number(params.value || 0), props.currency)}</strong>`
     },
     legend: {
       show: false
@@ -113,7 +113,7 @@
             <Text size="sm" weight="medium">{{ item.name }}</Text>
           </div>
           <Text size="sm" weight="semibold">
-            {{ formatCurrency(item.value, currency, 0) }}
+            {{ formatCurrency(item.value, currency) }}
           </Text>
         </div>
       </div>

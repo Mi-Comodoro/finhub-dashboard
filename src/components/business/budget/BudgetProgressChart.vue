@@ -15,7 +15,7 @@
 
   import { Heading, Text } from '@/components/atoms'
   import type { Currency } from '@/utils/currency'
-  import { formatCurrency } from '@/utils/currency'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
   use([BarChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer])
@@ -55,11 +55,7 @@
       axisLabel: {
         color: '#64748b',
         fontSize: 11,
-        formatter: (value: number) => {
-          if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
-          if (value >= 1000) return `${(value / 1000).toFixed(0)}K`
-          return value.toString()
-        }
+        formatter: (value: number) => formatCompactCurrency(value, props.currency)
       },
       splitLine: {
         lineStyle: {
@@ -94,7 +90,7 @@
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                 <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background-color:${param.color};"></span>
                 <span>${param.seriesName}:</span>
-                <strong style="margin-left:auto;">${formatCurrency(param.value, props.currency, 0)}</strong>
+                <strong style="margin-left:auto;">${formatCurrency(param.value, props.currency)}</strong>
               </div>
             `
           )

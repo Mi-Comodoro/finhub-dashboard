@@ -121,10 +121,25 @@ export function usePlannedIncomeApplication() {
       const { success, result } = await incomeApi.markPlannedIncomeAsReceived(id)
 
       if (success && result?.plannedIncome && store.summary) {
+        // 1. Actualizar summary local
         const updatedSummary = updateIncomeSummary(store.summary, result.plannedIncome)
         store.setSummary(updatedSummary)
         const expectedIncome = calculateExpectedAmount(updatedSummary)
         store.setExpectedIncome(expectedIncome)
+
+        // 2. Refrescar planned savings con los nuevos generados
+        if (store.budgetId) {
+          const { usePlannedSavingApplication } = await import('./usePlannedSavingApplication')
+          const { fetchByBudget } = usePlannedSavingApplication()
+          await fetchByBudget(store.budgetId)
+        }
+
+        // 3. Refrescar transacciones
+        if (store.budgetId) {
+          const { useTransactionApplication } = await import('./useTransactionApplication')
+          const { fetchByBudget } = useTransactionApplication()
+          await fetchByBudget(store.budgetId)
+        }
       }
 
       return { success, result }

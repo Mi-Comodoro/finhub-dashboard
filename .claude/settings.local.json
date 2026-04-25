@@ -24,7 +24,11 @@
       "Bash(node --version:*)",
       "Bash(nvm list:*)",
       "Bash(nvm exec:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(tee:*)",
+      "Bash(git diff:*)"
     ]
   }
 }

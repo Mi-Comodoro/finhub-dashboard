@@ -1,16 +1,32 @@
 <script setup lang="ts">
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
+  import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
+  import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
   import DateUtils from '~/utils/date'
+
+  const props = defineProps<{ budgetId: string }>()
+
   const { markAsReceived, error, summary, processingIncomeId } = usePlannedIncomeApplication()
+  const { fetchByBudget: fetchTransactions } = useTransactionApplication()
+  const { fetchByBudget: fetchPlannedSavings } = usePlannedSavingApplication()
   const { currency, receivedIncome } = useBudgetInsightsPresenter()
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
+
+  // Filtrar ingresos con amount > 0
+  const visibleIncomes = computed(() => (summary.value ?? []).filter(income => income.amount > 0))
+
   const markPlannedIncomeAsReceived = async (incomeId: string) => {
     const { success } = await markAsReceived(incomeId)
 
     if (success) {
       successToast('Ingreso recibido', 'El ingreso planificado se actualizó correctamente.')
+      // Recargar en paralelo para actualizar contadores y transacciones
+      await Promise.all([
+        fetchTransactions(props.budgetId),
+        fetchPlannedSavings(props.budgetId)
+      ])
       return
     }
     if (error.value && error.value.status) {
@@ -33,7 +49,7 @@
         level="h3"
       />
 
-      <div v-for="(item, index) in summary" :key="index" class="budget-income__item-wrapper">
+      <div v-for="(item, index) in visibleIncomes" :key="index" class="budget-income__item-wrapper">
         <Card class="budget-income__item-card">
           <div class="budget-income__item-info">
             <Label color="muted">{{ translate[item.source] }}</Label>

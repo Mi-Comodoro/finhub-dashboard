@@ -152,6 +152,19 @@ export const useGoalsApplication = () => {
     }
   }
 
+  const removeGoal = async (id: string): Promise<{ success: boolean }> => {
+    try {
+      const response = await savingsApi.deleteGoal(id)
+      if (response.success) {
+        await fetchGoals()
+      }
+      return response
+    } catch (error) {
+      console.error('Error deleting goal:', error)
+      return { success: false }
+    }
+  }
+
   const goals = computed(() => goalsStore.goals)
   const currentBudgetId = computed(() => budgetStore.currentBudgetPlan?.id ?? null)
 
@@ -166,6 +179,7 @@ export const useGoalsApplication = () => {
     updateNewSavingAmount,
     addGoal,
     editGoal,
+    removeGoal,
     goals,
     currentBudgetId,
     error

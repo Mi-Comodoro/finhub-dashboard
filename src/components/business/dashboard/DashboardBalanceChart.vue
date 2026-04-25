@@ -4,7 +4,7 @@
 
   import { Card, Heading } from '@/components/atoms'
   import type { Currency } from '@/utils/currency'
-  import { formatCurrency } from '@/utils/currency'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
   interface Props {
@@ -61,14 +61,7 @@
       yAxis: {
         type: 'value',
         axisLabel: {
-          formatter: (value: number) => {
-            if (value >= 1000000) {
-              return `${(value / 1000000).toFixed(1)}M`
-            } else if (value >= 1000) {
-              return `${(value / 1000).toFixed(0)}K`
-            }
-            return value.toString()
-          }
+          formatter: (value: number) => formatCompactCurrency(value, props.currency)
         }
       },
       series: [

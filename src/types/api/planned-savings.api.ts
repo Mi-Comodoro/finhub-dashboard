@@ -4,6 +4,7 @@ export interface PlannedSaving {
   amount: number
   date: Date
   status: PlannedSavingStatus
+  completedAt?: string | null // ISO string del backend
   accountId: string
   budgetId: string
   plannedIncomeId: string

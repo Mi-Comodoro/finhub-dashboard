@@ -1,3 +1,5 @@
+export type GoalStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAUSED'
+
 export interface GoalsData {
   id?: string
   name: string
@@ -8,6 +10,7 @@ export interface GoalsData {
   accountId: string
   userId?: string
   accountName?: string
+  status?: GoalStatus
   createdAt?: Date
   updatedAt?: Date
 }
@@ -18,4 +21,13 @@ export interface GoalsResponseApi {
 export interface GoalsResponseList {
   success: boolean
   result: GoalsData[]
+}
+
+export interface GoalHistory {
+  id: string
+  goalId: string
+  field: string
+  oldValue: string | null
+  newValue: string
+  changedAt: string
 }

@@ -2,6 +2,7 @@ import { BarChart, LineChart, PieChart } from 'echarts/charts'
 import {
   GridComponent,
   LegendComponent,
+  MarkLineComponent,
   TitleComponent,
   TooltipComponent
 } from 'echarts/components'
@@ -17,6 +18,7 @@ use([
   TooltipComponent,
   LegendComponent,
   TitleComponent,
+  MarkLineComponent,
   CanvasRenderer
 ])
 
