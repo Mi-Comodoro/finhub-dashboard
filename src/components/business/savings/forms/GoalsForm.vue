@@ -126,20 +126,21 @@
       :sub-title="
         mode === 'edit' ? 'Actualiza los detalles de tu meta.' : 'Define tu objetivo de ahorro.'
       "
-      title-size="2xl"
+      title-size="xl"
       weight="extrabold"
       level="h1"
       color="black"
-      sub-title-size="sm"
+      sub-title-size="xs"
       sub-title-color="muted"
       icon="savings"
       icon-size="md"
+      icon-variant="primary"
     />
 
     <div class="goals-form__alert">
       <AlertBanner
         :title="currentTip?.title ?? 'Selecciona un motivo'"
-        :variant="currentTip?.variant ?? 'info'"
+        :variant="currentTip?.variant ?? 'warning'"
         icon="info"
       >
         <Text size="xs" class="goals-form__alert-text">
@@ -152,8 +153,10 @@
       <Form :key="formKey" :model-value="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
           <div class="goals-form__actions">
-            <Button type="button" variant="ghost" @click.stop="emit('onClose')">Cancelar</Button>
-            <Button type="submit" variant="primary">
+            <Button type="button" variant="ghost" size="sm" @click.stop="emit('onClose')">
+              Cancelar
+            </Button>
+            <Button type="submit" variant="primary" size="sm">
               {{ isSubmitting ? 'Guardando...' : mode === 'edit' ? 'Actualizar' : 'Guardar Meta' }}
             </Button>
           </div>

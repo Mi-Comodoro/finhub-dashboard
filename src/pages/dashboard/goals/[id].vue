@@ -11,17 +11,15 @@
   import { usePlannedSavingStore } from '@/stores/planned-saving.store'
   import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
   import type { GoalHistory, GoalsData } from '@/types/api'
-  import {
-    buildProjection,
-    type SavingPoint
-  } from '@/utils/compound-interest.utils'
+  import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
   import { getGoalTerm, GOAL_STATUS_LABELS, type GoalStatus } from '@/utils/goals.utils'
 
   definePageMeta({
     layout: 'dashboard',
     title: 'Detalle de Meta',
-    breadcrumb: 'Detalle'
+    breadcrumb: 'Detalle',
+    parents: ['Metas']
   })
 
   const route = useRoute()

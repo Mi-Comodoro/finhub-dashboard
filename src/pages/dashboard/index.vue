@@ -194,29 +194,19 @@
       </Text>
     </AlertBanner>
 
-    <div
-      v-if="isPageLoading"
-      class="dashboard-page__loading"
-    >
-      <div
-        v-for="item in 4"
-        :key="item"
-        class="dashboard-page__skeleton"
-      />
+    <div v-if="isPageLoading" class="dashboard-page__loading">
+      <div v-for="item in 4" :key="item" class="dashboard-page__skeleton" />
     </div>
 
-    <div
-      v-else-if="expectedAmount"
-      class="dashboard-page__cards"
-    >
+    <div v-else-if="expectedAmount" class="dashboard-page__cards">
       <FinancialProgressCard
         :title="'Ingresos'"
         :amount="expectedAmount"
         title-color="white"
         text-color="white"
         icon-name="account_balance_wallet"
-        icon-text-class="text-primary-500"
-        currency-text-class="text-neutral-400"
+        icon-text-class="text-yellow-400"
+        currency-text-class="text-yellow-400"
         class="dashboard-page__card--accent"
         variant="accent"
       />
@@ -226,8 +216,8 @@
         title-color="white"
         text-color="white"
         icon-name="savings"
-        icon-text-class="text-primary-500"
-        currency-text-class="text-neutral-400"
+        icon-text-class="text-yellow-400"
+        currency-text-class="text-yellow-400"
         class="dashboard-page__card--accent"
         variant="accent"
       />
@@ -237,8 +227,8 @@
         title-color="white"
         text-color="white"
         icon-name="payments"
-        icon-text-class="text-primary-500"
-        currency-text-class="text-neutral-400"
+        icon-text-class="text-yellow-400"
+        currency-text-class="text-yellow-400"
         class="dashboard-page__card--accent"
         variant="accent"
       />
@@ -248,7 +238,8 @@
         title-color="white"
         text-color="white"
         icon-mark="savings"
-        icon-text-class="text-primary-500"
+        icon-text-class="text-yellow-400"
+        currency-text-class="text-yellow-400"
       >
         <template #body>
           <div class="dashboard-page__card-body">
@@ -292,9 +283,7 @@
     <FinancialTipCarousel :tips="FINANCIAL_TIPS.common" />
 
     <div v-if="currentBudget" class="dashboard-page__chart-section">
-      <div
-        class="dashboard-page__budget-card"
-      >
+      <div class="dashboard-page__budget-card">
         <div class="dashboard-page__budget-header">
           <Heading level="h3" size="lg" weight="semibold">
             {{
@@ -390,10 +379,7 @@
       </div>
     </div>
 
-    <div
-      v-else-if="!isPageLoading"
-      class="dashboard-page__no-budget"
-    >
+    <div v-else-if="!isPageLoading" class="dashboard-page__no-budget">
       <Heading level="h3" size="lg" weight="semibold" class="dashboard-page__no-budget-title">
         No hay un presupuesto cargado para mostrar
       </Heading>
@@ -415,175 +401,175 @@
 </template>
 
 <style scoped lang="postcss">
-.dashboard-page {
-  @apply space-y-4 p-4;
-}
+  .dashboard-page {
+    @apply space-y-4 p-4;
+  }
 
-.dashboard-page__header {
-  @apply flex items-center justify-between;
-}
+  .dashboard-page__header {
+    @apply flex items-center justify-between;
+  }
 
-.dashboard-page__header-text {
-  @apply md:pr-4 xl:pr-0;
-}
+  .dashboard-page__header-text {
+    @apply md:pr-4 xl:pr-0;
+  }
 
-.dashboard-page__header-title-wrapper {
-  @apply mb-2 flex items-center gap-2;
-}
+  .dashboard-page__header-title-wrapper {
+    @apply mb-2 flex items-center gap-2;
+  }
 
-.dashboard-page__title {
-  @apply mb-1;
-}
+  .dashboard-page__title {
+    @apply mb-1;
+  }
 
-.dashboard-page__header-actions {
-  @apply flex items-center gap-2;
-}
+  .dashboard-page__header-actions {
+    @apply flex items-center gap-2;
+  }
 
-.dashboard-page__loading {
-  @apply mb-8 grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4;
-}
+  .dashboard-page__loading {
+    @apply mb-8 grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
 
-.dashboard-page__skeleton {
-  @apply h-36 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800;
-}
+  .dashboard-page__skeleton {
+    @apply h-36 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800;
+  }
 
-.dashboard-page__cards {
-  @apply mb-8 grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4;
-}
+  .dashboard-page__cards {
+    @apply mb-8 grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
 
-.dashboard-page__card--accent {
-  @apply !bg-primary-900;
-}
+  .dashboard-page__card--accent {
+    @apply !bg-primary-900;
+  }
 
-.dashboard-page__card-body {
-  @apply flex flex-col justify-between;
-}
+  .dashboard-page__card-body {
+    @apply flex flex-col justify-between;
+  }
 
-.dashboard-page__card-content {
-  @apply p-1;
-}
+  .dashboard-page__card-content {
+    @apply p-1;
+  }
 
-.dashboard-page__card-text {
-  @apply leading-relaxed;
-}
+  .dashboard-page__card-text {
+    @apply leading-relaxed;
+  }
 
-.dashboard-page__card-action {
-  @apply z-10 flex items-center justify-end gap-2;
-}
+  .dashboard-page__card-action {
+    @apply z-10 flex items-center justify-end gap-2;
+  }
 
-.dashboard-page__chart-section {
-  @apply mb-8 grid grid-cols-1 xl:grid-cols-2;
-}
+  .dashboard-page__chart-section {
+    @apply mb-8 grid grid-cols-1 xl:grid-cols-2;
+  }
 
-.dashboard-page__budget-card {
-  @apply rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800;
-}
+  .dashboard-page__budget-card {
+    @apply rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800;
+  }
 
-.dashboard-page__budget-header {
-  @apply flex border-b border-slate-100 px-5 py-4 dark:border-slate-700;
-}
+  .dashboard-page__budget-header {
+    @apply flex border-b border-slate-100 px-5 py-4 dark:border-slate-700;
+  }
 
-.dashboard-page__budget-badge {
-  @apply ml-2;
-}
+  .dashboard-page__budget-badge {
+    @apply ml-2;
+  }
 
-.dashboard-page__budget-content {
-  @apply flex items-center gap-6 p-5;
-}
+  .dashboard-page__budget-content {
+    @apply flex items-center gap-6 p-5;
+  }
 
-.dashboard-page__chart-wrapper {
-  @apply shrink-0;
-}
+  .dashboard-page__chart-wrapper {
+    @apply shrink-0;
+  }
 
-.dashboard-page__chart-skeleton {
-  @apply h-44 w-44 animate-pulse rounded-full bg-slate-100 dark:bg-slate-700;
-}
+  .dashboard-page__chart-skeleton {
+    @apply h-44 w-44 animate-pulse rounded-full bg-slate-100 dark:bg-slate-700;
+  }
 
-.dashboard-page__categories {
-  @apply min-w-0 flex-1 space-y-4;
-}
+  .dashboard-page__categories {
+    @apply min-w-0 flex-1 space-y-4;
+  }
 
-.dashboard-page__category {
-  @apply space-y-1.5;
-}
+  .dashboard-page__category {
+    @apply space-y-1.5;
+  }
 
-.dashboard-page__category-header {
-  @apply flex items-center justify-between gap-2;
-}
+  .dashboard-page__category-header {
+    @apply flex items-center justify-between gap-2;
+  }
 
-.dashboard-page__category-label {
-  @apply flex min-w-0 items-center gap-2;
-}
+  .dashboard-page__category-label {
+    @apply flex min-w-0 items-center gap-2;
+  }
 
-.dashboard-page__category-dot {
-  @apply h-3 w-3 shrink-0 rounded-full;
-}
+  .dashboard-page__category-dot {
+    @apply h-3 w-3 shrink-0 rounded-full;
+  }
 
-.dashboard-page__category-dot--needs {
-  @apply bg-primary-500;
-}
+  .dashboard-page__category-dot--needs {
+    @apply bg-primary-500;
+  }
 
-.dashboard-page__category-dot--wants {
-  @apply bg-secondary-500;
-}
+  .dashboard-page__category-dot--wants {
+    @apply bg-secondary-500;
+  }
 
-.dashboard-page__category-dot--savings {
-  @apply bg-warning-500;
-}
+  .dashboard-page__category-dot--savings {
+    @apply bg-warning-500;
+  }
 
-.dashboard-page__category-name {
-  @apply truncate;
-}
+  .dashboard-page__category-name {
+    @apply truncate;
+  }
 
-.dashboard-page__category-percentage {
-  @apply text-slate-400;
-}
+  .dashboard-page__category-percentage {
+    @apply text-slate-400;
+  }
 
-.dashboard-page__category-amount {
-  @apply shrink-0;
-}
+  .dashboard-page__category-amount {
+    @apply shrink-0;
+  }
 
-.dashboard-page__category-progress {
-  @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
-}
+  .dashboard-page__category-progress {
+    @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
+  }
 
-.dashboard-page__category-progress-bar {
-  @apply h-full rounded-full transition-all duration-700;
-}
+  .dashboard-page__category-progress-bar {
+    @apply h-full rounded-full transition-all duration-700;
+  }
 
-.dashboard-page__category-progress-bar--needs {
-  @apply bg-primary-500;
-}
+  .dashboard-page__category-progress-bar--needs {
+    @apply bg-primary-500;
+  }
 
-.dashboard-page__category-progress-bar--wants {
-  @apply bg-secondary-500;
-}
+  .dashboard-page__category-progress-bar--wants {
+    @apply bg-secondary-500;
+  }
 
-.dashboard-page__category-progress-bar--savings {
-  @apply bg-warning-500;
-}
+  .dashboard-page__category-progress-bar--savings {
+    @apply bg-warning-500;
+  }
 
-.dashboard-page__balance-chart {
-  @apply mt-4;
-}
+  .dashboard-page__balance-chart {
+    @apply mt-4;
+  }
 
-.dashboard-page__no-budget {
-  @apply rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800;
-}
+  .dashboard-page__no-budget {
+    @apply rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800;
+  }
 
-.dashboard-page__no-budget-title {
-  @apply mb-2;
-}
+  .dashboard-page__no-budget-title {
+    @apply mb-2;
+  }
 
-.dashboard-page__no-budget-text {
-  @apply mx-auto max-w-2xl;
-}
+  .dashboard-page__no-budget-text {
+    @apply mx-auto max-w-2xl;
+  }
 
-.dashboard-page__no-budget-action {
-  @apply mt-4 flex justify-center;
-}
+  .dashboard-page__no-budget-action {
+    @apply mt-4 flex justify-center;
+  }
 
-.dashboard-page__modal {
-  @apply px-8;
-}
+  .dashboard-page__modal {
+    @apply px-8;
+  }
 </style>

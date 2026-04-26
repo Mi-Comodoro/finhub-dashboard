@@ -110,10 +110,8 @@ export function formatCompactCurrency(amount: number, currency: Currency): strin
   const { symbol } = CURRENCY_CONFIG[currency]
   const abs = Math.abs(amount)
   const sign = amount < 0 ? '-' : ''
-  if (abs >= 1_000_000)
-    return `${sign}${symbol}${round(abs / 1_000_000, 2).toFixed(2)}M ${currency}`
-  if (abs >= 1_000)
-    return `${sign}${symbol}${round(abs / 1_000, 2).toFixed(2)}K ${currency}`
+  if (abs >= 1_000_000) return `${sign}${symbol}${round(abs / 1_000_000, 2).toFixed(2)}M `
+  if (abs >= 1_000) return `${sign}${symbol}${round(abs / 1_000, 2).toFixed(2)}K `
   return `${sign}${formatCurrency(amount, currency)}`
 }
 

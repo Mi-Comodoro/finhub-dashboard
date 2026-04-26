@@ -91,7 +91,7 @@
    =======================*/
 
   .btn--sm {
-    @apply min-h-8 px-3 py-0 text-sm;
+    @apply min-h-8 px-3 py-0 text-xs;
   }
 
   .btn--md {

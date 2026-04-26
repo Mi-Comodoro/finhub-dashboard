@@ -3,7 +3,7 @@ import type { PlannedSaving } from './planned-savings.api'
 export type GoalStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAUSED'
 
 export interface GoalsData {
-  id?: string
+  id: string
   name: string
   reason: string
   targetAmount?: number | null

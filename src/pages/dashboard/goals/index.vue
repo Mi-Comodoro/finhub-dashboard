@@ -24,8 +24,13 @@
 
   const router = useRouter()
 
-  const { loadGoalsData, loadSavingAllocations, error: goalsError, goals, removeGoal } =
-    useGoalsApplication()
+  const {
+    loadGoalsData,
+    loadSavingAllocations,
+    error: goalsError,
+    goals,
+    removeGoal
+  } = useGoalsApplication()
   const handleActions = () => {
     if (goalsError.value?.status === 401) {
       return navigateTo('/', { replace: true })
@@ -451,7 +456,7 @@
               <td>{{ goal.accountName }}</td>
               <td>
                 <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="sm">
-                  {{ GOAL_STATUS_LABELS[goal.status as GoalStatus ?? 'SCHEDULED'] }}
+                  {{ GOAL_STATUS_LABELS[(goal.status as GoalStatus) ?? 'SCHEDULED'] }}
                 </Badge>
               </td>
               <td>{{ GOAL_TERM_LABELS[getGoalTerm(goal.targetDate)] }}</td>
@@ -490,28 +495,6 @@
             </tr>
           </tbody>
         </table>
-        <Card v-if="goals.length > 6" class="goals-page__achievement-card" class-name="!p-0">
-          <div class="goals-page__achievement-content">
-            <div class="goals-page__achievement-header">
-              <div class="goals-page__achievement-title-wrapper">
-                <Heading level="h3" title-size="sm" weight="extrabold" color="white">¡Wow!</Heading>
-              </div>
-              <div class="goals-page__achievement-body">
-                <Text size="sm" class="goals-page__achievement-text" color="white">
-                  ¡Increíble progreso! Estás visualizando tu futuro con más de 6 metas activas.
-                </Text>
-                <Button variant="ghost" size="sm" class="goals-page__achievement-button">
-                  Ver mas
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div class="goals-page__achievement-icon">
-            <span class="material-symbols-outlined goals-page__achievement-icon-symbol">
-              celebration
-            </span>
-          </div>
-        </Card>
       </div>
       <div v-else class="goals-page__empty-section">
         <div class="goals-page__empty-content">
@@ -607,26 +590,40 @@
                 <div class="goals-page__account-card">
                   <div class="goals-page__account-info">
                     <div class="goals-page__account-badge-wrapper">
-                      <Badge
-                        :rounded="false"
-                        class="goals-page__account-badge"
-                        :class-name="getLevelRateClass(getRateCategory(account.interestRate).level)"
-                      >
-                        {{ getInitials(account.name) }}
-                      </Badge>
-                      <CardInfo
-                        level="h3"
-                        title-size="sm"
-                        weight="extrabold"
-                        :title="account.name"
-                        :sub-title="
-                          account.description ||
-                          getRateCategory(Number(account.interestRate)).description
-                        "
-                        sub-title-size="xs"
-                        sub-title-color="muted"
-                      />
+                      <div class="goals-page__account-badge-wrapper">
+                        <Badge
+                          :rounded="false"
+                          class="goals-page__account-badge"
+                          :class-name="
+                            getLevelRateClass(getRateCategory(account.interestRate).level)
+                          "
+                        >
+                          {{ getInitials(account.name) }}
+                        </Badge>
+                        <CardInfo
+                          level="h3"
+                          title-size="sm"
+                          weight="extrabold"
+                          :title="account.name"
+                          :sub-title="
+                            account.description ||
+                            getRateCategory(Number(account.interestRate)).description
+                          "
+                          sub-title-size="xs"
+                          sub-title-color="muted"
+                        />
+                      </div>
+                      <div class="goals-page__account-edit">
+                        <Button
+                          icon="edit"
+                          variant="ghost"
+                          size="sm"
+                          icon-only
+                          @click="editAccount(account)"
+                        />
+                      </div>
                     </div>
+
                     <div class="goals-page__account-stats">
                       <span
                         class="goals-page__account-frequency"
@@ -635,16 +632,8 @@
                         {{ frequencyMap(account.compoundingFrequency) }}
                       </span>
                       <Text size="xs">{{ account.interestRate.toFixed(2) }}%EA</Text>
-                      <Button
-                        icon="edit"
-                        variant="ghost"
-                        size="sm"
-                        icon-only
-                        @click="editAccount(account)"
-                      />
                     </div>
                   </div>
-                  <AccountRateTimeline :account-id="account.id" />
                 </div>
               </Card>
             </div>
@@ -941,7 +930,7 @@
   }
 
   .goals-page__account-badge-wrapper {
-    @apply flex items-center gap-2;
+    @apply flex w-full items-center gap-2;
   }
 
   .goals-page__account-badge {
@@ -982,6 +971,10 @@
   }
 
   .goals-page__delete-actions {
-    @apply flex gap-2 justify-end;
+    @apply flex justify-end gap-2;
+  }
+
+  goals-page__account-edit {
+    @apply place-items-end;
   }
 </style>

@@ -24,9 +24,7 @@
       : pendingAssignedAmount.value
   )
 
-  const completedCount = computed(() =>
-    goals.value.filter(g => g.status === 'COMPLETED').length
-  )
+  const completedCount = computed(() => goals.value.filter(g => g.status === 'COMPLETED').length)
 
   updateNewSavingAmount(pendingAmount.value)
 </script>
@@ -38,7 +36,8 @@
       :subtitle="'Basado en tu seleccion'"
       :amount="savingsAmount"
       icon-name="account_balance"
-      icon-text-class="text-primary-500"
+      icon-text-class="text-primary-100"
+      icon-bg-class="bg-primary-900"
       currency-text-class="text-primary-500"
       :progress-percentage="allocationProgress"
       variant="primary"
@@ -51,6 +50,7 @@
       icon-name="savings"
       icon-text-class="text-yellow-500"
       currency-text-class="text-yellow-500"
+      icon-bg-class="bg-yellow-100"
       variant="gold"
       :text-footer="lastUpdate()!"
     />
@@ -69,14 +69,13 @@
       :title="'Metas completadas'"
       subtitle="Estado de progreso"
       icon-name="track_changes"
-      icon-text-class="text-primary-600"
+      icon-text-class="text-secondary-600"
+      icon-bg-class="bg-secondary-100"
       variant="secondary"
     >
       <template #body>
         <div class="allocation-summary__goals">
-          <Heading size="5xl" weight="extrabold">
-            {{ completedCount }}/{{ goals.length }}
-          </Heading>
+          <Heading size="5xl" weight="extrabold">{{ completedCount }}/{{ goals.length }}</Heading>
           <Text color="muted" size="sm">Completadas</Text>
         </div>
       </template>
@@ -85,11 +84,11 @@
 </template>
 
 <style scoped lang="postcss">
-.allocation-summary {
-  @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4;
-}
+  .allocation-summary {
+    @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
 
-.allocation-summary__goals {
-  @apply flex h-full items-center gap-2;
-}
+  .allocation-summary__goals {
+    @apply flex h-full items-center gap-2;
+  }
 </style>

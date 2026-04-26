@@ -231,7 +231,7 @@
   }
 
   .input--readonly {
-    @apply cursor-default border-dashed bg-slate-50 text-slate-500;
+    @apply cursor-default text-slate-500;
   }
 
   /* error */

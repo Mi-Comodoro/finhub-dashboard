@@ -16,7 +16,7 @@
       targetAmount?: number
       progressLabel?: string
       targetDate?: string
-      status?: string
+
       iconName?: string
       iconMark?: string
       iconTextClass?: string
@@ -60,10 +60,6 @@
   const progressWidth = computed(() => {
     return Math.min(props.progressPercentage, 100)
   })
-
-  const statusText = computed(() =>
-    props.status.trim().length ? (props.status === 'active' ? 'Activo' : 'Pausado') : ''
-  )
 
   const currency = computed(() => financeStore.defaultCurrency)
 
@@ -164,18 +160,23 @@
   }
 
   const styles = computed(() => {
-    const baseStyles = props.variant ? variantStyles[props.variant] : {
-      icon: `${props.iconBgClass} ${props.iconTextClass}`,
-      currency: 'text-neutral-400',
-      alert: props.iconTextClass,
-      bgAccent: props.iconTextClass,
-      background: ''
-    }
+    const baseStyles = props.variant
+      ? variantStyles[props.variant]
+      : {
+          icon: `${props.iconBgClass} ${props.iconTextClass}`,
+          currency: 'text-neutral-400',
+          alert: props.iconTextClass,
+          bgAccent: props.iconTextClass,
+          background: ''
+        }
 
     // Override currency class if prop is provided
     return {
       ...baseStyles,
-      icon: props.iconBgClass || props.iconTextClass ? `${props.iconBgClass} ${props.iconTextClass}` : baseStyles.icon,
+      icon:
+        props.iconBgClass || props.iconTextClass
+          ? `${props.iconBgClass} ${props.iconTextClass}`
+          : baseStyles.icon,
       currency: props.currencyTextClass || baseStyles.currency
     }
   })
@@ -203,10 +204,6 @@
             :sub-title-color="subTitleColor"
           />
         </div>
-        <!-- Status (Active or Paused) -->
-        <Text color="primary" size="xs" class="ml-auto self-start">
-          {{ statusText }}
-        </Text>
       </div>
 
       <!-- Body Section -->
