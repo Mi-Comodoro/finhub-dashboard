@@ -1,3 +1,5 @@
+import type { PlannedSaving } from './planned-savings.api'
+
 export type GoalStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAUSED'
 
 export interface GoalsData {
@@ -11,6 +13,7 @@ export interface GoalsData {
   userId?: string
   accountName?: string
   status?: GoalStatus
+  plannedSavings?: PlannedSaving[]
   createdAt?: Date
   updatedAt?: Date
 }

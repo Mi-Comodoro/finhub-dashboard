@@ -12,12 +12,8 @@
   import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
   import type { GoalHistory, GoalsData } from '@/types/api'
   import {
-    buildMonthlyProjection,
-    type MonthlyProjectionPoint,
-    projectByWeeks,
-    projectCompoundGrowth,
-    type ProjectionPoint,
-    type WeeklyProjectionPoint
+    buildProjection,
+    type SavingPoint
   } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
   import { getGoalTerm, GOAL_STATUS_LABELS, type GoalStatus } from '@/utils/goals.utils'
@@ -104,10 +100,14 @@
 
   const savingsAmount = computed(() => budgetStore.currentBudgetPlan?.savingsAmount ?? 0)
 
-  // Planned savings for this goal
-  const goalSavings = computed(() =>
-    (plannedSavingStore.items ?? []).filter(s => s.savingGoalId === goal.value?.id)
-  )
+  // Planned savings for this goal - use from goal.plannedSavings if available (from backend)
+  const goalSavings = computed(() => {
+    if (goal.value?.plannedSavings) {
+      return goal.value.plannedSavings
+    }
+    // Fallback to store if backend doesn't include plannedSavings yet
+    return (plannedSavingStore.items ?? []).filter(s => s.savingGoalId === goal.value?.id)
+  })
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
 
@@ -148,82 +148,26 @@
     return 'monthly'
   })
 
-  const horizonMonths = computed(() => {
-    const map: Record<typeof selectedHorizon.value, number> = {
-      '1m': 1,
-      '3m': 3,
-      '12m': 12,
-      '24m': 24,
-      '36m': 36
-    }
-    return map[selectedHorizon.value]
-  })
-
-  const projectionPoints = computed<MonthlyProjectionPoint[] | WeeklyProjectionPoint[] | ProjectionPoint[]>(() => {
+  const projectionPoints = computed<SavingPoint[]>(() => {
     const interestRate = account.value?.interestRate ?? 0
-    const principal = totalSavedForGoal.value
-    const monthlyContr = monthlyContribution.value
 
-    if (principal === 0 && monthlyContr === 0) return []
+    if (goalSavings.value.length === 0) return []
 
-    if (granularity.value === 'daily') {
-      // Use buildMonthlyProjection with actual completed savings
-      const savingsWithCompletedAt = completedSavings.value
-        .filter(s => s.completedAt)
-        .map(s => ({
-          amount: Number(s.amount),
-          completedAt: s.completedAt as string
-        }))
-
-      if (savingsWithCompletedAt.length === 0) return []
-
-      return buildMonthlyProjection({
-        savings: savingsWithCompletedAt,
-        annualRate: interestRate,
-        referenceDate: new Date()
-      })
-    }
-
-    if (granularity.value === 'weekly') {
-      const weeklyContr = (monthlyContr * 12) / 52
-      return projectByWeeks({
-        principal,
-        weeklyContribution: weeklyContr,
-        annualRate: interestRate,
-        weeks: 13
-      })
-    }
-
-    // monthly
-    const frequency = account.value?.compoundingFrequency ?? 'monthly'
-    return projectCompoundGrowth({
-      principal,
-      monthlyContribution: monthlyContr,
+    // Use new buildProjection with actual and projected savings
+    return buildProjection({
+      savings: goalSavings.value.map(s => ({
+        amount: Number(s.amount),
+        status: s.status,
+        completedAt: s.completedAt,
+        date: s.date
+      })),
       annualRate: interestRate,
-      compoundingFrequency: frequency as 'daily' | 'monthly' | 'quarterly' | 'annually',
-      months: horizonMonths.value
+      view: selectedHorizon.value,
+      referenceDate: new Date()
     })
   })
 
-  const basePoints = computed(() => {
-    if (granularity.value === 'daily') {
-      // Extract withoutInterest from MonthlyProjectionPoint[]
-      return (projectionPoints.value as MonthlyProjectionPoint[]).map(p => p.withoutInterest)
-    }
-
-    const principal = totalSavedForGoal.value
-    const monthlyContr = monthlyContribution.value
-
-    if (granularity.value === 'weekly') {
-      const weeklyContr = (monthlyContr * 12) / 52
-      return Array.from({ length: 13 }, (_, i) => Math.round(principal + weeklyContr * (i + 1)))
-    }
-
-    // monthly
-    return Array.from({ length: horizonMonths.value }, (_, i) =>
-      Math.round(principal + monthlyContr * (i + 1))
-    )
-  })
+  const basePoints = computed(() => projectionPoints.value.map(p => p.withoutInterest))
 
   const estimatedInterest = computed(() => {
     const annualRate = account.value?.interestRate ?? 0
@@ -242,81 +186,24 @@
     }, 0)
   })
 
-  const withInterest = computed(() => {
-    if (granularity.value === 'daily') {
-      return (projectionPoints.value as MonthlyProjectionPoint[]).map(p => p.withInterest)
-    }
-    return projectionPoints.value.map(p => p.balance)
-  })
+  const withInterest = computed(() => projectionPoints.value.map(p => p.withInterest))
+
+  const projectionLabels = computed(() => projectionPoints.value.map(p => p.label))
 
   const projectionSummary = computed(() => {
-    let lastWithInterest = 0
-    let lastBase = 0
-    let diff = 0
+    // Use last projection points
+    const lastWithInterest = withInterest.value[withInterest.value.length - 1] ?? 0
+    const lastBase = basePoints.value[basePoints.value.length - 1] ?? 0
+    const diff = lastWithInterest - lastBase
 
-    if (granularity.value === 'daily') {
-      // For daily granularity, calculate interest only for remaining days of the month
-      const today = new Date()
-      const currentDay = today.getDate()
-      const remainingDays = 30 - currentDay
-
-      if (remainingDays > 0) {
-        const annualRate = account.value?.interestRate ?? 0
-        const savingsWithCompletedAt = completedSavings.value
-          .filter(s => s.completedAt)
-          .map(s => ({
-            amount: Number(s.amount),
-            completedAt: s.completedAt as string
-          }))
-
-        // Calculate balance at end of remaining days
-        const futureDate = new Date(today)
-        futureDate.setDate(futureDate.getDate() + remainingDays)
-
-        const withInterestFuture = savingsWithCompletedAt.reduce((acc, s) => {
-          const completedDate = new Date(s.completedAt)
-          const daysElapsed = Math.max(
-            0,
-            Math.floor((futureDate.getTime() - completedDate.getTime()) / 86_400_000)
-          )
-          const balanceWithInterest = s.amount * Math.pow(1 + annualRate / 100, daysElapsed / 365)
-          return acc + balanceWithInterest
-        }, 0)
-
-        lastBase = totalSavedForGoal.value
-        lastWithInterest = Math.round(withInterestFuture)
-        diff = lastWithInterest - lastBase
-      } else {
-        // No remaining days, use current values
-        lastBase = totalSavedForGoal.value
-        lastWithInterest = totalSavedForGoal.value + estimatedInterest.value
-        diff = estimatedInterest.value
-      }
-    } else {
-      // For weekly/monthly granularity, use projection points
-      lastWithInterest = withInterest.value[withInterest.value.length - 1] ?? 0
-      lastBase = basePoints.value[basePoints.value.length - 1] ?? 0
-      diff = lastWithInterest - lastBase
-    }
-
+    // Calculate months to goal (estimate based on current projection rate)
     let monthsToGoal: number | null = null
-    if (goal.value?.targetAmount && monthlyContribution.value > 0) {
-      const interestRate = account.value?.interestRate ?? 0
-      const frequency = account.value?.compoundingFrequency ?? 'monthly'
-      const principal = totalSavedForGoal.value
-
-      // Proyectar hasta 600 meses (50 años)
-      const projection = projectCompoundGrowth({
-        principal,
-        monthlyContribution: monthlyContribution.value,
-        annualRate: interestRate,
-        compoundingFrequency: frequency as 'daily' | 'monthly' | 'quarterly' | 'annually',
-        months: 600
-      })
-
-      const foundMonth = projection.find(p => p.balance >= goal.value!.targetAmount)
-      if (foundMonth) {
-        monthsToGoal = foundMonth.month
+    if (goal.value?.targetAmount && diff > 0 && lastBase > 0) {
+      // Extrapolate based on current growth rate
+      const remaining = goal.value.targetAmount - totalSavedForGoal.value - estimatedInterest.value
+      if (remaining > 0 && monthlyContribution.value > 0) {
+        // Simple estimation: remaining / monthly contribution
+        monthsToGoal = Math.ceil(remaining / monthlyContribution.value)
       }
     }
 
@@ -511,12 +398,13 @@
           :base-data="basePoints"
           :interest-data="withInterest"
           :granularity="granularity"
-          :periods="granularity === 'daily' ? 30 : granularity === 'weekly' ? 13 : horizonMonths"
+          :periods="projectionPoints.length"
           :start-month="startMonth"
           :target-amount="goal?.targetAmount ?? undefined"
           :currency="currency"
           :current-balance="totalSavedForGoal"
           :interest-rate="account?.interestRate"
+          :labels="projectionLabels"
         />
 
         <!-- Projection Summary Panel -->
@@ -552,8 +440,17 @@
 
         <!-- Disclaimer -->
         <AlertBanner variant="warning" icon="info">
-          Las proyecciones son estimadas y pueden variar según las actualizaciones de tasa de
-          interés por parte de las entidades financieras.
+          <div>
+            <p style="margin-bottom: 8px">
+              El interés se calcula día a día con interés compuesto. Tu capital crece un poco cada
+              día que permanece depositado. En vistas de 3 meses o más, los aportes futuros son
+              estimados basados en tu último aporte registrado.
+            </p>
+            <p style="margin: 0; font-size: 0.875rem; opacity: 0.9">
+              Las proyecciones son estimadas y pueden variar según las actualizaciones de tasa de
+              interés por parte de las entidades financieras.
+            </p>
+          </div>
         </AlertBanner>
       </Card>
 

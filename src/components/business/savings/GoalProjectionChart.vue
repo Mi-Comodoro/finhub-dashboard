@@ -40,6 +40,7 @@
     currency: Currency
     currentBalance?: number
     interestRate?: number // tasa de interés anual
+    labels?: string[] // custom labels for x-axis (if provided, overrides auto-generated labels)
   }
 
   const props = defineProps<Props>()
@@ -56,6 +57,12 @@
   const hasData = computed(() => props.interestData.length > 0)
 
   const xLabels = computed(() => {
+    // Use custom labels if provided
+    if (props.labels && props.labels.length > 0) {
+      return props.labels
+    }
+
+    // Otherwise, auto-generate based on granularity
     if (props.granularity === 'daily') {
       return Array.from({ length: props.periods }, (_, i) => `Día ${i + 1}`)
     }

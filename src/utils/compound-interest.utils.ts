@@ -21,6 +21,24 @@ export interface MonthlyProjectionPoint {
   withoutInterest: number
 }
 
+export interface SavingPoint {
+  label: string // "Día 1", "May", etc.
+  withInterest: number
+  withoutInterest: number
+}
+
+export interface ProjectionInput {
+  savings: Array<{
+    amount: number
+    status: 'pending' | 'completed' | 'skipped'
+    completedAt?: string | null
+    date: Date | string
+  }>
+  annualRate: number
+  view: '1m' | '3m' | '12m' | '24m' | '36m'
+  referenceDate?: Date
+}
+
 export function projectCompoundGrowth(params: {
   principal: number
   monthlyContribution: number
@@ -193,6 +211,158 @@ export function buildMonthlyProjection(params: {
       withInterest: Math.round(withInterest),
       withoutInterest: Math.round(totalPrincipal)
     })
+  }
+
+  return points
+}
+
+/**
+ * Build projection based on completed savings and view type.
+ * - Vista 1m: Solo capital real + interés, sin proyecciones futuras
+ * - Vistas 3m/12m/24m/36m: Incluye aportes hipotéticos futuros
+ */
+export function buildProjection(input: ProjectionInput): SavingPoint[] {
+  const { savings, annualRate, view, referenceDate = new Date() } = input
+
+  if (annualRate < 0) return []
+
+  // Only use completed savings
+  const completed = savings.filter(s => s.status === 'completed' && s.completedAt)
+
+  // Generate time points based on view
+  const points = generateTimePoints(view, referenceDate)
+
+  // For 1m view: NO future projections, only real completed savings
+  if (view === '1m') {
+    return points.map(({ label, date }) => {
+      const activeSavings = completed.filter(s => new Date(s.completedAt!) <= date)
+
+      const withoutInterest = activeSavings.reduce((a, s) => a + s.amount, 0)
+
+      const withInterest = activeSavings.reduce((acc, s) => {
+        const days = Math.floor((date.getTime() - new Date(s.completedAt!).getTime()) / 86_400_000)
+        return acc + s.amount * Math.pow(1 + annualRate / 100, days / 365)
+      }, 0)
+
+      return {
+        label,
+        withInterest,
+        withoutInterest
+      }
+    })
+  }
+
+  // For 3m/12m/24m/36m views: Include hypothetical future contributions
+  // Use last completed saving to project future ones
+  const lastCompleted = completed.length > 0
+    ? completed.reduce((latest, s) =>
+        new Date(s.completedAt!) > new Date(latest.completedAt!) ? s : latest
+      )
+    : null
+
+  if (!lastCompleted) {
+    // No completed savings yet, return empty projections
+    return points.map(({ label }) => ({
+      label,
+      withInterest: 0,
+      withoutInterest: 0
+    }))
+  }
+
+  const lastDate = new Date(lastCompleted.completedAt!)
+  const lastAmount = lastCompleted.amount
+  const dayOfMonth = lastDate.getDate()
+
+  // Generate hypothetical future contributions (one per month after last completed)
+  const projectedSavings: Array<{ amount: number; date: Date }> = []
+  for (let i = 1; i <= 36; i++) {
+    // Project up to 36 months
+    const projectedDate = new Date(
+      lastDate.getFullYear(),
+      lastDate.getMonth() + i,
+      dayOfMonth
+    )
+    projectedSavings.push({
+      amount: lastAmount,
+      date: projectedDate
+    })
+  }
+
+  return points.map(({ label, date }) => {
+    // Active completed savings
+    const activeSavings = completed.filter(s => new Date(s.completedAt!) <= date)
+
+    // Active projected savings
+    const activeProjected = projectedSavings.filter(s => s.date <= date)
+
+    const withoutInterest =
+      activeSavings.reduce((a, s) => a + s.amount, 0) +
+      activeProjected.reduce((a, s) => a + s.amount, 0)
+
+    const withInterest =
+      activeSavings.reduce((acc, s) => {
+        const days = Math.floor((date.getTime() - new Date(s.completedAt!).getTime()) / 86_400_000)
+        return acc + s.amount * Math.pow(1 + annualRate / 100, days / 365)
+      }, 0) +
+      activeProjected.reduce((acc, s) => {
+        const days = Math.floor((date.getTime() - s.date.getTime()) / 86_400_000)
+        return acc + s.amount * Math.pow(1 + annualRate / 100, Math.max(0, days) / 365)
+      }, 0)
+
+    return {
+      label,
+      withInterest,
+      withoutInterest
+    }
+  })
+}
+
+/**
+ * Generate time points (labels and dates) based on selected view.
+ */
+function generateTimePoints(
+  view: ProjectionInput['view'],
+  ref: Date
+): Array<{ label: string; date: Date }> {
+  const points: Array<{ label: string; date: Date }> = []
+  const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+
+  if (view === '1m') {
+    // 30 daily points - end of day for accurate compound interest calculation
+    for (let day = 1; day <= 30; day++) {
+      const date = new Date(ref.getFullYear(), ref.getMonth(), day, 23, 59, 59)
+      points.push({ label: `Día ${day}`, date })
+    }
+  } else if (view === '3m') {
+    // 13 weekly points (~3 months)
+    for (let week = 1; week <= 13; week++) {
+      const date = new Date(ref)
+      date.setDate(ref.getDate() + (week - 1) * 7)
+      points.push({ label: `Sem ${week}`, date })
+    }
+  } else if (view === '12m') {
+    // 12 monthly points
+    for (let month = 0; month < 12; month++) {
+      const date = new Date(ref.getFullYear(), ref.getMonth() + month, ref.getDate())
+      const monthName = monthNames[date.getMonth()]
+      points.push({ label: monthName, date })
+    }
+  } else if (view === '24m') {
+    // 24 monthly points
+    for (let month = 0; month < 24; month++) {
+      const date = new Date(ref.getFullYear(), ref.getMonth() + month, ref.getDate())
+      const monthName = monthNames[date.getMonth()]
+      const year = date.getFullYear() % 100 // Last 2 digits
+      points.push({ label: `${monthName} '${year}`, date })
+    }
+  } else if (view === '36m') {
+    // 36 monthly points
+    for (let month = 0; month < 36; month++) {
+      const date = new Date(ref.getFullYear(), ref.getMonth() + month, ref.getDate())
+      const monthName = monthNames[date.getMonth()]
+      const year = date.getFullYear() % 100
+      points.push({ label: `${monthName} '${year}`, date })
+    }
   }
 
   return points
