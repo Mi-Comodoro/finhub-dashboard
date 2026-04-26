@@ -15,7 +15,6 @@
   import type { CompoundingFrequency, GoalsData } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
   import {
-    getGoalProgress,
     getGoalTerm,
     getStatusVariant,
     GOAL_STATUS_LABELS,
@@ -269,11 +268,6 @@
     if (activeFilter.value === 'all') return allGoals
     return allGoals.filter(g => getGoalTerm(g.targetDate) === activeFilter.value)
   })
-
-  // Completed count
-  const completedCount = computed(() =>
-    goals.value.filter(g => g.status === 'COMPLETED').length
-  )
 
   // Delete handlers
   const openDeleteModal = (id?: string) => {

@@ -45,7 +45,6 @@ export const useTransactionApplication = () => {
   const financesStore = useFinancesStore()
   const categoryApplication = useCategoryApplication()
   const transactionApi = useTransactionApi()
-  const { currentBudget } = useCommon()
 
   const transactions = computed(() => transactionStore.items)
   const pagination = computed(() => transactionStore.pagination)

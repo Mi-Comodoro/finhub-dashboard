@@ -2,7 +2,7 @@
   import { format } from 'date-fns'
   import { es } from 'date-fns/locale'
 
-  import { Badge, Button } from '@/components/atoms'
+  import { Badge } from '@/components/atoms'
   import { AlertBanner } from '@/components/atoms/alert-banner'
   import GoalProjectionChart from '@/components/business/savings/GoalProjectionChart.vue'
   import { useSavingsApi } from '@/composables/api/useSavingsApi'
@@ -11,7 +11,14 @@
   import { usePlannedSavingStore } from '@/stores/planned-saving.store'
   import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
   import type { GoalHistory, GoalsData } from '@/types/api'
-  import { projectCompoundGrowth } from '@/utils/compound-interest.utils'
+  import {
+    buildMonthlyProjection,
+    type MonthlyProjectionPoint,
+    projectByWeeks,
+    projectCompoundGrowth,
+    type ProjectionPoint,
+    type WeeklyProjectionPoint
+  } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
   import { getGoalTerm, GOAL_STATUS_LABELS, type GoalStatus } from '@/utils/goals.utils'
 
@@ -34,7 +41,7 @@
   const goal = ref<GoalsData | null>(null)
   const history = ref<GoalHistory[]>([])
   const isLoading = ref(false)
-  const selectedHorizon = ref<12 | 24 | 36>(12)
+  const selectedHorizon = ref<'1m' | '3m' | '12m' | '24m' | '36m'>('3m')
 
   // Fetch data
   const loadGoalDetail = async () => {
@@ -84,16 +91,15 @@
     return accountStore.accounts.find(a => a.id === goal.value!.accountId)
   })
 
-  const allocation = computed(() => {
-    if (!goal.value) return null
-    return allocationsStore.savingAllocations.find(a => a.goalId === goal.value!.id)
-  })
-
-  const currentBalance = computed(() => account.value?.balance ?? 0)
-
   const progressPercentage = computed(() => {
     if (!goal.value?.targetAmount || goal.value.targetAmount === 0) return 0
     return Math.min(100, Math.round((totalSavedForGoal.value / goal.value.targetAmount) * 100))
+  })
+
+  const toReach = computed(() => {
+    if (!goal.value?.targetAmount) return null
+    const remaining = goal.value.targetAmount - totalSavedForGoal.value - estimatedInterest.value
+    return Math.max(0, remaining)
   })
 
   const savingsAmount = computed(() => budgetStore.currentBudgetPlan?.savingsAmount ?? 0)
@@ -103,9 +109,7 @@
     (plannedSavingStore.items ?? []).filter(s => s.savingGoalId === goal.value?.id)
   )
 
-  const completedSavings = computed(() =>
-    goalSavings.value.filter(s => s.status === 'completed')
-  )
+  const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
 
   const totalSavedForGoal = computed(() =>
     completedSavings.value.reduce((acc, s) => acc + Number(s.amount), 0)
@@ -114,9 +118,13 @@
   const firstSavingDate = computed(() => {
     const completed = completedSavings.value
     if (!completed.length) return null
-    return completed.reduce((earliest, s) =>
-      new Date(s.date) < new Date(earliest.date) ? s : earliest
-    ).date
+    return (
+      completed.reduce((earliest, s) => {
+        const sDate = new Date(s.completedAt ?? s.date)
+        const eDate = new Date(earliest.completedAt ?? earliest.date)
+        return sDate < eDate ? s : earliest
+      }).completedAt ?? completed[0].date
+    )
   })
 
   // Mes de inicio real (1-indexed, relativo al año actual)
@@ -134,76 +142,200 @@
     return 0
   })
 
-  const projectionData = computed(() => {
-    // Fallback: si no hay cuenta, usar tasa 0
+  const granularity = computed<'daily' | 'weekly' | 'monthly'>(() => {
+    if (selectedHorizon.value === '1m') return 'daily'
+    if (selectedHorizon.value === '3m') return 'weekly'
+    return 'monthly'
+  })
+
+  const horizonMonths = computed(() => {
+    const map: Record<typeof selectedHorizon.value, number> = {
+      '1m': 1,
+      '3m': 3,
+      '12m': 12,
+      '24m': 24,
+      '36m': 36
+    }
+    return map[selectedHorizon.value]
+  })
+
+  const projectionPoints = computed<MonthlyProjectionPoint[] | WeeklyProjectionPoint[] | ProjectionPoint[]>(() => {
     const interestRate = account.value?.interestRate ?? 0
-    const frequency = account.value?.compoundingFrequency ?? 'monthly'
-
-    // Usar totalSavedForGoal como principal (ya calculado)
     const principal = totalSavedForGoal.value
+    const monthlyContr = monthlyContribution.value
 
-    // Contribución mensual
-    const allocation = allocationsStore.savingAllocations.find(a => a.goalId === goal.value?.id)
-    const contribution =
-      allocation && savingsAmount.value > 0
-        ? (savingsAmount.value * Number(allocation.percentage)) / 100
-        : completedSavings.value.length > 0
-          ? principal / completedSavings.value.length
-          : 0
+    if (principal === 0 && monthlyContr === 0) return []
 
-    // Siempre calcular aunque principal=0 si hay contribution
-    if (principal === 0 && contribution === 0) return []
+    if (granularity.value === 'daily') {
+      // Use buildMonthlyProjection with actual completed savings
+      const savingsWithCompletedAt = completedSavings.value
+        .filter(s => s.completedAt)
+        .map(s => ({
+          amount: Number(s.amount),
+          completedAt: s.completedAt as string
+        }))
 
+      if (savingsWithCompletedAt.length === 0) return []
+
+      return buildMonthlyProjection({
+        savings: savingsWithCompletedAt,
+        annualRate: interestRate,
+        referenceDate: new Date()
+      })
+    }
+
+    if (granularity.value === 'weekly') {
+      const weeklyContr = (monthlyContr * 12) / 52
+      return projectByWeeks({
+        principal,
+        weeklyContribution: weeklyContr,
+        annualRate: interestRate,
+        weeks: 13
+      })
+    }
+
+    // monthly
+    const frequency = account.value?.compoundingFrequency ?? 'monthly'
     return projectCompoundGrowth({
       principal,
-      monthlyContribution: contribution,
+      monthlyContribution: monthlyContr,
       annualRate: interestRate,
       compoundingFrequency: frequency as 'daily' | 'monthly' | 'quarterly' | 'annually',
-      months: selectedHorizon.value
+      months: horizonMonths.value
     })
   })
 
-  const baseAccumulation = computed(() => {
+  const basePoints = computed(() => {
+    if (granularity.value === 'daily') {
+      // Extract withoutInterest from MonthlyProjectionPoint[]
+      return (projectionPoints.value as MonthlyProjectionPoint[]).map(p => p.withoutInterest)
+    }
+
     const principal = totalSavedForGoal.value
-    const contribution = monthlyContribution.value
-    return Array.from({ length: selectedHorizon.value }, (_, i) =>
-      Math.round(principal + contribution * (i + 1))
+    const monthlyContr = monthlyContribution.value
+
+    if (granularity.value === 'weekly') {
+      const weeklyContr = (monthlyContr * 12) / 52
+      return Array.from({ length: 13 }, (_, i) => Math.round(principal + weeklyContr * (i + 1)))
+    }
+
+    // monthly
+    return Array.from({ length: horizonMonths.value }, (_, i) =>
+      Math.round(principal + monthlyContr * (i + 1))
     )
   })
 
   const estimatedInterest = computed(() => {
-    const acc = account.value
-    if (!acc?.interestRate || acc.interestRate <= 0) return 0
+    const annualRate = account.value?.interestRate ?? 0
+    if (!annualRate || !completedSavings.value.length) return 0
 
-    const periodsPerYear: Record<string, number> = {
-      daily: 365,
-      monthly: 12,
-      quarterly: 4,
-      annually: 1
-    }
-    const n = periodsPerYear[acc.compoundingFrequency ?? 'monthly'] ?? 12
-    const ratePerPeriod = Math.pow(1 + acc.interestRate / 100, 1 / n) - 1
-
-    // Acumular interés desde cada aporte
-    // Cada saving completado genera interés desde su completedAt hasta hoy
     const today = new Date()
-    let totalInterest = 0
-
-    completedSavings.value.forEach(saving => {
-      const from = saving.completedAt ? new Date(saving.completedAt) : new Date(saving.date)
-      const days = Math.max(
-        Math.floor((today.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)),
-        0
+    return completedSavings.value.reduce((acc, saving) => {
+      if (!saving.completedAt) return acc
+      const completedDate = new Date(saving.completedAt)
+      const daysSince = Math.max(
+        0,
+        Math.floor((today.getTime() - completedDate.getTime()) / 86_400_000)
       )
-      // Interés compuesto: capital × ((1 + r)^días - 1)
-      const interest = Number(saving.amount) * (Math.pow(1 + ratePerPeriod, days) - 1)
-      totalInterest += interest
-    })
-
-    return Math.round(totalInterest * 100) / 100 // 2 decimales
+      const interest = saving.amount * (Math.pow(1 + annualRate / 100, daysSince / 365) - 1)
+      return acc + interest
+    }, 0)
   })
 
-  const withInterest = computed(() => projectionData.value.map(p => p.balance))
+  const withInterest = computed(() => {
+    if (granularity.value === 'daily') {
+      return (projectionPoints.value as MonthlyProjectionPoint[]).map(p => p.withInterest)
+    }
+    return projectionPoints.value.map(p => p.balance)
+  })
+
+  const projectionSummary = computed(() => {
+    let lastWithInterest = 0
+    let lastBase = 0
+    let diff = 0
+
+    if (granularity.value === 'daily') {
+      // For daily granularity, calculate interest only for remaining days of the month
+      const today = new Date()
+      const currentDay = today.getDate()
+      const remainingDays = 30 - currentDay
+
+      if (remainingDays > 0) {
+        const annualRate = account.value?.interestRate ?? 0
+        const savingsWithCompletedAt = completedSavings.value
+          .filter(s => s.completedAt)
+          .map(s => ({
+            amount: Number(s.amount),
+            completedAt: s.completedAt as string
+          }))
+
+        // Calculate balance at end of remaining days
+        const futureDate = new Date(today)
+        futureDate.setDate(futureDate.getDate() + remainingDays)
+
+        const withInterestFuture = savingsWithCompletedAt.reduce((acc, s) => {
+          const completedDate = new Date(s.completedAt)
+          const daysElapsed = Math.max(
+            0,
+            Math.floor((futureDate.getTime() - completedDate.getTime()) / 86_400_000)
+          )
+          const balanceWithInterest = s.amount * Math.pow(1 + annualRate / 100, daysElapsed / 365)
+          return acc + balanceWithInterest
+        }, 0)
+
+        lastBase = totalSavedForGoal.value
+        lastWithInterest = Math.round(withInterestFuture)
+        diff = lastWithInterest - lastBase
+      } else {
+        // No remaining days, use current values
+        lastBase = totalSavedForGoal.value
+        lastWithInterest = totalSavedForGoal.value + estimatedInterest.value
+        diff = estimatedInterest.value
+      }
+    } else {
+      // For weekly/monthly granularity, use projection points
+      lastWithInterest = withInterest.value[withInterest.value.length - 1] ?? 0
+      lastBase = basePoints.value[basePoints.value.length - 1] ?? 0
+      diff = lastWithInterest - lastBase
+    }
+
+    let monthsToGoal: number | null = null
+    if (goal.value?.targetAmount && monthlyContribution.value > 0) {
+      const interestRate = account.value?.interestRate ?? 0
+      const frequency = account.value?.compoundingFrequency ?? 'monthly'
+      const principal = totalSavedForGoal.value
+
+      // Proyectar hasta 600 meses (50 años)
+      const projection = projectCompoundGrowth({
+        principal,
+        monthlyContribution: monthlyContribution.value,
+        annualRate: interestRate,
+        compoundingFrequency: frequency as 'daily' | 'monthly' | 'quarterly' | 'annually',
+        months: 600
+      })
+
+      const foundMonth = projection.find(p => p.balance >= goal.value!.targetAmount)
+      if (foundMonth) {
+        monthsToGoal = foundMonth.month
+      }
+    }
+
+    return {
+      lastWithInterest,
+      lastBase,
+      diff,
+      monthsToGoal
+    }
+  })
+
+  const formatMonthsToGoal = (months: number | null): string => {
+    if (months === null) return 'No proyectado'
+    if (months < 12) return `${months} ${months === 1 ? 'mes' : 'meses'}`
+    const years = Math.floor(months / 12)
+    const remainingMonths = months % 12
+    if (remainingMonths === 0) return `${years} ${years === 1 ? 'año' : 'años'}`
+    return `${years} ${years === 1 ? 'año' : 'años'} ${remainingMonths} ${remainingMonths === 1 ? 'mes' : 'meses'}`
+  }
 
   const goalTerm = computed(() => {
     if (!goal.value) return 'none'
@@ -230,6 +362,18 @@
   const formatDate = (date: string) => {
     return format(new Date(date), 'dd MMM yyyy, HH:mm', { locale: es })
   }
+
+  // Set initial horizon based on compounding frequency
+  watch(
+    account,
+    acc => {
+      if (acc && selectedHorizon.value === '3m') {
+        // Solo cambiar si aún está en el valor por defecto
+        selectedHorizon.value = acc.compoundingFrequency === 'daily' ? '1m' : '3m'
+      }
+    },
+    { immediate: true }
+  )
 </script>
 
 <template>
@@ -256,7 +400,8 @@
         <div class="goal-detail__progress-header">
           <Heading level="h2" size="lg" weight="bold">Progreso Actual</Heading>
           <Text size="sm" color="muted">
-            {{ formatCurrency(totalSavedForGoal, currency) }} de {{ formatCurrency(goal.targetAmount, currency) }}
+            {{ formatCurrency(totalSavedForGoal, currency) }} de
+            {{ formatCurrency(goal.targetAmount, currency) }}
           </Text>
         </div>
         <div class="goal-detail__progress-bar">
@@ -268,6 +413,38 @@
         <Text size="xs" color="muted" class="goal-detail__progress-text">
           {{ progressPercentage }}% completado
         </Text>
+
+        <!-- Metrics Grid -->
+        <div class="goal-detail__metrics">
+          <div class="goal-detail__metric">
+            <Text size="xs" color="muted">Total aportado</Text>
+            <Text size="sm" weight="semibold">
+              {{ formatCurrency(totalSavedForGoal, currency) }}
+            </Text>
+          </div>
+
+          <div class="goal-detail__metric-divider"></div>
+
+          <div class="goal-detail__metric">
+            <Text size="xs" color="muted">+ Interés estimado</Text>
+            <Text
+              size="sm"
+              weight="semibold"
+              :class="estimatedInterest > 0 ? 'goal-detail__metric-highlight' : ''"
+            >
+              {{ formatCurrency(estimatedInterest, currency) }}
+            </Text>
+          </div>
+
+          <div class="goal-detail__metric-divider"></div>
+
+          <div class="goal-detail__metric">
+            <Text size="xs" color="muted">Por alcanzar</Text>
+            <Text size="sm" weight="semibold">
+              {{ toReach !== null ? formatCurrency(toReach, currency) : '—' }}
+            </Text>
+          </div>
+        </div>
       </Card>
 
       <!-- Aportes realizados -->
@@ -285,7 +462,7 @@
                 {{ formatCurrency(saving.amount, currency) }}
               </Text>
               <Text size="xs" color="muted">
-                {{ formatDate(String(saving.date)) }}
+                {{ formatDate(String(saving.completedAt ?? saving.date)) }}
               </Text>
             </div>
             <Badge :variant="saving.status === 'completed' ? 'success' : 'warning'" size="xs">
@@ -317,27 +494,61 @@
           <Heading level="h2" size="lg" weight="bold">Proyección de Crecimiento</Heading>
           <div class="goal-detail__horizon-toggle">
             <button
-              v-for="months in [12, 24, 36]"
-              :key="months"
+              v-for="horizon in ['1m', '3m', '12m', '24m', '36m']"
+              :key="horizon"
               :class="[
                 'goal-detail__horizon-btn',
-                { 'goal-detail__horizon-btn--active': selectedHorizon === months }
+                { 'goal-detail__horizon-btn--active': selectedHorizon === horizon }
               ]"
-              @click="selectedHorizon = months as 12 | 24 | 36"
+              @click="selectedHorizon = horizon as '1m' | '3m' | '12m' | '24m' | '36m'"
             >
-              {{ months }}m
+              {{ horizon }}
             </button>
           </div>
         </div>
 
         <GoalProjectionChart
-          :base-data="baseAccumulation"
+          :base-data="basePoints"
           :interest-data="withInterest"
-          :months="selectedHorizon"
+          :granularity="granularity"
+          :periods="granularity === 'daily' ? 30 : granularity === 'weekly' ? 13 : horizonMonths"
           :start-month="startMonth"
           :target-amount="goal?.targetAmount ?? undefined"
           :currency="currency"
+          :current-balance="totalSavedForGoal"
+          :interest-rate="account?.interestRate"
         />
+
+        <!-- Projection Summary Panel -->
+        <div class="goal-detail__summary-panel">
+          <div class="goal-detail__summary-row">
+            <Text size="sm" color="muted">Proyectado sin interés</Text>
+            <Text size="sm" weight="semibold">
+              {{ formatCurrency(projectionSummary.lastBase, currency) }}
+            </Text>
+          </div>
+
+          <div class="goal-detail__summary-row">
+            <Text size="sm" color="muted">Proyectado con interés</Text>
+            <Text size="sm" weight="semibold">
+              {{ formatCurrency(projectionSummary.lastWithInterest, currency) }}
+            </Text>
+          </div>
+
+          <div class="goal-detail__summary-row goal-detail__summary-row--highlight">
+            <Text size="sm" color="muted">Generado por interés</Text>
+            <Text size="sm" weight="bold" class="goal-detail__summary-highlight">
+              +{{ formatCurrency(projectionSummary.diff, currency) }}
+            </Text>
+          </div>
+
+          <div v-if="goal.targetAmount" class="goal-detail__summary-row">
+            <Text size="sm" color="muted">Alcanzas tu objetivo</Text>
+            <Text size="sm" weight="semibold">
+              {{ formatMonthsToGoal(projectionSummary.monthsToGoal) }}
+            </Text>
+          </div>
+        </div>
 
         <!-- Disclaimer -->
         <AlertBanner variant="warning" icon="info">
@@ -413,6 +624,22 @@
 
   .goal-detail__progress-text {
     @apply text-right;
+  }
+
+  .goal-detail__metrics {
+    @apply mt-4 grid grid-cols-[1fr_auto_1fr_auto_1fr] gap-4 rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800;
+  }
+
+  .goal-detail__metric {
+    @apply flex flex-col gap-1 text-center;
+  }
+
+  .goal-detail__metric-divider {
+    @apply w-px bg-neutral-200 dark:bg-neutral-700;
+  }
+
+  .goal-detail__metric-highlight {
+    @apply text-success-600 dark:text-success-400;
   }
 
   /* Projection Card */
@@ -491,7 +718,7 @@
   }
 
   .goal-detail__saving-item {
-    @apply flex items-center justify-between border border-neutral-200 rounded-lg p-3 dark:border-neutral-700;
+    @apply flex items-center justify-between rounded-lg border border-neutral-200 p-3 dark:border-neutral-700;
   }
 
   .goal-detail__saving-info {
@@ -499,7 +726,7 @@
   }
 
   .goal-detail__saving-total {
-    @apply flex items-center justify-between border-t border-neutral-300 pt-3 mt-2 dark:border-neutral-600;
+    @apply mt-2 flex items-center justify-between border-t border-neutral-300 pt-3 dark:border-neutral-600;
   }
 
   .goal-detail__interest-row {
@@ -508,5 +735,22 @@
 
   .goal-detail__interest-value {
     @apply text-success-600;
+  }
+
+  /* Projection Summary Panel */
+  .goal-detail__summary-panel {
+    @apply mt-6 space-y-3 rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .goal-detail__summary-row {
+    @apply flex items-center justify-between;
+  }
+
+  .goal-detail__summary-row--highlight {
+    @apply border-t border-neutral-200 pt-3 dark:border-neutral-700;
+  }
+
+  .goal-detail__summary-highlight {
+    @apply text-success-600 dark:text-success-400;
   }
 </style>

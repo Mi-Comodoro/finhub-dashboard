@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Entorno de desarrollo
+- **Node.js requerido: v22.x**
+- ESLint falla silenciosamente o no resuelve plugins
+  correctamente con versiones anteriores a Node 22.
+- Verificar versión activa: `node --version`
+- Cambiar con nvm: `nvm use` (lee .nvmrc automáticamente)
+
 ## Commands
 
 **Development:**
@@ -17,9 +24,6 @@ npm run lint         # Run ESLint
 npm run lint:fix     # Fix ESLint errors automatically
 npm run format       # Format code with Prettier
 ```
-
-**Requirements:**
-- Node.js >= 20.19 < 22
 
 ## Architecture Overview
 

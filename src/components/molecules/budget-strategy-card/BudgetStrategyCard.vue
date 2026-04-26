@@ -21,7 +21,8 @@
       recommended: false,
       advanced: false,
       selected: false,
-      selectable: true
+      selectable: true,
+      totalIncome: undefined
     }
   )
 

@@ -45,15 +45,13 @@
       | 'phone'
     label: string
     placeholder?: string
-    // eslint-disable-next-line no-unused-vars
-    required?: boolean | ((form: Record<string, commonField>) => boolean)
+    required?: boolean | ((_form: Record<string, commonField>) => boolean)
     pattern?: RegExp
     errorMessage?: string
     prefix?: string
     options?: FieldOption[]
 
-    // eslint-disable-next-line no-unused-vars
-    visibleWhen?: (form: Record<string, commonField>) => boolean
+    visibleWhen?: (_form: Record<string, commonField>) => boolean
     // Nuevas propiedades para campos compuestos
     groupFields?: {
       firstDate: FieldSchema

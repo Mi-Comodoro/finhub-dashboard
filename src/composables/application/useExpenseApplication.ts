@@ -15,7 +15,6 @@ const getActiveFilters = (filters: {
   limit: number
 }) => {
   return Object.fromEntries(
-    // eslint-disable-next-line no-unused-vars
     Object.entries(filters).filter(([_, value]) => {
       if (Array.isArray(value)) return value.length > 0
       return value !== '' && value !== null && value !== undefined

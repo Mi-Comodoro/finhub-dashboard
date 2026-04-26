@@ -1,7 +1,7 @@
 <script lang="ts" setup>
   import { computed, reactive, watch } from 'vue'
 
-  import type { BudgetAllocation, StackedProgressBarProps } from './types/stacked.types'
+  import type { StackedProgressBarProps } from './types/stacked.types'
 
   const props = defineProps<StackedProgressBarProps>()
   const emit = defineEmits(['update:allocation'] as const)

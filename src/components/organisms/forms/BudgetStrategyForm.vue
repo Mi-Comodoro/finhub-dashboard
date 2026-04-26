@@ -33,8 +33,6 @@
 
   const isValid = computed(() => total.value === 100)
 
-  const totalDiff = computed(() => Math.abs(100 - total.value))
-
   const totalStatus = computed(() => {
     if (total.value === 100) return 'valid'
     if (total.value > 100) return 'excess'

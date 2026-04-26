@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /**
  * UI Types - Common
  * Shared UI types across all atomic design levels

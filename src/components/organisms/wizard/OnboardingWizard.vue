@@ -60,10 +60,10 @@
   /* ---------------------------------------------
    * PERSISTENCIA EN SESSIONSTORAGE
    * --------------------------------------------- */
-  function parseDraft(data: any): any {
+  function parseDraft(data: Partial<OnboardingFormData>): Partial<OnboardingFormData> {
     // Recorrer incomes y convertir paymentsDates string → Date
     if (data?.incomes?.incomes) {
-      data.incomes.incomes = data.incomes.incomes.map((income: any) => ({
+      data.incomes.incomes = data.incomes.incomes.map((income) => ({
         ...income,
         paymentsDates: income.paymentsDates
           ? Array.isArray(income.paymentsDates)

@@ -1,4 +1,5 @@
 import { ACCESS_TOKEN } from '~/common/constants'
+import type { GoalHistory } from '~/types/api'
 
 import { validateError } from '../../../utils/auth.error'
 
@@ -10,7 +11,7 @@ export default defineEventHandler(async event => {
   if (!id) throw createError({ statusCode: 400, message: 'id requerido' })
   if (!token) throw createError({ statusCode: 401, message: 'No autenticado' })
 
-  const { success, data } = await $fetch<{ success: boolean; data: any[] }>(
+  const { success, data } = await $fetch<{ success: boolean; data: GoalHistory[] }>(
     `${config.public.apiBase}/goals/${id}/history`,
     {
       method: 'GET',

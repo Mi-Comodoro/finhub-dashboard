@@ -17,7 +17,7 @@
 
   import { Text } from '@/components/atoms'
   import type { Currency } from '@/utils/currency'
-  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
+  import { formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
   use([LineChart, GridComponent, LegendComponent, MarkLineComponent, TooltipComponent, CanvasRenderer])
@@ -33,20 +33,41 @@
   interface Props {
     baseData: number[] // aportes sin interés
     interestData: number[] // aportes + interés compuesto
-    months: number // 12 | 24 | 36
-    startMonth?: number // mes de inicio (1-12), default 1
+    granularity: 'daily' | 'weekly' | 'monthly'
+    periods: number // número de períodos según granularidad
+    startMonth?: number // mes de inicio (1-12), default 1, solo para monthly
     targetAmount?: number // línea de objetivo
     currency: Currency
+    currentBalance?: number
+    interestRate?: number // tasa de interés anual
   }
 
   const props = defineProps<Props>()
 
+  const yMin = computed(() => {
+    const firstPoint = props.interestData[0] ?? 0
+    if (firstPoint === 0) return 0
+    // Iniciar en 95% del saldo para ver el crecimiento con detalle
+    const balance = props.currentBalance ?? 0
+    if (balance === 0) return 0
+    return Math.floor(balance * 0.95 / 100_000) * 100_000
+  })
+
   const hasData = computed(() => props.interestData.length > 0)
 
   const xLabels = computed(() => {
+    if (props.granularity === 'daily') {
+      return Array.from({ length: props.periods }, (_, i) => `Día ${i + 1}`)
+    }
+
+    if (props.granularity === 'weekly') {
+      return Array.from({ length: props.periods }, (_, i) => `Sem ${i + 1}`)
+    }
+
+    // monthly
     const start = props.startMonth ?? 1
     const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
-    return Array.from({ length: props.months }, (_, i) => {
+    return Array.from({ length: props.periods }, (_, i) => {
       const monthNum = ((start - 1 + i) % 12) + 1
       return monthNames[monthNum - 1]
     })
@@ -88,9 +109,21 @@
     },
     yAxis: {
       type: 'value',
+      min: yMin.value,
       splitLine: { lineStyle: { color: '#e2e8f0', type: 'dashed' } },
       axisLabel: {
-        formatter: (v: number) => formatCompactCurrency(v, props.currency)
+        formatter: (v: number) => {
+          // Custom formatter without currency code
+          const abs = Math.abs(v)
+          const sign = v < 0 ? '-' : ''
+          if (abs >= 1_000_000) {
+            return `${sign}$${(abs / 1_000_000).toFixed(2)}M`
+          }
+          if (abs >= 1_000) {
+            return `${sign}$${(abs / 1_000).toFixed(2)}K`
+          }
+          return `${sign}$${abs.toFixed(0)}`
+        }
       }
     },
     series: [
@@ -145,13 +178,30 @@
 </script>
 
 <template>
-  <ClientOnly v-if="hasData">
-    <VChart :option="chartOption" autoresize class="h-72 w-full" />
-    <template #fallback>
-      <div class="h-72 w-full animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-700" />
-    </template>
-  </ClientOnly>
+  <div v-if="hasData" class="projection-chart">
+    <div v-if="interestRate && interestRate > 0" class="projection-chart__header">
+      <Text size="sm" color="muted">
+        Tasa de interés: <strong class="projection-chart__rate">{{ interestRate.toFixed(2) }}% EA</strong>
+      </Text>
+    </div>
+    <ClientOnly>
+      <VChart :option="chartOption" autoresize class="h-72 w-full" />
+      <template #fallback>
+        <div class="h-72 w-full animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-700" />
+      </template>
+    </ClientOnly>
+  </div>
   <div v-else class="flex h-72 items-center justify-center">
     <Text size="sm" color="muted"> Realiza tu primer aporte para ver la proyección. </Text>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .projection-chart__header {
+    @apply mb-3 text-center;
+  }
+
+  .projection-chart__rate {
+    @apply text-neutral-700 dark:text-neutral-300;
+  }
+</style>

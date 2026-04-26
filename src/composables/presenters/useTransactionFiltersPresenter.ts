@@ -4,7 +4,6 @@ import type { TransactionFilters } from '~/types/domain'
 
 type FilterType = TransactionType | 'all'
 
-// eslint-disable-next-line no-unused-vars
 export function useTransactionFiltersPresenter(onFilter: (resetPage?: boolean) => void) {
   const filterCat = ref<string>('')
   const filterDateFrom = ref<Date | null>(null)

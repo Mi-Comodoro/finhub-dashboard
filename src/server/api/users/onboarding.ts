@@ -11,14 +11,6 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 401, message: 'No autenticado' })
   }
 
-  // Verificar estructura del body antes de enviar
-  console.log('📋 Onboarding body.incomes.incomes[0]:', {
-    frequency: body.incomes.incomes[0]?.frequency,
-    paymentsDates: body.incomes.incomes[0]?.paymentsDates,
-    amount: body.incomes.incomes[0]?.amount,
-    source: body.incomes.incomes[0]?.source
-  })
-
   const { success, data } = await $fetch<{ success: boolean; data: { onboarding: string } }>(
     `${config.public.apiBase}/users/onboarding`,
     {

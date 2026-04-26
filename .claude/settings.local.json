@@ -28,7 +28,10 @@
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
       "Bash(tee:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(node -p:*)",
+      "Bash(source:*)",
+      "Bash(find:*)"
     ]
   }
 }

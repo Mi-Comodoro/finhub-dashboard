@@ -54,6 +54,7 @@ export interface PlannedSavingSummary {
   amount: number
   date: Date | string
   status: 'pending' | 'completed'
+  completedAt?: string | null
   savingGoal?: { id: string; name: string; reason: string }
   account?: { id: string; name: string }
   plannedIncome?: { id: string; amount: number; date: string; source: string }
