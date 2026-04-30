@@ -52,6 +52,25 @@
   const formatDate = (date: string) => {
     return format(new Date(date), 'dd MMM yyyy, HH:mm', { locale: es })
   }
+
+  const FIELD_LABELS: Record<string, string> = {
+    targetAmount: 'Meta',
+    savedAmount: 'Aportado',
+    interestRate: 'Tasa de interés',
+    targetDate: 'Fecha objetivo',
+    name: 'Nombre',
+    status: 'Estado'
+  }
+
+  const formatHistoryValue = (field: string, value: unknown): string => {
+    const moneyFields = ['targetAmount', 'savedAmount', 'amount']
+    const dateFields = ['targetDate', 'startDate']
+    const percentFields = ['interestRate', 'percentage']
+    if (moneyFields.includes(field)) return formatCurrency(Number(value) ?? 0, props.currency)
+    if (dateFields.includes(field)) return formatDate(value as string)
+    if (percentFields.includes(field)) return `${value}%`
+    return String(value ?? '—')
+  }
 </script>
 
 <template>
@@ -150,8 +169,9 @@
           <span class="goal-sidebar-panel__history-bullet">●</span>
           <span class="goal-sidebar-panel__history-date">{{ formatDate(item.changedAt) }}</span>
           <span class="goal-sidebar-panel__history-text">
-            <strong>{{ item.field }}:</strong>
-            {{ item.oldValue ?? 'N/A' }} → {{ item.newValue }}
+            <strong>{{ FIELD_LABELS[item.field] ?? item.field }}:</strong>
+            {{ formatHistoryValue(item.field, item.oldValue) }} →
+            {{ formatHistoryValue(item.field, item.newValue) }}
           </span>
         </div>
       </div>
