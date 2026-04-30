@@ -7,11 +7,11 @@
   import GoalSidebarPanel from '@/components/business/savings/GoalSidebarPanel.vue'
   import GoalDetailInsights from '@/components/business/savings/insight/GoalDetailInsights.vue'
   import { ModalWizard } from '@/components/organisms'
-  import { useSavingsApi } from '@/composables/api/useSavingsApi'
+  import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useGoalDetailPresenter } from '@/composables/presenters/useGoalDetailPresenter'
-  import type { GoalHistory, GoalsData } from '@/types/api'
+  import type { GoalHistory, GoalsData, PlannedSaving } from '@/types/api'
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
 
   definePageMeta({
@@ -24,16 +24,18 @@
   const route = useRoute()
   const goalId = computed(() => route.params.id as string)
 
-  const savingsApi = useSavingsApi()
   const {
     currentBudgetPlan,
     accounts: accountsFromGoals,
     savingAllocations,
     fetchAccounts,
-    fetchSavingAllocations
+    fetchSavingAllocations,
+    fetchGoalDetail,
+    fetchGoalHistory
   } = useGoalsApplication()
   const { items: plannedSavingItems, fetchByBudget: fetchPlannedSavings } =
     usePlannedSavingApplication()
+  const { savingsAmount } = useActiveBudgetApplication()
 
   // State
   const goal = ref<GoalsData | null>(null)
@@ -51,8 +53,8 @@
     isLoading.value = true
     try {
       const [goalResponse, historyResponse] = await Promise.all([
-        savingsApi.getGoal(goalId.value),
-        savingsApi.getGoalHistory(goalId.value)
+        fetchGoalDetail(goalId.value),
+        fetchGoalHistory(goalId.value)
       ])
 
       if (goalResponse.success) {
@@ -125,15 +127,15 @@
     return Math.min(100, Math.round((totalSavedForGoal.value / goal.value.targetAmount) * 100))
   })
 
-  const savingsAmount = computed(() => currentBudgetPlan.value?.savingsAmount ?? 0)
-
   // Planned savings for this goal - use from goal.plannedSavings if available (from backend)
-  const goalSavings = computed(() => {
+  const goalSavings = computed<PlannedSaving[]>(() => {
     if (goal.value?.plannedSavings) {
       return goal.value.plannedSavings
     }
-    // Fallback to store if backend doesn't include plannedSavings yet
-    return (plannedSavingItems.value ?? []).filter(s => s.savingGoalId === goal.value?.id)
+    // Fallback: normalize date to Date to match PlannedSaving type
+    return (plannedSavingItems.value ?? [])
+      .filter(s => s.savingGoalId === goal.value?.id)
+      .map(s => ({ ...s, date: s.date instanceof Date ? s.date : new Date(s.date) })) as PlannedSaving[]
   })
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
@@ -150,7 +152,7 @@
         const sDate = new Date(s.completedAt ?? s.date)
         const eDate = new Date(earliest.completedAt ?? earliest.date)
         return sDate < eDate ? s : earliest
-      }).completedAt ?? completed[0].date
+      }).completedAt ?? completed[0]!.date
     )
   })
 
@@ -379,7 +381,7 @@
     <ModalWizard v-model:show="showContributionModal">
       <ContributionForm
         :goal-id="goalId"
-        :accounts="accountStore.accounts"
+        :accounts="accountsFromGoals"
         @on-close="handleContributionSuccess"
       />
     </ModalWizard>

@@ -165,6 +165,24 @@ export const useGoalsApplication = () => {
     }
   }
 
+  const fetchGoalDetail = async (id: string) => {
+    try {
+      return await savingsApi.getGoal(id)
+    } catch (error) {
+      console.error('Error fetching goal detail:', error)
+      return { success: false, result: null }
+    }
+  }
+
+  const fetchGoalHistory = async (id: string) => {
+    try {
+      return await savingsApi.getGoalHistory(id)
+    } catch (error) {
+      console.error('Error fetching goal history:', error)
+      return { success: false, result: [] }
+    }
+  }
+
   const addContribution = async (
     goalId: string,
     data: {
@@ -204,6 +222,8 @@ export const useGoalsApplication = () => {
 
   return {
     fetchGoals,
+    fetchGoalDetail,
+    fetchGoalHistory,
     addSavingGoal,
     loadGoalsData,
     loadSavingAllocations,
