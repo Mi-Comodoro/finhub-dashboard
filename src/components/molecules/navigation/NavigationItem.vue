@@ -5,15 +5,18 @@
 
   const props = withDefaults(defineProps<NavigationItemProps>(), {
     isActive: false,
+    collapsed: false,
     className: ''
   })
 
   const emit = defineEmits<{
     click: []
+    navigate: []
   }>()
 
   const handleClick = async () => {
     emit('click')
+    emit('navigate')
 
     if (props.onClick) {
       await props.onClick()
@@ -22,32 +25,54 @@
 </script>
 
 <template>
-  <Link
-    v-if="path"
-    :to="path"
-    :class="['nav-item', isActive ? 'nav-item--active' : 'nav-item--inactive', className]"
-  >
-    <Icon :name="icon" size="lg" />
-    <Text size="sm" color="inherit" weight="medium">
-      {{ name }}
-    </Text>
-  </Link>
-  <button
-    v-else
-    type="button"
-    :class="['nav-item nav-item--inactive w-full', className]"
-    @click="handleClick"
-  >
-    <Icon :name="icon" size="lg" />
-    <Text size="sm" color="inherit" weight="medium">
-      {{ name }}
-    </Text>
-  </button>
+  <UTooltip v-if="collapsed" :text="name" :popper="{ placement: 'right' }">
+    <Link
+      v-if="path"
+      :to="path"
+      :class="['nav-item', isActive ? 'nav-item--active' : 'nav-item--inactive', 'justify-center px-0', className]"
+      @click="emit('navigate')"
+    >
+      <Icon :name="icon" size="lg" />
+    </Link>
+    <button
+      v-else
+      type="button"
+      :class="['nav-item nav-item--inactive w-full justify-center px-0', className]"
+      @click="handleClick"
+    >
+      <Icon :name="icon" size="lg" />
+    </button>
+  </UTooltip>
+
+  <template v-else>
+    <Link
+      v-if="path"
+      :to="path"
+      :class="['nav-item gap-3 px-3', isActive ? 'nav-item--active' : 'nav-item--inactive', className]"
+      @click="emit('navigate')"
+    >
+      <Icon :name="icon" size="lg" />
+      <Text size="sm" color="inherit" weight="medium">
+        {{ name }}
+      </Text>
+    </Link>
+    <button
+      v-else
+      type="button"
+      :class="['nav-item nav-item--inactive w-full gap-3 px-3', className]"
+      @click="handleClick"
+    >
+      <Icon :name="icon" size="lg" />
+      <Text size="sm" color="inherit" weight="medium">
+        {{ name }}
+      </Text>
+    </button>
+  </template>
 </template>
 
 <style lang="postcss" scoped>
   .nav-item {
-    @apply flex items-center gap-3 rounded px-3 py-2.5 outline-none transition-all duration-200;
+    @apply flex items-center rounded py-2.5 outline-none transition-all duration-200;
   }
   .nav-item--active {
     @apply rounded-md border-y-0 border-l-8 border-r-0 border-primary-900 bg-slate-200 font-bold text-primary-900;

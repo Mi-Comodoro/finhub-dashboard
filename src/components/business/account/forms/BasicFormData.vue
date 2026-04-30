@@ -54,7 +54,7 @@
       sub-title="Actualiza tus datos de perfil."
       title-size="xl"
       weight="extrabold"
-      level="h2"
+      level="h1"
       color="black"
       sub-title-size="xs"
       sub-title-color="muted"

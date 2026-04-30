@@ -93,7 +93,13 @@ export const goalsFieldsSchema = (
       required: false,
       pattern: /^\d+(\.\d{1,2})?$/,
       errorMessage: 'Monto invalido',
-      prefix: 'COP'
+      prefix: 'COP',
+      validate: (value: unknown) => {
+        if (!value && value !== 0) return true
+        const num = Number(value)
+        if (isNaN(num) || num <= 0) return 'El monto debe ser mayor a 0'
+        return true
+      }
     },
     accountId: {
       type: 'select',
@@ -113,7 +119,15 @@ export const goalsFieldsSchema = (
       type: 'date',
       label: 'Fecha de cumplimiento',
       placeholder: 'Selecciona la fecha (opcional)',
-      required: false
+      required: false,
+      validate: (value: unknown) => {
+        if (!value) return true
+        const selected = new Date(value as string)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        if (selected <= today) return 'La fecha debe ser futura'
+        return true
+      }
     }
   },
   layout: [

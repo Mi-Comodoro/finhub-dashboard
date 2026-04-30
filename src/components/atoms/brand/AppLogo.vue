@@ -25,6 +25,7 @@
       FH
     </span>
     <CardInfo
+      v-if="showText"
       title="FinHub"
       title-size="lg"
       level="h2"

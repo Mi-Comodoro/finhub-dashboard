@@ -3,14 +3,21 @@
 
   import NavigationItem from './NavigationItem.vue'
   import type { NavigationSectionProps } from './types/navigation-section.types'
+
   withDefaults(defineProps<NavigationSectionProps>(), {
-    className: ''
+    className: '',
+    collapsed: false
   })
+
+  const emit = defineEmits<{
+    navigate: []
+  }>()
 </script>
 
 <template>
   <div :class="['mb-8', className]">
     <Text
+      v-if="!collapsed"
       as="span"
       size="xs"
       weight="semibold"
@@ -27,6 +34,8 @@
           :path="item.path"
           :is-active="item.isActive"
           :on-click="item.onClick"
+          :collapsed="collapsed"
+          @navigate="emit('navigate')"
         />
       </li>
     </ul>

@@ -13,4 +13,6 @@ export interface NavigationSectionProps {
   items: MenuItem[]
   /** Custom classes */
   className?: string
+  /** Sidebar collapsed state — hides labels */
+  collapsed?: boolean
 }

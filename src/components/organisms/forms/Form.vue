@@ -51,6 +51,7 @@
     prefix?: string
     options?: FieldOption[]
 
+    validate?: (_value: unknown) => true | string
     visibleWhen?: (_form: Record<string, commonField>) => boolean
     // Nuevas propiedades para campos compuestos
     groupFields?: {
@@ -128,6 +129,16 @@
 
       if (!isValid) {
         errors[key] = field.errorMessage || 'Formato inválido'
+        return false
+      }
+    }
+
+    // Custom validation
+    if (field.validate) {
+      const result = field.validate(value)
+
+      if (result !== true) {
+        errors[key] = result
         return false
       }
     }

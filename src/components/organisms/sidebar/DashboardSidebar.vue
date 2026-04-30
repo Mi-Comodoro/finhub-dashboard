@@ -3,6 +3,7 @@
 
   import { AppLogo, AppVersion } from '@/components/atoms'
   import { NavigationSection } from '@/components/molecules'
+  import { useSidebar } from '@/composables/useSidebar'
   import { useAuth } from '~/composables/useAuth'
   import { useAuthStore } from '~/stores/auth.store'
 
@@ -14,6 +15,16 @@
   const authStore = useAuthStore()
   const { accountType } = authStore
   const { logout } = useAuth()
+  const { isCollapsed, toggleCollapse, close } = useSidebar()
+
+  const emit = defineEmits<{
+    navigate: []
+  }>()
+
+  const handleNavigate = () => {
+    close()
+    emit('navigate')
+  }
 
   const menuItems: Omit<MenuItem, 'isActive'>[] = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
@@ -81,33 +92,58 @@
 <template>
   <aside class="dashboard-sidebar">
     <div class="dashboard-sidebar__header">
-      <AppLogo :class-name="'dark:text-white'" :show-text="true" />
+      <AppLogo :class-name="'dark:text-white'" :show-text="!isCollapsed" />
     </div>
     <nav class="dashboard-sidebar__nav">
-      <NavigationSection title="MENÚ PRINCIPAL" :items="mainMenuItems" />
-      <NavigationSection title="CONFIGURACIÓN" :items="settingsMenuItems" />
-      <NavigationSection title="CUENTA" :items="accountMenuItems" />
+      <NavigationSection
+        title="MENÚ PRINCIPAL"
+        :items="mainMenuItems"
+        :collapsed="isCollapsed"
+        @navigate="handleNavigate"
+      />
+      <NavigationSection
+        title="CONFIGURACIÓN"
+        :items="settingsMenuItems"
+        :collapsed="isCollapsed"
+        @navigate="handleNavigate"
+      />
+      <NavigationSection
+        title="CUENTA"
+        :items="accountMenuItems"
+        :collapsed="isCollapsed"
+        @navigate="handleNavigate"
+      />
     </nav>
-    <div class="dashboard-sidebar__version">
-      <div class="my-2 rounded-md border border-slate-300 bg-slate-300 p-4">
-        <CardInfo
-          level="h3"
-          title-size="sm"
-          title="Estado"
-          weight="bold"
-          color="black"
-          :sub-title="
-            accountType?.toUpperCase() === 'TRIAL'
-              ? 'Periodo de Prueba'
-              : accountType?.toUpperCase() === 'PREMIUM'
-                ? 'Premium'
-                : 'FREE'
-          "
-          sub-title-color="black"
-          sub-title-size="xs"
+    <div class="dashboard-sidebar__footer">
+      <template v-if="!isCollapsed">
+        <div class="my-2 rounded-md border border-slate-300 bg-slate-300 p-4">
+          <CardInfo
+            level="h3"
+            title-size="sm"
+            title="Estado"
+            weight="bold"
+            color="black"
+            :sub-title="
+              accountType?.toUpperCase() === 'TRIAL'
+                ? 'Periodo de Prueba'
+                : accountType?.toUpperCase() === 'PREMIUM'
+                  ? 'Premium'
+                  : 'FREE'
+            "
+            sub-title-color="black"
+            sub-title-size="xs"
+          />
+        </div>
+        <AppVersion class="ml-1" size="xs" />
+      </template>
+      <div class="dashboard-sidebar__toggle">
+        <UButton
+          :icon="isCollapsed ? 'i-material-symbols-chevron-right' : 'i-material-symbols-chevron-left'"
+          variant="ghost"
+          size="sm"
+          @click="toggleCollapse"
         />
       </div>
-      <AppVersion class="ml-1" size="xs" />
     </div>
   </aside>
 </template>
@@ -117,12 +153,15 @@
     @apply flex h-full w-full flex-col border-r border-slate-200 bg-white text-slate-900 shadow-lg transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:shadow-2xl;
   }
   .dashboard-sidebar__header {
-    @apply z-10 max-h-[56px] border-neutral-200 px-6 py-2 dark:border-neutral-700;
+    @apply z-10 max-h-[56px] border-neutral-200 px-4 py-2 dark:border-neutral-700;
   }
   .dashboard-sidebar__nav {
-    @apply flex-1 space-y-2 p-4;
+    @apply flex-1 space-y-2 overflow-y-auto p-4;
   }
-  .dashboard-sidebar__version {
-    @apply px-6 pb-4;
+  .dashboard-sidebar__footer {
+    @apply px-4 pb-4;
+  }
+  .dashboard-sidebar__toggle {
+    @apply mt-2 flex justify-end;
   }
 </style>

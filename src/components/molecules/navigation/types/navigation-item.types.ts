@@ -3,6 +3,7 @@ export interface NavigationItemProps {
   icon: string
   path?: string
   isActive?: boolean
+  collapsed?: boolean
   className?: string
   onClick?: () => void | Promise<void>
 }

@@ -4,10 +4,12 @@
   import { Icon } from '@/components/atoms'
   import { Breadcrumbs, HeaderActions, SearchInput } from '@/components/molecules'
   import { useBreadcrumbNavigation } from '@/components/molecules/breadcrumbs/useBreadcrumbNavigation'
+  import { useSidebar } from '@/composables/useSidebar'
 
   import type { DashboardHeaderProps } from './types/dashboard-header.types'
   const router = useRouter()
   const route = useRoute()
+  const { toggle } = useSidebar()
 
   // Initialize auto breadcrumb navigation
   useBreadcrumbNavigation({
@@ -20,21 +22,21 @@
     className: ''
   })
 
-  // Simulate last connection time - avoid SSR hydration mismatch
-
   onMounted(() => {})
 </script>
 
 <template>
-  <header
-    :class="[
-      'fixed top-0 z-20 h-16 w-full border-b border-slate-200 bg-white px-4 py-2 transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900',
-      className
-    ]"
-  >
+  <header :class="['flex h-full w-full items-center bg-white px-4 py-2 dark:bg-slate-900', className]">
     <div class="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between">
-      <!-- Last connections info -->
+      <!-- Left section: hamburger (mobile) + back + breadcrumbs -->
       <div class="flex min-w-0 items-center gap-4">
+        <UButton
+          icon="i-material-symbols-menu"
+          variant="ghost"
+          size="sm"
+          class="lg:hidden"
+          @click="toggle"
+        />
         <Icon
           v-if="route.path !== '/dashboard'"
           name="arrow_back"

@@ -80,17 +80,20 @@
   <div class="category-form">
     <CardInfo
       :title="formTitle"
+      :sub-title="isEditMode ? 'Actualiza los datos de la categoría.' : 'Define una nueva categoría de gasto.'"
       title-size="xl"
       weight="extrabold"
-      level="h2"
+      level="h1"
       color="black"
+      sub-title-size="xs"
+      sub-title-color="muted"
       icon="category"
       icon-variant="primary"
       icon-size="md"
     />
 
     <Form
-      :fields="categoryFieldsSchema()"
+      :schema="categoryFieldsSchema()"
       :initial-data="formData"
       :is-submitting="isSubmitting"
       @submit="handleSubmit"
