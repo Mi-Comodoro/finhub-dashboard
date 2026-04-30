@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { TransactionForm } from '@/components/business'
+  import { QuickTransactionForm, TransactionForm } from '@/components/business'
   import type { Column } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'
   import { useTransactionMetricsPresenter } from '@/composables/presenters/useTransactionMetricsPresenter'
@@ -32,13 +33,19 @@
 
   const { success: successToast } = useFeedback()
 
+  const { goals, accounts, loadGoalsData } = useGoalsApplication()
+
   const budgetSelect = ref<string>('')
   const showForm = ref(false)
+  const showQuickModal = ref(false)
   const editingTransaction = ref<{ id: string; data: Record<string, unknown> } | null>(null)
 
-  const openForm = () => {
-    editingTransaction.value = null
-    showForm.value = true
+  const openQuickModal = () => {
+    showQuickModal.value = true
+  }
+
+  const closeQuickModal = () => {
+    showQuickModal.value = false
   }
 
   const closeForm = () => {
@@ -121,6 +128,7 @@
   // --- Init ---
   onMounted(async () => {
     await loadInitialData(financeId.value, 2026)
+    await loadGoalsData()
 
     const queryBudgetId = route.query.budgetId as string | undefined
     budgetSelect.value = queryBudgetId || budgetSelected.value?.id || budgetPlans.value[0]?.id || ''
@@ -151,7 +159,10 @@
           label="Presupuesto"
           :options="budgetOptions"
         />
-        <Button variant="primary" size="sm" icon="add" @click="openForm">Nueva transacción</Button>
+
+        <Button variant="primary" size="sm" icon="add" @click="openQuickModal">
+          Nueva transacción
+        </Button>
       </div>
     </div>
 
@@ -271,6 +282,10 @@
         :initial-data="editingTransaction?.data"
         @on-close="closeForm"
       />
+    </ModalWizard>
+
+    <ModalWizard v-model:show="showQuickModal">
+      <QuickTransactionForm :goals="goals" :accounts="accounts" @on-close="closeQuickModal" />
     </ModalWizard>
   </div>
 </template>

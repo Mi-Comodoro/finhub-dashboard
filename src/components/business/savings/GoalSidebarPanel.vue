@@ -9,6 +9,7 @@
   import type { AccountData, GoalHistory, GoalsData } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
   import { GOAL_STATUS_LABELS, type GoalStatus } from '@/utils/goals.utils'
+  import type { Currency } from '~/components/organisms/forms/types'
 
   interface GoalSidebarPanelProps {
     goal?: GoalsData
@@ -21,7 +22,7 @@
   }
 
   const props = withDefaults(defineProps<GoalSidebarPanelProps>(), {
-    goal: () => ({} as GoalsData),
+    goal: () => ({}) as GoalsData,
     history: () => [],
     account: null,
     progressPercentage: 0,
@@ -37,7 +38,7 @@
 
   const statusVariant = computed(() => {
     const status = (props.goal?.status ?? 'SCHEDULED') as GoalStatus
-    return status === 'IN_PROGRESS' ? 'primary' : 'neutral'
+    return status === 'IN_PROGRESS' ? 'primary' : 'default'
   })
 
   const deadlineLabel = computed(() => {
@@ -46,7 +47,7 @@
   })
 
   const targetAmountLabel = computed(() => {
-    return formatCurrency(props.goal.targetAmount ?? 0, props.currency)
+    return formatCurrency(props.goal.targetAmount ?? 0, props.currency as Currency)
   })
 
   const formatDate = (date: string) => {
@@ -66,7 +67,8 @@
     const moneyFields = ['targetAmount', 'savedAmount', 'amount']
     const dateFields = ['targetDate', 'startDate']
     const percentFields = ['interestRate', 'percentage']
-    if (moneyFields.includes(field)) return formatCurrency(Number(value) ?? 0, props.currency)
+    if (moneyFields.includes(field))
+      return formatCurrency(Number(value) || 0, props.currency as Currency)
     if (dateFields.includes(field)) return formatDate(value as string)
     if (percentFields.includes(field)) return `${value}%`
     return String(value ?? '—')

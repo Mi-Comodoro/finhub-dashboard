@@ -16,6 +16,7 @@
     BudgetInsights,
     ExpensePlannedForm,
     ExpensePlannedSection,
+    IncomeForm,
     PlannedSavingList,
     SavingDistributionForm,
     Tips,
@@ -89,6 +90,14 @@
       condition: planStatus.value !== 'CLOSED'
     },
     {
+      name: '+ Ingreso',
+      size: 'sm',
+      variant: 'ghost',
+      icon: 'trending_up',
+      condition: planStatus.value !== 'CLOSED',
+      click: () => { showIncomeModal.value = true }
+    },
+    {
       name: 'Duplicar',
       size: 'sm',
       variant: 'primary',
@@ -118,6 +127,7 @@
   const expectedAmount = computed(() => expectedIncome.value)
 
   const showForm = ref(false)
+  const showIncomeModal = ref(false)
   const editingExpense = ref<{ id: string; data: Record<string, unknown> } | null>(null)
 
   const openForm = () => {
@@ -253,6 +263,10 @@
 
     <ModalWizard v-model:show="showSavingDistributionForm">
       <SavingDistributionForm @on-close="closeSavingDistributionForm" />
+    </ModalWizard>
+
+    <ModalWizard v-model:show="showIncomeModal">
+      <IncomeForm :budget-id="budgetId" @on-close="showIncomeModal = false" />
     </ModalWizard>
   </div>
   <div v-else class="budget-detail__empty">

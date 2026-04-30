@@ -3,11 +3,16 @@
   import { useRouter } from 'vue-router'
 
   import { AlertBanner, Badge, Button, Heading, Text } from '@/components/atoms'
-  import { DashboardBalanceChart, FinancialTipCarousel } from '@/components/business'
+  import {
+    DashboardBalanceChart,
+    FinancialTipCarousel,
+    QuickTransactionForm
+  } from '@/components/business'
   import { BudgetDonutChartEnhanced, FinancialProgressCard } from '@/components/molecules'
   import { OnboardingWizard } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
   import { useDashboardApplication } from '@/composables/application/useDashboardApplication'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
@@ -40,7 +45,18 @@
 
   const { expectedAmount, buckets } = usePlannedIncomeApplication()
 
+  const { goals, accounts, loadGoalsData } = useGoalsApplication()
+
   const isPageLoading = ref(true)
+  const showQuickModal = ref(false)
+
+  const openQuickModal = () => {
+    showQuickModal.value = true
+  }
+
+  const closeQuickModal = () => {
+    showQuickModal.value = false
+  }
   const { receivedPlannedIncome, generatedSavings } = useBudgetInsightsPresenter()
 
   const incomeBase = computed(() =>
@@ -123,6 +139,8 @@
       if (currentBudget.value?.id) {
         await loadDashboardData(currentBudget.value.id)
       }
+
+      await loadGoalsData()
     } catch (error) {
       console.error('Error cargando datos del dashboard:', error)
     } finally {
@@ -159,8 +177,9 @@
           Conoce el estado de tus finanzas y toma decisiones inteligentes con datos en tiempo real.
         </Text>
       </div>
-      <div v-if="budgetStatus !== 'PLANNED'" class="dashboard-page__header-actions">
+      <div class="dashboard-page__header-actions">
         <Button
+          v-if="budgetStatus !== 'PLANNED'"
           variant="ghost"
           size="sm"
           icon="download"
@@ -168,7 +187,16 @@
         >
           Reporte
         </Button>
-        <Button variant="primary" size="sm" icon="add">Nueva Transaccion</Button>
+
+        <Button
+          v-if="budgetStatus !== 'PLANNED'"
+          variant="primary"
+          size="sm"
+          icon="add"
+          @click="openQuickModal"
+        >
+          Nueva Transaccion
+        </Button>
       </div>
     </div>
 
@@ -396,6 +424,10 @@
 
     <ModalWizard :show="openOnboarding" class="dashboard-page__modal">
       <OnboardingWizard @completed="handleCompleteSetup" />
+    </ModalWizard>
+
+    <ModalWizard v-model:show="showQuickModal">
+      <QuickTransactionForm :goals="goals" :accounts="accounts" @on-close="closeQuickModal" />
     </ModalWizard>
   </div>
 </template>
