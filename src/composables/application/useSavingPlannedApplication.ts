@@ -25,7 +25,7 @@ export const useSavingPlannedApplication = () => {
   const savingsCompleted = computed(() => completedItems.value)
 
   const savingAmountCompleted = computed(() =>
-    savingsCompleted.value?.reduce((acc, sa) => acc + Number(sa.amount), 0)
+    savingsCompleted.value?.reduce((acc, sa) => acc + (sa.amount ?? 0), 0)
   )
 
   const savingProgress = computed(() =>

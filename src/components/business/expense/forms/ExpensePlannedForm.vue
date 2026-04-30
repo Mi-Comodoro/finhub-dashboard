@@ -9,11 +9,15 @@
   const { fetchCategories, categories } = useCategoryApplication()
   const { addExpense, updateExpense } = useExpenseApplication()
 
-  const props = defineProps<{
-    budgetId: string
+  const props = withDefaults(defineProps<{
+    budgetId?: string
     expenseId?: string
     initialData?: Partial<ExpenseData>
-  }>()
+  }>(), {
+    budgetId: '',
+    expenseId: undefined,
+    initialData: undefined
+  })
 
   const isEditMode = computed(() => !!props.expenseId)
 
@@ -36,6 +40,7 @@
   }
 
   const handleSubmit = async (data: ExpenseData) => {
+    if (!props.budgetId) { console.warn('[ExpensePlannedForm] budgetId is required but was not provided'); return }
     try {
       if (isEditMode.value && props.expenseId) {
         const { success } = await updateExpense(props.expenseId, data)
@@ -61,19 +66,19 @@
 <template>
   <div class="expense-planned-form">
     <CardInfo
-      :title="isEditMode ? 'Editar Gasto Planificado' : 'Agregar Gasto Planificado'"
-      title-size="2xl"
+      :title="isEditMode ? 'Editar Gasto' : 'Registrar Gasto'"
+      title-size="xl"
       weight="extrabold"
       level="h1"
       color="black"
       :sub-title="
         isEditMode
-          ? 'Actualiza la información de tu gasto planificado.'
-          : 'Planifica tus gastos futuros para mantener tu presupuesto bajo control.'
+          ? 'Actualiza los detalles del gasto.'
+          : 'Registra un gasto dentro de tu presupuesto.'
       "
-      sub-title-size="sm"
+      sub-title-size="xs"
       sub-title-color="muted"
-      :icon="isEditMode ? 'edit' : 'event'"
+      icon="receipt_long"
       icon-variant="primary"
       icon-size="md"
     />
@@ -82,8 +87,8 @@
       <Form :schema="formSchema" :initial-data="initialData" @submit="handleSubmit">
         <template #actions>
           <div class="expense-planned-form__actions">
-            <Button type="button" variant="ghost" @click.stop="close">Cancelar</Button>
-            <Button type="submit" variant="primary">
+            <Button type="button" variant="ghost" size="sm" @click.stop="close">Cancelar</Button>
+            <Button type="submit" variant="primary" size="sm">
               {{ isEditMode ? 'Actualizar' : 'Guardar' }}
             </Button>
           </div>

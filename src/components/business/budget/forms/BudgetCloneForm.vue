@@ -1,15 +1,19 @@
 <script setup lang="ts">
   import { Form } from '@/components/organisms/forms'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
+  import { replaceUnderscoresWithSpaces } from '@/utils/strings'
 
   import { budgetCloneFieldsSchema } from './schema/budget-clone.fields.schema'
 
   interface Props {
-    sourceBudgetId: string
-    sourceBudgetName: string
+    sourceBudgetId?: string
+    sourceBudgetName?: string
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    sourceBudgetId: '',
+    sourceBudgetName: ''
+  })
   const emit = defineEmits(['onClose', 'onSuccess'])
 
   // Opciones de mes y año
@@ -57,11 +61,11 @@
   <div class="flex h-full w-full flex-col gap-6">
     <CardInfo
       title="Clonar presupuesto"
-      title-size="2xl"
+      title-size="xl"
       weight="extrabold"
       level="h1"
       color="black"
-      :sub-title="`Se copiará la configuración de '${sourceBudgetName}' al nuevo período`"
+      :sub-title="`Se copiará la configuración de '${replaceUnderscoresWithSpaces(sourceBudgetName)}' al nuevo período`"
       sub-title-size="sm"
       sub-title-color="muted"
       icon="content_copy"
@@ -73,8 +77,8 @@
       <Form :schema="cloneSchema" @submit="handleSubmit">
         <template #actions>
           <div class="flex justify-end gap-2">
-            <Button type="button" variant="ghost" @click="emit('onClose')">Cancelar</Button>
-            <Button type="submit" variant="primary">Clonar presupuesto</Button>
+            <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">Cancelar</Button>
+            <Button type="submit" variant="primary" size="sm">Clonar presupuesto</Button>
           </div>
         </template>
       </Form>

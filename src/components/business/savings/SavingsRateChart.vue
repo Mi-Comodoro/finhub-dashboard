@@ -19,10 +19,12 @@
   type EChartsOption = ComposeOption<BarSeriesOption | GridComponentOption | TooltipComponentOption>
 
   interface Props {
-    items: BudgetHistoricalSummaryItem[]
+    items?: BudgetHistoricalSummaryItem[]
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    items: () => []
+  })
 
   const hasData = computed(() => props.items.length > 0)
 

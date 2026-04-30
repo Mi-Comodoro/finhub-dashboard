@@ -5,7 +5,7 @@
   import { budgetFieldsSchema } from './schema/budget.fields.schema'
 
   interface Props {
-    mode: 'create' | 'edit'
+    mode?: 'create' | 'edit'
     budgetId?: string
     initialData?: Partial<{
       name: string
@@ -18,7 +18,11 @@
     }>
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    mode: 'create',
+    budgetId: undefined,
+    initialData: undefined
+  })
   const emit = defineEmits(['onClose', 'onSuccess'])
 
   // Opciones de mes y año
@@ -99,19 +103,19 @@
 <template>
   <div class="budget-form">
     <CardInfo
-      :title="mode === 'create' ? 'Nuevo presupuesto' : 'Editar presupuesto'"
-      title-size="2xl"
+      :title="mode === 'create' ? 'Crear Presupuesto' : 'Editar Presupuesto'"
+      title-size="xl"
       weight="extrabold"
       level="h1"
       color="black"
       :sub-title="
         mode === 'create'
-          ? 'Definí el período y la estrategia de distribución'
-          : 'Modificá los datos del presupuesto'
+          ? 'Define los límites para cada categoría de gasto.'
+          : 'Actualiza los límites de tu presupuesto.'
       "
-      sub-title-size="sm"
+      sub-title-size="xs"
       sub-title-color="muted"
-      icon="account_balance"
+      icon="account_balance_wallet"
       icon-variant="primary"
       icon-size="md"
     />
@@ -120,8 +124,8 @@
       <Form v-model="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
           <div class="budget-form__actions">
-            <Button type="button" variant="ghost" @click="emit('onClose')">Cancelar</Button>
-            <Button type="submit" variant="primary">
+            <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">Cancelar</Button>
+            <Button type="submit" variant="primary" size="sm">
               {{ mode === 'create' ? 'Crear presupuesto' : 'Guardar cambios' }}
             </Button>
           </div>

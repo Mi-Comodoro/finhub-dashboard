@@ -2,12 +2,16 @@
   import { computed, watch } from 'vue'
 
   interface Props {
-    accountsCount: number
-    goalsCount: number
-    distributionPercentage: number
+    accountsCount?: number
+    goalsCount?: number
+    distributionPercentage?: number
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    accountsCount: 0,
+    goalsCount: 0,
+    distributionPercentage: 0
+  })
 
   const emit = defineEmits(['completed'])
 

@@ -35,8 +35,3 @@ export function getStatusVariant(status: GoalStatus | null | undefined): BadgeVa
   }
   return statusMap[status ?? 'SCHEDULED']
 }
-
-export function getGoalProgress(currentBalance: number, targetAmount: number | null): number {
-  if (!targetAmount || targetAmount === 0) return 0
-  return Math.min(100, Math.round((currentBalance / targetAmount) * 100))
-}

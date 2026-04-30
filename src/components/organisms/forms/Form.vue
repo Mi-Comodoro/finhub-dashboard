@@ -160,6 +160,7 @@
           // solo si no existe aún
           switch (field.type) {
             case 'slider-percentage':
+            case 'money':
               formData[key] = 0
               break
             case 'date':

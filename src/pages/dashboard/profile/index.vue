@@ -15,7 +15,7 @@
     Select
   } from '@/components/molecules'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
-  import DateUtils from '~/utils/date'
+  import DateUtils from '@/utils/date'
   definePageMeta({
     layout: 'dashboard',
     middleware: 'dashboard'

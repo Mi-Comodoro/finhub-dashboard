@@ -17,7 +17,7 @@ export const useActiveBudgetApplication = () => {
 
   const savingsAmount = computed(() => {
     const limits = budgetStore.currentBudgetPlan?.limits
-    const expected = plannedIncomeStore.expectedIncome
+    const expected = plannedIncomeStore.expectedIncome ?? 0
     const currency = financesStore.defaultCurrency
     return percentOf(expected, limits?.savings ?? 0, currency)
   })
@@ -29,16 +29,21 @@ export const useActiveBudgetApplication = () => {
     return savingsAllocationsStore.savingAllocations
       .filter(item => item.budgetId === budgetStore.currentBudgetPlan?.id)
       .filter(item => activeGoalIds.has(item.goalId))
-      .reduce((acc, sa) => acc + Number(sa.percentage), 0)
+      .reduce((acc, sa) => acc + Number(sa.percentage ?? 0), 0)
   })
-  const pendingAllocationProgress = computed(() => 100 - allocationProgress.value)
+  const pendingAllocationProgress = computed(() => {
+    const progress = allocationProgress.value
+    return isNaN(progress) ? 100 : Math.max(0, 100 - progress)
+  })
   const isSavingsAllocationCompleted = computed(() => allocationProgress.value === 100)
 
-  const pendingAssignedAmount = computed(() =>
-    savingsAllocationsStore.savingAllocations.length === 0
-      ? savingsAmount.value
-      : subtractPercentage(savingsAmount.value, allocationProgress.value)
-  )
+  const pendingAssignedAmount = computed(() => {
+    const savings = savingsAmount.value ?? 0
+    const progress = allocationProgress.value ?? 0
+    return savingsAllocationsStore.savingAllocations.length === 0
+      ? savings
+      : subtractPercentage(savings, progress)
+  })
 
   const canActive = computed(() => {
     return isAccountCreated.value && isGoalsCompleted.value && isSavingsAllocationCompleted.value

@@ -1,7 +1,13 @@
 <script setup lang="ts">
-  import { onMounted, ref, watch } from 'vue'
+  import { computed, onMounted, ref, watch } from 'vue'
 
   import { Label } from '@/components/atoms'
+
+  import type { InputSize } from './types/input.types'
+
+  defineOptions({
+    inheritAttrs: false
+  })
 
   const props = withDefaults(
     defineProps<{
@@ -9,13 +15,33 @@
       currency?: string
       label: string
       required?: boolean
+      size?: InputSize
     }>(),
     {
       required: false,
       modelValue: 0,
-      currency: 'COP'
+      currency: 'COP',
+      size: 'sm'
     }
   )
+
+  const fieldSizeClass = computed(() => {
+    const map: Record<InputSize, string> = {
+      sm: 'money-input__field--sm',
+      md: 'money-input__field--md',
+      lg: 'money-input__field--lg'
+    }
+    return map[props.size] ?? map.sm
+  })
+
+  const textSizeClass = computed(() => {
+    const map: Record<InputSize, string> = {
+      sm: 'text-xs',
+      md: 'text-sm',
+      lg: 'text-base'
+    }
+    return map[props.size] ?? map.sm
+  })
 
   const emit = defineEmits(['update:modelValue'])
 
@@ -87,11 +113,11 @@
       {{ label }}
     </Label>
 
-    <div class="money-input__field">
-      <span class="money-input__prefix">{{ currency }}</span>
+    <div :class="['money-input__field', fieldSizeClass]">
+      <span :class="['money-input__prefix', textSizeClass]">{{ currency }}</span>
       <input
         ref="inputRef"
-        class="money-input__input"
+        :class="['money-input__input', textSizeClass]"
         type="text"
         inputmode="decimal"
         :required="required"
@@ -107,12 +133,25 @@
     @apply flex w-full flex-col gap-1;
   }
   .money-input__field {
-    @apply flex items-center rounded-md border border-neutral-300 bg-white px-3 py-2 transition-all duration-200 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-900 dark:focus-within:border-primary-400;
+    @apply flex items-center rounded-md border border-neutral-300 bg-white transition-all duration-200 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-900 dark:focus-within:border-primary-400;
   }
+
+  .money-input__field--sm {
+    @apply h-8 px-2 py-0;
+  }
+
+  .money-input__field--md {
+    @apply px-3 py-2;
+  }
+
+  .money-input__field--lg {
+    @apply px-4 py-3;
+  }
+
   .money-input__prefix {
-    @apply mr-2 shrink-0 select-none text-sm font-medium text-neutral-500 dark:text-neutral-400;
+    @apply mr-2 shrink-0 select-none font-medium text-neutral-500 dark:text-neutral-400;
   }
   .money-input__input {
-    @apply flex-1 border-none bg-transparent text-right font-mono text-sm text-neutral-900 outline-none dark:text-neutral-100;
+    @apply flex-1 border-none bg-transparent text-right font-mono text-neutral-900 outline-none dark:text-neutral-100;
   }
 </style>

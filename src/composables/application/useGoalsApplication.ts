@@ -165,10 +165,42 @@ export const useGoalsApplication = () => {
     }
   }
 
+  const addContribution = async (
+    goalId: string,
+    data: {
+      contributionType: string
+      accountId?: string
+      amount: number
+      date: Date
+      notes?: string
+    }
+  ): Promise<{ success: boolean }> => {
+    try {
+      const response = await savingsApi.createContribution(goalId, data)
+      return response
+    } catch (error) {
+      console.error('Error adding contribution:', error)
+      return { success: false }
+    }
+  }
+
   const goals = computed(() => goalsStore.goals)
   const currentBudgetId = computed(() => budgetStore.currentBudgetPlan?.id ?? null)
+  const currentBudgetPlan = computed(() => budgetStore.currentBudgetPlan)
+  const accounts = computed(() => accountStore.accounts)
+  const savingAllocations = computed(() => savingsAllocationsStore.savingAllocations)
 
   const error = computed(() => goalsStore.error || savingsAllocationsStore.error)
+
+  const fetchAccounts = async () => {
+    await accountStore.fetchAccounts()
+    return { success: !accountStore.error }
+  }
+
+  const fetchSavingAllocations = async (budgetId: string) => {
+    await savingsAllocationsStore.fetchSavingAllocations(budgetId)
+    return { success: !savingsAllocationsStore.error }
+  }
 
   return {
     fetchGoals,
@@ -180,8 +212,14 @@ export const useGoalsApplication = () => {
     addGoal,
     editGoal,
     removeGoal,
+    addContribution,
+    fetchAccounts,
+    fetchSavingAllocations,
     goals,
     currentBudgetId,
+    currentBudgetPlan,
+    accounts,
+    savingAllocations,
     error
   }
 }

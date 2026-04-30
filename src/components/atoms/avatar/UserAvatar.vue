@@ -48,7 +48,7 @@
       :alt="user.name ?? 'Avatar'"
       class="h-full w-full rounded-full object-cover"
       :class="sizeClasses[size]"
-      @error="e => console.log('Error cargando imagen:', e)"
+      @error="e => console.error('[UserAvatar] Error loading image:', e)"
     />
   </div>
 </template>

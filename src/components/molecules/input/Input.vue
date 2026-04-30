@@ -14,7 +14,7 @@
     errorMessage: '',
     placeholder: ' ',
     variant: 'column',
-    size: 'default',
+    size: 'sm',
     readonly: false,
     isInsideGroup: false
   })
@@ -92,17 +92,13 @@
   }
 
   const sizeClasses = computed(() => {
-    if (props.size === 'sm') {
-      return {
-        input: 'input--sm',
-        label: 'input__label--sm'
-      }
+    const sizeMap = {
+      sm: { input: 'input--sm', label: 'input__label--sm' },
+      md: { input: 'input--md', label: 'input__label--md' },
+      lg: { input: 'input--lg', label: 'input__label--lg' }
     }
 
-    return {
-      input: 'input--default',
-      label: 'input__label--default'
-    }
+    return sizeMap[props.size] || sizeMap.sm
   })
 
   /**
@@ -180,7 +176,7 @@
 
       <p
         v-if="hasError"
-        :class="['input-error', size === 'sm' ? 'input-error--sm' : 'input-error--default']"
+        :class="['input-error', `input-error--${size}`]"
       >
         {{ displayErrorMessage }}
       </p>
@@ -195,10 +191,13 @@
 
   /* tamaños */
   .input--sm {
-    @apply px-2 py-1 text-xs;
+    @apply h-8 px-2 py-0 text-xs;
   }
-  .input--default {
+  .input--md {
     @apply px-3 py-2 text-sm;
+  }
+  .input--lg {
+    @apply px-4 py-3 text-base;
   }
 
   /* normal */
@@ -243,8 +242,12 @@
     @apply text-xs;
   }
 
-  .input-error--default {
+  .input-error--md {
     @apply text-sm;
+  }
+
+  .input-error--lg {
+    @apply text-base;
   }
 
   .input-prefix {

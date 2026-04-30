@@ -7,7 +7,9 @@
   const userStore = useUserStore()
   const authStore = useAuthStore()
 
-  const props = defineProps<UserBasicInformationProps & { displayName?: string }>()
+  const props = withDefaults(defineProps<UserBasicInformationProps & { displayName?: string }>(), {
+    displayName: undefined
+  })
 
   const form = ref<UserBasicInformationProps['modelValue']>({
     ...props.modelValue,

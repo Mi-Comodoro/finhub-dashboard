@@ -21,7 +21,7 @@
     }
   )
 
-  const totalPages = computed(() => Math.ceil(props.plans.length / props.pageSize))
+  const totalPages = computed(() => Math.ceil((props.plans?.length ?? 0) / props.pageSize))
   const showPagination = computed(() => totalPages.value > 1)
 
   /*   const pagedPlans = computed(() => {
@@ -31,7 +31,7 @@
   }) */
 
   const countLabel = computed(() => {
-    const total = props.plans.length
+    const total = props.plans?.length ?? 0
     const unit = `periodo${total !== 1 ? 's' : ''}`
     if (!showPagination.value) return `${total} ${unit}`
     const from = (currentPage.value - 1) * props.pageSize + 1
@@ -105,18 +105,19 @@
             {{ nextClosingDate ?? 'N/A' }}
           </td>
           <td class="flex gap-3">
-            <Button variant="primary" icon="visibility" icon-only @click="$emit('view', plan.id)">
+            <Button variant="primary" size="sm" icon="visibility" icon-only @click="$emit('view', plan.id)">
               Ver
             </Button>
             <Button
               variant="secondary"
+              size="sm"
               icon="content_copy"
               icon-only
               @click="$emit('duplicate', plan.id)"
             >
               Duplicar
             </Button>
-            <Button variant="danger" icon="delete" icon-only @click="$emit('delete', plan.id)">
+            <Button variant="danger" size="sm" icon="delete" icon-only @click="$emit('delete', plan.id)">
               Eliminar
             </Button>
           </td>

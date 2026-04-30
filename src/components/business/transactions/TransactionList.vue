@@ -4,13 +4,16 @@
   import { Card, Heading, Icon, Text } from '@/components/atoms'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { formatCurrency } from '@/utils/currency'
+  import DateUtils from '@/utils/date'
   import type { TransactionSummary } from '~/types/domain'
-  import DateUtils from '~/utils/date'
 
-  const props = defineProps<{
-    budgetId: string
+  const props = withDefaults(defineProps<{
+    budgetId?: string
     type?: TransactionSummary['type']
-  }>()
+  }>(), {
+    budgetId: '',
+    type: undefined
+  })
 
   const { transactions, isLoading, currency, fetchTransaction, setBudgetId } = useTransactionApplication()
 
@@ -122,7 +125,7 @@
       </Card>
     </div>
 
-    <Button @click="onViewTransactions">Ver todas las transacciones</Button>
+    <Button size="sm" @click="onViewTransactions">Ver todas las transacciones</Button>
   </SectionCard>
 </template>
 

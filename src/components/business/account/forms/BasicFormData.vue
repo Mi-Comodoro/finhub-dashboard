@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+  import { CardInfo } from '@/components/molecules'
   import { useUserStore } from '@/stores/user.store'
   import type {
     BasicInformationData,
@@ -48,6 +49,20 @@
 </script>
 <template>
   <div class="basic-form-data">
+    <CardInfo
+      title="Información Personal"
+      sub-title="Actualiza tus datos de perfil."
+      title-size="xl"
+      weight="extrabold"
+      level="h2"
+      color="black"
+      sub-title-size="xs"
+      sub-title-color="muted"
+      icon="person"
+      icon-variant="primary"
+      icon-size="md"
+    />
+
     <div class="basic-form-data__content">
       <Form
         :key="formKey"

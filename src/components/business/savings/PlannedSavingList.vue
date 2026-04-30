@@ -4,13 +4,15 @@
   import { AlertBanner, Badge, Heading, Icon, Text } from '@/components/atoms'
   import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
   import { useFinancesStore } from '@/stores/finances.store'
+  import DateUtils from '@/utils/date'
   import { useToast } from '~/components/organisms/toast/useToast'
   import type { PlannedSavingSummary } from '~/types/domain'
-  import DateUtils from '~/utils/date'
 
-  const props = defineProps<{
-    budgetId: string
-  }>()
+  const props = withDefaults(defineProps<{
+    budgetId?: string
+  }>(), {
+    budgetId: ''
+  })
 
   const financesStore = useFinancesStore()
 
@@ -64,7 +66,7 @@
       .filter(
         item => item.status === 'pending' && (item.plannedIncome?.source ?? 'Sin fuente') === source
       )
-      .reduce((sum, item) => sum + Number(item.amount), 0)
+      .reduce((sum, item) => sum + (item.amount ?? 0), 0)
   }
 
   // ------------------------------------------------------------------

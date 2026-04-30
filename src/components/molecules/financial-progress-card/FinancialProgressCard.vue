@@ -186,7 +186,7 @@
     class="relative flex h-auto w-full flex-col space-y-2 overflow-hidden rounded-md"
     :class="styles.background"
   >
-    <div ref="containerRef" class="relative z-10 flex h-full flex-col">
+    <div class="relative z-10 flex h-full flex-col">
       <!-- Header Section -->
       <div class="flex items-center gap-2">
         <div class="flex items-center gap-2">

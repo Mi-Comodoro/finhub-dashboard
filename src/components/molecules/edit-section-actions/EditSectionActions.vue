@@ -18,10 +18,10 @@
       {{ title }}
     </Heading>
     <div class="edit-section-actions__buttons">
-      <Button variant="secondary" icon="close" :disabled="isSaving" @click="emit('cancel')">
+      <Button variant="secondary" size="sm" icon="close" :disabled="isSaving" @click="emit('cancel')">
         Cancelar
       </Button>
-      <Button variant="primary" icon="save" :disabled="isSaving" @click="emit('save')">
+      <Button variant="primary" size="sm" icon="save" :disabled="isSaving" @click="emit('save')">
         {{ isSaving ? savingLabel : saveLabel }}
       </Button>
     </div>

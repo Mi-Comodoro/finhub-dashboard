@@ -8,16 +8,24 @@
   import { CHART_COLORS } from '@/utils/design-tokens'
 
   interface Props {
-    expectedIncome: number
-    receivedIncome: number
-    estimatedSavings: number
-    generatedSavings: number
-    plannedExpenses: number
-    paidExpenses: number
-    currency: Currency
+    expectedIncome?: number
+    receivedIncome?: number
+    estimatedSavings?: number
+    generatedSavings?: number
+    plannedExpenses?: number
+    paidExpenses?: number
+    currency?: Currency
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    expectedIncome: 0,
+    receivedIncome: 0,
+    estimatedSavings: 0,
+    generatedSavings: 0,
+    plannedExpenses: 0,
+    paidExpenses: 0,
+    currency: 'COP'
+  })
 
   const chartOption = computed(() => {
     return {

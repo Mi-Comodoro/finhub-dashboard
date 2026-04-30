@@ -9,10 +9,12 @@
   import InsightCard from './InsightCard.vue'
 
   interface Props {
-    insights: FinancialInsight[]
+    insights?: FinancialInsight[]
   }
 
-  defineProps<Props>()
+  withDefaults(defineProps<Props>(), {
+    insights: () => []
+  })
 </script>
 
 <template>

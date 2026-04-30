@@ -11,7 +11,7 @@
     error: false,
     errorMessage: 'Valor inválido',
     variant: 'admin',
-    size: 'default'
+    size: 'sm'
   })
 
   const emit = defineEmits(['update:modelValue'])
@@ -24,7 +24,7 @@
   const selectClass = computed(() => [
     'select',
     props.error ? 'select--error' : 'select--normal',
-    props.size === 'sm' ? 'select--sm' : 'select--default'
+    `select--${props.size}`
   ])
 
   const containerClass = computed(() => {
@@ -117,10 +117,13 @@
     @apply border-neutral-300 focus:border-slate-500 focus:ring-1 focus:ring-slate-500;
   }
   .select--sm {
-    @apply w-14 px-2 py-1 text-xs;
+    @apply h-8 px-2 py-0 text-xs;
   }
-  .select--default {
+  .select--md {
     @apply px-3 py-2 text-sm;
+  }
+  .select--lg {
+    @apply px-4 py-3 text-base;
   }
   .select-option {
     @apply hover:bg-primary-100 hover:text-primary-800;

@@ -1,4 +1,4 @@
-export type InputSize = 'sm' | 'default'
+export type InputSize = 'sm' | 'md' | 'lg'
 export type InputVariant = 'row' | 'column'
 export type InputTag = 'input' | 'textarea'
 export type PasswordIconStyle = 'outline' | 'filled' | 'rounded'

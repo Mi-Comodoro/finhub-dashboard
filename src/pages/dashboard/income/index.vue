@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import { IncomeForm, IncomeHistory } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
+  import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useIncomeApplication } from '@/composables/application/useIncomeApplication'
   import { useFeedback } from '@/composables/useFeedback'
-  import { useFinancesStore } from '@/stores/finances.store'
   import { formatCurrency } from '@/utils/currency'
 
   definePageMeta({
@@ -23,10 +23,8 @@
     markAsReceived
   } = useIncomeApplication()
 
-  const financesStore = useFinancesStore()
+  const { currency } = useFinancesApplication()
   const { success: successToast } = useFeedback()
-
-  const currency = computed(() => financesStore.defaultCurrency)
   const budgetId = computed(() => (route.query.budgetId as string) || '')
 
   // Modal state

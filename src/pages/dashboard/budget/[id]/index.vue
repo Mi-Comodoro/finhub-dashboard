@@ -30,8 +30,8 @@
   import { useApiHandler } from '@/composables/useApiHandler'
   import { useFeedback } from '@/composables/useFeedback'
   import { formatCurrency } from '@/utils/currency'
+  import DateUtils from '@/utils/date'
   import { replaceUnderscoresWithSpaces } from '@/utils/strings'
-  import DateUtils from '~/utils/date'
   definePageMeta({
     layout: 'dashboard',
     title: 'Detalles',

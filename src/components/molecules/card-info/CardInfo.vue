@@ -3,10 +3,11 @@
 
   import type { CardInfoProps } from './types/card-info.types'
 
-  withDefaults(defineProps<CardInfoProps>(), {
+  const props = withDefaults(defineProps<CardInfoProps>(), {
     verticalSpace: false,
     iconSize: 'md' as 'sm' | 'md' | 'lg'
   })
+  if (import.meta.dev && !props.title) console.warn('[CardInfo] "title" prop is required but was not provided')
 </script>
 <template>
   <div class="card-info">
@@ -18,7 +19,7 @@
           {{ title }}
         </Heading>
         <Text
-          v-if="!subTitleVariant"
+          v-if="subTitle && !subTitleVariant"
           :size="subTitleSize"
           :color="subTitleColor"
           :weight="subTitleWeight"
@@ -26,7 +27,7 @@
           {{ subTitle }}
         </Text>
         <Label
-          v-else
+          v-else-if="subTitle && subTitleVariant"
           :size="subTitleSize as LabelSize"
           :variant="subTitleVariant"
           :color="subTitleColor as LabelColor"

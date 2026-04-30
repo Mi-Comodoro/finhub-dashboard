@@ -30,19 +30,19 @@ export const useExpenseApplication = () => {
   const expenses = computed(() =>
     store.expenses
       .filter(expense => expense.bucket)
-      .reduce((acc, expense) => acc + Number(expense.expectedAmount), 0)
+      .reduce((acc, expense) => acc + (expense.expectedAmount ?? 0), 0)
   )
 
   const needsAmountCompleted = computed(() =>
     store.expenses
       .filter(item => item.status === 'PAID' && item.bucket === 'needs')
-      .reduce((acc, expense) => acc + Number(expense.expectedAmount), 0)
+      .reduce((acc, expense) => acc + (expense.expectedAmount ?? 0), 0)
   )
 
   const wantsAmountCompleted = computed(() =>
     store.expenses
       .filter(item => item.status === 'PAID' && item.bucket === 'wants')
-      .reduce((acc, expense) => acc + Number(expense.expectedAmount), 0)
+      .reduce((acc, expense) => acc + (expense.expectedAmount ?? 0), 0)
   )
 
   const wantsProgress = computed(() =>

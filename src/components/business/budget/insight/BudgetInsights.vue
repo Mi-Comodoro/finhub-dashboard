@@ -5,9 +5,11 @@
 
   import type { BudgetInsightsData } from './types'
 
-  defineProps<{
-    budgetStatus: 'PLANNED' | 'ACTIVE' | 'CLOSED'
-  }>()
+  withDefaults(defineProps<{
+    budgetStatus?: 'PLANNED' | 'ACTIVE' | 'CLOSED'
+  }>(), {
+    budgetStatus: 'PLANNED'
+  })
   const { currency, plan, receivedIncome, generatedSavings, pendingSavings } =
     useBudgetInsightsPresenter()
 

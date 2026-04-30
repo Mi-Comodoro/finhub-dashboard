@@ -1,37 +1,27 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git ls-tree:*)",
-      "Bash(netstat:*)",
-      "Bash(taskkill:*)",
-      "Bash(npm run build:*)",
-      "Bash(test:*)",
-      "Bash(echo:*)",
-      "Bash(npx nuxi typecheck:*)",
-      "Bash(grep:*)",
-      "Bash(npx tsc:*)",
-      "Bash(npx vue-tsc:*)",
-      "Bash(npm run lint:*)",
-      "Bash(timeout 15 npm run dev:*)",
-      "Bash(timeout 20 npm run dev:*)",
-      "Bash(git mv:*)",
       "Bash(ls:*)",
-      "Bash(git checkout:*)",
-      "Bash(powershell -command:*)",
-      "Bash(powershell:*)",
-      "Bash(npm run dev:*)",
-      "Bash(nvm use:*)",
-      "Bash(node --version:*)",
-      "Bash(nvm list:*)",
-      "Bash(nvm exec:*)",
       "Bash(cat:*)",
-      "Bash(npm install:*)",
-      "Bash(npm uninstall:*)",
-      "Bash(tee:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(git status:*)",
       "Bash(git diff:*)",
-      "Bash(node -p:*)",
-      "Bash(source:*)",
-      "Bash(find:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(npx nuxi typecheck:*)",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(timeout 30 npm run dev:*)",
+      "Bash(echo:*)"
+    ],
+    "deny": [
+      "Bash(powershell:*)",
+      "Bash(taskkill:*)",
+      "Bash(rm -rf /:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)"
     ]
   }
 }

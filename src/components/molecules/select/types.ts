@@ -14,6 +14,6 @@ export interface SelectProps {
   error?: boolean
   errorMessage?: string
   variant?: 'auth' | 'admin' | 'admin-inline'
-  size?: 'default' | 'sm'
+  size?: 'sm' | 'md' | 'lg'
   initialOption?: Option
 }

@@ -3,9 +3,11 @@
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
-  import DateUtils from '~/utils/date'
+  import DateUtils from '@/utils/date'
 
-  const props = defineProps<{ budgetId: string }>()
+  const props = withDefaults(defineProps<{ budgetId?: string }>(), {
+    budgetId: ''
+  })
 
   const { markAsReceived, error, summary, processingIncomeId } = usePlannedIncomeApplication()
   const { fetchByBudget: fetchTransactions } = useTransactionApplication()
@@ -41,7 +43,7 @@
         title="Ingresos del Mes"
         sub-title="Marca tus ingresos como recibidos"
         weight="extrabold"
-        title-size="lg"
+        title-size="xl"
         sub-title-size="xs"
         sub-title-color="muted"
         icon="payments"

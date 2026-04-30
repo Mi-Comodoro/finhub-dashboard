@@ -28,7 +28,7 @@ export function useBudgetListApplication() {
   ): number =>
     plannedIncomes
       .filter(p => String(p.budgetId) === String(budgetId))
-      .reduce((acc, p) => acc + Number(p.amount), 0)
+      .reduce((acc, p) => acc + (p.amount ?? 0), 0)
 
   const budgets = computed(() => budgetStore.budgetPlans)
   const isLoading = computed(() => budgetStore.isLoading)

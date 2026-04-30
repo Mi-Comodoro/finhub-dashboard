@@ -91,15 +91,15 @@
 <template>
   <div class="saving-distribution-form">
     <CardInfo
-      title="Agregar Distribucion de Ahorros"
-      title-size="2xl"
+      title="Distribuir Ahorros"
+      title-size="xl"
       weight="extrabold"
       level="h1"
       color="black"
-      sub-title="Crea el hábito que transformará tu tranquilidad financiera."
-      sub-title-size="sm"
+      sub-title="Asigna un porcentaje de tus ahorros a cada meta."
+      sub-title-size="xs"
       sub-title-color="muted"
-      icon="donut_large"
+      icon="pie_chart"
       icon-variant="primary"
       icon-size="md"
     />
@@ -168,8 +168,8 @@
     <Form v-if="availablePercentage > 0" :key="formKey" v-model="formData" :schema="formSchema">
       <template #actions>
         <div class="saving-distribution-form__actions">
-          <Button type="button" variant="ghost" @click.stop="emit('onClose')">Cancelar</Button>
-          <Button type="submit" variant="primary" @click="handleSubmit">Guardar</Button>
+          <Button type="button" variant="ghost" size="sm" @click.stop="emit('onClose')">Cancelar</Button>
+          <Button type="submit" variant="primary" size="sm" @click="handleSubmit">Guardar</Button>
         </div>
       </template>
     </Form>

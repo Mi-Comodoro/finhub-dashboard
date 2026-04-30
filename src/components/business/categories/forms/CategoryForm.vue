@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue'
 
-  import { Heading, Icon } from '@/components/atoms'
+  import { CardInfo } from '@/components/molecules'
   import { Form } from '@/components/organisms'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useFeedback } from '@/composables/useFeedback'
@@ -17,7 +17,10 @@
     'on-close': []
   }
 
-  const props = defineProps<CategoryFormProps>()
+  const props = withDefaults(defineProps<CategoryFormProps>(), {
+    categoryId: undefined,
+    initialData: undefined
+  })
   const emit = defineEmits<CategoryFormEmits>()
 
   const { createCategory, updateCategory } = useCategoryApplication()
@@ -75,10 +78,16 @@
 
 <template>
   <div class="category-form">
-    <div class="category-form__header">
-      <Icon name="category" size="lg" class="category-form__icon" />
-      <Heading level="h2" size="xl" weight="bold">{{ formTitle }}</Heading>
-    </div>
+    <CardInfo
+      :title="formTitle"
+      title-size="xl"
+      weight="extrabold"
+      level="h2"
+      color="black"
+      icon="category"
+      icon-variant="primary"
+      icon-size="md"
+    />
 
     <Form
       :fields="categoryFieldsSchema()"
@@ -93,13 +102,5 @@
 <style scoped lang="postcss">
   .category-form {
     @apply flex flex-col gap-6;
-  }
-
-  .category-form__header {
-    @apply flex items-center gap-3 border-b border-neutral-200 pb-4;
-  }
-
-  .category-form__icon {
-    @apply text-primary-600;
   }
 </style>

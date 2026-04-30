@@ -9,10 +9,12 @@
   import type { FinancialInsight, InsightType } from '@/types/insights'
 
   interface Props {
-    insight: FinancialInsight
+    insight?: FinancialInsight
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    insight: () => ({ id: '', type: 'success', title: '', message: '', category: 'general' } as FinancialInsight)
+  })
 
   // Mapear tipos de insight a variantes de AlertBanner
   const variantMap: Record<InsightType, AlertVariant> = {

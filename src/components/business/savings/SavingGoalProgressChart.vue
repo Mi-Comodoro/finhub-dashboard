@@ -31,11 +31,14 @@
   }
 
   interface Props {
-    goals: GoalProgressItem[]
-    currency: Currency
+    goals?: GoalProgressItem[]
+    currency?: Currency
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    goals: () => [],
+    currency: 'COP'
+  })
 
   const hasData = computed(() => props.goals.length > 0)
 

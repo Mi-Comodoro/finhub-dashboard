@@ -81,13 +81,13 @@
 <template>
   <div class="account-saving-form">
     <CardInfo
-      :title="mode === 'edit' ? 'Editar Cuenta' : 'Registro de Cuenta Bancaria para Referencia'"
-      title-size="2xl"
+      :title="mode === 'edit' ? 'Editar Cuenta de Ahorro' : 'Crear Cuenta de Ahorro'"
+      title-size="xl"
       weight="extrabold"
       level="h1"
       color="black"
-      :sub-title="mode === 'edit' ? 'Actualiza la información de tu cuenta.' : 'Registro informativo de cuenta de destino.'"
-      sub-title-size="sm"
+      :sub-title="mode === 'edit' ? 'Actualiza la información de tu cuenta.' : 'Define la cuenta donde crecerán tus ahorros.'"
+      sub-title-size="xs"
       sub-title-color="muted"
       icon="account_balance"
       icon-variant="primary"
@@ -104,8 +104,8 @@
       <Form :schema="formSchema" :model-value="formData" @submit="handleSubmit">
         <template #actions>
           <div class="account-saving-form__actions">
-            <Button type="button" variant="ghost" @click.stop="close">Cancelar</Button>
-            <Button type="submit" variant="primary">
+            <Button type="button" variant="ghost" size="sm" @click.stop="close">Cancelar</Button>
+            <Button type="submit" variant="primary" size="sm">
               {{ mode === 'edit' ? 'Actualizar' : 'Guardar' }}
             </Button>
           </div>

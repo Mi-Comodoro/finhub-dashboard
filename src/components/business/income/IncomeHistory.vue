@@ -4,10 +4,13 @@
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
 
-  defineProps<{
-    incomes: PlannedIncomeSummary[]
-    currency: string
-  }>()
+  withDefaults(defineProps<{
+    incomes?: PlannedIncomeSummary[]
+    currency?: string
+  }>(), {
+    incomes: () => [],
+    currency: ''
+  })
 
   const emit = defineEmits(['edit', 'delete', 'markReceived'])
 

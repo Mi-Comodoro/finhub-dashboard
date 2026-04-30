@@ -85,10 +85,10 @@
             <div class="account-savings__card-header">
               <CardInfo
                 level="h3"
-                title-size="sm"
+                title-size="xl"
                 weight="extrabold"
                 :title="account.name"
-                :sub-title="getRateCategory(Number(account.interestRate)).description"
+                :sub-title="getRateCategory(account.interestRate ?? 0).description"
                 sub-title-size="xs"
                 sub-title-color="muted"
               />
@@ -101,7 +101,7 @@
                 </span>
                 <span
                   class="account-savings__badge"
-                  :class="getRateClass(Number(account.interestRate))"
+                  :class="getRateClass(account.interestRate ?? 0)"
                 >
                   {{ account.interestRate.toFixed(2) }}% EA
                 </span>

@@ -81,7 +81,18 @@ export default withNuxt([
         }
       ],
       'no-console': ['warn', { allow: ['error', 'warn'] }],
-      'no-debugger': 'error'
+      'no-debugger': 'error',
+      'vue/require-default-prop': 'warn',
+      'vue/component-name-in-template-casing': [
+        'error',
+        'PascalCase',
+        {
+          registeredComponentsOnly: true
+        }
+      ],
+      'vue/no-unused-refs': 'warn',
+      // TODO Sprint 5: habilitar cuando typed linting esté configurado (lint tomó 40s con project:true)
+      // '@typescript-eslint/no-floating-promises': 'warn'
     }
   }
 ])

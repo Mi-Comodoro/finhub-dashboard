@@ -31,19 +31,30 @@
   >
 
   interface Props {
-    baseData: number[] // aportes sin interés
-    interestData: number[] // aportes + interés compuesto
-    granularity: 'daily' | 'weekly' | 'monthly'
-    periods: number // número de períodos según granularidad
+    baseData?: number[] // aportes sin interés
+    interestData?: number[] // aportes + interés compuesto
+    granularity?: 'daily' | 'weekly' | 'monthly'
+    periods?: number // número de períodos según granularidad
     startMonth?: number // mes de inicio (1-12), default 1, solo para monthly
     targetAmount?: number // línea de objetivo
-    currency: Currency
+    currency?: Currency
     currentBalance?: number
     interestRate?: number // tasa de interés anual
     labels?: string[] // custom labels for x-axis (if provided, overrides auto-generated labels)
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    baseData: () => [],
+    interestData: () => [],
+    granularity: 'monthly',
+    periods: 0,
+    startMonth: 1,
+    targetAmount: undefined,
+    currency: 'COP',
+    currentBalance: undefined,
+    interestRate: undefined,
+    labels: undefined
+  })
 
   const yMin = computed(() => {
     const firstPoint = props.interestData[0] ?? 0
@@ -186,11 +197,6 @@
 
 <template>
   <div v-if="hasData" class="projection-chart">
-    <div v-if="interestRate && interestRate > 0" class="projection-chart__header">
-      <Text size="sm" color="muted">
-        Tasa de interés: <strong class="projection-chart__rate">{{ interestRate.toFixed(2) }}% EA</strong>
-      </Text>
-    </div>
     <ClientOnly>
       <VChart :option="chartOption" autoresize class="h-72 w-full" />
       <template #fallback>
@@ -204,11 +210,4 @@
 </template>
 
 <style scoped lang="postcss">
-  .projection-chart__header {
-    @apply mb-3 text-center;
-  }
-
-  .projection-chart__rate {
-    @apply text-neutral-700 dark:text-neutral-300;
-  }
 </style>

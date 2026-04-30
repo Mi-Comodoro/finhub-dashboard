@@ -2,7 +2,7 @@
   import { ref } from 'vue'
 
   import { Button, GoogleIcon, Link, Text } from '@/components/atoms'
-  import { CardInfo, Input } from '@/components/molecules'
+  import { CardInfo, Input, PasswordInput } from '@/components/molecules'
   import { useAuth } from '@/composables/useAuth'
 
   import type { LoginFormState } from './types/login-form.types'
@@ -129,18 +129,14 @@
           error-message="Correo invalido"
         />
 
-        <Input
+        <PasswordInput
           id="password"
           v-model="password"
           name="password"
-          type="password"
           placeholder="Ingresa tu contrasena"
           required
           label="Contrasena"
           error-message="La contrasena debe tener al menos 6 caracteres"
-          show-password-toggle
-          forgot-password
-          forgot-password-text="Olvidaste tu contrasena?"
         />
 
         <Button

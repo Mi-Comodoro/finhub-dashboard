@@ -2,7 +2,7 @@
   import { onMounted } from 'vue'
 
   import { Icon } from '@/components/atoms'
-  import { Breadcrumbs, HeaderActions, Input } from '@/components/molecules'
+  import { Breadcrumbs, HeaderActions, SearchInput } from '@/components/molecules'
   import { useBreadcrumbNavigation } from '@/components/molecules/breadcrumbs/useBreadcrumbNavigation'
 
   import type { DashboardHeaderProps } from './types/dashboard-header.types'
@@ -46,7 +46,7 @@
       </div>
       <div class="flex items-center gap-4">
         <div>
-          <Input type="search" search-icon placeholder="Buscar Movimientos..." />
+          <SearchInput placeholder="Buscar Movimientos..." />
         </div>
         <!-- Header Actions -->
         <HeaderActions />

@@ -1,19 +1,19 @@
 <script setup lang="ts">
   import { Badge, Button, Text } from '@/components/atoms'
   import { AccountSavingForm, GoalsForm } from '@/components/business'
-  import AccountRateTimeline from '@/components/business/account/AccountRateTimeline.vue'
   import { CardInfo } from '@/components/molecules'
   import { ModalWizard } from '@/components/organisms'
   import { useToast } from '@/components/organisms/toast/useToast'
   import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
   import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
+  import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
+  import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
-  import { useFinancesStore } from '@/stores/finances.store'
-  import { usePlannedSavingStore } from '@/stores/planned-saving.store'
   import type { CompoundingFrequency, GoalsData } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
+  import { getProgressPercentage as getProgressPercentageUtil } from '@/utils/goal-formatters'
   import {
     getGoalTerm,
     getStatusVariant,
@@ -52,22 +52,21 @@
   } = useActiveBudgetApplication()
   const { currentBudgetId } = useSetupApplication()
   const { budgetStatus } = useCommon()
-  const financesStore = useFinancesStore()
-  const plannedSavingStore = usePlannedSavingStore()
-  const currency = computed(() => financesStore.defaultCurrency)
+  const { currency } = useFinancesApplication()
+  const { items: plannedSavingItems, fetchByBudget: fetchPlannedSavings } =
+    usePlannedSavingApplication()
 
   // Helper functions to calculate progress per goal
   const getSavedAmountForGoal = (goalId: string): number => {
-    if (!plannedSavingStore.items) return 0
-    return plannedSavingStore.items
+    if (!plannedSavingItems.value) return 0
+    return plannedSavingItems.value
       .filter(item => item.savingGoal?.id === goalId && item.status === 'completed')
-      .reduce((acc, item) => acc + Number(item.amount), 0)
+      .reduce((acc, item) => acc + (item.amount ?? 0), 0)
   }
 
   const getProgressPercentage = (goalId: string, targetAmount: number | null): number => {
-    if (!targetAmount || targetAmount === 0) return 0
     const saved = getSavedAmountForGoal(goalId)
-    return Math.min(Math.round((saved / targetAmount) * 100), 100)
+    return getProgressPercentageUtil(saved, targetAmount)
   }
 
   const activateBudget = async () => {
@@ -135,7 +134,7 @@
     if (currentBudgetId.value) {
       await loadSavingAllocations(currentBudgetId.value)
       // Load planned savings to calculate progress
-      await plannedSavingStore.fetchByBudget(currentBudgetId.value)
+      await fetchPlannedSavings(currentBudgetId.value)
     }
   })
 
@@ -539,7 +538,6 @@
                 :accounts-count="accounts.length"
                 :goals-count="goalsProgress"
                 :distribution-percentage="allocationProgress"
-                @completed="() => console.log('Ir a presupuesto')"
               >
                 <template #action>
                   <div v-if="canActive" class="goals-page__setup-action">
@@ -607,7 +605,7 @@
                           :title="account.name"
                           :sub-title="
                             account.description ||
-                            getRateCategory(Number(account.interestRate)).description
+                            getRateCategory(account.interestRate ?? 0).description
                           "
                           sub-title-size="xs"
                           sub-title-color="muted"
@@ -701,8 +699,8 @@
         <Heading level="h3" size="lg">¿Eliminar esta meta?</Heading>
         <Text size="sm" color="muted">Esta acción no se puede deshacer.</Text>
         <div class="goals-page__delete-actions">
-          <Button variant="danger" @click="handleDelete">Eliminar</Button>
-          <Button variant="ghost" @click="showDeleteModal = false">Cancelar</Button>
+          <Button variant="danger" size="sm" @click="handleDelete">Eliminar</Button>
+          <Button variant="ghost" size="sm" @click="showDeleteModal = false">Cancelar</Button>
         </div>
       </div>
     </ModalWizard>

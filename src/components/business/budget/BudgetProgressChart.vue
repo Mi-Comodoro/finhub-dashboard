@@ -31,11 +31,14 @@
   }
 
   interface Props {
-    categories: BudgetProgressCategory[]
-    currency: Currency
+    categories?: BudgetProgressCategory[]
+    currency?: Currency
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    categories: () => [],
+    currency: 'COP'
+  })
 
   const hasData = computed(() => props.categories.length > 0)
 

@@ -118,6 +118,7 @@
         <Button
           class="modal-notification__close"
           aria-label="Cerrar"
+          size="sm"
           icon="close"
           icon-only
           @click="handleClose"

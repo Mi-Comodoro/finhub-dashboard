@@ -45,7 +45,7 @@
       color: TYPE_META[type].color,
       value: props.transactions
         .filter(transaction => transaction.type === type)
-        .reduce((total, transaction) => total + Number(transaction.amount || 0), 0),
+        .reduce((total, transaction) => total + (transaction.amount ?? 0), 0),
       itemStyle: {
         color: TYPE_META[type].color
       }

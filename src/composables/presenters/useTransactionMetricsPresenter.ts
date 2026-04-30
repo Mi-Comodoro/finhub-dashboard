@@ -11,19 +11,19 @@ export function useTransactionMetricsPresenter(
     () =>
       transactions.value
         ?.filter(t => t.type === 'income')
-        .reduce((a, t) => a + Number(t.amount), 0) ?? 0
+        .reduce((a, t) => a + (t.amount ?? 0), 0) ?? 0
   )
   const totalExpense = computed(
     () =>
       transactions.value
         ?.filter(t => t.type === 'expense')
-        .reduce((a, t) => a + Number(t.amount), 0) ?? 0
+        .reduce((a, t) => a + (t.amount ?? 0), 0) ?? 0
   )
   const totalSavings = computed(
     () =>
       transactions.value
         ?.filter(t => t.type === 'savings')
-        .reduce((a, t) => a + Number(t.amount), 0) ?? 0
+        .reduce((a, t) => a + (t.amount ?? 0), 0) ?? 0
   )
 
   const countByType = (type: TransactionSummary['type']) =>

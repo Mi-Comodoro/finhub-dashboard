@@ -6,9 +6,11 @@
 
   const emit = defineEmits(['open-form', 'edit', 'remove', 'mark-as-payed'])
 
-  const props = defineProps<{
-    budgetId: string
-  }>()
+  const props = withDefaults(defineProps<{
+    budgetId?: string
+  }>(), {
+    budgetId: ''
+  })
 
   const {
     setBudget,

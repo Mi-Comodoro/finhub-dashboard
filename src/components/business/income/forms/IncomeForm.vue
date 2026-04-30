@@ -6,11 +6,15 @@
 
   const { createIncome, updateIncome } = useIncomeApplication()
 
-  const props = defineProps<{
-    budgetId: string
+  const props = withDefaults(defineProps<{
+    budgetId?: string
     incomeId?: string
     initialData?: Record<string, unknown>
-  }>()
+  }>(), {
+    budgetId: '',
+    incomeId: undefined,
+    initialData: undefined
+  })
 
   const isEditMode = computed(() => !!props.incomeId)
   const formSchema = computed(() => incomeFieldsSchema())
@@ -21,6 +25,7 @@
   }
 
   const handleSubmit = async (data: Record<string, unknown>) => {
+    if (!props.budgetId) { console.warn('[IncomeForm] budgetId is required but was not provided'); return }
     try {
       if (isEditMode.value && props.incomeId) {
         const { success } = await updateIncome(props.incomeId, data)
@@ -48,7 +53,7 @@
   <div class="income-form">
     <CardInfo
       :title="isEditMode ? 'Editar Ingreso Planificado' : 'Agregar Ingreso Planificado'"
-      title-size="2xl"
+      title-size="xl"
       weight="extrabold"
       level="h1"
       color="black"
@@ -57,9 +62,9 @@
           ? 'Actualiza la información de tu ingreso planificado.'
           : 'Registra tus ingresos esperados para planificar mejor tu presupuesto.'
       "
-      sub-title-size="sm"
+      sub-title-size="xs"
       sub-title-color="muted"
-      :icon="isEditMode ? 'edit' : 'payments'"
+      icon="payments"
       icon-variant="primary"
       icon-size="md"
     />
@@ -68,8 +73,8 @@
       <Form :schema="formSchema" :initial-data="initialData" @submit="handleSubmit">
         <template #actions>
           <div class="income-form__actions">
-            <Button type="button" variant="ghost" @click.stop="close">Cancelar</Button>
-            <Button type="submit" variant="primary">
+            <Button type="button" variant="ghost" size="sm" @click.stop="close">Cancelar</Button>
+            <Button type="submit" variant="primary" size="sm">
               {{ isEditMode ? 'Actualizar' : 'Guardar' }}
             </Button>
           </div>

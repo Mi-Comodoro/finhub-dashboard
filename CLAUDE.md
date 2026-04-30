@@ -182,6 +182,63 @@ Neutral       → neutral   (slate)    bg-neutral-100  text-neutral-600
 - Always wrap `VChart` in `<ClientOnly>`
 - Always set explicit height on charts
 
+## Nuxt UI
+
+Integrado como librería de presentación.
+Regla: solo render y feedback visual — nunca toca lógica de negocio.
+
+### Componentes permitidos
+
+UIcon, UButton, UBadge, UModal, USlideover, UTooltip, UPopover,
+useToast(), USkeleton, UProgress, UAvatar, UTabs, UAccordion, UAlert
+
+### Prohibido hasta E6
+
+UForm, UFormField, UInput, USelect, UCheckbox, URadio, UTextarea
+Motivo: Form.vue con schema es el estándar vigente (ADR-006)
+
+### Iconos
+
+UIcon con Iconify — Material Icons eliminado.
+Ejemplo: `<UIcon name="i-material-symbols-savings" />`
+
+## CardInfo
+
+Todo formulario y sección con header debe usar CardInfo.
+
+**Props fijas (no cambiar entre formularios):**
+```
+title-size="xl" · weight="extrabold" · level="h1" · color="black"
+sub-title-size="xs" · sub-title-color="muted"
+icon-size="md" · icon-variant="primary"
+```
+
+**Props variables:** title (dinámico por mode), sub-title, icon (semántico al contexto)
+
+El ícono NUNCA cambia según mode create/edit.
+
+**Referencia:** `components/business/savings/forms/GoalsForm.vue`
+
+## Tamaños estándar
+
+- **Button:** size="sm" en formularios y acciones inline
+- **Input/Select:** si size=sm → text-xs internamente
+- **Console warnings:** siempre en una sola línea:
+  ```typescript
+  if (!props.x) { console.warn('[Componente] x is required'); return }
+  ```
+
+## Goals utilities
+
+Centralizado en: `utils/goal-formatters.ts`
+- `formatMonthsToGoal`
+- `getProgressPercentage`
+- `GOAL_TERM_LABELS`
+
+**Vocabulario:** usar 'skipped' (no 'omitted') para aportes saltados
+
+**plannedSavings:** solo disponible en GET /goals/:id — no en GET /goals
+
 ## Forms
 
 **Use the dynamic Form.vue component:**
@@ -240,6 +297,13 @@ const loadBudgets = async (year: number) => {
   return { success: !budgetStore.error }
 }
 ```
+
+**Templates:**
+- SidebarPage — Layout wrapper for sidebar panels
+  - Location: `components/templates/SidebarPage.vue`
+  - Usage: Wrap sidebar content with `<SidebarPage><slot /></SidebarPage>`
+  - No props, no domain logic — pure layout component
+  - Reference: `GoalSidebarPanel.vue`
 
 ## Code Standards
 
@@ -328,6 +392,11 @@ import { CHART_COLORS } from '@/utils/design-tokens'
 - Never skip `ClientOnly` wrapper for VChart
 - Never modify existing component public APIs without checking usage
 - Never use Spanish for variable names, function names, constants, types, or classes (only UI text allowed in Spanish)
+- Never create a sidebar panel without wrapping it in `<SidebarPage>`
+- Never use `Number(optional)` without `?? 0` fallback
+- Never duplicate `formatMonthsToGoal` or `getProgressPercentage` — import from `utils/goal-formatters`
+- Never change the icon of CardInfo based on create/edit mode
+- Never use UForm, UInput, USelect in forms — use Form.vue with schema (ADR-006, until E6)
 
 ## Common Patterns
 

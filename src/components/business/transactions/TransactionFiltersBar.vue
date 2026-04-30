@@ -4,11 +4,15 @@
 
   type FilterType = TransactionType | 'all'
 
-  defineProps<{
-    categoryOptions: { label: string; value: string; disabled?: boolean }[]
-    typeButtons: { label: string; value: FilterType }[]
-    activeTypeBtn: FilterType
-  }>()
+  withDefaults(defineProps<{
+    categoryOptions?: { label: string; value: string; disabled?: boolean }[]
+    typeButtons?: { label: string; value: FilterType }[]
+    activeTypeBtn?: FilterType
+  }>(), {
+    categoryOptions: () => [],
+    typeButtons: () => [],
+    activeTypeBtn: 'all'
+  })
 
   const filterCat = defineModel<string>('filterCat', { default: '' })
   const filterDateFrom = defineModel<Date | null>('filterDateFrom', { default: null })

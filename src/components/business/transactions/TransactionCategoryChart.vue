@@ -38,7 +38,7 @@
           (acc, transaction) => {
             const name = transaction.category?.name ?? 'Sin categoria'
             const current = acc[name] ?? { name, amount: 0 }
-            current.amount += Number(transaction.amount || 0)
+            current.amount += (transaction.amount ?? 0)
             acc[name] = current
             return acc
           },

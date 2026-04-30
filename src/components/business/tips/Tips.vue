@@ -1,14 +1,21 @@
 <script setup lang="ts">
   import { Button, Card, Heading, IconBadge, Text } from '@/components/atoms'
 
-  defineProps<{
-    title: string
+  withDefaults(defineProps<{
+    title?: string
     description?: string
-    icon: string
+    icon?: string
     actionLabel?: string
     event?: () => void
     variant?: 'default' | 'success'
-  }>()
+  }>(), {
+    title: '',
+    description: undefined,
+    icon: '',
+    actionLabel: undefined,
+    event: undefined,
+    variant: 'default'
+  })
 </script>
 
 <template>

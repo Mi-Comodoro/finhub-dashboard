@@ -5,10 +5,12 @@ import { useAccountApi } from '@/composables/api/useAccountApi'
 import type { AccountRateHistory } from '@/types/api'
 
 interface AccountRateTimelineProps {
-  accountId: string
+  accountId?: string
 }
 
-const props = defineProps<AccountRateTimelineProps>()
+const props = withDefaults(defineProps<AccountRateTimelineProps>(), {
+  accountId: ''
+})
 
 const { fetchRateHistory } = useAccountApi()
 

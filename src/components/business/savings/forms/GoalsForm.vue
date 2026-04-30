@@ -94,7 +94,7 @@
         isActive: true,
         // Explicit null checks for targetAmount (0 is valid!)
         ...(raw.targetAmount !== undefined && raw.targetAmount !== null && raw.targetAmount !== ''
-          ? { targetAmount: Number(raw.targetAmount) }
+          ? { targetAmount: Number(raw.targetAmount) || 0 }
           : {}),
         ...(raw.targetDate ? { targetDate: raw.targetDate } : {})
       }

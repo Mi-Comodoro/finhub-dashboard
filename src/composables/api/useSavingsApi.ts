@@ -48,6 +48,21 @@ export function useSavingsApi() {
       method: 'GET'
     })
 
+  const createContribution = async (
+    goalId: string,
+    data: {
+      contributionType: string
+      accountId?: string
+      amount: number
+      date: Date
+      notes?: string
+    }
+  ) =>
+    $fetch<{ success: boolean }>(`/api/savings/goals/${goalId}/contributions`, {
+      method: 'POST',
+      body: data
+    })
+
   return {
     getPlannedSavingsByBudget,
     updatePlannedSaving,
@@ -58,6 +73,7 @@ export function useSavingsApi() {
     updateGoal,
     deleteGoal,
     getGoal,
-    getGoalHistory
+    getGoalHistory,
+    createContribution
   }
 }

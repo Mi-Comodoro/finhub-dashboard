@@ -11,10 +11,12 @@
   }
 
   interface Props {
-    tips: FinancialTip[]
+    tips?: FinancialTip[]
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    tips: () => []
+  })
 
   const currentIndex = ref(0)
   const isPaused = ref(false) // Control de pausa

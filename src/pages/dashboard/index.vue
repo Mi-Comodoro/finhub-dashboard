@@ -395,7 +395,7 @@
     </div>
 
     <ModalWizard :show="openOnboarding" class="dashboard-page__modal">
-      <OnboardingWizard ref="wizardRef" @completed="handleCompleteSetup" />
+      <OnboardingWizard @completed="handleCompleteSetup" />
     </ModalWizard>
   </div>
 </template>

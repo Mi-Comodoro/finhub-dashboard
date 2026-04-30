@@ -30,6 +30,14 @@ Focus ONLY on:
 - Use Form.vue for forms when applicable
 - Use VChart with ClientOnly and explicit height for charts
 - Follow existing styling and component patterns
+- Wrap all sidebar panels in SidebarPage (components/templates/)
+- Use CardInfo in every form and section header (Reference: components/business/savings/forms/GoalsForm.vue)
+- Import goal utilities from utils/goal-formatters.ts — never duplicate
+- Console guards always single-line: `if (!props.x) { console.warn('[C] x required'); return }`
+- Buttons size="sm" in forms and inline actions
+- Input/Select: text-xs when size=sm
+- Use `?? 0` for all optional number props — never `Number(optional)`
+- Nuxt UI: only components listed in ADR-009 are allowed (UForm/UInput/USelect prohibited until E6)
 
 ## Output
 

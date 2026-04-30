@@ -13,6 +13,10 @@ export interface GoalsData {
   userId?: string
   accountName?: string
   status?: GoalStatus
+  /**
+   * Populated only when fetched via GET /goals/:id
+   * Not present in GET /goals list response
+   */
   plannedSavings?: PlannedSaving[]
   createdAt?: Date
   updatedAt?: Date

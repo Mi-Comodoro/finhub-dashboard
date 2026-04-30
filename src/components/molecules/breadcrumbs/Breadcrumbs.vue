@@ -72,7 +72,7 @@
           :is="crumb.isActive ? 'span' : 'router-link'"
           :to="crumb.path"
           :class="[
-            'inline-flex items-center gap-1.5 transition-colors duration-200',
+            'inline-flex items-center gap-1.5 text-xs transition-colors duration-200',
             crumb.isActive
               ? 'cursor-default font-medium text-slate-600 dark:text-slate-300'
               : 'text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400'

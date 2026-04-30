@@ -2,13 +2,24 @@
   import { computed, ref, watch } from 'vue'
 
   import { DatePicker,Icon, Label  } from '@/components/atoms'
+  import type { InputSize } from '@/components/molecules/input/types/input.types'
   import type { DatePickerInputProps } from '@/types/ui/date-picker.types'
 
-  const props = withDefaults(defineProps<DatePickerInputProps>(), {
+  const props = withDefaults(defineProps<DatePickerInputProps & { size?: InputSize }>(), {
     mode: 'single',
     locale: 'es',
     placeholder: 'Seleccionar fecha',
-    required: false
+    required: false,
+    size: 'sm'
+  })
+
+  const inputSizeClass = computed(() => {
+    const map: Record<InputSize, string> = {
+      sm: 'date-input__input--sm',
+      md: 'date-input__input--md',
+      lg: 'date-input__input--lg'
+    }
+    return map[props.size] ?? map.sm
   })
 
   const emit = defineEmits(['update:modelValue'])
@@ -68,7 +79,7 @@
     >
       <input
         type="text"
-        class="date-input__input"
+        :class="['date-input__input', inputSizeClass]"
         :value="displayValue"
         :placeholder="placeholder"
         readonly
@@ -119,7 +130,19 @@
   }
 
   .date-input__input {
-    @apply flex-1 cursor-pointer border-none bg-transparent px-3 py-2 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 dark:text-neutral-100;
+    @apply flex-1 cursor-pointer border-none bg-transparent text-neutral-900 outline-none placeholder:text-neutral-400 dark:text-neutral-100;
+  }
+
+  .date-input__input--sm {
+    @apply h-8 px-2 py-0 text-xs;
+  }
+
+  .date-input__input--md {
+    @apply px-3 py-2 text-sm;
+  }
+
+  .date-input__input--lg {
+    @apply px-4 py-3 text-base;
   }
 
   .date-input__icon {
