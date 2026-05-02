@@ -16,24 +16,9 @@ export const quickTransactionFieldsSchema = (
       label: 'Tipo de Registro',
       required: true,
       options: [
-        {
-          label: 'Ingreso',
-          value: 'income',
-          title: 'Ingreso',
-          badge: 'payments'
-        },
-        {
-          label: 'Gasto',
-          value: 'expense',
-          title: 'Gasto',
-          badge: 'receipt_long'
-        },
-        {
-          label: 'Ahorro',
-          value: 'saving',
-          title: 'Ahorro',
-          badge: 'savings'
-        }
+        { label: 'Ingreso', value: 'income', description: 'Dinero recibido', icon: 'payments' },
+        { label: 'Gasto', value: 'expense', description: 'Dinero gastado', icon: 'receipt_long' },
+        { label: 'Ahorro', value: 'saving', description: 'Aporte a una meta', icon: 'savings' }
       ]
     },
     amount: {
@@ -66,18 +51,8 @@ export const quickTransactionFieldsSchema = (
       label: 'Tipo de aporte',
       required: false,
       options: [
-        {
-          label: 'Externo',
-          value: 'external',
-          title: 'Externo',
-          badge: 'account_balance'
-        },
-        {
-          label: 'Interno',
-          value: 'internal',
-          title: 'Interno',
-          badge: 'swap_horiz'
-        }
+        { label: 'Depósito externo', value: 'external', description: 'Desde fuera', icon: 'account_balance' },
+        { label: 'Transferencia', value: 'internal', description: 'Cuenta propia', icon: 'swap_horiz' }
       ],
       visibleWhen: (form) => form['type'] === 'saving'
     },

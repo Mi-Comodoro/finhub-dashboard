@@ -29,6 +29,7 @@
     description?: string
     title?: string
     badge?: string
+    icon?: string
   }
   type commonField = string | number | boolean | Date | null
   interface FieldSchema {

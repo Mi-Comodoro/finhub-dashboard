@@ -26,7 +26,7 @@
 </script>
 
 <template>
-  <header :class="['flex h-full w-full items-center bg-white px-4 py-2 dark:bg-slate-900', className]">
+  <div :class="['flex h-full w-full items-center bg-white px-4 py-2 dark:bg-slate-900', className]">
     <div class="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between">
       <!-- Left section: hamburger (mobile) + back + breadcrumbs -->
       <div class="flex min-w-0 items-center gap-4">
@@ -54,5 +54,5 @@
         <HeaderActions />
       </div>
     </div>
-  </header>
+  </div>
 </template>
