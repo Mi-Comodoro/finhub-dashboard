@@ -19,11 +19,7 @@
 
 <template>
   <div v-if="insights.length > 0" class="insight-list">
-    <InsightCard
-      v-for="insight in insights"
-      :key="insight.id"
-      :insight="insight"
-    />
+    <InsightCard v-for="insight in insights" :key="insight.id" :insight="insight" />
   </div>
 </template>
 

@@ -1,4 +1,3 @@
- 
 // stores/useExpensesStore.ts
 
 import { defineStore } from 'pinia'
@@ -118,6 +117,5 @@ export const useExpensesStore = defineStore('expenses', {
     setBudget(budgetId: string) {
       this.filters.budgetId = budgetId
     }
-
   }
 })

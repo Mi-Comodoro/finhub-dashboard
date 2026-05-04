@@ -1,38 +1,47 @@
 import type { BadgeVariant } from '@/components/atoms/badge/types/badge.types'
 
 export function useBudgetListPresenter() {
-
   const getStatusVariant = (status: string): BadgeVariant => {
     const map: Record<string, BadgeVariant> = {
-      ACTIVE:  'success',
+      ACTIVE: 'success',
       PLANNED: 'warning',
-      CLOSED:  'secondary'
+      CLOSED: 'secondary'
     }
     return map[status] ?? 'secondary'
   }
 
   const getStatusLabel = (status: string) => {
     const map: Record<string, string> = {
-      ACTIVE:  'Activo',
+      ACTIVE: 'Activo',
       PLANNED: 'Planificado',
-      CLOSED:  'Cerrado'
+      CLOSED: 'Cerrado'
     }
     return map[status] ?? status
   }
 
   const getCardBorderClass = (status: string) => {
     const map: Record<string, string> = {
-      ACTIVE:  'border-2 border-primary-300',
+      ACTIVE: 'border-2 border-primary-300',
       PLANNED: 'border border-neutral-200',
-      CLOSED:  'border border-neutral-200 opacity-75'
+      CLOSED: 'border border-neutral-200 opacity-75'
     }
     return map[status] ?? 'border border-neutral-200'
   }
 
   const getMonthName = (month: string | number): string => {
     const months = [
-      'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
     ]
     return months[Number(month) - 1] ?? String(month)
   }

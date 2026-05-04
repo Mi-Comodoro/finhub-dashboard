@@ -135,7 +135,10 @@
     // Fallback: normalize date to Date to match PlannedSaving type
     return (plannedSavingItems.value ?? [])
       .filter(s => s.savingGoalId === goal.value?.id)
-      .map(s => ({ ...s, date: s.date instanceof Date ? s.date : new Date(s.date) })) as PlannedSaving[]
+      .map(s => ({
+        ...s,
+        date: s.date instanceof Date ? s.date : new Date(s.date)
+      })) as PlannedSaving[]
   })
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))

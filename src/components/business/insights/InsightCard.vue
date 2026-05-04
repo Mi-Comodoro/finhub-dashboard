@@ -13,7 +13,8 @@
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    insight: () => ({ id: '', type: 'success', title: '', message: '', category: 'general' } as FinancialInsight)
+    insight: () =>
+      ({ id: '', type: 'success', title: '', message: '', category: 'general' }) as FinancialInsight
   })
 
   // Mapear tipos de insight a variantes de AlertBanner
@@ -31,7 +32,7 @@
   <AlertBanner :variant="variant" :icon="insight.icon">
     <div class="flex items-start justify-between gap-3">
       <div class="flex-1">
-        <p class="font-medium text-sm leading-snug">{{ insight.message }}</p>
+        <p class="text-sm font-medium leading-snug">{{ insight.message }}</p>
         <p v-if="insight.subMessage" class="mt-1 text-xs opacity-80">
           {{ insight.subMessage }}
         </p>
@@ -39,7 +40,7 @@
       <NuxtLink
         v-if="insight.cta"
         :to="insight.cta.route"
-        class="shrink-0 rounded-md bg-white/50 dark:bg-black/20 px-3 py-1.5 text-xs font-medium hover:bg-white/80 dark:hover:bg-black/30 transition-colors"
+        class="shrink-0 rounded-md bg-white/50 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-white/80 dark:bg-black/20 dark:hover:bg-black/30"
       >
         {{ insight.cta.label }}
       </NuxtLink>

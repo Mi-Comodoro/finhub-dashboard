@@ -89,9 +89,7 @@ export function useBudgetComparisonApplication() {
    * @param items - Budget donut items
    * @returns Map of category ID to spent amount
    */
-  const getCurrentSpentData = async (
-    items: BudgetDonutItem[]
-  ): Promise<Record<string, number>> => {
+  const getCurrentSpentData = async (items: BudgetDonutItem[]): Promise<Record<string, number>> => {
     const currentBudget = budgetStore.currentBudget
     if (!currentBudget?.id) return {}
 

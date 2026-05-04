@@ -63,8 +63,7 @@
       if (!value.trim()) return 'El nombre es requerido'
       if (value.trim().length < 2) return 'Mínimo 2 caracteres'
       if (value.length > 50) return 'Máximo 50 caracteres'
-      if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value))
-        return 'Solo se permiten letras y espacios'
+      if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) return 'Solo se permiten letras y espacios'
       return null
     },
     phoneNumber: (value: string) => {

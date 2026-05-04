@@ -136,10 +136,7 @@ export const useGoalsApplication = () => {
     }
   }
 
-  const editGoal = async (
-    id: string,
-    data: Partial<GoalsData>
-  ): Promise<{ success: boolean }> => {
+  const editGoal = async (id: string, data: Partial<GoalsData>): Promise<{ success: boolean }> => {
     try {
       const response = await savingsApi.updateGoal(id, data)
       if (response.success) {

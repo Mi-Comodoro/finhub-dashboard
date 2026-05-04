@@ -5,10 +5,10 @@ import { useFinancesStore } from '@/stores/finances.store'
 import type { PlannedIncomeSummary } from '~/types/domain'
 
 export function useBudgetListApplication() {
-  const budgetStore             = useBudgetStore()
-  const financesStore           = useFinancesStore()
-  const { fetchBudgets }        = useBudgetActions()
-  const { fetchPlannedIncome }  = usePlannedIncomeApplication()
+  const budgetStore = useBudgetStore()
+  const financesStore = useFinancesStore()
+  const { fetchBudgets } = useBudgetActions()
+  const { fetchPlannedIncome } = usePlannedIncomeApplication()
 
   const loadBudgets = async (year: number) => {
     const financeId = financesStore.profile?.id

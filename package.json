@@ -20,7 +20,7 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"**/*.{js,ts,vue,json,css,scss,md}\""
+    "format": "prettier --write \"**/*.{js,ts,vue,json,css,scss}\""
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

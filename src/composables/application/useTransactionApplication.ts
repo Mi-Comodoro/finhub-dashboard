@@ -134,7 +134,10 @@ export const useTransactionApplication = () => {
       const { success } = await transactionApi.createTransaction(data)
 
       if (!success) {
-        transactionStore.setError({ title: 'Error al crear transacción', message: 'No se pudo crear la transacción' })
+        transactionStore.setError({
+          title: 'Error al crear transacción',
+          message: 'No se pudo crear la transacción'
+        })
       } else {
         // Reload transactions for current budget
         if (transactionStore.budgetId) {
@@ -158,7 +161,10 @@ export const useTransactionApplication = () => {
       const { success } = await transactionApi.updateTransaction(id, data)
 
       if (!success) {
-        transactionStore.setError({ title: 'Error al actualizar transacción', message: 'No se pudo actualizar la transacción' })
+        transactionStore.setError({
+          title: 'Error al actualizar transacción',
+          message: 'No se pudo actualizar la transacción'
+        })
       } else {
         // Reload transactions for current budget
         if (transactionStore.budgetId) {
@@ -182,7 +188,10 @@ export const useTransactionApplication = () => {
       const { success } = await transactionApi.deleteTransaction(id)
 
       if (!success) {
-        transactionStore.setError({ title: 'Error al eliminar transacción', message: 'No se pudo eliminar la transacción' })
+        transactionStore.setError({
+          title: 'Error al eliminar transacción',
+          message: 'No se pudo eliminar la transacción'
+        })
       } else {
         // Reload transactions for current budget
         if (transactionStore.budgetId) {

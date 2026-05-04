@@ -7,15 +7,19 @@
   import DateUtils from '@/utils/date'
   import type { TransactionSummary } from '~/types/domain'
 
-  const props = withDefaults(defineProps<{
-    budgetId?: string
-    type?: TransactionSummary['type']
-  }>(), {
-    budgetId: '',
-    type: undefined
-  })
+  const props = withDefaults(
+    defineProps<{
+      budgetId?: string
+      type?: TransactionSummary['type']
+    }>(),
+    {
+      budgetId: '',
+      type: undefined
+    }
+  )
 
-  const { transactions, isLoading, currency, fetchTransaction, setBudgetId } = useTransactionApplication()
+  const { transactions, isLoading, currency, fetchTransaction, setBudgetId } =
+    useTransactionApplication()
 
   const router = useRouter()
 
@@ -73,11 +77,7 @@
   <SectionCard icon="swap_vertical_circle" icon-variant="primary" title="Ultimas Transacciones">
     <template v-if="isLoading">
       <div class="transaction-list__loading">
-        <div
-          v-for="index in 4"
-          :key="index"
-          class="transaction-list__skeleton"
-        >
+        <div v-for="index in 4" :key="index" class="transaction-list__skeleton">
           <div class="transaction-list__skeleton-title"></div>
           <div class="transaction-list__skeleton-subtitle"></div>
           <div class="transaction-list__skeleton-text"></div>
@@ -130,67 +130,67 @@
 </template>
 
 <style scoped lang="postcss">
-.transaction-list__loading {
-  @apply space-y-3;
-}
+  .transaction-list__loading {
+    @apply space-y-3;
+  }
 
-.transaction-list__skeleton {
-  @apply animate-pulse rounded-md border border-slate-100 bg-slate-50 p-4;
-}
+  .transaction-list__skeleton {
+    @apply animate-pulse rounded-md border border-slate-100 bg-slate-50 p-4;
+  }
 
-.transaction-list__skeleton-title {
-  @apply mb-3 h-4 w-40 rounded bg-slate-200;
-}
+  .transaction-list__skeleton-title {
+    @apply mb-3 h-4 w-40 rounded bg-slate-200;
+  }
 
-.transaction-list__skeleton-subtitle {
-  @apply mb-2 h-3 w-28 rounded bg-slate-200;
-}
+  .transaction-list__skeleton-subtitle {
+    @apply mb-2 h-3 w-28 rounded bg-slate-200;
+  }
 
-.transaction-list__skeleton-text {
-  @apply h-3 w-24 rounded bg-slate-200;
-}
+  .transaction-list__skeleton-text {
+    @apply h-3 w-24 rounded bg-slate-200;
+  }
 
-.transaction-list__empty {
-  @apply flex flex-col items-center gap-3 py-10 text-center;
-}
+  .transaction-list__empty {
+    @apply flex flex-col items-center gap-3 py-10 text-center;
+  }
 
-.transaction-list__empty-icon {
-  @apply text-slate-300;
-}
+  .transaction-list__empty-icon {
+    @apply text-slate-300;
+  }
 
-.transaction-list__items {
-  @apply space-y-2;
-}
+  .transaction-list__items {
+    @apply space-y-2;
+  }
 
-.transaction-list__card {
-  @apply border border-slate-100;
-}
+  .transaction-list__card {
+    @apply border border-slate-100;
+  }
 
-.transaction-list__header {
-  @apply flex items-start justify-between gap-2;
-}
+  .transaction-list__header {
+    @apply flex items-start justify-between gap-2;
+  }
 
-.transaction-list__header-title {
-  @apply truncate;
-}
+  .transaction-list__header-title {
+    @apply truncate;
+  }
 
-.transaction-list__content {
-  @apply flex flex-wrap items-center justify-between gap-2 text-xs;
-}
+  .transaction-list__content {
+    @apply flex flex-wrap items-center justify-between gap-2 text-xs;
+  }
 
-.transaction-list__content-info {
-  @apply truncate;
-}
+  .transaction-list__content-info {
+    @apply truncate;
+  }
 
-.transaction-list__content-amount {
-  @apply flex shrink-0 items-center gap-2;
-}
+  .transaction-list__content-amount {
+    @apply flex shrink-0 items-center gap-2;
+  }
 
-.transaction-list__amount-text {
-  @apply whitespace-nowrap;
-}
+  .transaction-list__amount-text {
+    @apply whitespace-nowrap;
+  }
 
-.transaction-list__currency {
-  @apply text-xs uppercase;
-}
+  .transaction-list__currency {
+    @apply text-xs uppercase;
+  }
 </style>

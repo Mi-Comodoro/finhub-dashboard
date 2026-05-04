@@ -30,10 +30,10 @@ export function useSavingsApi() {
     id: string,
     data: Partial<GoalsData>
   ): Promise<{ success: boolean }> => {
-    const response = await $fetch<{ success: boolean }>(
-      `/api/savings/goals/${id}`,
-      { method: 'PATCH', body: data }
-    )
+    const response = await $fetch<{ success: boolean }>(`/api/savings/goals/${id}`, {
+      method: 'PATCH',
+      body: data
+    })
     return response
   }
 

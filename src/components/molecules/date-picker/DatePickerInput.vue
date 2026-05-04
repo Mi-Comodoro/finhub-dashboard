@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue'
 
-  import { DatePicker,Icon, Label  } from '@/components/atoms'
+  import { DatePicker, Icon, Label } from '@/components/atoms'
   import type { InputSize } from '@/components/molecules/input/types/input.types'
   import type { DatePickerInputProps } from '@/types/ui/date-picker.types'
 

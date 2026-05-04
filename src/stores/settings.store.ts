@@ -48,15 +48,15 @@ export const useSettingsStore = defineStore('settings', {
   }),
 
   getters: {
-    hasNotificationsEnabled: (state) =>
+    hasNotificationsEnabled: state =>
       state.notifications.emailNotifications ||
       state.notifications.budgetAlerts ||
       state.notifications.savingsReminders ||
       state.notifications.transactionUpdates,
 
-    isBalancedStrategy: (state) => state.budgetDefaults.strategy === 'BALANCED',
+    isBalancedStrategy: state => state.budgetDefaults.strategy === 'BALANCED',
 
-    totalPercentage: (state) =>
+    totalPercentage: state =>
       state.budgetDefaults.needsPercentage +
       state.budgetDefaults.wantsPercentage +
       state.budgetDefaults.savingsPercentage

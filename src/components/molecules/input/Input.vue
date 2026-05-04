@@ -174,10 +174,7 @@
         </div>
       </div>
 
-      <p
-        v-if="hasError"
-        :class="['input-error', `input-error--${size}`]"
-      >
+      <p v-if="hasError" :class="['input-error', `input-error--${size}`]">
         {{ displayErrorMessage }}
       </p>
     </div>

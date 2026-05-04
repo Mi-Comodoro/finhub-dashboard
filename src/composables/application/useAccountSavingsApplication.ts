@@ -14,7 +14,7 @@ export const useAccountSavingsApplication = () => {
     isActive: boolean
   }) => {
     isLoading.value = true
-    const { success } = await accountApi.createAccount(data) as AccountResponse
+    const { success } = (await accountApi.createAccount(data)) as AccountResponse
     isLoading.value = false
     if (!success) {
       error.value = 'Error al crear cuentas asociadas al ahorro'

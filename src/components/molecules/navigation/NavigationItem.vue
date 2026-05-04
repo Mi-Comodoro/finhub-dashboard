@@ -29,7 +29,12 @@
     <Link
       v-if="path"
       :to="path"
-      :class="['nav-item', isActive ? 'nav-item--active' : 'nav-item--inactive', 'justify-center px-0', className]"
+      :class="[
+        'nav-item',
+        isActive ? 'nav-item--active' : 'nav-item--inactive',
+        'justify-center px-0',
+        className
+      ]"
       @click="emit('navigate')"
     >
       <Icon :name="icon" size="lg" />
@@ -48,7 +53,11 @@
     <Link
       v-if="path"
       :to="path"
-      :class="['nav-item gap-3 px-3', isActive ? 'nav-item--active' : 'nav-item--inactive', className]"
+      :class="[
+        'nav-item gap-3 px-3',
+        isActive ? 'nav-item--active' : 'nav-item--inactive',
+        className
+      ]"
       @click="emit('navigate')"
     >
       <Icon :name="icon" size="lg" />

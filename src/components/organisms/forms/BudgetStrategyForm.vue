@@ -219,9 +219,7 @@
       </div>
 
       <!-- INDICADOR DE TOTAL -->
-      <div
-        :class="['strategy-step__total', `strategy-step__total--${totalStatus}`]"
-      >
+      <div :class="['strategy-step__total', `strategy-step__total--${totalStatus}`]">
         <span class="material-symbols-outlined">
           {{ total === 100 ? 'check_circle' : 'error' }}
         </span>

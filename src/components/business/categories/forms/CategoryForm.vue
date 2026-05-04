@@ -34,7 +34,7 @@
 
   watch(
     () => props.initialData,
-    (newData) => {
+    newData => {
       if (newData) {
         formData.value = { ...newData }
       }
@@ -80,7 +80,9 @@
   <div class="category-form">
     <CardInfo
       :title="formTitle"
-      :sub-title="isEditMode ? 'Actualiza los datos de la categoría.' : 'Define una nueva categoría de gasto.'"
+      :sub-title="
+        isEditMode ? 'Actualiza los datos de la categoría.' : 'Define una nueva categoría de gasto.'
+      "
       title-size="xl"
       weight="extrabold"
       level="h1"

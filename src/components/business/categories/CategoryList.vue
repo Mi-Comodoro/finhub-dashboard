@@ -13,9 +13,9 @@
   })
 
   const emit = defineEmits<{
-    'edit': [category: CategoriesData]
-    'delete': [category: CategoriesData]
-    'add': []
+    edit: [category: CategoriesData]
+    delete: [category: CategoriesData]
+    add: []
   }>()
 
   const { getCategoryTypeLabel, getCategoryTypeVariant, getCategoryColorClasses } =
@@ -26,7 +26,7 @@
   <div class="category-list">
     <div class="category-list__header">
       <Text size="sm" color="muted" weight="medium">Categorías personalizadas</Text>
-      <Button variant="primary" size="xs" icon="add" @click="emit('add')"> Agregar </Button>
+      <Button variant="primary" size="xs" icon="add" @click="emit('add')">Agregar</Button>
     </div>
 
     <div v-if="isLoading" class="category-list__loading">

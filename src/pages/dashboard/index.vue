@@ -5,7 +5,10 @@
   import { AlertBanner, Badge, Button, Heading, Text } from '@/components/atoms'
   import {
     DashboardBalanceChart,
+    DashboardActionCard,
+    FinancialHealthGauge,
     FinancialTipCarousel,
+    PlannedSavingList,
     QuickTransactionForm
   } from '@/components/business'
   import { BudgetDonutChartEnhanced, FinancialProgressCard } from '@/components/molecules'
@@ -16,6 +19,7 @@
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
+  import { useDashboardPresenter } from '@/composables/presenters/useDashboardPresenter'
   import { useCommon } from '@/composables/useCommon'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
   import { FINANCIAL_TIPS } from '@/utils/financial-tips'
@@ -47,6 +51,9 @@
 
   const { goals, accounts, loadGoalsData } = useGoalsApplication()
 
+  const { hasActiveSavingPlans, contextualTip, healthScore, savingsRate, incomeRate, expenseRate } =
+    useDashboardPresenter()
+
   const isPageLoading = ref(true)
   const showQuickModal = ref(false)
 
@@ -74,6 +81,14 @@
   const available = computed(() =>
     subtractAmounts(expense.value, totalExpenses.value, currency.value)
   )
+
+  const displayTips = computed(() => {
+    if (!contextualTip.value) return FINANCIAL_TIPS.common
+    return [
+      { id: 'contextual', icon: 'lightbulb', message: contextualTip.value, subMessage: undefined },
+      ...FINANCIAL_TIPS.common
+    ]
+  })
 
   const categories = computed(() => {
     if (!currentBudget.value || !expectedAmount.value) return []
@@ -250,67 +265,39 @@
         variant="accent"
       />
       <FinancialProgressCard
-        :title="'Disponible'"
+        :title="'Libre Sin Comprometer'"
         :amount="available"
-        title-color="white"
-        text-color="white"
+        title-color="black"
+        text-color="black"
         icon-name="payments"
-        icon-text-class="text-yellow-400"
-        currency-text-class="text-yellow-400"
-        class="dashboard-page__card--accent"
-        variant="accent"
+        icon-text-class="text-primary-600"
+        icon-bg-class="bg-primary-100"
+        class="dashboard-page__card--free"
       />
 
-      <FinancialProgressCard
-        v-if="budgetStatus === 'PLANNED'"
-        title-color="white"
-        text-color="white"
-        icon-mark="savings"
-        icon-text-class="text-yellow-400"
-        currency-text-class="text-yellow-400"
-      >
-        <template #body>
-          <div class="dashboard-page__card-body">
-            <div class="dashboard-page__card-content">
-              <Text color="muted" size="sm" class="dashboard-page__card-text">
-                Ahora es el momento de definir como vas a ahorrar tu
-                <strong>{{ currentBudget?.limits.savings }}%</strong>
-              </Text>
-            </div>
-            <div class="dashboard-page__card-action">
-              <Button size="sm" @click="router.push(`/dashboard/goals`)">Definir Metas</Button>
-            </div>
-          </div>
-        </template>
-      </FinancialProgressCard>
-      <FinancialProgressCard
-        v-else
-        title-color="white"
-        text-color="white"
-        icon-mark="savings"
-        icon-text-class="text-primary-500"
-      >
-        <template #body>
-          <div class="dashboard-page__card-body">
-            <div class="dashboard-page__card-content">
-              <Text color="muted" size="sm" class="dashboard-page__card-text">
-                El Presupuesto esta en
-                <strong>Ejecucion</strong>
-                , puedes gestionar tu presupesto
-              </Text>
-            </div>
-            <div class="dashboard-page__card-action">
-              <Button size="sm" @click="router.push(`/dashboard/budget/${currentBudget?.id}`)">
-                Ver Presupuesto
-              </Button>
-            </div>
-          </div>
-        </template>
-      </FinancialProgressCard>
+      <DashboardActionCard
+        :budget-status="budgetStatus"
+        :free-amount="available"
+        :currency-code="currency"
+        @define-goals="router.push('/dashboard/goals')"
+        @add-to-goal="router.push('/dashboard/goals')"
+        @plan-expenses="router.push(`/dashboard/budget/${currentBudget?.id}`)"
+        @carry-forward="router.push('/dashboard/budget')"
+      />
     </div>
-    <FinancialTipCarousel :tips="FINANCIAL_TIPS.common" />
+    <FinancialTipCarousel :tips="displayTips" />
 
-    <div v-if="currentBudget" class="dashboard-page__chart-section">
+    <section v-if="!isPageLoading && currentBudget" class="dashboard-page__health-section">
+      <FinancialHealthGauge
+        :score="healthScore"
+        :savings-rate="savingsRate"
+        :income-rate="incomeRate"
+        :expense-rate="expenseRate"
+        :has-debt-module="false"
+      />
+    </section>
+
+    <section v-if="currentBudget" class="dashboard-page__budget-section">
       <div class="dashboard-page__budget-card">
         <div class="dashboard-page__budget-header">
           <Heading level="h3" size="lg" weight="semibold">
@@ -393,21 +380,28 @@
           </div>
         </div>
       </div>
+    </section>
 
-      <div v-if="!isPageLoading && expectedAmount" class="dashboard-page__balance-chart">
-        <DashboardBalanceChart
-          :expected-income="expectedAmount"
-          :received-income="totalIncomeReceived || 0"
-          :estimated-savings="buckets.savingsAmount || 0"
-          :generated-savings="totalSavingGenerated || 0"
-          :planned-expenses="totalPlanned || 0"
-          :paid-expenses="totalExpensesPaid || 0"
-          :currency="currency"
-        />
-      </div>
-    </div>
+    <section v-if="!isPageLoading && expectedAmount" class="dashboard-page__balance-section">
+      <DashboardBalanceChart
+        :expected-income="expectedAmount"
+        :received-income="totalIncomeReceived || 0"
+        :estimated-savings="buckets.savingsAmount || 0"
+        :generated-savings="totalSavingGenerated || 0"
+        :planned-expenses="totalPlanned || 0"
+        :paid-expenses="totalExpensesPaid || 0"
+        :currency="currency"
+      />
+    </section>
 
-    <div v-else-if="!isPageLoading" class="dashboard-page__no-budget">
+    <section
+      v-if="hasActiveSavingPlans && currentBudget && !isPageLoading"
+      class="dashboard-page__saving-plan"
+    >
+      <PlannedSavingList :budget-id="currentBudget.id" />
+    </section>
+
+    <div v-if="!isPageLoading && !currentBudget" class="dashboard-page__no-budget">
       <Heading level="h3" size="lg" weight="semibold" class="dashboard-page__no-budget-title">
         No hay un presupuesto cargado para mostrar
       </Heading>
@@ -473,6 +467,11 @@
     @apply !bg-primary-900;
   }
 
+  .dashboard-page__card--free {
+    border-left: 3px solid theme('colors.primary.500');
+    @apply !bg-primary-50;
+  }
+
   .dashboard-page__card-body {
     @apply flex flex-col justify-between;
   }
@@ -489,12 +488,20 @@
     @apply z-10 flex items-center justify-end gap-2;
   }
 
-  .dashboard-page__chart-section {
-    @apply mb-8 grid grid-cols-1 xl:grid-cols-2;
+  .dashboard-page__health-section {
+    @apply mb-8;
+  }
+
+  .dashboard-page__budget-section {
+    @apply mb-8;
+  }
+
+  .dashboard-page__balance-section {
+    @apply mb-8;
   }
 
   .dashboard-page__budget-card {
-    @apply rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800;
+    @apply rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800 xl:col-span-1;
   }
 
   .dashboard-page__budget-header {
@@ -581,10 +588,6 @@
     @apply bg-warning-500;
   }
 
-  .dashboard-page__balance-chart {
-    @apply mt-4;
-  }
-
   .dashboard-page__no-budget {
     @apply rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800;
   }
@@ -603,5 +606,9 @@
 
   .dashboard-page__modal {
     @apply px-8;
+  }
+
+  .dashboard-page__saving-plan {
+    @apply mb-4;
   }
 </style>

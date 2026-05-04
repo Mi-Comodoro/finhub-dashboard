@@ -18,7 +18,10 @@ const calculateExpectedAmount = (incomes: PlannedIncomeSummary[]) => {
 }
 
 // Business logic: actualizar un ingreso en el summary
-const updateIncomeSummary = (summary: PlannedIncomeSummary[], updatedIncome: PlannedIncomeSummary) => {
+const updateIncomeSummary = (
+  summary: PlannedIncomeSummary[],
+  updatedIncome: PlannedIncomeSummary
+) => {
   return summary.map(item => (item.id === updatedIncome.id ? { ...item, ...updatedIncome } : item))
 }
 

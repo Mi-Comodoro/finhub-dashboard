@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Layout wrapper - no props, no domain logic
+  // Layout wrapper - no props, no domain logic
 </script>
 
 <template>
@@ -9,7 +9,7 @@
 </template>
 
 <style lang="postcss" scoped>
-.sidebar-page {
-  @apply flex flex-col gap-6;
-}
+  .sidebar-page {
+    @apply flex flex-col gap-6;
+  }
 </style>

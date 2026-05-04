@@ -1,16 +1,11 @@
 import type { PlannedIncomeSummary, PlannedSavingSummary } from '~/types/domain'
 
 export function useIncomeApi() {
-
   const getCurrentIncome = async () =>
-    $fetch<{ success: boolean; result: unknown }>(
-      '/api/incomes/current'
-    )
+    $fetch<{ success: boolean; result: unknown }>('/api/incomes/current')
 
   const getPlannedIncomes = async () =>
-    $fetch<{ success: boolean; result: PlannedIncomeSummary[] }>(
-      '/api/incomes/planned'
-    )
+    $fetch<{ success: boolean; result: PlannedIncomeSummary[] }>('/api/incomes/planned')
 
   const getPlannedIncomesByBudget = async (budgetId: string) =>
     $fetch<{ success: boolean; result: PlannedIncomeSummary[] }>(
@@ -24,28 +19,24 @@ export function useIncomeApi() {
         plannedIncome: PlannedIncomeSummary | null
         plannedSavings: PlannedSavingSummary[]
       } | null
-    }>(
-      `/api/incomes/planned/${id}`,
-      { method: 'PATCH' }
-    )
+    }>(`/api/incomes/planned/${id}`, { method: 'PATCH' })
 
   const updatePlannedIncome = async (id: string, data: Record<string, unknown>) =>
-    $fetch<{ success: boolean; result: unknown }>(
-      `/api/incomes/planned/${id}`,
-      { method: 'PATCH', body: data }
-    )
+    $fetch<{ success: boolean; result: unknown }>(`/api/incomes/planned/${id}`, {
+      method: 'PATCH',
+      body: data
+    })
 
   const createPlannedIncome = async (data: Record<string, unknown>) =>
-    $fetch<{ success: boolean; result: PlannedIncomeSummary }>(
-      '/api/incomes/planned',
-      { method: 'POST', body: data }
-    )
+    $fetch<{ success: boolean; result: PlannedIncomeSummary }>('/api/incomes/planned', {
+      method: 'POST',
+      body: data
+    })
 
   const deletePlannedIncome = async (id: string) =>
-    $fetch<{ success: boolean; result: { id: string } }>(
-      `/api/incomes/planned/${id}`,
-      { method: 'DELETE' }
-    )
+    $fetch<{ success: boolean; result: { id: string } }>(`/api/incomes/planned/${id}`, {
+      method: 'DELETE'
+    })
 
   return {
     getCurrentIncome,

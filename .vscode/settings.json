@@ -30,8 +30,6 @@
   "[xml]": {
     "editor.defaultFormatter": "mikeburgh.xml-format"
   },
-  "cSpell.words": [
-    "Finhub"
-  ],
+  "cSpell.words": ["Finhub"],
   "vue3snippets.enable-compile-vue-file-on-did-save-code": false
 }

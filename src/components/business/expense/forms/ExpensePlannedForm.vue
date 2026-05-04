@@ -9,15 +9,18 @@
   const { fetchCategories, categories } = useCategoryApplication()
   const { addExpense, updateExpense } = useExpenseApplication()
 
-  const props = withDefaults(defineProps<{
-    budgetId?: string
-    expenseId?: string
-    initialData?: Partial<ExpenseData>
-  }>(), {
-    budgetId: '',
-    expenseId: undefined,
-    initialData: undefined
-  })
+  const props = withDefaults(
+    defineProps<{
+      budgetId?: string
+      expenseId?: string
+      initialData?: Partial<ExpenseData>
+    }>(),
+    {
+      budgetId: '',
+      expenseId: undefined,
+      initialData: undefined
+    }
+  )
 
   const isEditMode = computed(() => !!props.expenseId)
 
@@ -40,7 +43,10 @@
   }
 
   const handleSubmit = async (data: ExpenseData) => {
-    if (!props.budgetId) { console.warn('[ExpensePlannedForm] budgetId is required but was not provided'); return }
+    if (!props.budgetId) {
+      console.warn('[ExpensePlannedForm] budgetId is required but was not provided')
+      return
+    }
     try {
       if (isEditMode.value && props.expenseId) {
         const { success } = await updateExpense(props.expenseId, data)
@@ -99,15 +105,15 @@
 </template>
 
 <style lang="postcss" scoped>
-.expense-planned-form {
-  @apply flex h-full w-full flex-col gap-6;
-}
+  .expense-planned-form {
+    @apply flex h-full w-full flex-col gap-6;
+  }
 
-.expense-planned-form__content {
-  @apply w-full;
-}
+  .expense-planned-form__content {
+    @apply w-full;
+  }
 
-.expense-planned-form__actions {
-  @apply flex justify-end gap-2;
-}
+  .expense-planned-form__actions {
+    @apply flex justify-end gap-2;
+  }
 </style>

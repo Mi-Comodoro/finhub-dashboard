@@ -201,8 +201,7 @@ export function buildMonthlyProjection(params: {
         0,
         Math.floor((dayDate.getTime() - completedDate.getTime()) / 86_400_000)
       )
-      const balanceWithInterest =
-        s.amount * Math.pow(1 + annualRate / 100, daysElapsed / 365)
+      const balanceWithInterest = s.amount * Math.pow(1 + annualRate / 100, daysElapsed / 365)
       return acc + balanceWithInterest
     }, 0)
 
@@ -254,11 +253,12 @@ export function buildProjection(input: ProjectionInput): SavingPoint[] {
 
   // For 3m/12m/24m/36m views: Include hypothetical future contributions
   // Use last completed saving to project future ones
-  const lastCompleted = completed.length > 0
-    ? completed.reduce((latest, s) =>
-        new Date(s.completedAt!) > new Date(latest.completedAt!) ? s : latest
-      )
-    : null
+  const lastCompleted =
+    completed.length > 0
+      ? completed.reduce((latest, s) =>
+          new Date(s.completedAt!) > new Date(latest.completedAt!) ? s : latest
+        )
+      : null
 
   if (!lastCompleted) {
     // No completed savings yet, return empty projections
@@ -277,11 +277,7 @@ export function buildProjection(input: ProjectionInput): SavingPoint[] {
   const projectedSavings: Array<{ amount: number; date: Date }> = []
   for (let i = 1; i <= 36; i++) {
     // Project up to 36 months
-    const projectedDate = new Date(
-      lastDate.getFullYear(),
-      lastDate.getMonth() + i,
-      dayOfMonth
-    )
+    const projectedDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + i, dayOfMonth)
     projectedSavings.push({
       amount: lastAmount,
       date: projectedDate
@@ -325,7 +321,20 @@ function generateTimePoints(
   ref: Date
 ): Array<{ label: string; date: Date }> {
   const points: Array<{ label: string; date: Date }> = []
-  const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+  const monthNames = [
+    'Ene',
+    'Feb',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dic'
+  ]
 
   if (view === '1m') {
     // 30 daily points - end of day for accurate compound interest calculation

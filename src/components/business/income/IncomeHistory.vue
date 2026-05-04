@@ -4,13 +4,16 @@
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
 
-  withDefaults(defineProps<{
-    incomes?: PlannedIncomeSummary[]
-    currency?: string
-  }>(), {
-    incomes: () => [],
-    currency: ''
-  })
+  withDefaults(
+    defineProps<{
+      incomes?: PlannedIncomeSummary[]
+      currency?: string
+    }>(),
+    {
+      incomes: () => [],
+      currency: ''
+    }
+  )
 
   const emit = defineEmits(['edit', 'delete', 'markReceived'])
 
@@ -84,7 +87,7 @@
           >
             Marcar recibido
           </Button>
-          <Button variant="ghost" size="xs" icon="edit" @click="handleEdit(row)"> Editar </Button>
+          <Button variant="ghost" size="xs" icon="edit" @click="handleEdit(row)">Editar</Button>
           <Button variant="ghost" size="xs" icon="delete" @click="handleDelete(row)">
             Eliminar
           </Button>
@@ -95,9 +98,9 @@
         <div class="income-history__empty">
           <Icon name="payments" size="2xl" class="income-history__empty-icon" />
           <Text size="sm" color="muted">No hay ingresos planificados</Text>
-          <Text size="xs" color="muted"
-            >Agrega tus ingresos esperados para mantener tu presupuesto actualizado</Text
-          >
+          <Text size="xs" color="muted">
+            Agrega tus ingresos esperados para mantener tu presupuesto actualizado
+          </Text>
         </div>
       </template>
     </DataTable>

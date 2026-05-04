@@ -12,7 +12,13 @@ interface UseGoalDetailPresenterParams {
 }
 
 export function useGoalDetailPresenter(params: UseGoalDetailPresenterParams) {
-  const { goal, totalSavedForGoal, estimatedInterest, projectionMonthsToGoal, accountInterestRate } = params
+  const {
+    goal,
+    totalSavedForGoal,
+    estimatedInterest,
+    projectionMonthsToGoal,
+    accountInterestRate
+  } = params
 
   const totalDeposited = computed(() => totalSavedForGoal.value)
 

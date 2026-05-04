@@ -18,7 +18,7 @@ export const useIncomeApplication = () => {
       const month = date.getMonth() + 1
       const year = date.getFullYear()
 
-      const { success, result } = await incomeApi.getCurrentIncome() as {
+      const { success, result } = (await incomeApi.getCurrentIncome()) as {
         success: boolean
         result: {
           expectedIncomes: { source: string; amount: number; date: Date }[]
@@ -108,7 +108,8 @@ export const useIncomeApplication = () => {
 
       return { success }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al actualizar ingreso planificado'
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error al actualizar ingreso planificado'
       incomeStore.setError(errorMessage)
       return { success: false }
     } finally {
@@ -132,7 +133,8 @@ export const useIncomeApplication = () => {
 
       return { success }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar ingreso planificado'
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error al eliminar ingreso planificado'
       incomeStore.setError(errorMessage)
       return { success: false }
     } finally {
@@ -156,7 +158,8 @@ export const useIncomeApplication = () => {
 
       return { success }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al marcar ingreso como recibido'
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error al marcar ingreso como recibido'
       incomeStore.setError(errorMessage)
       return { success: false }
     } finally {

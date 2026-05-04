@@ -36,22 +36,14 @@
         id: 'needs',
         name: 'Gastos Fijos',
         type: 'needs' as const,
-        budgeted: percentOf(
-          expectedAmount.value,
-          currentBudget.value.limits.needs,
-          currency.value
-        ),
+        budgeted: percentOf(expectedAmount.value, currentBudget.value.limits.needs, currency.value),
         percentage: currentBudget.value.limits.needs
       },
       {
         id: 'wants',
         name: 'Gastos Variables',
         type: 'wants' as const,
-        budgeted: percentOf(
-          expectedAmount.value,
-          currentBudget.value.limits.wants,
-          currency.value
-        ),
+        budgeted: percentOf(expectedAmount.value, currentBudget.value.limits.wants, currency.value),
         percentage: currentBudget.value.limits.wants
       },
       {
@@ -84,8 +76,7 @@
 
     return baseItems.value.map(item => ({
       ...item,
-      spent:
-        item.type === 'needs' ? needsSpent : item.type === 'wants' ? wantsSpent : savingsSpent
+      spent: item.type === 'needs' ? needsSpent : item.type === 'wants' ? wantsSpent : savingsSpent
     }))
   })
 
@@ -149,9 +140,7 @@
       </div>
 
       <!-- V2 - Enhanced -->
-      <div
-        class="rounded-lg border-2 border-primary-500 bg-white p-6 dark:bg-slate-800"
-      >
+      <div class="rounded-lg border-2 border-primary-500 bg-white p-6 dark:bg-slate-800">
         <div class="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
           <Heading level="h2" size="lg" weight="semibold">Version 2 (Enhanced)</Heading>
           <span
@@ -200,9 +189,9 @@
       </Heading>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
-          <Text size="xs" weight="semibold" class="mb-2 uppercase text-slate-500"
-            >Architecture</Text
-          >
+          <Text size="xs" weight="semibold" class="mb-2 uppercase text-slate-500">
+            Architecture
+          </Text>
           <ul class="space-y-1 text-sm text-slate-600 dark:text-slate-400">
             <li>• Hexagonal architecture</li>
             <li>• Presentation composables</li>
@@ -211,9 +200,7 @@
           </ul>
         </div>
         <div>
-          <Text size="xs" weight="semibold" class="mb-2 uppercase text-slate-500"
-            >Analytics</Text
-          >
+          <Text size="xs" weight="semibold" class="mb-2 uppercase text-slate-500">Analytics</Text>
           <ul class="space-y-1 text-sm text-slate-600 dark:text-slate-400">
             <li>• Health calculation</li>
             <li>• Trend analysis</li>
@@ -222,9 +209,9 @@
           </ul>
         </div>
         <div>
-          <Text size="xs" weight="semibold" class="mb-2 uppercase text-slate-500"
-            >Compatibility</Text
-          >
+          <Text size="xs" weight="semibold" class="mb-2 uppercase text-slate-500">
+            Compatibility
+          </Text>
           <ul class="space-y-1 text-sm text-slate-600 dark:text-slate-400">
             <li>• Backward compatible</li>
             <li>• Parallel versions</li>
