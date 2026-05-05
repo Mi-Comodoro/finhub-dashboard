@@ -25,10 +25,11 @@
 </script>
 
 <template>
-  <UTooltip v-if="collapsed" :text="name" :popper="{ placement: 'right' }">
+  <template v-if="collapsed">
     <Link
       v-if="path"
       :to="path"
+      :title="name"
       :class="[
         'nav-item',
         isActive ? 'nav-item--active' : 'nav-item--inactive',
@@ -42,12 +43,13 @@
     <button
       v-else
       type="button"
+      :title="name"
       :class="['nav-item nav-item--inactive w-full justify-center px-0', className]"
       @click="handleClick"
     >
       <Icon :name="icon" size="lg" />
     </button>
-  </UTooltip>
+  </template>
 
   <template v-else>
     <Link
