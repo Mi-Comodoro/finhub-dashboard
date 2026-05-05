@@ -8,11 +8,14 @@
   import { useToast } from '~/components/organisms/toast/useToast'
   import type { PlannedSavingSummary } from '~/types/domain'
 
-  const props = withDefaults(defineProps<{
-    budgetId?: string
-  }>(), {
-    budgetId: ''
-  })
+  const props = withDefaults(
+    defineProps<{
+      budgetId?: string
+    }>(),
+    {
+      budgetId: ''
+    }
+  )
 
   const financesStore = useFinancesStore()
 
@@ -156,14 +159,16 @@
     </AlertBanner>
     <!-- Estado de carga -->
     <div v-if="isLoading" class="planned-saving-list__loading">
-      <div
-        v-for="i in 3"
-        :key="i"
-        class="planned-saving-list__skeleton"
-      >
-        <div class="planned-saving-list__skeleton-line planned-saving-list__skeleton-line--lg"></div>
-        <div class="planned-saving-list__skeleton-line planned-saving-list__skeleton-line--md"></div>
-        <div class="planned-saving-list__skeleton-line planned-saving-list__skeleton-line--sm"></div>
+      <div v-for="i in 3" :key="i" class="planned-saving-list__skeleton">
+        <div
+          class="planned-saving-list__skeleton-line planned-saving-list__skeleton-line--lg"
+        ></div>
+        <div
+          class="planned-saving-list__skeleton-line planned-saving-list__skeleton-line--md"
+        ></div>
+        <div
+          class="planned-saving-list__skeleton-line planned-saving-list__skeleton-line--sm"
+        ></div>
       </div>
     </div>
 
@@ -184,10 +189,7 @@
         class="planned-saving-list__group"
       >
         <!-- Cabecera clickeable -->
-        <div
-          class="planned-saving-list__group-header"
-          @click="toggleGroup(source)"
-        >
+        <div class="planned-saving-list__group-header" @click="toggleGroup(source)">
           <div class="planned-saving-list__group-title">
             <Icon
               :name="collapsedGroups[source] ? 'chevron_right' : 'expand_more'"
@@ -213,11 +215,7 @@
           <div v-show="!collapsedGroups[source]" class="planned-saving-list__group-content">
             <div class="planned-saving-list__items">
               <!-- Item interno — mejorado -->
-              <div
-                v-for="item in groupItems"
-                :key="item.id"
-                class="planned-saving-list__item"
-              >
+              <div v-for="item in groupItems" :key="item.id" class="planned-saving-list__item">
                 <!-- Izquierda: ícono + nombre + cuenta -->
                 <div class="planned-saving-list__item-info">
                   <Icon
@@ -226,7 +224,12 @@
                     :class-name="getIconClasses(item.savingGoal?.reason)"
                   />
                   <div class="planned-saving-list__item-details">
-                    <Heading level="h3" size="sm" weight="extrabold" class="planned-saving-list__item-name">
+                    <Heading
+                      level="h3"
+                      size="sm"
+                      weight="extrabold"
+                      class="planned-saving-list__item-name"
+                    >
                       {{ (item.savingGoal?.name || 'Meta sin nombre').toUpperCase() }}
                     </Heading>
                     <Text size="xs" color="muted" class="planned-saving-list__item-account">
@@ -270,140 +273,140 @@
 </template>
 
 <style scoped lang="postcss">
-.planned-saving-list__action {
-  @apply flex items-center gap-2;
-}
+  .planned-saving-list__action {
+    @apply flex items-center gap-2;
+  }
 
-.planned-saving-list__loading {
-  @apply space-y-3;
-}
+  .planned-saving-list__loading {
+    @apply space-y-3;
+  }
 
-.planned-saving-list__skeleton {
-  @apply animate-pulse rounded-md border border-slate-100 bg-slate-50 p-4;
-}
+  .planned-saving-list__skeleton {
+    @apply animate-pulse rounded-md border border-slate-100 bg-slate-50 p-4;
+  }
 
-.planned-saving-list__skeleton-line {
-  @apply rounded bg-slate-200;
-}
+  .planned-saving-list__skeleton-line {
+    @apply rounded bg-slate-200;
+  }
 
-.planned-saving-list__skeleton-line--lg {
-  @apply mb-3 h-4 w-40;
-}
+  .planned-saving-list__skeleton-line--lg {
+    @apply mb-3 h-4 w-40;
+  }
 
-.planned-saving-list__skeleton-line--md {
-  @apply mb-2 h-3 w-28;
-}
+  .planned-saving-list__skeleton-line--md {
+    @apply mb-2 h-3 w-28;
+  }
 
-.planned-saving-list__skeleton-line--sm {
-  @apply h-3 w-24;
-}
+  .planned-saving-list__skeleton-line--sm {
+    @apply h-3 w-24;
+  }
 
-.planned-saving-list__empty {
-  @apply flex flex-col items-center gap-3 py-10 text-center;
-}
+  .planned-saving-list__empty {
+    @apply flex flex-col items-center gap-3 py-10 text-center;
+  }
 
-.planned-saving-list__empty-icon {
-  @apply text-slate-300;
-}
+  .planned-saving-list__empty-icon {
+    @apply text-slate-300;
+  }
 
-.planned-saving-list__groups {
-  @apply space-y-3;
-}
+  .planned-saving-list__groups {
+    @apply space-y-3;
+  }
 
-.planned-saving-list__group {
-  @apply rounded-md border border-slate-200 bg-white;
-}
+  .planned-saving-list__group {
+    @apply rounded-md border border-slate-200 bg-white;
+  }
 
-.planned-saving-list__group-header {
-  @apply flex cursor-pointer items-center justify-between gap-2 p-4 transition-colors hover:bg-slate-50;
-}
+  .planned-saving-list__group-header {
+    @apply flex cursor-pointer items-center justify-between gap-2 p-4 transition-colors hover:bg-slate-50;
+  }
 
-.planned-saving-list__group-title {
-  @apply flex min-w-0 items-center gap-2;
-}
+  .planned-saving-list__group-title {
+    @apply flex min-w-0 items-center gap-2;
+  }
 
-.planned-saving-list__group-icon {
-  @apply shrink-0 text-slate-500;
-}
+  .planned-saving-list__group-icon {
+    @apply shrink-0 text-slate-500;
+  }
 
-.planned-saving-list__group-name {
-  @apply truncate;
-}
+  .planned-saving-list__group-name {
+    @apply truncate;
+  }
 
-.planned-saving-list__group-badges {
-  @apply flex shrink-0 items-center gap-2;
-}
+  .planned-saving-list__group-badges {
+    @apply flex shrink-0 items-center gap-2;
+  }
 
-.planned-saving-list__group-badge--desktop {
-  @apply hidden sm:inline-flex;
-}
+  .planned-saving-list__group-badge--desktop {
+    @apply hidden sm:inline-flex;
+  }
 
-.planned-saving-list__group-content {
-  @apply border-t border-slate-100 p-4 pt-2;
-}
+  .planned-saving-list__group-content {
+    @apply border-t border-slate-100 p-4 pt-2;
+  }
 
-.planned-saving-list__items {
-  @apply space-y-4;
-}
+  .planned-saving-list__items {
+    @apply space-y-4;
+  }
 
-.planned-saving-list__item {
-  @apply flex items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-b-0 last:pb-0;
-}
+  .planned-saving-list__item {
+    @apply flex items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-b-0 last:pb-0;
+  }
 
-.planned-saving-list__item-info {
-  @apply flex min-w-0 items-center gap-3;
-}
+  .planned-saving-list__item-info {
+    @apply flex min-w-0 items-center gap-3;
+  }
 
-.planned-saving-list__item-details {
-  @apply min-w-0;
-}
+  .planned-saving-list__item-details {
+    @apply min-w-0;
+  }
 
-.planned-saving-list__item-name {
-  @apply truncate;
-}
+  .planned-saving-list__item-name {
+    @apply truncate;
+  }
 
-.planned-saving-list__item-account {
-  @apply truncate;
-}
+  .planned-saving-list__item-account {
+    @apply truncate;
+  }
 
-.planned-saving-list__item-actions {
-  @apply flex shrink-0 items-center gap-3;
-}
+  .planned-saving-list__item-actions {
+    @apply flex shrink-0 items-center gap-3;
+  }
 
-.planned-saving-list__item-amount--desktop {
-  @apply hidden text-right sm:block;
-}
+  .planned-saving-list__item-amount--desktop {
+    @apply hidden text-right sm:block;
+  }
 
-.planned-saving-list__item-amount-value {
-  @apply whitespace-nowrap;
-}
+  .planned-saving-list__item-amount-value {
+    @apply whitespace-nowrap;
+  }
 
-.planned-saving-list__item-date {
-  @apply whitespace-nowrap;
-}
+  .planned-saving-list__item-date {
+    @apply whitespace-nowrap;
+  }
 
-.planned-saving-list__item-amount--mobile {
-  @apply whitespace-nowrap sm:hidden;
-}
+  .planned-saving-list__item-amount--mobile {
+    @apply whitespace-nowrap sm:hidden;
+  }
 
-.planned-saving-list__item-buttons {
-  @apply flex gap-2;
-}
+  .planned-saving-list__item-buttons {
+    @apply flex gap-2;
+  }
 
-/* Animación suave para el colapso */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition: all 0.25s ease-out;
-  overflow: hidden;
-}
-.collapse-enter-from,
-.collapse-leave-to {
-  opacity: 0;
-  max-height: 0;
-}
-.collapse-enter-to,
-.collapse-leave-from {
-  opacity: 1;
-  max-height: 1000px; /* suficientemente grande para el contenido */
-}
+  /* Animación suave para el colapso */
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: all 0.25s ease-out;
+    overflow: hidden;
+  }
+  .collapse-enter-from,
+  .collapse-leave-to {
+    opacity: 0;
+    max-height: 0;
+  }
+  .collapse-enter-to,
+  .collapse-leave-from {
+    opacity: 1;
+    max-height: 1000px; /* suficientemente grande para el contenido */
+  }
 </style>

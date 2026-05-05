@@ -6,15 +6,18 @@
 
   const { createIncome, updateIncome } = useIncomeApplication()
 
-  const props = withDefaults(defineProps<{
-    budgetId?: string
-    incomeId?: string
-    initialData?: Record<string, unknown>
-  }>(), {
-    budgetId: '',
-    incomeId: undefined,
-    initialData: undefined
-  })
+  const props = withDefaults(
+    defineProps<{
+      budgetId?: string
+      incomeId?: string
+      initialData?: Record<string, unknown>
+    }>(),
+    {
+      budgetId: '',
+      incomeId: undefined,
+      initialData: undefined
+    }
+  )
 
   const isEditMode = computed(() => !!props.incomeId)
   const formSchema = computed(() => incomeFieldsSchema())
@@ -25,7 +28,10 @@
   }
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    if (!props.budgetId) { console.warn('[IncomeForm] budgetId is required but was not provided'); return }
+    if (!props.budgetId) {
+      console.warn('[IncomeForm] budgetId is required but was not provided')
+      return
+    }
     try {
       if (isEditMode.value && props.incomeId) {
         const { success } = await updateIncome(props.incomeId, data)

@@ -86,39 +86,39 @@
 </template>
 
 <style scoped lang="postcss">
-.setup-progress-card {
-  @apply rounded-xl shadow-sm;
-}
+  .setup-progress-card {
+    @apply rounded-xl shadow-sm;
+  }
 
-.setup-progress-card__steps {
-  @apply space-y-1;
-}
+  .setup-progress-card__steps {
+    @apply space-y-1;
+  }
 
-.setup-progress-card__step {
-  @apply flex items-center gap-3;
-}
+  .setup-progress-card__step {
+    @apply flex items-center gap-3;
+  }
 
-.setup-progress-card__icon-wrapper {
-  @apply mt-1;
-}
+  .setup-progress-card__icon-wrapper {
+    @apply mt-1;
+  }
 
-.setup-progress-card__icon {
-  @apply h-5 w-5 rounded-full;
-}
+  .setup-progress-card__icon {
+    @apply h-5 w-5 rounded-full;
+  }
 
-.setup-progress-card__icon--loading {
-  @apply animate-spin border-2 border-gray-300 border-t-primary-800;
-}
+  .setup-progress-card__icon--loading {
+    @apply animate-spin border-2 border-gray-300 border-t-primary-800;
+  }
 
-.setup-progress-card__icon--success {
-  @apply flex items-center justify-center bg-primary-800 text-xs text-white;
-}
+  .setup-progress-card__icon--success {
+    @apply flex items-center justify-center bg-primary-800 text-xs text-white;
+  }
 
-.setup-progress-card__icon--pending {
-  @apply border-2 border-gray-300 opacity-40;
-}
+  .setup-progress-card__icon--pending {
+    @apply border-2 border-gray-300 opacity-40;
+  }
 
-.setup-progress-card__label {
-  @apply text-xs font-medium text-neutral-300;
-}
+  .setup-progress-card__label {
+    @apply text-xs font-medium text-neutral-300;
+  }
 </style>

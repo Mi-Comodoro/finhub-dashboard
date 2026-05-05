@@ -18,14 +18,16 @@ export default defineEventHandler(async event => {
   }
 
   const { success, data } = await $fetch<{ success: boolean; data: AccountData }>(
-    `${config.public.apiBase}/account/${id}`, {
-    headers: { authorization: `Bearer ${token}` },
-    method: 'PATCH',
-    body,
-    onResponseError: ({ response }) => {
-      validateError(event, response.status)
+    `${config.public.apiBase}/account/${id}`,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      method: 'PATCH',
+      body,
+      onResponseError: ({ response }) => {
+        validateError(event, response.status)
+      }
     }
-  })
+  )
 
   return { success, result: data }
 })

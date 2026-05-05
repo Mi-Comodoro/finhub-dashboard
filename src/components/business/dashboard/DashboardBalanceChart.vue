@@ -112,19 +112,19 @@
 </template>
 
 <style scoped lang="postcss">
-.balance-chart {
-  @apply p-5;
-}
+  .balance-chart {
+    @apply p-5;
+  }
 
-.balance-chart__header {
-  @apply mb-4 flex items-center justify-between;
-}
+  .balance-chart__header {
+    @apply mb-4 flex items-center justify-between;
+  }
 
-.balance-chart__fallback {
-  @apply flex h-[300px] items-center justify-center;
-}
+  .balance-chart__fallback {
+    @apply flex h-[300px] items-center justify-center;
+  }
 
-.balance-chart__fallback-loader {
-  @apply h-32 w-32 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-700;
-}
+  .balance-chart__fallback-loader {
+    @apply h-32 w-32 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-700;
+  }
 </style>

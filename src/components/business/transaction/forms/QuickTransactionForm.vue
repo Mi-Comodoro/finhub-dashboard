@@ -81,7 +81,7 @@
 
   watch(
     () => formData.value['type'],
-    (newType) => {
+    newType => {
       selectedType.value = String(newType ?? '')
     }
   )
@@ -93,7 +93,10 @@
   const isSubmitting = ref(false)
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    if (!data['amount']) { console.warn('[QuickTransactionForm] amount is required'); return }
+    if (!data['amount']) {
+      console.warn('[QuickTransactionForm] amount is required')
+      return
+    }
     if (isSubmitting.value) return
     isSubmitting.value = true
 
@@ -105,7 +108,10 @@
 
       if (type === 'saving') {
         const goalId = String(data['goalId'] ?? '')
-        if (!goalId) { console.warn('[QuickTransactionForm] goalId is required for saving type'); return }
+        if (!goalId) {
+          console.warn('[QuickTransactionForm] goalId is required for saving type')
+          return
+        }
 
         const contributionType = String(data['contributionType'] ?? 'external')
         const accountId = data['accountId'] ? String(data['accountId']) : undefined

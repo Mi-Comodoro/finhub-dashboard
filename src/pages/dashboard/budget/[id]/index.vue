@@ -12,6 +12,7 @@
   } from '@/components/atoms'
   import {
     BudgetDistribution,
+    BudgetForm,
     BudgetIncome,
     BudgetInsights,
     ExpensePlannedForm,
@@ -87,7 +88,10 @@
       size: 'sm',
       variant: 'ghost',
       icon: 'edit',
-      condition: planStatus.value !== 'CLOSED'
+      condition: planStatus.value !== 'CLOSED',
+      click: () => {
+        showEditModal.value = true
+      }
     },
     {
       name: '+ Ingreso',
@@ -95,7 +99,9 @@
       variant: 'ghost',
       icon: 'trending_up',
       condition: planStatus.value !== 'CLOSED',
-      click: () => { showIncomeModal.value = true }
+      click: () => {
+        showIncomeModal.value = true
+      }
     },
     {
       name: 'Duplicar',
@@ -128,7 +134,27 @@
 
   const showForm = ref(false)
   const showIncomeModal = ref(false)
+  const showEditModal = ref(false)
   const editingExpense = ref<{ id: string; data: Record<string, unknown> } | null>(null)
+
+  const budgetEditInitialData = computed(() => {
+    if (!plan.value) return undefined
+    return {
+      name: plan.value.name,
+      month: Number(plan.value.month),
+      year: Number(plan.value.year),
+      strategy: plan.value.strategy as 'BALANCED' | 'CUSTOM',
+      needsLimit: plan.value.limits.needs,
+      wantsLimit: plan.value.limits.wants,
+      savingsLimit: plan.value.limits.savings
+    }
+  })
+
+  const handleEditClose = async () => {
+    showEditModal.value = false
+    const { success, error } = await loadBudgetDetail(budgetId)
+    if (!success && error) handleError(error)
+  }
 
   const openForm = () => {
     editingExpense.value = null
@@ -267,6 +293,15 @@
 
     <ModalWizard v-model:show="showIncomeModal">
       <IncomeForm :budget-id="budgetId" @on-close="showIncomeModal = false" />
+    </ModalWizard>
+
+    <ModalWizard v-model:show="showEditModal">
+      <BudgetForm
+        mode="edit"
+        :budget-id="plan?.id"
+        :initial-data="budgetEditInitialData"
+        @on-close="handleEditClose"
+      />
     </ModalWizard>
   </div>
   <div v-else class="budget-detail__empty">

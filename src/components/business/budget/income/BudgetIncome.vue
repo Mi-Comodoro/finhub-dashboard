@@ -25,14 +25,15 @@
     if (success) {
       successToast('Ingreso recibido', 'El ingreso planificado se actualizó correctamente.')
       // Recargar en paralelo para actualizar contadores y transacciones
-      await Promise.all([
-        fetchTransactions(props.budgetId),
-        fetchPlannedSavings(props.budgetId)
-      ])
+      await Promise.all([fetchTransactions(props.budgetId), fetchPlannedSavings(props.budgetId)])
       return
     }
     if (error.value && error.value.status) {
-      handleError({ status: error.value.status, title: error.value.title, message: error.value.message })
+      handleError({
+        status: error.value.status,
+        title: error.value.title,
+        message: error.value.message
+      })
     }
   }
 </script>
@@ -90,31 +91,31 @@
 </template>
 
 <style scoped lang="postcss">
-.budget-income__card {
-  @apply space-y-2;
-}
+  .budget-income__card {
+    @apply space-y-2;
+  }
 
-.budget-income__item-wrapper {
-  @apply flex w-full;
-}
+  .budget-income__item-wrapper {
+    @apply flex w-full;
+  }
 
-.budget-income__item-card {
-  @apply flex w-full gap-4;
-}
+  .budget-income__item-card {
+    @apply flex w-full gap-4;
+  }
 
-.budget-income__item-info {
-  @apply flex w-full flex-col space-y-2;
-}
+  .budget-income__item-info {
+    @apply flex w-full flex-col space-y-2;
+  }
 
-.budget-income__item-date {
-  @apply flex w-full;
-}
+  .budget-income__item-date {
+    @apply flex w-full;
+  }
 
-.budget-income__item-actions {
-  @apply flex w-full flex-col items-end justify-between gap-2;
-}
+  .budget-income__item-actions {
+    @apply flex w-full flex-col items-end justify-between gap-2;
+  }
 
-.budget-income__total {
-  @apply flex items-center justify-between;
-}
+  .budget-income__total {
+    @apply flex items-center justify-between;
+  }
 </style>

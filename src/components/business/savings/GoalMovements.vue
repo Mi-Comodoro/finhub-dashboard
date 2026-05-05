@@ -59,11 +59,7 @@
       </div>
 
       <div class="goal-movements__body">
-        <div
-          v-for="movement in sortedMovements"
-          :key="movement.id"
-          class="goal-movements__row"
-        >
+        <div v-for="movement in sortedMovements" :key="movement.id" class="goal-movements__row">
           <div class="goal-movements__cell goal-movements__cell--date">
             <Text size="sm">{{ formatDate(String(movement.completedAt ?? movement.date)) }}</Text>
           </div>

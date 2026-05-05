@@ -4,15 +4,18 @@
 
   type FilterType = TransactionType | 'all'
 
-  withDefaults(defineProps<{
-    categoryOptions?: { label: string; value: string; disabled?: boolean }[]
-    typeButtons?: { label: string; value: FilterType }[]
-    activeTypeBtn?: FilterType
-  }>(), {
-    categoryOptions: () => [],
-    typeButtons: () => [],
-    activeTypeBtn: 'all'
-  })
+  withDefaults(
+    defineProps<{
+      categoryOptions?: { label: string; value: string; disabled?: boolean }[]
+      typeButtons?: { label: string; value: FilterType }[]
+      activeTypeBtn?: FilterType
+    }>(),
+    {
+      categoryOptions: () => [],
+      typeButtons: () => [],
+      activeTypeBtn: 'all'
+    }
+  )
 
   const filterCat = defineModel<string>('filterCat', { default: '' })
   const filterDateFrom = defineModel<Date | null>('filterDateFrom', { default: null })
@@ -53,7 +56,12 @@
       <DatePickerInput v-model="filterDateFrom" label="Desde" />
       <DatePickerInput v-model="filterDateTo" label="Hasta" />
 
-      <Button variant="ghost" size="sm" class="filters-bar__clear-button" @click="emit('clearFilters')">
+      <Button
+        variant="ghost"
+        size="sm"
+        class="filters-bar__clear-button"
+        @click="emit('clearFilters')"
+      >
         Limpiar filtros
       </Button>
     </div>
@@ -61,19 +69,19 @@
 </template>
 
 <style scoped lang="postcss">
-.filters-bar {
-  @apply flex flex-wrap items-center gap-3;
-}
+  .filters-bar {
+    @apply flex flex-wrap items-center gap-3;
+  }
 
-.filters-bar__type-buttons {
-  @apply flex items-center gap-2;
-}
+  .filters-bar__type-buttons {
+    @apply flex items-center gap-2;
+  }
 
-.filters-bar__separator {
-  @apply hidden h-5 w-px bg-slate-200 sm:block;
-}
+  .filters-bar__separator {
+    @apply hidden h-5 w-px bg-slate-200 sm:block;
+  }
 
-.filters-bar__clear-button {
-  @apply ml-auto;
-}
+  .filters-bar__clear-button {
+    @apply ml-auto;
+  }
 </style>

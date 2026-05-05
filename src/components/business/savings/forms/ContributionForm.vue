@@ -116,8 +116,9 @@
       >
         <template #message>
           <span class="contribution-form__warning-text">
-            Saldo disponible: <strong>{{ formatCurrency(0, 'COP') }}</strong> — Esta validación es
-            referencial.
+            Saldo disponible:
+            <strong>{{ formatCurrency(0, 'COP') }}</strong>
+            — Esta validación es referencial.
           </span>
         </template>
       </AlertBanner>

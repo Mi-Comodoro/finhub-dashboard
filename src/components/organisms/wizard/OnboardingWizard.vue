@@ -63,7 +63,7 @@
   function parseDraft(data: Partial<OnboardingFormData>): Partial<OnboardingFormData> {
     // Recorrer incomes y convertir paymentsDates string → Date
     if (data?.incomes?.incomes) {
-      data.incomes.incomes = data.incomes.incomes.map((income) => ({
+      data.incomes.incomes = data.incomes.incomes.map(income => ({
         ...income,
         paymentsDates: income.paymentsDates
           ? Array.isArray(income.paymentsDates)
@@ -118,8 +118,7 @@
         wizardData.budget.strategy === 'BALANCED')
 
     const hasValidIncomes =
-      wizardData.incomes.incomes[0].amount > 0 &&
-      wizardData.incomes.incomes[0].source.trim() !== ''
+      wizardData.incomes.incomes[0].amount > 0 && wizardData.incomes.incomes[0].source.trim() !== ''
 
     return hasPersonalInfo && hasFinances && hasBudget && hasValidIncomes
   }

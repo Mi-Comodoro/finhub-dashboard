@@ -163,7 +163,7 @@
             :style="{ width: `${derivedSavings}%` }"
           />
         </div>
-        <span class="allocation-slider__hint"> Calculado automáticamente </span>
+        <span class="allocation-slider__hint">Calculado automáticamente</span>
       </div>
     </div>
   </div>

@@ -1,22 +1,25 @@
 <!-- components/business/TransactionMetricsBar.vue -->
 <script setup lang="ts">
-  withDefaults(defineProps<{
-    totalIncome?: number
-    totalExpense?: number
-    totalSavings?: number
-    countIncome?: number
-    countExpense?: number
-    countSavings?: number
-    currency?: Currency
-  }>(), {
-    totalIncome: 0,
-    totalExpense: 0,
-    totalSavings: 0,
-    countIncome: 0,
-    countExpense: 0,
-    countSavings: 0,
-    currency: 'COP'
-  })
+  withDefaults(
+    defineProps<{
+      totalIncome?: number
+      totalExpense?: number
+      totalSavings?: number
+      countIncome?: number
+      countExpense?: number
+      countSavings?: number
+      currency?: Currency
+    }>(),
+    {
+      totalIncome: 0,
+      totalExpense: 0,
+      totalSavings: 0,
+      countIncome: 0,
+      countExpense: 0,
+      countSavings: 0,
+      currency: 'COP'
+    }
+  )
 </script>
 
 <template>

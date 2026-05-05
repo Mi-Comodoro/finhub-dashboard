@@ -25,11 +25,17 @@
 </script>
 
 <template>
-  <UTooltip v-if="collapsed" :text="name" :popper="{ placement: 'right' }">
+  <template v-if="collapsed">
     <Link
       v-if="path"
       :to="path"
-      :class="['nav-item', isActive ? 'nav-item--active' : 'nav-item--inactive', 'justify-center px-0', className]"
+      :title="name"
+      :class="[
+        'nav-item',
+        isActive ? 'nav-item--active' : 'nav-item--inactive',
+        'justify-center px-0',
+        className
+      ]"
       @click="emit('navigate')"
     >
       <Icon :name="icon" size="lg" />
@@ -37,18 +43,23 @@
     <button
       v-else
       type="button"
+      :title="name"
       :class="['nav-item nav-item--inactive w-full justify-center px-0', className]"
       @click="handleClick"
     >
       <Icon :name="icon" size="lg" />
     </button>
-  </UTooltip>
+  </template>
 
   <template v-else>
     <Link
       v-if="path"
       :to="path"
-      :class="['nav-item gap-3 px-3', isActive ? 'nav-item--active' : 'nav-item--inactive', className]"
+      :class="[
+        'nav-item gap-3 px-3',
+        isActive ? 'nav-item--active' : 'nav-item--inactive',
+        className
+      ]"
       @click="emit('navigate')"
     >
       <Icon :name="icon" size="lg" />

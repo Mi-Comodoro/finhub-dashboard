@@ -15,16 +15,13 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 400, message: 'Budget ID is required' })
   }
 
-  const { success } = await $fetch<{ success: boolean }>(
-    `${config.public.apiBase}/budgets/${id}`,
-    {
-      headers: { authorization: `Bearer ${token}` },
-      method: 'DELETE',
-      onResponseError: ({ response }) => {
-        validateError(event, response.status)
-      }
+  const { success } = await $fetch<{ success: boolean }>(`${config.public.apiBase}/budgets/${id}`, {
+    headers: { authorization: `Bearer ${token}` },
+    method: 'DELETE',
+    onResponseError: ({ response }) => {
+      validateError(event, response.status)
     }
-  )
+  })
 
   return { success }
 })

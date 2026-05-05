@@ -14,11 +14,14 @@ const mapSource = (source: string) => {
 
 // Business logic: calcular total de ingresos planificados
 const calculateExpectedAmount = (incomes: PlannedIncomeSummary[]) => {
-  return incomes.reduce((acc, b) => acc + (b.amount ?? 0), 0)
+  return incomes.reduce((acc, b) => acc + Number(b.amount ?? 0), 0)
 }
 
 // Business logic: actualizar un ingreso en el summary
-const updateIncomeSummary = (summary: PlannedIncomeSummary[], updatedIncome: PlannedIncomeSummary) => {
+const updateIncomeSummary = (
+  summary: PlannedIncomeSummary[],
+  updatedIncome: PlannedIncomeSummary
+) => {
   return summary.map(item => (item.id === updatedIncome.id ? { ...item, ...updatedIncome } : item))
 }
 

@@ -1,69 +1,69 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+  import { computed, onMounted, ref } from 'vue'
 
-import { useAccountApi } from '@/composables/api/useAccountApi'
-import type { AccountRateHistory } from '@/types/api'
+  import { useAccountApi } from '@/composables/api/useAccountApi'
+  import type { AccountRateHistory } from '@/types/api'
 
-interface AccountRateTimelineProps {
-  accountId?: string
-}
-
-const props = withDefaults(defineProps<AccountRateTimelineProps>(), {
-  accountId: ''
-})
-
-const { fetchRateHistory } = useAccountApi()
-
-const history = ref<AccountRateHistory[]>([])
-const showAll = ref(false)
-const isLoading = ref(false)
-
-const visibleHistory = computed(() => {
-  if (showAll.value) {
-    return history.value
+  interface AccountRateTimelineProps {
+    accountId?: string
   }
-  return history.value.slice(0, 5)
-})
 
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const year = date.getFullYear()
-  return `${day}/${month}/${year}`
-}
+  const props = withDefaults(defineProps<AccountRateTimelineProps>(), {
+    accountId: ''
+  })
 
-const rateChangeClass = (entry: AccountRateHistory): string => {
-  if (entry.newRate > entry.previousRate) {
-    return 'rate-timeline__change--up'
-  }
-  if (entry.newRate < entry.previousRate) {
-    return 'rate-timeline__change--down'
-  }
-  return 'rate-timeline__change--neutral'
-}
+  const { fetchRateHistory } = useAccountApi()
 
-const getIconName = (entry: AccountRateHistory): string => {
-  if (entry.newRate > entry.previousRate) {
-    return 'trending_up'
-  }
-  if (entry.newRate < entry.previousRate) {
-    return 'trending_down'
-  }
-  return 'trending_flat'
-}
+  const history = ref<AccountRateHistory[]>([])
+  const showAll = ref(false)
+  const isLoading = ref(false)
 
-onMounted(async () => {
-  isLoading.value = true
-  try {
-    history.value = await fetchRateHistory(props.accountId)
-  } catch (error) {
-    console.error('Error loading rate history:', error)
-    history.value = []
-  } finally {
-    isLoading.value = false
+  const visibleHistory = computed(() => {
+    if (showAll.value) {
+      return history.value
+    }
+    return history.value.slice(0, 5)
+  })
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString)
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    return `${day}/${month}/${year}`
   }
-})
+
+  const rateChangeClass = (entry: AccountRateHistory): string => {
+    if (entry.newRate > entry.previousRate) {
+      return 'rate-timeline__change--up'
+    }
+    if (entry.newRate < entry.previousRate) {
+      return 'rate-timeline__change--down'
+    }
+    return 'rate-timeline__change--neutral'
+  }
+
+  const getIconName = (entry: AccountRateHistory): string => {
+    if (entry.newRate > entry.previousRate) {
+      return 'trending_up'
+    }
+    if (entry.newRate < entry.previousRate) {
+      return 'trending_down'
+    }
+    return 'trending_flat'
+  }
+
+  onMounted(async () => {
+    isLoading.value = true
+    try {
+      history.value = await fetchRateHistory(props.accountId)
+    } catch (error) {
+      console.error('Error loading rate history:', error)
+      history.value = []
+    } finally {
+      isLoading.value = false
+    }
+  })
 </script>
 
 <template>
@@ -105,47 +105,47 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="postcss">
-.rate-timeline {
-  @apply w-full;
-}
+  .rate-timeline {
+    @apply w-full;
+  }
 
-.rate-timeline__loading {
-  @apply py-2;
-}
+  .rate-timeline__loading {
+    @apply py-2;
+  }
 
-.rate-timeline__empty {
-  @apply py-2;
-}
+  .rate-timeline__empty {
+    @apply py-2;
+  }
 
-.rate-timeline__list {
-  @apply flex flex-col gap-1;
-}
+  .rate-timeline__list {
+    @apply flex flex-col gap-1;
+  }
 
-.rate-timeline__entry {
-  @apply flex items-center justify-between gap-2 py-1;
-}
+  .rate-timeline__entry {
+    @apply flex items-center justify-between gap-2 py-1;
+  }
 
-.rate-timeline__date {
-  @apply flex-shrink-0;
-}
+  .rate-timeline__date {
+    @apply flex-shrink-0;
+  }
 
-.rate-timeline__change {
-  @apply flex items-center gap-1;
-}
+  .rate-timeline__change {
+    @apply flex items-center gap-1;
+  }
 
-.rate-timeline__change--up {
-  @apply text-success-600 dark:text-success-400;
-}
+  .rate-timeline__change--up {
+    @apply text-success-600 dark:text-success-400;
+  }
 
-.rate-timeline__change--down {
-  @apply text-danger-600 dark:text-danger-400;
-}
+  .rate-timeline__change--down {
+    @apply text-danger-600 dark:text-danger-400;
+  }
 
-.rate-timeline__change--neutral {
-  @apply text-neutral-600 dark:text-neutral-400;
-}
+  .rate-timeline__change--neutral {
+    @apply text-neutral-600 dark:text-neutral-400;
+  }
 
-.rate-timeline__toggle {
-  @apply mt-2 cursor-pointer border-none bg-transparent p-0 text-left transition-opacity hover:opacity-70;
-}
+  .rate-timeline__toggle {
+    @apply mt-2 cursor-pointer border-none bg-transparent p-0 text-left transition-opacity hover:opacity-70;
+  }
 </style>

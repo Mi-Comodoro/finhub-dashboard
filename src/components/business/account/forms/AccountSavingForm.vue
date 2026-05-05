@@ -86,7 +86,11 @@
       weight="extrabold"
       level="h1"
       color="black"
-      :sub-title="mode === 'edit' ? 'Actualiza la información de tu cuenta.' : 'Define la cuenta donde crecerán tus ahorros.'"
+      :sub-title="
+        mode === 'edit'
+          ? 'Actualiza la información de tu cuenta.'
+          : 'Define la cuenta donde crecerán tus ahorros.'
+      "
       sub-title-size="xs"
       sub-title-color="muted"
       icon="account_balance"
@@ -116,15 +120,15 @@
 </template>
 
 <style scoped lang="postcss">
-.account-saving-form {
-  @apply flex h-full w-full flex-col gap-6;
-}
+  .account-saving-form {
+    @apply flex h-full w-full flex-col gap-6;
+  }
 
-.account-saving-form__content {
-  @apply w-full;
-}
+  .account-saving-form__content {
+    @apply w-full;
+  }
 
-.account-saving-form__actions {
-  @apply flex justify-end gap-2;
-}
+  .account-saving-form__actions {
+    @apply flex justify-end gap-2;
+  }
 </style>

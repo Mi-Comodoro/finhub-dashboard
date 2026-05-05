@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { AppLogo, AppVersion } from '@/components/atoms'
+  import { AppLogo, AppVersion, Button } from '@/components/atoms'
   import { NavigationSection } from '@/components/molecules'
   import { useSidebar } from '@/composables/useSidebar'
   import { useAuth } from '~/composables/useAuth'
@@ -137,10 +137,11 @@
         <AppVersion class="ml-1" size="xs" />
       </template>
       <div class="dashboard-sidebar__toggle">
-        <UButton
-          :icon="isCollapsed ? 'i-material-symbols-chevron-right' : 'i-material-symbols-chevron-left'"
+        <Button
+          :icon="isCollapsed ? 'chevron_right' : 'chevron_left'"
           variant="ghost"
           size="sm"
+          :icon-only="true"
           @click="toggleCollapse"
         />
       </div>

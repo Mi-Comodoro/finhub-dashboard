@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { onMounted } from 'vue'
 
-  import { Icon } from '@/components/atoms'
+  import { Button, Icon } from '@/components/atoms'
   import { Breadcrumbs, HeaderActions, SearchInput } from '@/components/molecules'
   import { useBreadcrumbNavigation } from '@/components/molecules/breadcrumbs/useBreadcrumbNavigation'
   import { useSidebar } from '@/composables/useSidebar'
@@ -30,10 +30,11 @@
     <div class="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between">
       <!-- Left section: hamburger (mobile) + back + breadcrumbs -->
       <div class="flex min-w-0 items-center gap-4">
-        <UButton
-          icon="i-material-symbols-menu"
+        <Button
+          icon="menu"
           variant="ghost"
           size="sm"
+          :icon-only="true"
           class="lg:hidden"
           @click="toggle"
         />
