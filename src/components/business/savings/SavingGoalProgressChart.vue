@@ -8,7 +8,7 @@
     TooltipComponent,
     type TooltipComponentOption
   } from 'echarts/components'
-  import { type ComposeOption,use } from 'echarts/core'
+  import { type ComposeOption, use } from 'echarts/core'
   import { CanvasRenderer } from 'echarts/renderers'
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
@@ -128,7 +128,9 @@
   <div
     class="rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
   >
-    <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+    <div
+      class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700"
+    >
       <div>
         <Heading level="h3" size="lg" weight="semibold">Progreso de metas</Heading>
         <Text size="sm" color="muted" class="mt-1">

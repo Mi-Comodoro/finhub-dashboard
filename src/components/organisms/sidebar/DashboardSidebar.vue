@@ -138,7 +138,9 @@
       </template>
       <div class="dashboard-sidebar__toggle">
         <UButton
-          :icon="isCollapsed ? 'i-material-symbols-chevron-right' : 'i-material-symbols-chevron-left'"
+          :icon="
+            isCollapsed ? 'i-material-symbols-chevron-right' : 'i-material-symbols-chevron-left'
+          "
           variant="ghost"
           size="sm"
           @click="toggleCollapse"

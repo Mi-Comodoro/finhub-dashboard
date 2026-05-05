@@ -168,7 +168,9 @@
     <Form v-if="availablePercentage > 0" :key="formKey" v-model="formData" :schema="formSchema">
       <template #actions>
         <div class="saving-distribution-form__actions">
-          <Button type="button" variant="ghost" size="sm" @click.stop="emit('onClose')">Cancelar</Button>
+          <Button type="button" variant="ghost" size="sm" @click.stop="emit('onClose')">
+            Cancelar
+          </Button>
           <Button type="submit" variant="primary" size="sm" @click="handleSubmit">Guardar</Button>
         </div>
       </template>

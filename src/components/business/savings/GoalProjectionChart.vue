@@ -20,7 +20,14 @@
   import { formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
-  use([LineChart, GridComponent, LegendComponent, MarkLineComponent, TooltipComponent, CanvasRenderer])
+  use([
+    LineChart,
+    GridComponent,
+    LegendComponent,
+    MarkLineComponent,
+    TooltipComponent,
+    CanvasRenderer
+  ])
 
   type EChartsOption = ComposeOption<
     | LineSeriesOption
@@ -62,7 +69,7 @@
     // Iniciar en 95% del saldo para ver el crecimiento con detalle
     const balance = props.currentBalance ?? 0
     if (balance === 0) return 0
-    return Math.floor(balance * 0.95 / 100_000) * 100_000
+    return Math.floor((balance * 0.95) / 100_000) * 100_000
   })
 
   const hasData = computed(() => props.interestData.length > 0)
@@ -84,7 +91,20 @@
 
     // monthly
     const start = props.startMonth ?? 1
-    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    const monthNames = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic'
+    ]
     return Array.from({ length: props.periods }, (_, i) => {
       const monthNum = ((start - 1 + i) % 12) + 1
       return monthNames[monthNum - 1]
@@ -94,7 +114,9 @@
   const chartOption = computed<EChartsOption>(() => ({
     tooltip: {
       trigger: 'axis',
-      formatter: (params: Array<{ seriesName: string; value: number; color: string; axisValue: string }>) => {
+      formatter: (
+        params: Array<{ seriesName: string; value: number; color: string; axisValue: string }>
+      ) => {
         let html = `<div style="font-weight:600;margin-bottom:6px">${params[0]?.axisValue}</div>`
         params.forEach(p => {
           html += `<div style="margin:3px 0">
@@ -205,9 +227,8 @@
     </ClientOnly>
   </div>
   <div v-else class="flex h-72 items-center justify-center">
-    <Text size="sm" color="muted"> Realiza tu primer aporte para ver la proyección. </Text>
+    <Text size="sm" color="muted">Realiza tu primer aporte para ver la proyección.</Text>
   </div>
 </template>
 
-<style scoped lang="postcss">
-</style>
+<style scoped lang="postcss"></style>

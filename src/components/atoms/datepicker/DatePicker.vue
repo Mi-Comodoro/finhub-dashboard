@@ -74,8 +74,12 @@
     emit('update:modelValue', dynamicMonth.value)
   }
 
-  function prevYearPage() { yearPageStart.value -= 12 }
-  function nextYearPage() { yearPageStart.value += 12 }
+  function prevYearPage() {
+    yearPageStart.value -= 12
+  }
+  function nextYearPage() {
+    yearPageStart.value += 12
+  }
 
   function prevYear() {
     const current = dynamicMonth.value || currentMonth.value
@@ -177,20 +181,35 @@
       </template>
     </div>
 
-    <CalendarGrid v-if="viewMode === 'calendar'" :days="days" :selected-day="selectedDay" @on-day-click="handleDayClick" />
+    <CalendarGrid
+      v-if="viewMode === 'calendar'"
+      :days="days"
+      :selected-day="selectedDay"
+      @on-day-click="handleDayClick"
+    />
     <div v-if="viewMode === 'months'" class="date-picker__grid">
       <button
-v-for="m in monthNames" :key="m.index" type="button"
+        v-for="m in monthNames"
+        :key="m.index"
+        type="button"
         class="date-picker__grid-item"
         :class="{ 'date-picker__grid-item--current': m.isCurrent }"
-        @click="selectMonth(m.index)">{{ m.label }}</button>
+        @click="selectMonth(m.index)"
+      >
+        {{ m.label }}
+      </button>
     </div>
     <div v-if="viewMode === 'years'" class="date-picker__grid">
       <button
-v-for="y in yearGrid" :key="y.value" type="button"
+        v-for="y in yearGrid"
+        :key="y.value"
+        type="button"
         class="date-picker__grid-item"
         :class="{ 'date-picker__grid-item--current': y.isCurrent }"
-        @click="selectYear(y.value)">{{ y.value }}</button>
+        @click="selectYear(y.value)"
+      >
+        {{ y.value }}
+      </button>
     </div>
     <div class="date-picker__footer">
       <Button variant="ghost" size="sm" @click="handleCancel">Cancelar</Button>
@@ -208,25 +227,19 @@ v-for="y in yearGrid" :key="y.value" type="button"
     @apply mb-4 flex items-center justify-between;
   }
   .date-picker__title {
-    @apply cursor-pointer rounded-lg px-3 py-1 text-sm font-semibold text-slate-800
-           transition-colors hover:bg-primary-50 hover:text-primary-700
-           dark:text-slate-200 dark:hover:bg-primary-900 dark:hover:text-primary-300;
+    @apply cursor-pointer rounded-lg px-3 py-1 text-sm font-semibold text-slate-800 transition-colors hover:bg-primary-50 hover:text-primary-700 dark:text-slate-200 dark:hover:bg-primary-900 dark:hover:text-primary-300;
   }
   .date-picker__title--static {
-    @apply cursor-default hover:bg-transparent hover:text-slate-800
-           dark:hover:bg-transparent dark:hover:text-slate-200;
+    @apply cursor-default hover:bg-transparent hover:text-slate-800 dark:hover:bg-transparent dark:hover:text-slate-200;
   }
   .date-picker__grid {
     @apply grid grid-cols-3 gap-2 py-2;
   }
   .date-picker__grid-item {
-    @apply flex h-12 items-center justify-center rounded-lg text-sm font-medium
-           text-slate-700 transition-colors hover:bg-primary-50 hover:text-primary-700
-           dark:text-slate-300 dark:hover:bg-primary-900 dark:hover:text-primary-300;
+    @apply flex h-12 items-center justify-center rounded-lg text-sm font-medium text-slate-700 transition-colors hover:bg-primary-50 hover:text-primary-700 dark:text-slate-300 dark:hover:bg-primary-900 dark:hover:text-primary-300;
   }
   .date-picker__grid-item--current {
-    @apply bg-primary-100 font-semibold text-primary-700
-           dark:bg-primary-900 dark:text-primary-300;
+    @apply bg-primary-100 font-semibold text-primary-700 dark:bg-primary-900 dark:text-primary-300;
   }
   .date-picker__footer {
     @apply mt-4 flex justify-between;

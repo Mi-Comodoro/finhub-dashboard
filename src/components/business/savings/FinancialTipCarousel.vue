@@ -48,11 +48,7 @@
 </script>
 
 <template>
-  <div
-    class="financial-tip-carousel"
-    @mouseenter="isPaused = true"
-    @mouseleave="isPaused = false"
-  >
+  <div class="financial-tip-carousel" @mouseenter="isPaused = true" @mouseleave="isPaused = false">
     <Transition name="tip-fade" mode="out-in">
       <Tips
         :key="currentIndex"

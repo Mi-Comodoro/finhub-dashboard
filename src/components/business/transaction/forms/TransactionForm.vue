@@ -9,15 +9,18 @@
   const { fetchCategories, categories } = useCategoryApplication()
   const { createTransaction, updateTransaction } = useTransactionApplication()
 
-  const props = withDefaults(defineProps<{
-    budgetId?: string
-    transactionId?: string
-    initialData?: Partial<TransactionData>
-  }>(), {
-    budgetId: '',
-    transactionId: undefined,
-    initialData: undefined
-  })
+  const props = withDefaults(
+    defineProps<{
+      budgetId?: string
+      transactionId?: string
+      initialData?: Partial<TransactionData>
+    }>(),
+    {
+      budgetId: '',
+      transactionId: undefined,
+      initialData: undefined
+    }
+  )
 
   const isEditMode = computed(() => !!props.transactionId)
 
@@ -40,7 +43,10 @@
   }
 
   const handleSubmit = async (data: TransactionData) => {
-    if (!props.budgetId) { console.warn('[TransactionForm] budgetId is required but was not provided'); return }
+    if (!props.budgetId) {
+      console.warn('[TransactionForm] budgetId is required but was not provided')
+      return
+    }
     try {
       if (isEditMode.value && props.transactionId) {
         const { success } = await updateTransaction(props.transactionId, data)

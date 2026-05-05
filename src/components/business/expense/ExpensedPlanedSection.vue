@@ -6,22 +6,17 @@
 
   const emit = defineEmits(['open-form', 'edit', 'remove', 'mark-as-payed'])
 
-  const props = withDefaults(defineProps<{
-    budgetId?: string
-  }>(), {
-    budgetId: ''
-  })
+  const props = withDefaults(
+    defineProps<{
+      budgetId?: string
+    }>(),
+    {
+      budgetId: ''
+    }
+  )
 
-  const {
-    setBudget,
-    fetchExpenses,
-    setSearch,
-    setBucket,
-    setPage,
-    expenses,
-    filters,
-    meta
-  } = useExpenseSectionApplication()
+  const { setBudget, fetchExpenses, setSearch, setBucket, setPage, expenses, filters, meta } =
+    useExpenseSectionApplication()
 
   // 🔍 search local (UI)
   const search = ref('')
@@ -144,12 +139,7 @@
         </div>
 
         <!-- 📊 TABLE -->
-        <DataTable
-          :columns="columns"
-          :data="expenses"
-          :pagination="meta"
-          @page-change="setPage"
-        >
+        <DataTable :columns="columns" :data="expenses" :pagination="meta" @page-change="setPage">
           <template #cell-category="{ value }">
             <Badge size="xs">{{ value }}</Badge>
           </template>
@@ -212,15 +202,15 @@
 </template>
 
 <style scoped lang="postcss">
-.expense-section {
-  @apply flex w-full flex-col space-y-2;
-}
+  .expense-section {
+    @apply flex w-full flex-col space-y-2;
+  }
 
-.expense-section__filters {
-  @apply flex gap-2;
-}
+  .expense-section__filters {
+    @apply flex gap-2;
+  }
 
-.expense-section__actions {
-  @apply flex w-full justify-end gap-4;
-}
+  .expense-section__actions {
+    @apply flex w-full justify-end gap-4;
+  }
 </style>

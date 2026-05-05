@@ -105,7 +105,13 @@
             {{ nextClosingDate ?? 'N/A' }}
           </td>
           <td class="flex gap-3">
-            <Button variant="primary" size="sm" icon="visibility" icon-only @click="$emit('view', plan.id)">
+            <Button
+              variant="primary"
+              size="sm"
+              icon="visibility"
+              icon-only
+              @click="$emit('view', plan.id)"
+            >
               Ver
             </Button>
             <Button
@@ -117,7 +123,13 @@
             >
               Duplicar
             </Button>
-            <Button variant="danger" size="sm" icon="delete" icon-only @click="$emit('delete', plan.id)">
+            <Button
+              variant="danger"
+              size="sm"
+              icon="delete"
+              icon-only
+              @click="$emit('delete', plan.id)"
+            >
               Eliminar
             </Button>
           </td>

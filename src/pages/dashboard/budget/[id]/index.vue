@@ -95,7 +95,9 @@
       variant: 'ghost',
       icon: 'trending_up',
       condition: planStatus.value !== 'CLOSED',
-      click: () => { showIncomeModal.value = true }
+      click: () => {
+        showIncomeModal.value = true
+      }
     },
     {
       name: 'Duplicar',

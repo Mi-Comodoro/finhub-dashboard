@@ -81,7 +81,7 @@
   // Watch for changes in store and update forms
   watch(
     () => notifications.value,
-    (newNotifications) => {
+    newNotifications => {
       notificationsForm.value = { ...newNotifications }
     },
     { immediate: true, deep: true }
@@ -89,7 +89,7 @@
 
   watch(
     () => budgetDefaults.value,
-    (newBudgetDefaults) => {
+    newBudgetDefaults => {
       budgetForm.value = { ...newBudgetDefaults }
     },
     { immediate: true, deep: true }
@@ -97,7 +97,7 @@
 
   watch(
     () => currency.value,
-    (newCurrency) => {
+    newCurrency => {
       currencyForm.value = newCurrency
     },
     { immediate: true }
@@ -107,7 +107,10 @@
   const handleSaveNotifications = async () => {
     const { success } = await updateNotifications(notificationsForm.value)
     if (success) {
-      successToast('Notificaciones actualizadas', 'Tus preferencias de notificación han sido guardadas.')
+      successToast(
+        'Notificaciones actualizadas',
+        'Tus preferencias de notificación han sido guardadas.'
+      )
     }
   }
 
@@ -125,7 +128,10 @@
 
     const { success } = await updateBudgetDefaults(budgetForm.value)
     if (success) {
-      successToast('Configuración de presupuesto actualizada', 'Tus valores predeterminados han sido guardados.')
+      successToast(
+        'Configuración de presupuesto actualizada',
+        'Tus valores predeterminados han sido guardados.'
+      )
     }
   }
 
@@ -200,7 +206,9 @@
     <!-- Header -->
     <div class="settings-page__header">
       <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="settings-page__title">Configuración</Heading>
+        <Heading level="h1" size="2xl" weight="extrabold" class="settings-page__title">
+          Configuración
+        </Heading>
         <Text size="sm" color="muted">Personaliza tu experiencia en FinHub</Text>
       </div>
     </div>
@@ -234,7 +242,9 @@
             <div class="settings-page__switch-item">
               <div>
                 <Text size="sm" weight="medium">Notificaciones por correo</Text>
-                <Text size="xs" color="muted">Recibe resúmenes semanales y actualizaciones importantes</Text>
+                <Text size="xs" color="muted">
+                  Recibe resúmenes semanales y actualizaciones importantes
+                </Text>
               </div>
               <input
                 v-model="notificationsForm.emailNotifications"
@@ -248,13 +258,19 @@
                 <Text size="sm" weight="medium">Alertas de presupuesto</Text>
                 <Text size="xs" color="muted">Te avisamos cuando te acerques a tus límites</Text>
               </div>
-              <input v-model="notificationsForm.budgetAlerts" type="checkbox" class="settings-page__switch" />
+              <input
+                v-model="notificationsForm.budgetAlerts"
+                type="checkbox"
+                class="settings-page__switch"
+              />
             </div>
 
             <div class="settings-page__switch-item">
               <div>
                 <Text size="sm" weight="medium">Recordatorios de ahorro</Text>
-                <Text size="xs" color="muted">Mantente motivado con recordatorios de tus metas</Text>
+                <Text size="xs" color="muted">
+                  Mantente motivado con recordatorios de tus metas
+                </Text>
               </div>
               <input
                 v-model="notificationsForm.savingsReminders"
@@ -277,7 +293,12 @@
           </div>
 
           <div class="settings-page__section-actions">
-            <Button variant="primary" size="sm" :disabled="isLoading" @click="handleSaveNotifications">
+            <Button
+              variant="primary"
+              size="sm"
+              :disabled="isLoading"
+              @click="handleSaveNotifications"
+            >
               Guardar Notificaciones
             </Button>
           </div>
@@ -288,10 +309,16 @@
       <Card class="settings-page__section">
         <div class="settings-page__section-header">
           <div class="settings-page__section-title">
-            <Icon name="account_balance_wallet" size="md" class="settings-page__section-icon--primary" />
+            <Icon
+              name="account_balance_wallet"
+              size="md"
+              class="settings-page__section-icon--primary"
+            />
             <div>
               <Heading level="h2" size="lg" weight="bold">Presupuesto Predeterminado</Heading>
-              <Text size="xs" color="muted">Define los valores por defecto para nuevos presupuestos</Text>
+              <Text size="xs" color="muted">
+                Define los valores por defecto para nuevos presupuestos
+              </Text>
             </div>
           </div>
         </div>
@@ -350,16 +377,26 @@
             <Text
               size="xs"
               :color="
-                budgetForm.needsPercentage + budgetForm.wantsPercentage + budgetForm.savingsPercentage === 100
+                budgetForm.needsPercentage +
+                  budgetForm.wantsPercentage +
+                  budgetForm.savingsPercentage ===
+                100
                   ? 'success'
                   : 'danger'
               "
               weight="medium"
             >
               Total:
-              {{ budgetForm.needsPercentage + budgetForm.wantsPercentage + budgetForm.savingsPercentage }}%
               {{
-                budgetForm.needsPercentage + budgetForm.wantsPercentage + budgetForm.savingsPercentage === 100
+                budgetForm.needsPercentage +
+                budgetForm.wantsPercentage +
+                budgetForm.savingsPercentage
+              }}%
+              {{
+                budgetForm.needsPercentage +
+                  budgetForm.wantsPercentage +
+                  budgetForm.savingsPercentage ===
+                100
                   ? '✓'
                   : '(Debe sumar 100%)'
               }}
@@ -367,7 +404,12 @@
           </div>
 
           <div class="settings-page__section-actions">
-            <Button variant="primary" size="sm" :disabled="isLoading" @click="handleSaveBudgetDefaults">
+            <Button
+              variant="primary"
+              size="sm"
+              :disabled="isLoading"
+              @click="handleSaveBudgetDefaults"
+            >
               Guardar Configuración
             </Button>
           </div>
@@ -452,13 +494,14 @@
         <div class="delete-confirmation__content">
           <Text size="sm" color="muted">
             ¿Estás seguro de que deseas eliminar la categoría
-            <strong>"{{ categoryToDelete?.name }}"</strong>?
+            <strong>"{{ categoryToDelete?.name }}"</strong>
+            ?
           </Text>
           <Text size="sm" color="muted">Esta acción no se puede deshacer.</Text>
         </div>
 
         <div class="delete-confirmation__actions">
-          <Button variant="ghost" size="sm" @click="cancelDeleteCategory"> Cancelar </Button>
+          <Button variant="ghost" size="sm" @click="cancelDeleteCategory">Cancelar</Button>
           <Button variant="danger" size="sm" icon="delete" @click="confirmDeleteCategory">
             Eliminar categoría
           </Button>

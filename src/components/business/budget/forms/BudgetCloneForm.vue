@@ -48,7 +48,11 @@
   const handleSubmit = async (data: { month: number; year: number }) => {
     const { handleClone } = useBudgetActions()
 
-    const { success } = await handleClone(props.sourceBudgetId, Number(data.month), Number(data.year))
+    const { success } = await handleClone(
+      props.sourceBudgetId,
+      Number(data.month),
+      Number(data.year)
+    )
 
     if (success) {
       emit('onSuccess')
@@ -77,7 +81,9 @@
       <Form :schema="cloneSchema" @submit="handleSubmit">
         <template #actions>
           <div class="flex justify-end gap-2">
-            <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">Cancelar</Button>
+            <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">
+              Cancelar
+            </Button>
             <Button type="submit" variant="primary" size="sm">Clonar presupuesto</Button>
           </div>
         </template>

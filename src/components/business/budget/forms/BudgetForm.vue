@@ -124,7 +124,9 @@
       <Form v-model="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
           <div class="budget-form__actions">
-            <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">Cancelar</Button>
+            <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">
+              Cancelar
+            </Button>
             <Button type="submit" variant="primary" size="sm">
               {{ mode === 'create' ? 'Crear presupuesto' : 'Guardar cambios' }}
             </Button>

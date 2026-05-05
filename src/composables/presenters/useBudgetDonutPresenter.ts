@@ -134,7 +134,10 @@ export function useBudgetDonutPresenter() {
    * @param type - Category type (spending categories should show red for up, savings should show green)
    * @returns Tailwind color class
    */
-  const getTrendColor = (direction: TrendDirection, type: 'needs' | 'wants' | 'savings'): string => {
+  const getTrendColor = (
+    direction: TrendDirection,
+    type: 'needs' | 'wants' | 'savings'
+  ): string => {
     if (direction === 'new') return 'text-primary-500'
     if (direction === 'stable') return 'text-neutral-400'
 

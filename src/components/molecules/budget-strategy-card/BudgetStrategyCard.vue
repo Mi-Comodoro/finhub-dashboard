@@ -14,17 +14,14 @@
   import type { BudgetAllocation } from '../charts'
   import type { BudgetStrategyCardProps } from './types/budget-strategy-card.types'
 
-  const props = withDefaults(
-    defineProps<BudgetStrategyCardProps & { totalIncome?: number }>(),
-    {
-      icon: 'account_balance',
-      recommended: false,
-      advanced: false,
-      selected: false,
-      selectable: true,
-      totalIncome: undefined
-    }
-  )
+  const props = withDefaults(defineProps<BudgetStrategyCardProps & { totalIncome?: number }>(), {
+    icon: 'account_balance',
+    recommended: false,
+    advanced: false,
+    selected: false,
+    selectable: true,
+    totalIncome: undefined
+  })
 
   const emit = defineEmits(['select', 'update:allocation', 'total'] as const)
 

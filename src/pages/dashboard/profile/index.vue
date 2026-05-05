@@ -133,7 +133,7 @@
   // Watchers
   watch(
     () => user.value,
-    (newUser) => {
+    newUser => {
       personalForm.value = {
         displayName: newUser.displayName || '',
         email: newUser.email || '',
@@ -147,7 +147,7 @@
 
   watch(
     () => finances.value,
-    (newFinances) => {
+    newFinances => {
       financialForm.value = {
         currency: newFinances.currency,
         profile: newFinances.profile,
@@ -222,8 +222,12 @@
   useHead({
     title: 'Profile - FinHub'
   })
-  const endDate = computed(() => user.value.trialEndsAt ? new Date(user.value.trialEndsAt) : new Date())
-  const startDate = computed(() => user.value.createdAt ? new Date(user.value.createdAt) : new Date())
+  const endDate = computed(() =>
+    user.value.trialEndsAt ? new Date(user.value.trialEndsAt) : new Date()
+  )
+  const startDate = computed(() =>
+    user.value.createdAt ? new Date(user.value.createdAt) : new Date()
+  )
 </script>
 
 <template>

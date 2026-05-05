@@ -8,8 +8,8 @@ export const useCategoryStore = defineStore('categories', {
   }),
 
   getters: {
-    selectableCategories: (state) => state.categories.filter(c => c.isSelectable),
-    categoriesByType: (state) => (type: string) => state.categories.filter(c => c.type === type)
+    selectableCategories: state => state.categories.filter(c => c.isSelectable),
+    categoriesByType: state => (type: string) => state.categories.filter(c => c.type === type)
   },
 
   actions: {

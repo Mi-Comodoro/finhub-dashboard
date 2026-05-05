@@ -120,51 +120,51 @@
 </template>
 
 <style scoped lang="postcss">
-.account-savings {
-  @apply h-full;
-}
+  .account-savings {
+    @apply h-full;
+  }
 
-.account-savings__section {
-  @apply h-full space-y-2 overflow-auto;
-}
+  .account-savings__section {
+    @apply h-full space-y-2 overflow-auto;
+  }
 
-.account-savings__action {
-  @apply flex items-center gap-2;
-}
+  .account-savings__action {
+    @apply flex items-center gap-2;
+  }
 
-.account-savings__empty {
-  @apply m-auto flex flex-col items-center space-y-2;
-}
+  .account-savings__empty {
+    @apply m-auto flex flex-col items-center space-y-2;
+  }
 
-.account-savings__empty-content {
-  @apply flex flex-col items-center;
-}
+  .account-savings__empty-content {
+    @apply flex flex-col items-center;
+  }
 
-.account-savings__empty-description {
-  /* coming-soon-card__description class preserved */
-}
+  .account-savings__empty-description {
+    /* coming-soon-card__description class preserved */
+  }
 
-.account-savings__legend-description {
-  /* coming-soon-card__description class preserved */
-}
+  .account-savings__legend-description {
+    /* coming-soon-card__description class preserved */
+  }
 
-.account-savings__legend-badge {
-  @apply mr-2 rounded-md px-2 py-0.5 text-xs font-semibold;
-}
+  .account-savings__legend-badge {
+    @apply mr-2 rounded-md px-2 py-0.5 text-xs font-semibold;
+  }
 
-.account-savings__card {
-  @apply flex w-full flex-col;
-}
+  .account-savings__card {
+    @apply flex w-full flex-col;
+  }
 
-.account-savings__card-header {
-  @apply flex items-center justify-between gap-2;
-}
+  .account-savings__card-header {
+    @apply flex items-center justify-between gap-2;
+  }
 
-.account-savings__card-badges {
-  @apply flex items-center gap-2;
-}
+  .account-savings__card-badges {
+    @apply flex items-center gap-2;
+  }
 
-.account-savings__badge {
-  @apply rounded-md px-2 py-0.5 text-xs font-semibold;
-}
+  .account-savings__badge {
+    @apply rounded-md px-2 py-0.5 text-xs font-semibold;
+  }
 </style>

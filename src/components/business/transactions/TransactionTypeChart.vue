@@ -6,7 +6,7 @@
     TooltipComponent,
     type TooltipComponentOption
   } from 'echarts/components'
-  import { type ComposeOption,use } from 'echarts/core'
+  import { type ComposeOption, use } from 'echarts/core'
   import { CanvasRenderer } from 'echarts/renderers'
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
@@ -19,7 +19,9 @@
 
   use([PieChart, LegendComponent, TooltipComponent, CanvasRenderer])
 
-  type EChartsOption = ComposeOption<PieSeriesOption | TooltipComponentOption | LegendComponentOption>
+  type EChartsOption = ComposeOption<
+    PieSeriesOption | TooltipComponentOption | LegendComponentOption
+  >
 
   interface Props {
     transactions: TransactionSummary[]
@@ -30,10 +32,7 @@
     currency: 'COP'
   })
 
-  const TYPE_META: Record<
-    TransactionSummary['type'],
-    { label: string; color: string }
-  > = {
+  const TYPE_META: Record<TransactionSummary['type'], { label: string; color: string }> = {
     income: { label: 'Ingresos', color: CHART_COLORS.income },
     expense: { label: 'Gastos', color: CHART_COLORS.expense },
     savings: { label: 'Ahorro', color: CHART_COLORS.savings }
@@ -106,10 +105,7 @@
           class="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700"
         >
           <div class="flex items-center gap-3">
-            <span
-              class="h-3 w-3 rounded-full"
-              :style="{ backgroundColor: item.color }"
-            />
+            <span class="h-3 w-3 rounded-full" :style="{ backgroundColor: item.color }" />
             <Text size="sm" weight="medium">{{ item.name }}</Text>
           </div>
           <Text size="sm" weight="semibold">

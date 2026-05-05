@@ -6,7 +6,7 @@
     TooltipComponent,
     type TooltipComponentOption
   } from 'echarts/components'
-  import { type ComposeOption,use } from 'echarts/core'
+  import { type ComposeOption, use } from 'echarts/core'
   import { CanvasRenderer } from 'echarts/renderers'
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
@@ -38,7 +38,7 @@
           (acc, transaction) => {
             const name = transaction.category?.name ?? 'Sin categoria'
             const current = acc[name] ?? { name, amount: 0 }
-            current.amount += (transaction.amount ?? 0)
+            current.amount += transaction.amount ?? 0
             acc[name] = current
             return acc
           },

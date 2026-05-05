@@ -35,7 +35,8 @@ export const FINANCIAL_TIPS = {
       id: '5',
       icon: 'lightbulb',
       message: 'Evita deudas innecesarias',
-      subMessage: 'Las deudas con intereses altos pueden afectar tus metas financieras a largo plazo.'
+      subMessage:
+        'Las deudas con intereses altos pueden afectar tus metas financieras a largo plazo.'
     }
   ],
   savings: [
@@ -49,7 +50,8 @@ export const FINANCIAL_TIPS = {
       id: 's2',
       icon: 'compare_arrows',
       message: 'Diversifica tus ahorros',
-      subMessage: 'No pongas todos tus ahorros en un solo lugar. Distribuye entre diferentes objetivos.'
+      subMessage:
+        'No pongas todos tus ahorros en un solo lugar. Distribuye entre diferentes objetivos.'
     }
   ],
   budget: [

@@ -7,7 +7,8 @@
     verticalSpace: false,
     iconSize: 'md' as 'sm' | 'md' | 'lg'
   })
-  if (import.meta.dev && !props.title) console.warn('[CardInfo] "title" prop is required but was not provided')
+  if (import.meta.dev && !props.title)
+    console.warn('[CardInfo] "title" prop is required but was not provided')
 </script>
 <template>
   <div class="card-info">

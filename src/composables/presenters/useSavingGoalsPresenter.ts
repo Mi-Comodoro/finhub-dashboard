@@ -4,9 +4,7 @@ export const useSavingGoalsPresenter = () => {
   const goalsStore = useGoalsStore()
 
   const sumAmountTarget = (limit: number) => {
-    return goalsStore.goals
-      .slice(0, limit)
-      .reduce((acc, goal) => acc + (goal.targetAmount ?? 0), 0)
+    return goalsStore.goals.slice(0, limit).reduce((acc, goal) => acc + (goal.targetAmount ?? 0), 0)
   }
 
   const lastUpdate = () => {

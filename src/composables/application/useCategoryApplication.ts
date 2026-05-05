@@ -10,7 +10,7 @@ export const useCategoryApplication = () => {
     try {
       categoryStore.setLoading(true)
       categoryStore.setError(null)
-      const { success, result } = await categoryApi.getCategories() as CategoriesResponse
+      const { success, result } = (await categoryApi.getCategories()) as CategoriesResponse
 
       if (!success) {
         categoryStore.setError('Error al obtener categorías')

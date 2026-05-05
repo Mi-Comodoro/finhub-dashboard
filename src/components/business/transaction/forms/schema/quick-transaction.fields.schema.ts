@@ -43,18 +43,28 @@ export const quickTransactionFieldsSchema = (
       label: 'Meta de ahorro',
       placeholder: 'Selecciona una meta',
       options: goalOptions,
-      required: (form) => form['type'] === 'saving',
-      visibleWhen: (form) => form['type'] === 'saving'
+      required: form => form['type'] === 'saving',
+      visibleWhen: form => form['type'] === 'saving'
     },
     contributionType: {
       type: 'radio-card',
       label: 'Tipo de aporte',
       required: false,
       options: [
-        { label: 'Depósito externo', value: 'external', description: 'Desde fuera', icon: 'account_balance' },
-        { label: 'Transferencia', value: 'internal', description: 'Cuenta propia', icon: 'swap_horiz' }
+        {
+          label: 'Depósito externo',
+          value: 'external',
+          description: 'Desde fuera',
+          icon: 'account_balance'
+        },
+        {
+          label: 'Transferencia',
+          value: 'internal',
+          description: 'Cuenta propia',
+          icon: 'swap_horiz'
+        }
       ],
-      visibleWhen: (form) => form['type'] === 'saving'
+      visibleWhen: form => form['type'] === 'saving'
     },
     accountId: {
       type: 'select',
@@ -62,7 +72,7 @@ export const quickTransactionFieldsSchema = (
       placeholder: 'Selecciona una cuenta',
       options: accountOptions,
       required: false,
-      visibleWhen: (form) => form['type'] === 'saving' && form['contributionType'] === 'internal'
+      visibleWhen: form => form['type'] === 'saving' && form['contributionType'] === 'internal'
     }
   },
   layout: [

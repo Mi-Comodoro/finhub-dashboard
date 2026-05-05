@@ -34,15 +34,12 @@ export default defineEventHandler(async event => {
     ? `${config.public.apiBase}/budgets/current/${financeId}?${queryString}`
     : `${config.public.apiBase}/budgets/current/${financeId}`
 
-  const { success, data } = await $fetch<BackendCurrentBudget>(
-    endpoint,
-    {
-      headers: { authorization: `Bearer ${token}` },
-      onResponseError: ({ response }) => {
-        validateError(event, response.status)
-      }
+  const { success, data } = await $fetch<BackendCurrentBudget>(endpoint, {
+    headers: { authorization: `Bearer ${token}` },
+    onResponseError: ({ response }) => {
+      validateError(event, response.status)
     }
-  )
+  })
 
   return {
     success,

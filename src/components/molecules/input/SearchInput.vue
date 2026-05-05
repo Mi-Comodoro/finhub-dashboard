@@ -70,10 +70,7 @@
       {{ label }}
     </Label>
 
-    <div
-      class="search-input__field"
-      :class="{ 'search-input__field--disabled': disabled }"
-    >
+    <div class="search-input__field" :class="{ 'search-input__field--disabled': disabled }">
       <div class="search-input__icon">
         <Icon name="search" :size="iconSize" />
       </div>

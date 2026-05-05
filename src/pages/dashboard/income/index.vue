@@ -14,14 +14,8 @@
 
   const route = useRoute()
 
-  const {
-    expectedIncomes,
-    isLoading,
-    error,
-    fetchPlannedIncomes,
-    deleteIncome,
-    markAsReceived
-  } = useIncomeApplication()
+  const { expectedIncomes, isLoading, error, fetchPlannedIncomes, deleteIncome, markAsReceived } =
+    useIncomeApplication()
 
   const { currency } = useFinancesApplication()
   const { success: successToast } = useFeedback()
@@ -84,14 +78,12 @@
     <!-- Header -->
     <div class="income-page__header">
       <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="income-page__title"
-          >Ingresos Planificados</Heading
-        >
+        <Heading level="h1" size="2xl" weight="extrabold" class="income-page__title">
+          Ingresos Planificados
+        </Heading>
         <Text size="sm" color="muted">Gestiona y registra tus ingresos esperados</Text>
       </div>
-      <Button variant="primary" size="sm" icon="add" @click="openForm"
-        >Agregar Ingreso</Button
-      >
+      <Button variant="primary" size="sm" icon="add" @click="openForm">Agregar Ingreso</Button>
     </div>
 
     <!-- Metrics Summary -->
@@ -102,7 +94,12 @@
           <div>
             <Text size="xs" color="muted">Total Esperado</Text>
             <Heading level="h3" size="xl" weight="bold">
-              {{ formatCurrency(expectedIncomes.reduce((sum, i) => sum + i.amount, 0), currency) }}
+              {{
+                formatCurrency(
+                  expectedIncomes.reduce((sum, i) => sum + i.amount, 0),
+                  currency
+                )
+              }}
               <span class="income-page__metric-currency">{{ currency }}</span>
             </Heading>
           </div>
