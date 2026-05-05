@@ -30,9 +30,7 @@
     props.bills && props.bills.length > 0 ? props.bills : mockBills
   )
 
-  const totalCommitted = computed(() =>
-    displayBills.value.reduce((sum, b) => sum + b.amount, 0)
-  )
+  const totalCommitted = computed(() => displayBills.value.reduce((sum, b) => sum + b.amount, 0))
 
   type UrgencyVariant = 'danger' | 'warning' | 'primary'
 
@@ -41,8 +39,10 @@
     label: string
     dotClass: string
   } {
-    if (days <= 3) return { variant: 'danger', label: 'Urgente', dotClass: 'bills-card__dot--urgent' }
-    if (days <= 7) return { variant: 'warning', label: 'Esta semana', dotClass: 'bills-card__dot--soon' }
+    if (days <= 3)
+      return { variant: 'danger', label: 'Urgente', dotClass: 'bills-card__dot--urgent' }
+    if (days <= 7)
+      return { variant: 'warning', label: 'Esta semana', dotClass: 'bills-card__dot--soon' }
     return { variant: 'primary', label: 'Al día', dotClass: 'bills-card__dot--ok' }
   }
 </script>
@@ -80,9 +80,7 @@
     </div>
 
     <div class="bills-card__action">
-      <Text size="xs" color="muted">
-        Módulo de deudas y facturas en desarrollo
-      </Text>
+      <Text size="xs" color="muted">Módulo de deudas y facturas en desarrollo</Text>
     </div>
   </div>
 </template>

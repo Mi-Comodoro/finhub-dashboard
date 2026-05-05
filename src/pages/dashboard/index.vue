@@ -399,7 +399,10 @@
       />
     </section>
 
-    <section v-if="goals && goals.length > 0 && !isPageLoading" class="dashboard-page__goals-section">
+    <section
+      v-if="goals && goals.length > 0 && !isPageLoading"
+      class="dashboard-page__goals-section"
+    >
       <ActiveGoalsCard
         :goals="goals"
         :currency-code="currency"

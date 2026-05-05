@@ -20,13 +20,9 @@
     (e: 'view-all'): void
   }>()
 
-  const activeGoals = computed(() =>
-    (props.goals ?? []).filter(g => g.isActive).slice(0, 3)
-  )
+  const activeGoals = computed(() => (props.goals ?? []).filter(g => g.isActive).slice(0, 3))
 
-  const totalGoals = computed(() =>
-    (props.goals ?? []).filter(g => g.isActive).length
-  )
+  const totalGoals = computed(() => (props.goals ?? []).filter(g => g.isActive).length)
 
   function getSavedAmount(goal: GoalsData): number {
     if (!goal.plannedSavings || goal.plannedSavings.length === 0) return 0
@@ -47,12 +43,7 @@
   <div class="goals-card">
     <div class="goals-card__header">
       <Heading level="h3" size="sm" weight="semibold">Metas activas</Heading>
-      <Button
-        v-if="totalGoals > 3"
-        size="sm"
-        variant="ghost"
-        @click="emit('view-all')"
-      >
+      <Button v-if="totalGoals > 3" size="sm" variant="ghost" @click="emit('view-all')">
         Ver todas ({{ totalGoals }})
       </Button>
     </div>
@@ -64,10 +55,7 @@
           <span class="goals-card__goal-pct">{{ getProgress(goal) }}%</span>
         </div>
         <div class="goals-card__progress-track">
-          <div
-            class="goals-card__progress-fill"
-            :style="{ width: `${getProgress(goal)}%` }"
-          />
+          <div class="goals-card__progress-fill" :style="{ width: `${getProgress(goal)}%` }" />
         </div>
         <p class="goals-card__goal-amounts">
           <span v-if="goal.targetAmount">
@@ -80,15 +68,11 @@
 
     <div v-else class="goals-card__empty">
       <Text size="sm" color="muted">No tienes metas activas aún</Text>
-      <Button size="sm" variant="primary" @click="emit('create-goal')">
-        Crear primera meta
-      </Button>
+      <Button size="sm" variant="primary" @click="emit('create-goal')">Crear primera meta</Button>
     </div>
 
     <div v-if="activeGoals.length > 0" class="goals-card__footer">
-      <Button size="sm" variant="ghost" @click="emit('view-all')">
-        Ver detalle de metas
-      </Button>
+      <Button size="sm" variant="ghost" @click="emit('view-all')">Ver detalle de metas</Button>
     </div>
   </div>
 </template>
