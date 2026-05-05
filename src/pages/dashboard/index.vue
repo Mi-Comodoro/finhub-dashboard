@@ -4,12 +4,14 @@
 
   import { AlertBanner, Badge, Button, Heading, Text } from '@/components/atoms'
   import {
+    ActiveGoalsCard,
     DashboardBalanceChart,
     DashboardActionCard,
     FinancialHealthGauge,
     FinancialTipCarousel,
     PlannedSavingList,
-    QuickTransactionForm
+    QuickTransactionForm,
+    UpcomingBillsCard
   } from '@/components/business'
   import { BudgetDonutChartEnhanced, FinancialProgressCard } from '@/components/molecules'
   import { OnboardingWizard } from '@/components/organisms'
@@ -287,14 +289,17 @@
     </div>
     <FinancialTipCarousel :tips="displayTips" />
 
-    <section v-if="!isPageLoading && currentBudget" class="dashboard-page__health-section">
-      <FinancialHealthGauge
-        :score="healthScore"
-        :savings-rate="savingsRate"
-        :income-rate="incomeRate"
-        :expense-rate="expenseRate"
-        :has-debt-module="false"
-      />
+    <section v-if="!isPageLoading && currentBudget" class="dashboard-page__widgets-section">
+      <div class="dashboard-page__widgets-grid">
+        <FinancialHealthGauge
+          :score="healthScore"
+          :savings-rate="savingsRate"
+          :income-rate="incomeRate"
+          :expense-rate="expenseRate"
+          :has-debt-module="false"
+        />
+        <UpcomingBillsCard :currency-code="currency" />
+      </div>
     </section>
 
     <section v-if="currentBudget" class="dashboard-page__budget-section">
@@ -394,6 +399,15 @@
       />
     </section>
 
+    <section v-if="goals && goals.length > 0 && !isPageLoading" class="dashboard-page__goals-section">
+      <ActiveGoalsCard
+        :goals="goals"
+        :currency-code="currency"
+        @create-goal="router.push('/dashboard/goals')"
+        @view-all="router.push('/dashboard/goals')"
+      />
+    </section>
+
     <section
       v-if="hasActiveSavingPlans && currentBudget && !isPageLoading"
       class="dashboard-page__saving-plan"
@@ -488,7 +502,15 @@
     @apply z-10 flex items-center justify-end gap-2;
   }
 
-  .dashboard-page__health-section {
+  .dashboard-page__widgets-section {
+    @apply mb-8;
+  }
+
+  .dashboard-page__widgets-grid {
+    @apply grid grid-cols-1 gap-4 md:grid-cols-2;
+  }
+
+  .dashboard-page__goals-section {
     @apply mb-8;
   }
 
