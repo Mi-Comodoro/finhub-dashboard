@@ -5,8 +5,8 @@
   import { AlertBanner, Badge, Button, Heading, Text } from '@/components/atoms'
   import {
     ActiveGoalsCard,
-    DashboardBalanceChart,
     DashboardActionCard,
+    DashboardBalanceChart,
     FinancialHealthGauge,
     FinancialTipCarousel,
     PlannedSavingList,
@@ -86,10 +86,7 @@
 
   const displayTips = computed(() => {
     if (!contextualTip.value) return FINANCIAL_TIPS.common
-    return [
-      { id: 'contextual', icon: 'lightbulb', message: contextualTip.value, subMessage: undefined },
-      ...FINANCIAL_TIPS.common
-    ]
+    return [...FINANCIAL_TIPS.common]
   })
 
   const categories = computed(() => {
@@ -246,7 +243,7 @@
     <div v-else-if="expectedAmount" class="dashboard-page__cards">
       <FinancialProgressCard
         :title="'Ingresos'"
-        :amount="expectedAmount"
+        :amount="Number(expectedAmount) || 0"
         title-color="white"
         text-color="white"
         icon-name="account_balance_wallet"
@@ -257,7 +254,7 @@
       />
       <FinancialProgressCard
         :title="'Ahorro Sugerido/Mes'"
-        :amount="buckets.savingsAmount"
+        :amount="Number(buckets.savingsAmount) || 0"
         title-color="white"
         text-color="white"
         icon-name="savings"
@@ -326,7 +323,7 @@
             <ClientOnly>
               <BudgetDonutChartEnhanced
                 :items="categories"
-                :total="expectedAmount"
+                :total="Number(expectedAmount) || 0"
                 :currency="currency"
                 :show-legend="false"
                 :show-trends="true"
@@ -389,7 +386,7 @@
 
     <section v-if="!isPageLoading && expectedAmount" class="dashboard-page__balance-section">
       <DashboardBalanceChart
-        :expected-income="expectedAmount"
+        :expected-income="Number(expectedAmount) || 0"
         :received-income="totalIncomeReceived || 0"
         :estimated-savings="buckets.savingsAmount || 0"
         :generated-savings="totalSavingGenerated || 0"
