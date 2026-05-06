@@ -209,7 +209,7 @@
         <Heading level="h1" size="2xl" weight="extrabold" class="settings-page__title">
           Configuración
         </Heading>
-        <Text size="sm" color="muted">Personaliza tu experiencia en FinHub</Text>
+        <Text size="sm" color="muted">Personaliza tu experiencia en Mi Comodoro</Text>
       </div>
     </div>
 

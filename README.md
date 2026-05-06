@@ -1,6 +1,6 @@
-# FinHub Dashboard
+# Mi Comodoro Dashboard
 
-Frontend de FinHub construido con Nuxt 4. La aplicación funciona como cliente web y BFF ligero para el backend, con enfoque en gestión de presupuesto, ingresos, gastos, ahorros y autenticación.
+Frontend de Mi Comodoro construido con Nuxt 4. La aplicación funciona como cliente web y BFF ligero para el backend, con enfoque en gestión de presupuesto, ingresos, gastos, ahorros y autenticación.
 
 ## Stack
 
@@ -16,7 +16,7 @@ Frontend de FinHub construido con Nuxt 4. La aplicación funciona como cliente w
 
 - Node.js `>=20.19 <23`
 - npm
-- Backend de FinHub disponible en `API_URL`
+- Backend de Mi Comodoro disponible en `API_URL`
 
 ## Puesta en marcha
 

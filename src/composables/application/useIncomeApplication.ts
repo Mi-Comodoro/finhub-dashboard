@@ -2,8 +2,8 @@ import { storeToRefs } from 'pinia'
 
 import { useIncomeApi } from '~/composables/api/useIncomeApi'
 import { useSavingsApi } from '~/composables/api/useSavingsApi'
-import { usePlannedSavingStore } from '~/stores/planned-saving.store'
 import { useIncomeStore } from '~/stores/income.store'
+import { usePlannedSavingStore } from '~/stores/planned-saving.store'
 import type { Income, PlannedIncomeSummary } from '~/types/domain'
 
 export const useIncomeApplication = () => {

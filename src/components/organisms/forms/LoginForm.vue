@@ -71,7 +71,7 @@
           title="Bienvenido"
           color="black"
           weight="extrabold"
-          sub-title="Inicia sesion en tu panel de FinHub"
+          sub-title="Inicia sesion en tu panel de Mi Comodoro"
           sub-title-size="base"
           sub-title-color="muted"
         />

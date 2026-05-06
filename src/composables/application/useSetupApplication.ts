@@ -85,7 +85,7 @@ export const useSetupApplication = () => {
 
     showModal('success', {
       title: 'Onboarding Completado',
-      message: '¡Tu perfil ha sido configurado exitosamente! Bienvenido a FinHub.',
+      message: '¡Tu perfil ha sido configurado exitosamente! Bienvenido a Mi Comodoro.',
       actionLabel: 'Aceptar',
       onAction: onboardingComplete
     })

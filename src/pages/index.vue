@@ -36,7 +36,7 @@
           <!-- Logo -->
           <div class="mb-6 w-full lg:mb-8">
             <Heading level="h1" size="3xl" weight="extrabold" class="drop-shadow-lg" color="white">
-              FinHub
+              Mi Comodoro
             </Heading>
           </div>
 

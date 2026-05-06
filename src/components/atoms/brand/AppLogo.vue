@@ -26,7 +26,7 @@
     </span>
     <CardInfo
       v-if="showText"
-      title="FinHub"
+      title="Mi Comodoro"
       title-size="lg"
       level="h2"
       color="black"

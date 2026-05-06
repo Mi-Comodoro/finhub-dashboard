@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-02-08',
   app: {
     head: {
-      title: 'FinHub',
+      title: 'Mi Comodoro',
       htmlAttrs: {
         lang: 'es'
       },

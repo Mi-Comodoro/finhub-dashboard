@@ -1,6 +1,6 @@
 # Arquitectura Frontend
 
-Este proyecto usa Nuxt 4 como frontend y `src/server/api/` como capa BFF frente al backend de FinHub.
+Este proyecto usa Nuxt 4 como frontend y `src/server/api/` como capa BFF frente al backend de Mi Comodoro.
 
 ## Flujo obligatorio
 
