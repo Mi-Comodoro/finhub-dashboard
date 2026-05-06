@@ -5,11 +5,21 @@
 
   const props = withDefaults(defineProps<FinancialHealthGaugeProps>(), {
     score: 0,
-    savingsRate: 0,
-    incomeRate: 0,
-    expenseRate: 0,
+    level: 'critical',
+    cashFlowScore: 0,
+    savingsScore: 0,
+    expenseScore: 0,
+    debtScore: 10,
     hasDebtModule: false
   })
+
+  const LEVEL_LABELS: Record<string, string> = {
+    critical: 'Crítico',
+    at_risk: 'En riesgo',
+    regular: 'Regular',
+    healthy: 'Saludable',
+    optimal: 'Óptimo'
+  }
 
   // SVG gauge constants
   const CX = 100
@@ -17,20 +27,15 @@
   const R = 80
   const STROKE_WIDTH = 14
 
-  // Semicircle arc length (π * R)
   const ARC_LENGTH = Math.PI * R
 
-  // Score clamped 0-100
   const clampedScore = computed(() => Math.min(Math.max(props.score ?? 0, 0), 100))
 
-  // Dash offset for filled arc: 0 = full, ARC_LENGTH = empty
   const filledDash = computed(() => (clampedScore.value / 100) * ARC_LENGTH)
   const emptyDash = computed(() => ARC_LENGTH - filledDash.value)
 
-  // Needle angle: starts at -180deg (left), ends at 0deg (right)
   const needleAngle = computed(() => -180 + (clampedScore.value / 100) * 180)
 
-  // Needle endpoint
   const needleLength = 62
   const needleX = computed(() => {
     const rad = (needleAngle.value * Math.PI) / 180
@@ -41,51 +46,49 @@
     return CY + needleLength * Math.sin(rad)
   })
 
-  type ScoreLevel = 'Crítico' | 'Regular' | 'Saludable' | 'Óptimo'
-
-  const scoreLevel = computed((): ScoreLevel => {
-    const s = clampedScore.value
-    if (s === 100) return 'Óptimo'
-    if (s >= 70) return 'Saludable'
-    if (s >= 40) return 'Regular'
-    return 'Crítico'
-  })
+  const scoreLabel = computed(() => LEVEL_LABELS[props.level ?? 'critical'] ?? 'Crítico')
 
   const scoreLevelClass = computed(() => {
-    const level = scoreLevel.value
-    if (level === 'Crítico') return 'gauge__score-level--critical'
-    if (level === 'Regular') return 'gauge__score-level--warning'
-    if (level === 'Óptimo') return 'gauge__score-level--optimal'
+    const level = props.level ?? 'critical'
+    if (level === 'critical') return 'gauge__score-level--critical'
+    if (level === 'at_risk') return 'gauge__score-level--warning'
+    if (level === 'regular') return 'gauge__score-level--warning'
+    if (level === 'optimal') return 'gauge__score-level--optimal'
     return 'gauge__score-level--healthy'
   })
 
-  const metrics = computed(() => [
+  const pillars = computed(() => [
     {
-      label: 'Ahorro ejecutado',
-      value: props.savingsRate ?? 0,
+      label: 'Flujo de caja',
+      score: props.cashFlowScore ?? 0,
+      max: 25,
       available: true
     },
     {
-      label: 'Ingresos recibidos',
-      value: props.incomeRate ?? 0,
+      label: 'Ahorro y metas',
+      score: props.savingsScore ?? 0,
+      max: 35,
       available: true
     },
     {
-      label: 'Gastos planificados',
-      value: props.expenseRate ?? 0,
+      label: 'Control de gastos',
+      score: props.expenseScore ?? 0,
+      max: 20,
       available: true
     },
     {
-      label: 'Deudas activas',
-      value: 0,
+      label: 'Deudas',
+      score: props.debtScore ?? 0,
+      max: 20,
       available: props.hasDebtModule
     }
   ])
 
-  function metricBarClass(value: number): string {
-    if (value >= 80) return 'gauge__metric-bar--high'
-    if (value >= 40) return 'gauge__metric-bar--medium'
-    return 'gauge__metric-bar--low'
+  function pillarBarClass(score: number, max: number): string {
+    const pct = max > 0 ? (score / max) * 100 : 0
+    if (pct >= 80) return 'gauge__pillar-bar--high'
+    if (pct >= 40) return 'gauge__pillar-bar--medium'
+    return 'gauge__pillar-bar--low'
   }
 </script>
 
@@ -163,25 +166,34 @@
         <!-- Level label below SVG -->
         <div class="gauge__score-label">
           <span class="gauge__score-level" :class="scoreLevelClass">
-            {{ scoreLevel }}
+            {{ scoreLabel }}
           </span>
         </div>
       </div>
 
-      <!-- Metrics list -->
-      <div class="gauge__metrics">
-        <div v-for="metric in metrics" :key="metric.label" class="gauge__metric">
-          <div class="gauge__metric-header">
-            <span class="gauge__metric-label">{{ metric.label }}</span>
-            <span v-if="metric.available" class="gauge__metric-value">{{ metric.value }}%</span>
-            <span v-else class="gauge__metric-pending">— en planificación</span>
+      <!-- Pillars breakdown table -->
+      <div class="gauge__pillars">
+        <div class="gauge__pillars-header">
+          <span class="gauge__pillars-col gauge__pillars-col--label">Pilar</span>
+          <span class="gauge__pillars-col gauge__pillars-col--score">Pts</span>
+          <span class="gauge__pillars-col gauge__pillars-col--max">Máx</span>
+        </div>
+        <div v-for="pillar in pillars" :key="pillar.label" class="gauge__pillar">
+          <div class="gauge__pillar-row">
+            <span class="gauge__pillar-label">{{ pillar.label }}</span>
+            <span v-if="pillar.available" class="gauge__pillar-score">{{ pillar.score }}</span>
+            <span v-else class="gauge__pillar-pending">— planificado</span>
+            <span class="gauge__pillar-max">{{ pillar.max }}</span>
           </div>
-          <div v-if="metric.available" class="gauge__metric-track">
+          <div v-if="pillar.available" class="gauge__pillar-track">
             <div
-              class="gauge__metric-bar"
-              :class="metricBarClass(metric.value)"
-              :style="{ width: `${Math.min(metric.value, 100)}%` }"
+              class="gauge__pillar-bar"
+              :class="pillarBarClass(pillar.score, pillar.max)"
+              :style="{ width: `${Math.min((pillar.score / pillar.max) * 100, 100)}%` }"
             />
+          </div>
+          <div v-else class="gauge__pillar-track">
+            <div class="gauge__pillar-track-placeholder" />
           </div>
         </div>
       </div>
@@ -230,47 +242,75 @@
     @apply text-success-600;
   }
 
-  .gauge__metrics {
-    @apply min-w-0 flex-1 space-y-3;
+  .gauge__pillars {
+    @apply min-w-0 flex-1 space-y-2;
   }
 
-  .gauge__metric {
+  .gauge__pillars-header {
+    @apply flex items-center gap-2 border-b border-neutral-100 pb-1;
+  }
+
+  .gauge__pillars-col {
+    @apply text-xs font-semibold text-neutral-400;
+  }
+
+  .gauge__pillars-col--label {
+    @apply flex-1;
+  }
+
+  .gauge__pillars-col--score {
+    @apply w-8 text-right;
+  }
+
+  .gauge__pillars-col--max {
+    @apply w-8 text-right;
+  }
+
+  .gauge__pillar {
     @apply space-y-1;
   }
 
-  .gauge__metric-header {
-    @apply flex items-center justify-between gap-2;
+  .gauge__pillar-row {
+    @apply flex items-center gap-2;
   }
 
-  .gauge__metric-label {
-    @apply text-xs text-neutral-600;
+  .gauge__pillar-label {
+    @apply flex-1 text-xs text-neutral-600;
   }
 
-  .gauge__metric-value {
-    @apply text-xs font-semibold text-neutral-700;
+  .gauge__pillar-score {
+    @apply w-8 text-right text-xs font-semibold text-neutral-700;
   }
 
-  .gauge__metric-pending {
-    @apply text-xs text-neutral-400;
+  .gauge__pillar-pending {
+    @apply flex-1 text-xs text-neutral-400;
   }
 
-  .gauge__metric-track {
+  .gauge__pillar-max {
+    @apply w-8 text-right text-xs text-neutral-400;
+  }
+
+  .gauge__pillar-track {
     @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
   }
 
-  .gauge__metric-bar {
+  .gauge__pillar-track-placeholder {
+    @apply h-full w-full rounded-full bg-neutral-100;
+  }
+
+  .gauge__pillar-bar {
     @apply h-full rounded-full transition-all duration-700;
   }
 
-  .gauge__metric-bar--high {
+  .gauge__pillar-bar--high {
     @apply bg-primary-500;
   }
 
-  .gauge__metric-bar--medium {
+  .gauge__pillar-bar--medium {
     @apply bg-warning-500;
   }
 
-  .gauge__metric-bar--low {
+  .gauge__pillar-bar--low {
     @apply bg-danger-400;
   }
 </style>

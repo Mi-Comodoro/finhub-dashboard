@@ -16,6 +16,7 @@
   import { BudgetDonutChartEnhanced, FinancialProgressCard } from '@/components/molecules'
   import { OnboardingWizard } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
+  import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
   import { useDashboardApplication } from '@/composables/application/useDashboardApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
@@ -53,8 +54,9 @@
 
   const { goals, accounts, loadGoalsData } = useGoalsApplication()
 
-  const { hasActiveSavingPlans, contextualTip, healthScore, savingsRate, incomeRate, expenseRate } =
-    useDashboardPresenter()
+  const { hasActiveSavingPlans, contextualTip } = useDashboardPresenter()
+
+  const { healthScore } = useAnalyticsApplication()
 
   const isPageLoading = ref(true)
   const showQuickModal = ref(false)
@@ -289,10 +291,12 @@
     <section v-if="!isPageLoading && currentBudget" class="dashboard-page__widgets-section">
       <div class="dashboard-page__widgets-grid">
         <FinancialHealthGauge
-          :score="healthScore"
-          :savings-rate="savingsRate"
-          :income-rate="incomeRate"
-          :expense-rate="expenseRate"
+          :score="healthScore?.totalScore"
+          :level="healthScore?.level"
+          :cash-flow-score="healthScore?.cashFlowScore"
+          :savings-score="healthScore?.savingsScore"
+          :expense-score="healthScore?.expenseScore"
+          :debt-score="healthScore?.debtScore"
           :has-debt-module="false"
         />
         <UpcomingBillsCard :currency-code="currency" />

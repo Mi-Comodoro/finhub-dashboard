@@ -1,7 +1,9 @@
 export interface FinancialHealthGaugeProps {
   score?: number
-  savingsRate?: number
-  incomeRate?: number
-  expenseRate?: number
+  level?: 'critical' | 'at_risk' | 'regular' | 'healthy' | 'optimal'
+  cashFlowScore?: number
+  savingsScore?: number
+  expenseScore?: number
+  debtScore?: number
   hasDebtModule?: boolean
 }
