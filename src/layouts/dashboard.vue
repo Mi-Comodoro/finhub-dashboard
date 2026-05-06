@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import { Container } from '@/components/atoms'
   import { DashboardHeader, DashboardSidebar, ModalNotification } from '@/components/organisms'
   import { useSidebar } from '@/composables/useSidebar'
   import { useModalStore } from '@/stores/modal.store'
@@ -18,24 +17,26 @@
     />
     <ToastContainer />
 
-    <!-- Mobile Sidebar -->
+    <!-- Sidebar Móvil -->
     <Slideover v-model:open="isOpen">
       <DashboardSidebar @navigate="close" />
     </Slideover>
 
-    <!-- Desktop Sidebar -->
+    <!-- Sidebar Desktop -->
     <aside class="dashboard-layout__sidebar" :class="isCollapsed ? 'lg:w-20' : 'lg:w-64'">
       <DashboardSidebar :is-collapsed="isCollapsed" />
     </aside>
 
     <div class="dashboard-layout__right">
       <header class="dashboard-layout__header">
+        <!-- El CSS de abajo se encargará de ocultar el botón de menú aquí -->
         <DashboardHeader />
       </header>
+
       <main class="dashboard-layout__main">
-        <Container class="h-full w-full !max-w-full">
+        <div class="dashboard-content">
           <slot />
-        </Container>
+        </div>
       </main>
     </div>
   </div>
@@ -43,7 +44,8 @@
 
 <style scoped lang="postcss">
   .dashboard-layout {
-    @apply flex h-screen w-screen overflow-hidden bg-neutral-100 dark:bg-slate-950;
+    /* bg-slate-50 da el contraste necesario para que las tarjetas blancas resalten */
+    @apply flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950;
   }
 
   .dashboard-layout__sidebar {
@@ -55,14 +57,26 @@
   }
 
   .dashboard-layout__header {
-    @apply z-30 h-16 shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80;
+    @apply z-30 h-16 shrink-0 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900;
   }
 
   .dashboard-layout__main {
-    @apply flex-1 overflow-y-auto p-4 md:p-6;
+    /* Eliminamos Container y usamos un padding estándar de dashboard */
+    @apply flex-1 overflow-y-auto p-6 lg:p-6;
   }
 
-  :deep(.container) {
-    @apply !m-0 !p-0;
+  .dashboard-content {
+    /* Max-width para que en pantallas 2K el dashboard no se "desparrame" */
+    @apply mx-auto w-full max-w-[1440px];
+  }
+
+  /* ============================================================
+     SOLUCIÓN BOTÓN: Oculta el botón de menú sin tocar 'Button.vue'
+     ============================================================ */
+  @screen lg {
+    :deep(.dashboard-layout__header button[title='menu']),
+    :deep(.dashboard-layout__header button[aria-label='menu']) {
+      display: none !important;
+    }
   }
 </style>
