@@ -26,31 +26,31 @@
 </script>
 
 <template>
-  <div :class="['flex h-full w-full items-center bg-white px-4 py-2 dark:bg-slate-900', className]">
-    <div class="mx-auto flex h-full w-full max-w-screen-2xl items-center justify-between">
-      <!-- Left section: hamburger (mobile) + back + breadcrumbs -->
+  <div :class="['flex h-full w-full items-center bg-white px-6 dark:bg-slate-900', className]">
+    <div class="flex h-full w-full items-center justify-between">
+      <!-- Left section: hamburger (mobile only) + back + breadcrumbs -->
       <div class="flex min-w-0 items-center gap-4">
-        <Button
-          icon="menu"
-          variant="ghost"
-          size="sm"
-          :icon-only="true"
-          class="lg:hidden"
-          @click="toggle"
-        />
+        <div class="lg:hidden">
+          <Button icon="menu" variant="ghost" size="sm" :icon-only="true" @click="toggle" />
+        </div>
+
         <Icon
           v-if="route.path !== '/dashboard'"
           name="arrow_back"
-          class="cursor-pointer text-neutral-500"
+          class="cursor-pointer text-neutral-500 transition-colors hover:text-primary-500"
           size="sm"
           @click="router.back()"
         />
+
         <Breadcrumbs :max-items="4" class="hidden xl:flex" />
       </div>
-      <div class="flex items-center gap-4">
-        <div>
-          <SearchInput placeholder="Buscar Movimientos..." />
+
+      <!-- Right section: Search + Actions -->
+      <div class="flex items-center gap-6">
+        <div class="hidden md:block">
+          <SearchInput placeholder="Buscar Movimientos..." class="w-64" />
         </div>
+
         <!-- Header Actions -->
         <HeaderActions />
       </div>
