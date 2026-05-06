@@ -1,13 +1,17 @@
 import { storeToRefs } from 'pinia'
 
 import { useIncomeApi } from '~/composables/api/useIncomeApi'
+import { useSavingsApi } from '~/composables/api/useSavingsApi'
+import { usePlannedSavingStore } from '~/stores/planned-saving.store'
 import { useIncomeStore } from '~/stores/income.store'
-import type { Income } from '~/types/domain'
+import type { Income, PlannedIncomeSummary } from '~/types/domain'
 
 export const useIncomeApplication = () => {
   const incomeStore = useIncomeStore()
+  const plannedSavingStore = usePlannedSavingStore()
   const { expectedIncomes, summary, isLoading, error } = storeToRefs(incomeStore)
   const incomeApi = useIncomeApi()
+  const savingsApi = useSavingsApi()
 
   const fetchCurrentIncomes = async () => {
     try {
@@ -167,6 +171,47 @@ export const useIncomeApplication = () => {
     }
   }
 
+  const createIncomeWithSavingsPlan = async (
+    data: Record<string, unknown>,
+    savingsPercentage: number
+  ) => {
+    try {
+      incomeStore.setLoading(true)
+      incomeStore.setError(null)
+
+      const incomeResponse = await incomeApi.createPlannedIncome(data)
+
+      if (!incomeResponse.success || !incomeResponse.result) {
+        incomeStore.setError('Error al crear ingreso planificado')
+        return { success: false }
+      }
+
+      const income = incomeResponse.result as PlannedIncomeSummary
+      const savingsAmount = Math.round(Number(income.amount) * (savingsPercentage / 100))
+
+      await savingsApi.createPlannedSaving({
+        amount: savingsAmount,
+        budgetId: income.budgetId,
+        plannedIncomeId: income.id,
+        status: 'pending'
+      })
+
+      await Promise.all([
+        fetchPlannedIncomes(),
+        plannedSavingStore.fetchByBudget(income.budgetId)
+      ])
+
+      return { success: true }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error al crear ingreso con plan de ahorro'
+      incomeStore.setError(errorMessage)
+      return { success: false }
+    } finally {
+      incomeStore.setLoading(false)
+    }
+  }
+
   return {
     // State
     expectedIncomes,
@@ -180,6 +225,7 @@ export const useIncomeApplication = () => {
     createIncome,
     updateIncome,
     deleteIncome,
-    markAsReceived
+    markAsReceived,
+    createIncomeWithSavingsPlan
   }
 }

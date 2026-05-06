@@ -292,7 +292,13 @@
     </ModalWizard>
 
     <ModalWizard v-model:show="showIncomeModal">
-      <IncomeForm :budget-id="budgetId" @on-close="showIncomeModal = false" />
+      <IncomeForm
+        :budget-id="budgetId"
+        :show-savings-plan-step="true"
+        :budget-savings-percentage="plan?.limits?.savings ?? 20"
+        :currency="defaultCurrency"
+        @on-close="showIncomeModal = false"
+      />
     </ModalWizard>
 
     <ModalWizard v-model:show="showEditModal">

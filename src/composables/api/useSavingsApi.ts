@@ -63,6 +63,17 @@ export function useSavingsApi() {
       body: data
     })
 
+  const createPlannedSaving = async (data: {
+    amount: number
+    budgetId: string
+    plannedIncomeId: string
+    status: 'pending'
+  }) =>
+    $fetch<{ success: boolean; result: PlannedSavingSummary }>('/api/savings/planned', {
+      method: 'POST',
+      body: data
+    })
+
   return {
     getPlannedSavingsByBudget,
     updatePlannedSaving,
@@ -74,6 +85,7 @@ export function useSavingsApi() {
     deleteGoal,
     getGoal,
     getGoalHistory,
-    createContribution
+    createContribution,
+    createPlannedSaving
   }
 }
