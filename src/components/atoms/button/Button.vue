@@ -64,7 +64,7 @@
     <!-- Icon -->
     <span
       v-if="icon && !loading"
-      class="btn__icon material-icons-sharp material-symbols-outlined"
+      class="btn__icon material-symbols-outlined"
       :class="iconOrderClass"
     >
       {{ icon }}

@@ -162,7 +162,7 @@
         sub-title-size="xs"
         sub-title-color="muted"
         icon="history"
-        icon-variant="secondary"
+        icon-variant="primary"
         icon-size="md"
       />
 

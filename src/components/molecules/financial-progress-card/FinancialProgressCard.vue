@@ -289,9 +289,11 @@
 
     <!-- Icon Background -->
     <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-20">
-      <span class="material-symbols-outlined !text-[150px]" :class="styles.bgAccent">
-        {{ iconName || iconMark }}
-      </span>
+      <Icon
+        :name="iconName || iconMark"
+        :class="styles.bgAccent"
+        class-name="!text-[150px]"
+      />
     </div>
   </Card>
 </template>

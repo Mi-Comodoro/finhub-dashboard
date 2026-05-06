@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue'
 
+  import { Icon } from '@/components/atoms'
   import { Form } from '@/components/organisms/forms'
   import { useIncomeApplication } from '@/composables/application/useIncomeApplication'
   import { formatCurrency } from '@/utils/currency'
@@ -156,7 +157,7 @@
       </div>
 
       <div v-if="createSavingsPlan" class="income-form__savings-preview">
-        <UIcon name="i-material-symbols-savings" class="income-form__savings-icon" />
+        <Icon name="savings" class-name="income-form__savings-icon" />
         <p class="income-form__savings-text">
           Se apartarán
           <strong>{{ formatCurrency(savingsAmount, currency) }}</strong>
