@@ -60,7 +60,7 @@
         left: '3%',
         right: '4%',
         bottom: '3%',
-        outerBounds: true
+        containLabel: true
       },
       xAxis: {
         type: 'category',
