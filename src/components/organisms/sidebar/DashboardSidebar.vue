@@ -30,8 +30,8 @@
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
-
-    { name: 'Transacciones', icon: 'receipt_long', path: '/dashboard/transactions' }
+    { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
+    { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' }
   ]
 
   const settingsItems: Omit<MenuItem, 'isActive'>[] = [

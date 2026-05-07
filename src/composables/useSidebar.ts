@@ -1,4 +1,4 @@
-import { ref, watch, onMounted } from 'vue'
+import { onMounted,ref, watch } from 'vue'
 
 const STORAGE_KEY = 'sidebar-collapsed'
 
