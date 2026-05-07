@@ -55,7 +55,7 @@
       right: '2%',
       top: 20,
       bottom: '2%',
-      outerBounds: true
+      containLabel: true
     },
     xAxis: {
       type: 'value',

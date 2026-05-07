@@ -141,7 +141,7 @@
       bottom: 0,
       textStyle: { fontSize: 11 }
     },
-    grid: { left: '3%', right: '4%', bottom: '15%', outerBounds: true },
+    grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
     xAxis: {
       type: 'category',
       data: xLabels.value,
