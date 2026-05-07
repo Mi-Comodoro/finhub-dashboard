@@ -155,7 +155,7 @@
     </div>
 
     <div v-else-if="budgets.length === 0" class="budget-index__empty">
-      <Icon name="account_balance" size="2xl" class="budget-index__empty-icon" />
+      <Icon name="account_balance_wallet" size="2xl" class="budget-index__empty-icon" />
       <Heading level="h3" size="lg" color="muted" class="budget-index__empty-title">
         No hay presupuestos para {{ selectedYear }}
       </Heading>
