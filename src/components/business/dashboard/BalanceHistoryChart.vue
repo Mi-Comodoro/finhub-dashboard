@@ -41,7 +41,7 @@
       right: '2%',
       top: 24,
       bottom: '2%',
-      containLabel: true
+      outerBounds: true
     },
     legend: {
       top: 0
