@@ -389,7 +389,7 @@
     <AllocationSummary />
     <div>
       <Card class="goals-page__tip-card">
-        <IconBadge icon="lightbulb_2" variant="primary" size="md" />
+        <IconBadge icon="lightbulb" variant="primary" size="md" />
         <div class="goals-page__tip-content">
           <Heading level="h1" size="sm" weight="extrabold" class="goals-page__tip-title">
             Divide y Venceras

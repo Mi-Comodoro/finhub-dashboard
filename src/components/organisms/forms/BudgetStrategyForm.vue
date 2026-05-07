@@ -6,7 +6,7 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from 'vue'
 
-  import { Button } from '@/components/atoms'
+  import { Button, Icon } from '@/components/atoms'
 
   const props = defineProps<{
     totalIncome?: number
@@ -220,9 +220,7 @@
 
       <!-- INDICADOR DE TOTAL -->
       <div :class="['strategy-step__total', `strategy-step__total--${totalStatus}`]">
-        <span class="material-symbols-outlined">
-          {{ total === 100 ? 'check_circle' : 'error' }}
-        </span>
+        <Icon :name="total === 100 ? 'check_circle' : 'error'" />
         Total: {{ total }}%
         <span v-if="total !== 100" class="strategy-step__total-hint">
           {{ total > 100 ? `Excede ${total - 100}%` : `Faltan ${100 - total}%` }}

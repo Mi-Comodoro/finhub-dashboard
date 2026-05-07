@@ -84,7 +84,7 @@
       "
       sub-title-size="xs"
       sub-title-color="muted"
-      icon="swap_horiz"
+      icon="receipt_long"
       icon-variant="primary"
       icon-size="md"
     />

@@ -6,6 +6,7 @@
   import { computed, onMounted, ref } from 'vue'
   import VChart from 'vue-echarts'
 
+  import { Icon } from '@/components/atoms'
   import { useBudgetComparisonApplication } from '@/composables/application/useBudgetComparisonApplication'
   import { useBudgetDonutPresenter } from '@/composables/presenters/useBudgetDonutPresenter'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
@@ -258,12 +259,12 @@
                   ({{ item.percentage }}%)
                 </span>
               </span>
-              <span
+              <Icon
                 v-if="showTrends && item.trend && item.trend.direction !== 'new'"
-                :class="['material-icons text-xs', getTrendColor(item.trend.direction, item.type)]"
-              >
-                {{ getTrendIcon(item.trend.direction) }}
-              </span>
+                :name="getTrendIcon(item.trend.direction)"
+                size="xs"
+                :class="getTrendColor(item.trend.direction, item.type)"
+              />
             </div>
             <div
               v-if="item.utilization !== undefined"
