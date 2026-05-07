@@ -15,7 +15,7 @@
       :options="modalStore.state.options"
       @update:show="modalStore.state.show = $event"
     />
-    <ToastContainer />
+    <ClientOnly><ToastContainer /></ClientOnly>
 
     <!-- Sidebar Móvil -->
     <Slideover v-model:open="isOpen">
