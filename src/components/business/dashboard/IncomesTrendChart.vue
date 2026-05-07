@@ -52,7 +52,7 @@
         params
           .map(
             param =>
-              `${param.seriesName}: <strong>${formatCurrency(Number(param.value || 0), props.currency, 0)}</strong>`
+              `${param.seriesName}: <strong>${formatCurrency(Number(param.value || 0), props.currency)}</strong>`
           )
           .join('<br>')
     },
