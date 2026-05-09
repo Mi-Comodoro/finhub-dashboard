@@ -134,9 +134,9 @@
             sub-title-size="xs"
           />
         </div>
-        <AppVersion class="ml-1" size="xs" />
       </template>
       <div class="dashboard-sidebar__toggle">
+        <AppVersion v-if="!isCollapsed" class="ml-1" size="xs" />
         <Button
           :icon="isCollapsed ? 'chevron_right' : 'chevron_left'"
           variant="ghost"
@@ -163,6 +163,6 @@
     @apply px-4 pb-4;
   }
   .dashboard-sidebar__toggle {
-    @apply mt-2 flex justify-end;
+    @apply mt-2 flex justify-between;
   }
 </style>

@@ -1,8 +1,12 @@
 <script lang="ts" setup>
   import { ref, toRaw, watch } from 'vue'
 
-  import { AlertBanner, Label, RadioButton } from '@/components/atoms'
-  import { DatePickerInput, MoneyInput, Select } from '@/components/molecules'
+  import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
+  import RadioButton from '@/components/atoms/radio/RadioButton.vue'
+  import Label from '@/components/atoms/typography/Label.vue'
+  import DatePickerInput from '@/components/molecules/date-picker/DatePickerInput.vue'
+  import MoneyInput from '@/components/molecules/input/MoneyInput.vue'
+  import Select from '@/components/molecules/select/Select.vue'
   import { useFinancesStore } from '@/stores/finances.store'
   import { ON_BOARDING_CONFIG, SOURCE_INCOMES_OPTIONS } from '~/common/constants'
   import type { BudgetFrequency } from '~/types/domain'

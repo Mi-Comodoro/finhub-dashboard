@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { FinancialProgressCard } from '@/components/molecules'
+  import FinancialProgressCard from '@/components/molecules/financial-progress-card/FinancialProgressCard.vue'
 
   interface GoalDetailInsightsProps {
     totalDeposited?: number

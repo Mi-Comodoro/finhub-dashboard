@@ -22,7 +22,7 @@
         logoSizes[size]
       ]"
     >
-      FH
+      MC
     </span>
     <CardInfo
       v-if="showText"
