@@ -303,7 +303,7 @@
   const goalCards = computed(() =>
     filteredGoals.value.slice(0, 6).map(goal => {
       const savedAmount = getSavedAmountForGoal(goal.id)
-      const progressPercentage = getProgressPercentage(goal.id, goal.targetAmount)
+      const progressPercentage = getProgressPercentage(goal.id, goal.targetAmount ?? 0)
 
       return {
         goal,
@@ -330,7 +330,7 @@
         <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
           Define tus Propositos
         </Heading>
-        <Text size="sm" color="muted">
+        <Text size="xs" color="muted">
           Organiza tu futuro financiero creando propósitos específicos.
         </Text>
       </div>
@@ -349,7 +349,7 @@
               'goals-page__filter-chip',
               { 'goals-page__filter-chip--active': activeFilter === f.value }
             ]"
-            @click="activeFilter = f.value"
+            @click="activeFilter = f.value as 'all' | 'short' | 'medium' | 'long'"
           >
             {{ f.label }}
           </button>
@@ -464,11 +464,13 @@
                   <div class="goals-page__progress-bar">
                     <div
                       class="goals-page__progress-fill"
-                      :style="{ width: `${getProgressPercentage(goal.id, goal.targetAmount)}%` }"
+                      :style="{
+                        width: `${getProgressPercentage(goal.id, goal.targetAmount ?? 0)}%`
+                      }"
                     ></div>
                   </div>
                   <span class="goals-page__progress-text">
-                    {{ getProgressPercentage(goal.id, goal.targetAmount) }}%
+                    {{ getProgressPercentage(goal.id, goal.targetAmount ?? 0) }}%
                   </span>
                 </div>
               </td>
@@ -520,7 +522,7 @@
             />
           </div>
         </div>
-        <!--  -->
+
         <div v-if="budgetStatus !== 'ACTIVE'">
           <FinancialProgressCard
             :title="'Setup'"
@@ -561,7 +563,7 @@
             </template>
           </FinancialProgressCard>
         </div>
-        <!--  -->
+
         <div class="goals-page__accounts-wrapper">
           <div v-if="isAccountExits" class="goals-page__accounts-section">
             <div class="goals-page__accounts-header">
@@ -709,7 +711,7 @@
 
 <style scoped lang="postcss">
   .goals-page {
-    @apply space-y-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   .goals-page__header {

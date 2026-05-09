@@ -92,7 +92,7 @@
   }
 
   .dashboard-header__wrapper {
-    @apply mx-auto w-full max-w-[1440px] px-2 py-2;
+    @apply mx-auto w-full max-w-[1440px] py-2 lg:px-4 xl:px-2;
   }
 
   .dashboard-scroll-area {
@@ -100,7 +100,7 @@
   }
 
   .dashboard-view-wrapper {
-    @apply mx-auto w-full max-w-[1440px] px-2 pb-12 pt-6;
+    @apply mx-auto w-full max-w-[1440px] pb-12 pt-6 lg:px-4 xl:px-2;
   }
 
   @screen lg {

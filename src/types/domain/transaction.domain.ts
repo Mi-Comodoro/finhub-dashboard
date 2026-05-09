@@ -10,6 +10,7 @@ export interface TransactionSummary {
   category?: { id: string; name: string }
   plannedIncomeId?: string
   plannedExpenseId?: string
+  description?: string
 }
 
 export interface TransactionFilters {

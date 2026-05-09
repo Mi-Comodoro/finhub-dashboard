@@ -29,8 +29,8 @@
     },
     {
       id: 'estimated-interest',
-      title: 'Interés Estimado',
-      subtitle: `Tasa ${props.interestRateLabel} · Interés compuesto`,
+      title: 'Intereses',
+      subtitle: `Tasa ${props.interestRateLabel}`,
       amount: props.estimatedInterest,
       currencyCode: props.currencyCode,
       iconName: 'trending_up',

@@ -299,7 +299,7 @@
     </div>
 
     <div v-else-if="goal" class="goal-detail__layout">
-      <div class="goal-detail__main">
+      <ResponsiveContainer class="goal-detail__main">
         <!-- Insights -->
         <GoalDetailInsights
           :total-deposited="totalDeposited"
@@ -343,7 +343,7 @@
         </Card>
 
         <GoalMovements :goal-id="goalId" :movements="goalSavings" />
-      </div>
+      </ResponsiveContainer>
 
       <!-- Sidebar -->
       <aside class="goal-detail__sidebar">
@@ -363,19 +363,7 @@
     <ModalWizard v-model:show="showEditModal">
       <GoalsForm
         mode="edit"
-        :initial-data="
-          goal
-            ? {
-                id: goal.id,
-                name: goal.name,
-                reason: goal.reason,
-                accountId: goal.accountId,
-                targetAmount: goal.targetAmount,
-                targetDate: goal.targetDate ? new Date(goal.targetDate) : null,
-                isActive: goal.isActive
-              }
-            : null
-        "
+        :initial-data="goal"
         @on-success="handleEditSuccess"
         @on-close="closeEditModal"
       />
@@ -393,7 +381,7 @@
 
 <style scoped lang="postcss">
   .goal-detail {
-    @apply space-y-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   /* Header */
@@ -402,7 +390,7 @@
   }
 
   .goal-detail__header-name {
-    @apply leading-tight;
+    @apply leading-tight text-neutral-900 dark:text-white;
   }
 
   .goal-detail__header-actions {
@@ -413,7 +401,7 @@
     @apply flex items-center justify-center py-20;
   }
 
-  /* Layout */
+  /* Layout Principal */
   .goal-detail__layout {
     @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start;
   }
@@ -423,26 +411,26 @@
   }
 
   .goal-detail__sidebar {
-    @apply flex flex-col gap-4;
-    @apply lg:w-80 lg:shrink-0;
-    @apply lg:sticky lg:top-6;
+    @apply flex w-full flex-col gap-4;
+    @apply lg:sticky lg:top-6 lg:w-[320px] lg:shrink-0;
   }
 
-  /* Projection Card */
+  /* Tarjeta de Proyección */
   .goal-detail__projection-card {
-    @apply space-y-4;
+    @apply flex flex-col gap-4 p-6;
   }
 
   .goal-detail__projection-header {
-    @apply flex items-center justify-between;
+    @apply flex flex-wrap items-center justify-between gap-4;
   }
 
+  /* Selector de Tiempo */
   .goal-detail__horizon-toggle {
     @apply flex gap-1 rounded-lg border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goal-detail__horizon-btn {
-    @apply rounded-md px-3 py-1 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-700;
+    @apply rounded-md px-3 py-1 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-700;
   }
 
   .goal-detail__horizon-btn--active {

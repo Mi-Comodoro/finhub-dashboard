@@ -192,8 +192,7 @@
             {{ budgetStatus === 'PLANNED' ? 'Planificado' : 'En Ejecucion' }}
           </Badge>
         </div>
-
-        <Text size="sm" color="muted">
+        <Text size="xs" color="muted">
           Conoce el estado de tus finanzas y toma decisiones inteligentes con datos en tiempo real.
         </Text>
       </div>
@@ -318,7 +317,6 @@
             }}
           </Heading>
           <Badge
-            size="sm"
             class="dashboard-page__budget-badge"
             :variant="currentBudget?.strategy === 'BALANCED' ? 'primary' : 'secondary'"
           >
@@ -450,7 +448,7 @@
 
 <style scoped lang="postcss">
   .dashboard-page {
-    @apply space-y-4 p-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   .dashboard-page__header {
@@ -462,7 +460,7 @@
   }
 
   .dashboard-page__header-title-wrapper {
-    @apply mb-2 flex items-center gap-2;
+    @apply flex items-center gap-2;
   }
 
   .dashboard-page__title {

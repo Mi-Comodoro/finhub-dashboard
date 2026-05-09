@@ -53,9 +53,9 @@
     editingTransaction.value = null
   }
 
-  const handleEditTransaction = (row: Record<string, unknown>) => {
+  const handleEditTransaction = (row: TransactionSummary) => {
     editingTransaction.value = {
-      id: row.id,
+      id: row.id as string,
       data: {
         type: row.type,
         amount: row.amount,
@@ -150,15 +150,10 @@
         <Heading level="h1" size="2xl" weight="extrabold" class="transactions-page__title">
           Transacciones
         </Heading>
-        <Text size="sm" color="muted">Historial completo de movimientos</Text>
+        <Text size="xs" color="muted">Historial completo de movimientos</Text>
       </div>
       <div class="transactions-page__header-actions">
-        <Select
-          v-model="budgetSelect"
-          name="budgetId"
-          label="Presupuesto"
-          :options="budgetOptions"
-        />
+        <Select v-model="budgetSelect" name="budgetId" :options="budgetOptions" />
 
         <Button variant="primary" size="sm" icon="add" @click="openQuickModal">
           Nueva transacción
@@ -292,7 +287,7 @@
 
 <style scoped lang="postcss">
   .transactions-page {
-    @apply space-y-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   .transactions-page__header {

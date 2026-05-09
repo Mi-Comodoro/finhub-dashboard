@@ -13,7 +13,7 @@
   const router = useRouter()
 
   const authStore = useAuthStore()
-  const { accountType } = authStore
+
   const { logout } = useAuth()
   const { isCollapsed, toggleCollapse, close } = useSidebar()
 
