@@ -41,7 +41,7 @@
       right: '2%',
       top: 24,
       bottom: '2%',
-      outerBounds: true
+      containLabel: true
     },
     legend: {
       top: 0
@@ -52,7 +52,7 @@
         params
           .map(
             param =>
-              `${param.seriesName}: <strong>${formatCurrency(Number(param.value || 0), props.currency, 0)}</strong>`
+              `${param.seriesName}: <strong>${formatCurrency(Number(param.value || 0), props.currency)}</strong>`
           )
           .join('<br>')
     },

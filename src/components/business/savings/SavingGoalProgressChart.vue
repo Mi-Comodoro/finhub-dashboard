@@ -48,7 +48,7 @@
       right: '2%',
       top: 20,
       bottom: '2%',
-      outerBounds: true
+      containLabel: true
     },
     legend: {
       show: false
@@ -93,7 +93,7 @@
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                 <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background-color:${param.color};"></span>
                 <span>${param.seriesName}:</span>
-                <strong style="margin-left:auto;">${formatCurrency(Number(param.value || 0), props.currency, 0)}</strong>
+                <strong style="margin-left:auto;">${formatCurrency(Number(param.value || 0), props.currency)}</strong>
               </div>
             `
           )

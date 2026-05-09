@@ -1,9 +1,16 @@
 <script setup lang="ts">
-  import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+  import { PieChart } from 'echarts/charts'
+  import { GraphicComponent,LegendComponent, TooltipComponent } from 'echarts/components'
+  import { use } from 'echarts/core'
+  import { CanvasRenderer } from 'echarts/renderers'
+  import VueECharts from 'vue-echarts'
 
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
 
   import type { BudgetDonutChartProps, BudgetDonutItem } from './types/budget-donut-chart.types'
+
+  // Registrar solo los componentes que usamos
+  use([CanvasRenderer, PieChart, TooltipComponent, LegendComponent, GraphicComponent])
 
   const props = withDefaults(defineProps<BudgetDonutChartProps>(), {
     items: () => [],
@@ -13,7 +20,6 @@
   })
 
   // ─── Colors (one source of truth per segment type) ───────────────────────────
-
   const SEGMENT_COLOR: Record<BudgetDonutItem['type'], string> = {
     needs: '#14b8a6', // teal-500
     wants: '#6366f1', // indigo-500
@@ -26,76 +32,64 @@
     savings: 'bg-yellow-500'
   }
 
-  // ─── Canvas ref & Chart.js instance ──────────────────────────────────────────
-
-  const canvasRef = ref<HTMLCanvasElement | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let chartInstance: any = null
-
-  function buildDataset() {
-    if (props.items.length === 0) {
-      return {
-        data: [100],
-        backgroundColor: ['#e2e8f0'],
-        borderWidth: 0,
-        hoverBackgroundColor: ['#e2e8f0']
-      }
-    }
-    return {
-      data: props.items.map(i => i.percentage),
-      backgroundColor: props.items.map(i => SEGMENT_COLOR[i.type]),
-      hoverBackgroundColor: props.items.map(i => SEGMENT_COLOR[i.type]),
-      borderWidth: 4,
-      borderColor: '#ffffff',
-      hoverBorderWidth: 4,
-      hoverBorderColor: '#ffffff'
-    }
-  }
-
-  // Dynamic import keeps Chart.js out of the SSR bundle
-  onMounted(async () => {
-    const { Chart, ArcElement, DoughnutController, Tooltip } = await import('chart.js')
-    Chart.register(DoughnutController, ArcElement, Tooltip)
-
-    if (!canvasRef.value) return
-
-    chartInstance = new Chart(canvasRef.value, {
-      type: 'doughnut',
-      data: {
-        labels: props.items.map(i => i.name),
-        datasets: [buildDataset()]
-      },
-      options: {
-        cutout: '74%',
-        plugins: {
-          tooltip: { enabled: false },
-          legend: { display: false }
-        },
-        animation: { animateRotate: true, duration: 700 }
-      }
-    })
-  })
-
-  watch(
-    () => [props.items, props.total],
-    () => {
-      if (!chartInstance) return
-      chartInstance.data.labels = props.items.map(i => i.name)
-      chartInstance.data.datasets[0] = buildDataset()
-      chartInstance.update()
-    },
-    { deep: true }
-  )
-
-  onBeforeUnmount(() => {
-    chartInstance?.destroy()
-    chartInstance = null
-  })
-
   // ─── Helpers ─────────────────────────────────────────────────────────────────
-
   const compactTotal = () => formatCompactCurrency(props.total, props.currency)
   const fullAmount = (amount: number) => formatCurrency(amount, props.currency)
+
+  // ─── ECharts option (reactive) ───────────────────────────────────────────────
+  const chartOption = computed(() => {
+    // Cuando no hay items, mostramos un segmento gris al 100%
+    const hasData = props.items.length > 0
+
+    const seriesData = hasData
+      ? props.items.map(item => ({
+          name: item.name,
+          value: item.percentage, // ya viene en porcentaje
+          itemStyle: { color: SEGMENT_COLOR[item.type] }
+        }))
+      : [{ name: 'Sin datos', value: 100, itemStyle: { color: '#e2e8f0' } }]
+
+    return {
+      tooltip: {
+        // Opcional: puedes habilitar tooltip si quieres, pero el original lo deshabilitaba
+        show: false
+      },
+      legend: { show: false }, // La leyenda la dibujamos manualmente con <ul>
+      series: [
+        {
+          type: 'pie',
+          radius: ['74%', '90%'], // mismo efecto de dona gruesa (cutout: '74%')
+          avoidLabelOverlap: false,
+          silent: true, // sin interacciones (como el original)
+          data: seriesData,
+          label: { show: false },
+          emphasis: { scale: false },
+          startAngle: 90, // para que empiece arriba (opcional)
+          itemStyle: {
+            borderWidth: 4,
+            borderColor: '#ffffff',
+            borderRadius: 0
+          }
+        }
+      ],
+      graphic: [
+        {
+          type: 'text',
+          left: 'center',
+          top: 'center',
+          style: {
+            text: `TOTAL\n${compactTotal()}`,
+            fill: '#1e293b', // slate-800
+            fontSize: 14,
+            fontWeight: 'bold',
+            lineHeight: 20,
+            textAlign: 'center'
+          },
+          z: 100
+        }
+      ]
+    }
+  })
 </script>
 
 <template>
@@ -108,21 +102,12 @@
   >
     <!-- Donut + centre label -->
     <div class="budget-donut-chart__donut-wrapper" style="width: 180px; height: 180px">
-      <canvas ref="canvasRef" width="180" height="180" />
-
-      <!-- Centre text overlay -->
-      <div class="budget-donut-chart__center-label">
-        <span class="budget-donut-chart__center-label-title">TOTAL</span>
-        <span class="budget-donut-chart__center-label-value">
-          {{ compactTotal() }}
-        </span>
-      </div>
+      <VueECharts :option="chartOption" :autoresize="true" style="width: 100%; height: 100%" />
     </div>
 
     <!-- Legend (only when showLegend is true) -->
     <ul v-if="showLegend" class="budget-donut-chart__legend">
       <li v-for="item in items" :key="item.id" class="budget-donut-chart__legend-item">
-        <!-- Dot + label -->
         <div class="budget-donut-chart__legend-label">
           <span :class="['budget-donut-chart__legend-dot', DOT_CLASS[item.type]]" />
           <span class="budget-donut-chart__legend-text">
@@ -130,7 +115,6 @@
             <span class="budget-donut-chart__legend-percent">({{ item.percentage }}%)</span>
           </span>
         </div>
-        <!-- Amount -->
         <span class="budget-donut-chart__legend-amount">
           {{ fullAmount(item.budgeted) }}
         </span>
@@ -138,6 +122,7 @@
     </ul>
   </div>
 </template>
+
 <style lang="postcss" scoped>
   .budget-donut-chart {
     @apply w-full;
@@ -150,15 +135,6 @@
   }
   .budget-donut-chart__donut-wrapper {
     @apply relative shrink-0;
-  }
-  .budget-donut-chart__center-label {
-    @apply pointer-events-none absolute inset-0 flex flex-col items-center justify-center;
-  }
-  .budget-donut-chart__center-label-title {
-    @apply text-xs font-medium uppercase tracking-widest text-slate-400;
-  }
-  .budget-donut-chart__center-label-value {
-    @apply mt-0.5 text-xl font-extrabold text-slate-800 dark:text-slate-100;
   }
   .budget-donut-chart__legend {
     @apply flex-1 space-y-3;

@@ -1,31 +1,36 @@
-import { onMounted,ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
-const STORAGE_KEY = 'sidebar-collapsed'
-
-const isOpen = ref(false)
-const isCollapsed = ref(false)
-let hydrated = false
-
-const persistCollapsed = (val: boolean) => {
-  localStorage.setItem(STORAGE_KEY, String(val))
-}
+// 1. Definimos la referencia FUERA de la función.
+// Esto hace que sea un estado global compartido por todos los componentes.
+const _isOpen = ref(false)
 
 export const useSidebar = () => {
-  onMounted(() => {
-    if (!hydrated) {
-      hydrated = true
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved !== null) isCollapsed.value = saved === 'true'
+  const isCollapsed = useCookie<boolean>('sidebar-collapsed', {
+    default: () => false,
+    sameSite: 'lax'
+  })
 
-      watch(isCollapsed, persistCollapsed)
+  // 2. Computado con get y set para que el v-model del layout pueda escribir
+  const isOpen = computed({
+    get: () => _isOpen.value,
+    set: (value: boolean) => {
+      _isOpen.value = value
     }
   })
+
+  const toggleCollapse = () => {
+    isCollapsed.value = !isCollapsed.value
+  }
 
   return {
     isOpen,
     isCollapsed,
-    toggle: () => (isOpen.value = !isOpen.value),
-    close: () => (isOpen.value = false),
-    toggleCollapse: () => (isCollapsed.value = !isCollapsed.value)
+    toggle: () => {
+      _isOpen.value = !_isOpen.value
+    },
+    close: () => {
+      _isOpen.value = false
+    },
+    toggleCollapse
   }
 }

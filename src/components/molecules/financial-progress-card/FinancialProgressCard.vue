@@ -214,7 +214,7 @@
       >
         <Heading :color="textColor" size="3xl" weight="bold">
           {{ displayAmount }}
-          <span class="text-xl uppercase" :class="styles.currency">
+          <span class="text-xl uppercase md:text-sm" :class="styles.currency">
             {{ currency }}
           </span>
         </Heading>
@@ -292,6 +292,7 @@
       <Icon
         :name="iconName || iconMark"
         :class="styles.bgAccent"
+        variant="outlined"
         class-name="!text-[150px]"
       />
     </div>

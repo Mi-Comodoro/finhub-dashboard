@@ -2,20 +2,23 @@
   import { computed, nextTick, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
 
-  import { AlertBanner, Badge, Button, Heading, Text } from '@/components/atoms'
-  import {
-    ActiveGoalsCard,
-    DashboardActionCard,
-    DashboardBalanceChart,
-    FinancialHealthGauge,
-    FinancialTipCarousel,
-    PlannedSavingList,
-    QuickTransactionForm,
-    UpcomingBillsCard
-  } from '@/components/business'
-  import { BudgetDonutChartEnhanced, FinancialProgressCard } from '@/components/molecules'
-  import { OnboardingWizard } from '@/components/organisms'
+  import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import ActiveGoalsCard from '@/components/business/dashboard/ActiveGoalsCard.vue'
+  import DashboardActionCard from '@/components/business/dashboard/DashboardActionCard.vue'
+  import DashboardBalanceChart from '@/components/business/dashboard/DashboardBalanceChart.vue'
+  import FinancialHealthGauge from '@/components/business/dashboard/FinancialHealthGauge.vue'
+  import UpcomingBillsCard from '@/components/business/dashboard/UpcomingBillsCard.vue'
+  import FinancialTipCarousel from '@/components/business/savings/FinancialTipCarousel.vue'
+  import PlannedSavingList from '@/components/business/savings/PlannedSavingList.vue'
+  import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
+  import BudgetDonutChartEnhanced from '@/components/molecules/budget-donut-chart/BudgetDonutChartEnhanced.vue'
+  import FinancialProgressCard from '@/components/molecules/financial-progress-card/FinancialProgressCard.vue'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
+  import OnboardingWizard from '@/components/organisms/wizard/OnboardingWizard.vue'
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
   import { useDashboardApplication } from '@/composables/application/useDashboardApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
@@ -166,6 +169,7 @@
 
   definePageMeta({
     layout: 'dashboard',
+    ssr: false,
     title: 'Dashboard',
     breadcrumb: 'Dashboard'
   })
@@ -188,8 +192,7 @@
             {{ budgetStatus === 'PLANNED' ? 'Planificado' : 'En Ejecucion' }}
           </Badge>
         </div>
-
-        <Text size="sm" color="muted">
+        <Text size="xs" color="muted">
           Conoce el estado de tus finanzas y toma decisiones inteligentes con datos en tiempo real.
         </Text>
       </div>
@@ -314,7 +317,6 @@
             }}
           </Heading>
           <Badge
-            size="sm"
             class="dashboard-page__budget-badge"
             :variant="currentBudget?.strategy === 'BALANCED' ? 'primary' : 'secondary'"
           >
@@ -446,7 +448,7 @@
 
 <style scoped lang="postcss">
   .dashboard-page {
-    @apply space-y-4 p-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   .dashboard-page__header {
@@ -458,7 +460,7 @@
   }
 
   .dashboard-page__header-title-wrapper {
-    @apply mb-2 flex items-center gap-2;
+    @apply flex items-center gap-2;
   }
 
   .dashboard-page__title {

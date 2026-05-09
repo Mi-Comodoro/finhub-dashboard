@@ -1,3 +1,4 @@
+import { useBudgetActions } from '@/composables/application/useBudgetActions'
 import { useAccountStore } from '@/stores/account.store'
 import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
@@ -15,15 +16,21 @@ export const useActiveBudgetApplication = () => {
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
 
+  // 1. Instancia las acciones en la raíz del composable
+  // Esto evita el warning de "dynamically imported but also statically imported"
+  const { enableBudget } = useBudgetActions()
+
   const savingsAmount = computed(() => {
     const limits = budgetStore.currentBudgetPlan?.limits
     const expected = plannedIncomeStore.expectedIncome ?? 0
     const currency = financesStore.defaultCurrency
     return percentOf(expected, limits?.savings ?? 0, currency)
   })
+
   const isAccountCreated = computed(() => accountStore.accounts.length >= 1)
   const goalsProgress = computed(() => goalsStore.goals.length)
   const isGoalsCompleted = computed(() => goalsProgress.value >= 3)
+
   const allocationProgress = computed(() => {
     const activeGoalIds = new Set(goalsStore.goals.filter(g => g.isActive).map(g => g.id))
     return savingsAllocationsStore.savingAllocations
@@ -31,10 +38,12 @@ export const useActiveBudgetApplication = () => {
       .filter(item => activeGoalIds.has(item.goalId))
       .reduce((acc, sa) => acc + Number(sa.percentage ?? 0), 0)
   })
+
   const pendingAllocationProgress = computed(() => {
     const progress = allocationProgress.value
     return isNaN(progress) ? 100 : Math.max(0, 100 - progress)
   })
+
   const isSavingsAllocationCompleted = computed(() => allocationProgress.value === 100)
 
   const pendingAssignedAmount = computed(() => {
@@ -48,11 +57,12 @@ export const useActiveBudgetApplication = () => {
   const canActive = computed(() => {
     return isAccountCreated.value && isGoalsCompleted.value && isSavingsAllocationCompleted.value
   })
+
   const enabled = async () => {
     const budgetId = budgetStore.currentBudgetPlan?.id ?? ''
     if (!budgetId) return
-    const { useBudgetActions } = await import('./useBudgetActions')
-    const { enableBudget } = useBudgetActions()
+
+    // 2. Usa la función ya desestructurada arriba
     await enableBudget(budgetId)
   }
 

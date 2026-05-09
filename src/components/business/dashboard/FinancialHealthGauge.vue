@@ -25,7 +25,7 @@
   const CX = 100
   const CY = 100
   const R = 80
-  const STROKE_WIDTH = 14
+  const STROKE_WIDTH = 16 // aumentado para mejor visibilidad
 
   const ARC_LENGTH = Math.PI * R
 
@@ -36,7 +36,7 @@
 
   const needleAngle = computed(() => -180 + (clampedScore.value / 100) * 180)
 
-  const needleLength = 62
+  const needleLength = 68 // más larga para acercarse al borde
   const needleX = computed(() => {
     const rad = (needleAngle.value * Math.PI) / 180
     return CX + needleLength * Math.cos(rad)
@@ -98,7 +98,7 @@
       <!-- SVG Semicircular gauge -->
       <div class="gauge__svg-wrapper">
         <svg
-          viewBox="0 0 200 110"
+          viewBox="0 0 200 125"
           class="gauge__svg"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
@@ -130,37 +130,34 @@
             :stroke-dasharray="`${filledDash} ${emptyDash + 1}`"
           />
 
-          <!-- Needle -->
+          <!-- Needle (más gruesa y larga) -->
           <line
             :x1="CX"
             :y1="CY"
             :x2="needleX"
             :y2="needleY"
             stroke="#1E293B"
-            stroke-width="2.5"
+            stroke-width="3.5"
             stroke-linecap="round"
           />
-          <circle :cx="CX" :cy="CY" r="4" fill="#1E293B" />
+          <circle :cx="CX" :cy="CY" r="5" fill="#1E293B" />
 
-          <!-- Score text -->
+          <!-- Score text más grande -->
           <text
             :x="CX"
-            :y="CY - 10"
+            :y="CY - 12"
             text-anchor="middle"
-            font-size="22"
+            font-size="28"
             font-weight="800"
             fill="#0F172A"
           >
             {{ clampedScore }}
           </text>
-          <text :x="CX" :y="CY + 8" text-anchor="middle" font-size="9" fill="#64748B">
-            de 100 pts
-          </text>
 
-          <!-- Bottom labels -->
-          <text x="22" y="112" text-anchor="middle" font-size="7.5" fill="#94A3B8">Crítico</text>
-          <text :x="CX" y="112" text-anchor="middle" font-size="7.5" fill="#94A3B8">Regular</text>
-          <text x="178" y="112" text-anchor="middle" font-size="7.5" fill="#94A3B8">Óptimo</text>
+          <!-- Bottom labels (reubicados para que no queden fuera) -->
+          <text x="22" y="120" text-anchor="middle" font-size="9" fill="#94A3B8">Crítico</text>
+          <text :x="CX" y="120" text-anchor="middle" font-size="9" fill="#94A3B8">Regular</text>
+          <text x="178" y="120" text-anchor="middle" font-size="9" fill="#94A3B8">Óptimo</text>
         </svg>
 
         <!-- Level label below SVG -->
@@ -171,7 +168,7 @@
         </div>
       </div>
 
-      <!-- Pillars breakdown table -->
+      <!-- Pillars breakdown table (mejor legibilidad) -->
       <div class="gauge__pillars">
         <div class="gauge__pillars-header">
           <span class="gauge__pillars-col gauge__pillars-col--label">Pilar</span>
@@ -203,11 +200,11 @@
 
 <style scoped lang="postcss">
   .gauge {
-    @apply rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800;
+    @apply rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800;
   }
 
   .gauge__inner {
-    @apply flex flex-col items-center gap-6 sm:flex-row;
+    @apply flex flex-col items-center gap-8 sm:flex-row;
   }
 
   .gauge__svg-wrapper {
@@ -215,15 +212,15 @@
   }
 
   .gauge__svg {
-    @apply w-44;
+    @apply w-64; /* antes w-44, ahora más grande para apreciar detalles */
   }
 
   .gauge__score-label {
-    @apply mt-1 text-center;
+    @apply mt-2 text-center;
   }
 
   .gauge__score-level {
-    @apply text-sm font-bold;
+    @apply text-base font-bold; /* antes text-sm */
   }
 
   .gauge__score-level--critical {
@@ -243,15 +240,15 @@
   }
 
   .gauge__pillars {
-    @apply min-w-0 flex-1 space-y-2;
+    @apply min-w-0 flex-1 space-y-3; /* más espacio entre filas */
   }
 
   .gauge__pillars-header {
-    @apply flex items-center gap-2 border-b border-neutral-100 pb-1;
+    @apply flex items-center gap-3 border-b border-neutral-100 pb-1.5;
   }
 
   .gauge__pillars-col {
-    @apply text-xs font-semibold text-neutral-400;
+    @apply text-sm font-semibold text-neutral-400; /* antes text-xs */
   }
 
   .gauge__pillars-col--label {
@@ -267,31 +264,31 @@
   }
 
   .gauge__pillar {
-    @apply space-y-1;
+    @apply space-y-1.5;
   }
 
   .gauge__pillar-row {
-    @apply flex items-center gap-2;
+    @apply flex items-center gap-3;
   }
 
   .gauge__pillar-label {
-    @apply flex-1 text-xs text-neutral-600;
+    @apply flex-1 text-sm text-neutral-600; /* antes text-xs */
   }
 
   .gauge__pillar-score {
-    @apply w-8 text-right text-xs font-semibold text-neutral-700;
+    @apply w-8 text-right text-sm font-semibold text-neutral-700;
   }
 
   .gauge__pillar-pending {
-    @apply flex-1 text-xs text-neutral-400;
+    @apply flex-1 text-sm text-neutral-400;
   }
 
   .gauge__pillar-max {
-    @apply w-8 text-right text-xs text-neutral-400;
+    @apply w-8 text-right text-sm text-neutral-400;
   }
 
   .gauge__pillar-track {
-    @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
+    @apply h-2 w-full overflow-hidden rounded-full bg-neutral-100; /* altura aumentada */
   }
 
   .gauge__pillar-track-placeholder {

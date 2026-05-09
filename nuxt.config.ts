@@ -6,13 +6,12 @@ export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4
   },
-  compatibilityDate: '2026-02-08',
+  compatibilityDate: '2026-02-09', // fecha actualizada
+
   app: {
     head: {
       title: 'Mi Comodoro',
-      htmlAttrs: {
-        lang: 'es'
-      },
+      htmlAttrs: { lang: 'es' },
       meta: [
         {
           name: 'description',
@@ -27,22 +26,25 @@ export default defineNuxtConfig({
       ]
     }
   },
+
   srcDir: 'src/',
   serverDir: 'src/server/',
+
   alias: {
     '@types': resolvePath('./src/types'),
     '@api-types': resolvePath('./src/types/api'),
     '@domain-types': resolvePath('./src/types/domain'),
     '@ui-types': resolvePath('./src/types/ui')
   },
-  devtools: {
-    enabled: true
-  },
+
+  devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
+
   typescript: {
     strict: true,
     shim: false
   },
+
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3005/api/v1'
@@ -61,18 +63,21 @@ export default defineNuxtConfig({
     { path: '@/components/molecules', pathPrefix: false, extensions: ['.vue'] },
     { path: '@/components/organisms', pathPrefix: false, extensions: ['.vue'] },
     { path: '@/components/business', pathPrefix: false, extensions: ['.vue'] }
-    /*     { path: '@/components/templates', pathPrefix: false } */
   ],
+
   ignore: ['**/*.types.ts', '**/types/**'],
 
   imports: {
     autoImport: true,
     dirs: ['composables', 'stores', 'middlewares', 'utils']
   },
+
   modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/image'],
+
   image: {
     domains: ['lh3.googleusercontent.com']
   },
+
   postcss: {
     plugins: {
       tailwindcss: {},
@@ -94,7 +99,6 @@ export default defineNuxtConfig({
         host: 'localhost',
         timeout: 60000
       },
-
       strictPort: false,
       cors: true,
       fs: {
@@ -104,40 +108,50 @@ export default defineNuxtConfig({
     },
 
     optimizeDeps: {
-      include: ['vue', '@vue/runtime-core'],
-      exclude: []
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        'echarts/core',
+        'echarts/charts',
+        'echarts/components',
+        'echarts/renderers',
+        'vue-echarts',
+        'firebase/app',
+        'firebase/auth',
+        'vue',
+        '@vue/runtime-core',
+        'country-flag-icons/string/3x2', // ← mantenlo
+        '@heroicons/vue/20/solid', // ← mantenlo
+        'libphonenumber-js' // ← mantenlo
+      ],
+      force: true
     },
 
     css: {
-      devSourcemap: true,
+      devSourcemap: process.env.NODE_ENV !== 'production',
       preprocessorOptions: {
-        scss: {
-          additionalData: ''
-        }
+        scss: { additionalData: '' }
       }
     },
 
     build: {
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: process.env.NODE_ENV === 'production',
-          drop_debugger: true
-        }
-      },
+      minify: 'esbuild',
+      sourcemap: process.env.NODE_ENV !== 'production',
+      chunkSizeWarningLimit: 1500,
+
       rollupOptions: {
-        output: {
-          manualChunks: (id: string | string[]) => {
-            if (id.includes('node_modules')) {
-              if (id.includes('vue')) return 'vue-vendor'
-              if (id.includes('chart')) return 'chart-vendor'
-              if (id.includes('axios')) return 'axios-vendor'
-              return 'vendor'
-            }
+        onwarn(warning, warn) {
+          if (
+            warning.code === 'MODULE_LEVEL_DIRECTIVE' ||
+            warning.message.includes('/* #__PURE__ */') ||
+            warning.message.includes('Sourcemap is likely to be incorrect') ||
+            warning.message.includes('A comment "/* #__PURE__ */"')
+          ) {
+            return
           }
+          warn(warning)
         }
-      },
-      chunkSizeWarningLimit: 1500
+      }
     },
 
     plugins: []

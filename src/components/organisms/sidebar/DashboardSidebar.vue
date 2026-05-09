@@ -13,7 +13,7 @@
   const router = useRouter()
 
   const authStore = useAuthStore()
-  const { accountType } = authStore
+
   const { logout } = useAuth()
   const { isCollapsed, toggleCollapse, close } = useSidebar()
 
@@ -115,7 +115,7 @@
       />
     </nav>
     <div class="dashboard-sidebar__footer">
-      <template v-if="!isCollapsed">
+      <!--       <template v-if="!isCollapsed">
         <div class="my-2 rounded-md border border-slate-300 bg-slate-300 p-4">
           <CardInfo
             level="h3"
@@ -134,12 +134,12 @@
             sub-title-size="xs"
           />
         </div>
-        <AppVersion class="ml-1" size="xs" />
-      </template>
+      </template> -->
       <div class="dashboard-sidebar__toggle">
+        <AppVersion v-if="!isCollapsed" class="ml-1 font-bold text-primary-900" size="xs" />
         <Button
           :icon="isCollapsed ? 'chevron_right' : 'chevron_left'"
-          variant="ghost"
+          variant="primary"
           size="sm"
           :icon-only="true"
           @click="toggleCollapse"
@@ -157,12 +157,12 @@
     @apply z-10 max-h-[56px] border-neutral-200 px-4 py-2 dark:border-neutral-700;
   }
   .dashboard-sidebar__nav {
-    @apply flex-1 space-y-2 overflow-y-auto p-4;
+    @apply flex-1 gap-2 p-4;
   }
   .dashboard-sidebar__footer {
-    @apply px-4 pb-4;
+    @apply px-4 pb-2;
   }
   .dashboard-sidebar__toggle {
-    @apply mt-2 flex justify-end;
+    @apply mt-2 flex justify-between;
   }
 </style>

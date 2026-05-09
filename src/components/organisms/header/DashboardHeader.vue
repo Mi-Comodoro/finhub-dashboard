@@ -1,9 +1,12 @@
 <script setup lang="ts">
   import { onMounted } from 'vue'
 
-  import { Button, Icon } from '@/components/atoms'
-  import { Breadcrumbs, HeaderActions, SearchInput } from '@/components/molecules'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Breadcrumbs from '@/components/molecules/breadcrumbs/Breadcrumbs.vue'
   import { useBreadcrumbNavigation } from '@/components/molecules/breadcrumbs/useBreadcrumbNavigation'
+  import HeaderActions from '@/components/molecules/header/HeaderActions.vue'
+  import SearchInput from '@/components/molecules/input/SearchInput.vue'
   import { useSidebar } from '@/composables/useSidebar'
 
   import type { DashboardHeaderProps } from './types/dashboard-header.types'
@@ -26,7 +29,7 @@
 </script>
 
 <template>
-  <div :class="['flex h-full w-full items-center bg-white px-6 dark:bg-slate-900', className]">
+  <div :class="['flex h-full w-full items-center bg-transparent px-6', className]">
     <div class="flex h-full w-full items-center justify-between">
       <!-- Left section: hamburger (mobile only) + back + breadcrumbs -->
       <div class="flex min-w-0 items-center gap-4">
