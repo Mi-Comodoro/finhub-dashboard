@@ -55,8 +55,8 @@
         sin comprometer — ¿qué haces con ellos?
       </p>
       <div class="action-card__actions">
-        <Button size="sm" variant="secondary" @click="emit('add-to-goal')">Abonar a meta</Button>
-        <Button size="sm" variant="ghost" @click="emit('plan-expenses')">Planificar gastos</Button>
+        <Button size="sm" variant="secondary" @click="emit('add-to-goal')">Abonar</Button>
+        <Button size="sm" variant="ghost" @click="emit('plan-expenses')">Planificar</Button>
       </div>
     </template>
 
@@ -82,7 +82,7 @@
 
 <style scoped lang="postcss">
   .action-card {
-    @apply flex flex-col justify-between gap-3 rounded-xl border p-4;
+    @apply flex flex-col justify-between gap-3 rounded-md border p-4;
   }
 
   .action-card--planned {
@@ -106,7 +106,7 @@
   }
 
   .action-card__message {
-    @apply text-sm leading-snug text-neutral-700;
+    @apply text-xs leading-snug text-neutral-700;
   }
 
   .action-card__actions {

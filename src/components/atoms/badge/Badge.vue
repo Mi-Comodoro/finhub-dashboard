@@ -8,7 +8,7 @@
 
   withDefaults(defineProps<BadgeProps>(), {
     variant: 'default',
-    size: 'md',
+    size: 'xs',
     rounded: true,
     bold: true,
     className: ''

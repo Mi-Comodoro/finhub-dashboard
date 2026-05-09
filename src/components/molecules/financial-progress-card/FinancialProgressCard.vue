@@ -292,6 +292,7 @@
       <Icon
         :name="iconName || iconMark"
         :class="styles.bgAccent"
+        variant="outlined"
         class-name="!text-[150px]"
       />
     </div>

@@ -15,14 +15,14 @@
 </script>
 
 <template>
-  <div :class="['mb-8', className]">
+  <div :class="['mb-2', className]">
     <Text
       v-if="!collapsed"
       as="span"
       size="xs"
       weight="semibold"
       color="muted"
-      class="mb-3 block px-3 uppercase tracking-wider"
+      class="mb-2 block px-2 uppercase tracking-wider"
     >
       {{ title }}
     </Text>
