@@ -69,32 +69,38 @@
   }
 
   .dashboard-container {
-    @apply flex h-full w-full overflow-hidden;
+    @apply flex h-full w-full;
+    min-height: 0; /* Necesario para respetar el overflow del hijo */
   }
 
   .dashboard-sidebar {
-    @apply z-30 hidden h-full shrink-0 flex-col border-r border-slate-200 bg-white transition-all duration-300 ease-in-out dark:border-slate-800 dark:bg-slate-900 lg:flex;
+    @apply hidden h-screen shrink-0 flex-col overflow-y-hidden border-r border-slate-200 bg-white transition-all duration-300 ease-in-out dark:border-slate-800 dark:bg-slate-900 lg:flex;
+    /* Evita que el scroll del contenido se propague al sidebar o al body */
+    overscroll-behavior: contain;
+    /* Aseguramos altura completa sin depender de clases externas */
+    height: 100vh;
   }
 
   .dashboard-main {
-    @apply flex h-full min-w-0 flex-1 flex-col overflow-hidden;
+    @apply flex h-screen min-w-0 flex-1 flex-col;
+    /* Clave para que .dashboard-scroll-area pueda hacer scroll */
   }
 
   .dashboard-header-fixed {
     @apply w-full shrink-0 bg-transparent;
+    /* El header permanece fijo en su posición gracias a que no está dentro del área de scroll */
   }
 
   .dashboard-header__wrapper {
-    @apply mx-auto w-full max-w-[1440px] px-6 py-2;
+    @apply mx-auto w-full max-w-[1440px] px-2 py-2;
   }
 
   .dashboard-scroll-area {
-    @apply flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950;
-    overscroll-behavior: contain;
+    @apply h-screen flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950;
   }
 
   .dashboard-view-wrapper {
-    @apply mx-auto w-full max-w-[1440px] px-6 pb-12 pt-6;
+    @apply mx-auto w-full max-w-[1440px] px-2 pb-12 pt-6;
   }
 
   @screen lg {
