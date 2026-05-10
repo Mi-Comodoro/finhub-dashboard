@@ -37,6 +37,10 @@ export function useBudgetApi() {
     $fetch<{ success: boolean; result: unknown }>(`/api/budgets/enable/${budgetId}`, {
       method: 'POST'
     })
+  const closeBudget = async (budgetId: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/close/${budgetId}`, {
+      method: 'POST'
+    })
 
   const cloneBudget = async (sourceBudgetId: string, month: number, year: number) =>
     $fetch<{ success: boolean; result: Budget }>('/api/budgets', {
@@ -52,6 +56,7 @@ export function useBudgetApi() {
     updateBudget,
     deleteBudget,
     enableBudget,
+    closeBudget,
     cloneBudget
   }
 }
