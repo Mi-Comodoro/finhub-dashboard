@@ -163,6 +163,7 @@ export function projectByWeeks(params: {
   return result
 }
 
+const toDateOnly = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
 /**
  * Build monthly projection (30 days) based on actual completed savings.
  * This accounts for when each saving was actually deposited (completedAt),
@@ -183,11 +184,11 @@ export function buildMonthlyProjection(params: {
   const month = referenceDate.getMonth()
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const dayDate = new Date(year, month, day)
+    const dayDate = new Date(year, month, day, 0, 0, 0, 0)
 
     // Only include savings whose completedAt <= dayDate
     const activeSavings = savings.filter(s => {
-      const completedDate = new Date(s.completedAt)
+      const completedDate = toDateOnly(new Date(s.completedAt))
       return completedDate <= dayDate
     })
 
@@ -196,7 +197,7 @@ export function buildMonthlyProjection(params: {
 
     // Calculate balance with compound interest
     const withInterest = activeSavings.reduce((acc, s) => {
-      const completedDate = new Date(s.completedAt)
+      const completedDate = toDateOnly(new Date(s.completedAt))
       const daysElapsed = Math.max(
         0,
         Math.floor((dayDate.getTime() - completedDate.getTime()) / 86_400_000)
@@ -215,112 +216,57 @@ export function buildMonthlyProjection(params: {
   return points
 }
 
-/**
- * Build projection based on completed savings and view type.
- * - Vista 1m: Solo capital real + interés, sin proyecciones futuras
- * - Vistas 3m/12m/24m/36m: Incluye aportes hipotéticos futuros
- */
+export function calculateAccumulatedBalance(params: {
+  contributions: Array<{
+    amount: number
+    date: Date
+  }>
+  annualRate: number
+  targetDate: Date
+}) {
+  const { contributions, annualRate, targetDate } = params
+
+  const dailyRate = annualRate === 0 ? 0 : Math.pow(1 + annualRate / 100, 1 / 365) - 1
+
+  let principal = 0
+  let interest = 0
+
+  for (const contribution of contributions) {
+    // ignorar aportes futuros
+    if (contribution.date > targetDate) continue
+
+    const diffMs = targetDate.getTime() - contribution.date.getTime()
+
+    const daysElapsed = Math.max(0, Math.floor(diffMs / 86400000))
+
+    // interés compuesto diario
+    const futureValue = contribution.amount * Math.pow(1 + dailyRate, daysElapsed)
+
+    principal += contribution.amount
+    interest += futureValue - contribution.amount
+  }
+
+  return {
+    principal,
+    interest,
+    total: principal + interest
+  }
+}
+
 export function buildProjection(input: ProjectionInput): SavingPoint[] {
   const { savings, annualRate, view, referenceDate = new Date() } = input
 
   if (annualRate < 0) return []
 
-  // Only use completed savings
-  const completed = savings.filter(s => s.status === 'completed' && s.completedAt)
-
-  // Generate time points based on view
-  const points = generateTimePoints(view, referenceDate)
-
-  // For 1m view: NO future projections, only real completed savings
-  if (view === '1m') {
-    return points.map(({ label, date }) => {
-      const activeSavings = completed.filter(s => new Date(s.completedAt!) <= date)
-
-      const withoutInterest = activeSavings.reduce((a, s) => a + s.amount, 0)
-
-      const withInterest = activeSavings.reduce((acc, s) => {
-        const days = Math.floor((date.getTime() - new Date(s.completedAt!).getTime()) / 86_400_000)
-        return acc + s.amount * Math.pow(1 + annualRate / 100, days / 365)
-      }, 0)
-
-      return {
-        label,
-        withInterest,
-        withoutInterest
-      }
-    })
+  // =========================
+  // HELPERS
+  // =========================
+  const addDays = (date: Date, days: number) => {
+    const d = new Date(date)
+    d.setDate(d.getDate() + days)
+    return d
   }
 
-  // For 3m/12m/24m/36m views: Include hypothetical future contributions
-  // Use last completed saving to project future ones
-  const lastCompleted =
-    completed.length > 0
-      ? completed.reduce((latest, s) =>
-          new Date(s.completedAt!) > new Date(latest.completedAt!) ? s : latest
-        )
-      : null
-
-  if (!lastCompleted) {
-    // No completed savings yet, return empty projections
-    return points.map(({ label }) => ({
-      label,
-      withInterest: 0,
-      withoutInterest: 0
-    }))
-  }
-
-  const lastDate = new Date(lastCompleted.completedAt!)
-  const lastAmount = lastCompleted.amount
-  const dayOfMonth = lastDate.getDate()
-
-  // Generate hypothetical future contributions (one per month after last completed)
-  const projectedSavings: Array<{ amount: number; date: Date }> = []
-  for (let i = 1; i <= 36; i++) {
-    // Project up to 36 months
-    const projectedDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + i, dayOfMonth)
-    projectedSavings.push({
-      amount: lastAmount,
-      date: projectedDate
-    })
-  }
-
-  return points.map(({ label, date }) => {
-    // Active completed savings
-    const activeSavings = completed.filter(s => new Date(s.completedAt!) <= date)
-
-    // Active projected savings
-    const activeProjected = projectedSavings.filter(s => s.date <= date)
-
-    const withoutInterest =
-      activeSavings.reduce((a, s) => a + s.amount, 0) +
-      activeProjected.reduce((a, s) => a + s.amount, 0)
-
-    const withInterest =
-      activeSavings.reduce((acc, s) => {
-        const days = Math.floor((date.getTime() - new Date(s.completedAt!).getTime()) / 86_400_000)
-        return acc + s.amount * Math.pow(1 + annualRate / 100, days / 365)
-      }, 0) +
-      activeProjected.reduce((acc, s) => {
-        const days = Math.floor((date.getTime() - s.date.getTime()) / 86_400_000)
-        return acc + s.amount * Math.pow(1 + annualRate / 100, Math.max(0, days) / 365)
-      }, 0)
-
-    return {
-      label,
-      withInterest,
-      withoutInterest
-    }
-  })
-}
-
-/**
- * Generate time points (labels and dates) based on selected view.
- */
-function generateTimePoints(
-  view: ProjectionInput['view'],
-  ref: Date
-): Array<{ label: string; date: Date }> {
-  const points: Array<{ label: string; date: Date }> = []
   const monthNames = [
     'Ene',
     'Feb',
@@ -336,43 +282,241 @@ function generateTimePoints(
     'Dic'
   ]
 
-  if (view === '1m') {
-    // 30 daily points - end of day for accurate compound interest calculation
-    for (let day = 1; day <= 30; day++) {
-      const date = new Date(ref.getFullYear(), ref.getMonth(), day, 23, 59, 59)
-      points.push({ label: `Día ${day}`, date })
-    }
-  } else if (view === '3m') {
-    // 13 weekly points (~3 months)
-    for (let week = 1; week <= 13; week++) {
-      const date = new Date(ref)
-      date.setDate(ref.getDate() + (week - 1) * 7)
-      points.push({ label: `Sem ${week}`, date })
-    }
-  } else if (view === '12m') {
-    // 12 monthly points
-    for (let month = 0; month < 12; month++) {
-      const date = new Date(ref.getFullYear(), ref.getMonth() + month, ref.getDate())
-      const monthName = monthNames[date.getMonth()]
-      points.push({ label: monthName, date })
-    }
-  } else if (view === '24m') {
-    // 24 monthly points
-    for (let month = 0; month < 24; month++) {
-      const date = new Date(ref.getFullYear(), ref.getMonth() + month, ref.getDate())
-      const monthName = monthNames[date.getMonth()]
-      const year = date.getFullYear() % 100 // Last 2 digits
-      points.push({ label: `${monthName} '${year}`, date })
-    }
-  } else if (view === '36m') {
-    // 36 monthly points
-    for (let month = 0; month < 36; month++) {
-      const date = new Date(ref.getFullYear(), ref.getMonth() + month, ref.getDate())
-      const monthName = monthNames[date.getMonth()]
-      const year = date.getFullYear() % 100
-      points.push({ label: `${monthName} '${year}`, date })
+  const toDateOnly = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
+
+  // =========================
+  // NORMALIZAR APORTES REALES
+  // =========================
+  const contributions: Array<{ amount: number; date: Date }> = []
+
+  for (const s of savings) {
+    if (s.status === 'skipped') continue
+    const rawDate = s.completedAt ?? s.date
+    if (!rawDate) continue
+    const parsed = new Date(rawDate)
+    if (isNaN(parsed.getTime())) continue
+    const amount = Number(s.amount)
+    if (!amount || amount <= 0) continue
+    contributions.push({
+      amount,
+      date: toDateOnly(parsed)
+    })
+  }
+
+  contributions.sort((a, b) => a.date.getTime() - b.date.getTime())
+
+  if (contributions.length === 0) return []
+
+  // =========================
+  // CONFIGURAR RANGO
+  // =========================
+  const startOfCurrentMonth = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1)
+
+  let totalDays = 30
+  switch (view) {
+    case '1m':
+      totalDays = 30
+      break
+    case '3m':
+      totalDays = 90
+      break
+    case '12m':
+      totalDays = 365
+      break
+    case '24m':
+      totalDays = 365 * 2
+      break
+    case '36m':
+      totalDays = 365 * 3
+      break
+  }
+
+  const endDate = addDays(startOfCurrentMonth, totalDays - 1)
+
+  // =========================
+  // CALCULAR ACUMULADO HASTA EL MES ANTERIOR
+  // =========================
+  const lastDayPreviousMonth = new Date(startOfCurrentMonth)
+  lastDayPreviousMonth.setDate(0)
+
+  const previousContributions = contributions.filter(c => c.date <= lastDayPreviousMonth)
+
+  const accumulated = calculateAccumulatedBalance({
+    contributions: previousContributions,
+    annualRate,
+    targetDate: lastDayPreviousMonth
+  })
+
+  // =========================
+  // MAPA DE APORTES REALES (solo históricos)
+  // =========================
+  const realContributionsByDay = new Map<string, number>()
+  for (const contribution of contributions) {
+    const key = `${contribution.date.getFullYear()}-${contribution.date.getMonth()}-${contribution.date.getDate()}`
+    const current = realContributionsByDay.get(key) ?? 0
+    realContributionsByDay.set(key, current + contribution.amount)
+  }
+
+  // =========================
+  // NUEVO: GENERAR APORTES FUTUROS (SIMULADOS)
+  // =========================
+  const projectedContributions: Array<{ amount: number; date: Date }> = []
+
+  const lastRealContribution = contributions[contributions.length - 1]
+  if (lastRealContribution) {
+    const recurringAmount = lastRealContribution.amount
+    const recurringDay = lastRealContribution.date.getDate()
+
+    let nextDate = new Date(lastRealContribution.date)
+    nextDate.setMonth(nextDate.getMonth() + 1)
+    nextDate = toDateOnly(nextDate)
+
+    const normalizedEndDate = toDateOnly(endDate)
+
+    while (nextDate.getTime() <= normalizedEndDate.getTime()) {
+      let targetDay = recurringDay
+      const lastDayOfMonth = new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate()
+      if (targetDay > lastDayOfMonth) targetDay = lastDayOfMonth
+
+      const projectedDate = new Date(
+        nextDate.getFullYear(),
+        nextDate.getMonth(),
+        targetDay,
+        0,
+        0,
+        0,
+        0
+      )
+      projectedContributions.push({
+        amount: recurringAmount,
+        date: toDateOnly(projectedDate)
+      })
+
+      nextDate.setMonth(nextDate.getMonth() + 1)
+      nextDate = toDateOnly(nextDate)
     }
   }
 
-  return points
+  // =========================
+  // NUEVO: MAPA DE APORTES REALES + SIMULADOS
+  // =========================
+  const allContributionsByDay = new Map<string, number>()
+  const allContributions = [...contributions, ...projectedContributions]
+  for (const contribution of allContributions) {
+    const key = `${contribution.date.getFullYear()}-${contribution.date.getMonth()}-${contribution.date.getDate()}`
+    const current = allContributionsByDay.get(key) ?? 0
+    allContributionsByDay.set(key, current + contribution.amount)
+  }
+
+  // =========================
+  // TASA DIARIA
+  // =========================
+  const dailyRate = annualRate === 0 ? 0 : Math.pow(1 + annualRate / 100, 1 / 365) - 1
+
+  // =========================
+  // INICIALIZAR BALANCES
+  // =========================
+  let balanceWithInterest = accumulated.total // principal + interés de reales anteriores
+  let balanceWithoutInterest = accumulated.principal // solo principal de reales anteriores
+
+  // =========================
+  // RECORRIDO DIARIO
+  // =========================
+  const dailySeries: Array<{
+    date: Date
+    withInterest: number
+    withoutInterest: number
+  }> = []
+
+  let currentDate = new Date(
+    startOfCurrentMonth.getFullYear(),
+    startOfCurrentMonth.getMonth(),
+    1,
+    0,
+    0,
+    0,
+    0
+  )
+
+  while (currentDate <= endDate) {
+    const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}`
+
+    // NUEVO: total de aportes del día (reales + simulados)
+    const totalAmt = allContributionsByDay.get(key) ?? 0
+
+    if (totalAmt > 0) {
+      // Ambos balances reciben el mismo aporte (sin interés y con interés)
+      balanceWithoutInterest += totalAmt
+      balanceWithInterest += totalAmt
+    }
+
+    dailySeries.push({
+      date: new Date(currentDate),
+      withInterest: balanceWithInterest,
+      withoutInterest: balanceWithoutInterest
+    })
+
+    // Solo el balance con interés crece diariamente por el interés compuesto
+    balanceWithInterest *= 1 + dailyRate
+
+    currentDate = addDays(currentDate, 1)
+  }
+
+  // =========================
+  // FORMATEAR SEGÚN VISTA (sin cambios)
+  // =========================
+  if (view === '1m') {
+    return dailySeries.slice(0, 30).map(point => ({
+      label: `Día ${String(point.date.getDate())}`,
+      withInterest: Math.round(point.withInterest),
+      withoutInterest: Math.round(point.withoutInterest)
+    }))
+  }
+
+  if (view === '3m') {
+    const weeklyMap = new Map()
+    for (const point of dailySeries) {
+      const date = point.date
+      const startOfWeek = new Date(date)
+      startOfWeek.setDate(date.getDate() - date.getDay())
+      const key = `${startOfWeek.getFullYear()}-${startOfWeek.getMonth()}-${startOfWeek.getDate()}`
+      weeklyMap.set(key, point)
+    }
+    return Array.from(weeklyMap.values()).map((point, index) => ({
+      label: `Sem ${index + 1}`,
+      withInterest: Math.round(point.withInterest),
+      withoutInterest: Math.round(point.withoutInterest)
+    }))
+  }
+
+  // Para 12m, 24m, 36m: agrupar por mes (último día del mes)
+  const groupedByMonth = new Map<
+    string,
+    { label: string; withInterest: number; withoutInterest: number; timestamp: number }
+  >()
+
+  for (const point of dailySeries) {
+    const year = point.date.getFullYear()
+    const month = point.date.getMonth()
+    const key = `${year}-${month}`
+    const label =
+      view === '12m' ? monthNames[month] : `${monthNames[month]} '${String(year).slice(-2)}`
+    const existing = groupedByMonth.get(key)
+    if (!existing || point.date.getTime() > existing.timestamp) {
+      groupedByMonth.set(key, {
+        label: label as string,
+        withInterest: point.withInterest,
+        withoutInterest: point.withoutInterest,
+        timestamp: point.date.getTime()
+      })
+    }
+  }
+
+  return Array.from(groupedByMonth.values())
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .map(item => ({
+      label: item.label,
+      withInterest: Math.round(item.withInterest),
+      withoutInterest: Math.round(item.withoutInterest)
+    }))
 }

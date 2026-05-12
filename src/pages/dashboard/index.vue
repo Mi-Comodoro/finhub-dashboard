@@ -302,6 +302,22 @@
           :debt-score="healthScore?.debtScore"
           :has-debt-module="false"
         />
+        <DashboardBalanceChart
+          :expected-income="Number(expectedAmount) || 0"
+          :received-income="totalIncomeReceived || 0"
+          :estimated-savings="buckets.savingsAmount || 0"
+          :generated-savings="totalSavingGenerated || 0"
+          :planned-expenses="totalPlanned || 0"
+          :paid-expenses="totalExpensesPaid || 0"
+          :currency="currency"
+        />
+
+        <ActiveGoalsCard
+          :goals="goals"
+          :currency-code="currency"
+          @create-goal="router.push('/dashboard/goals')"
+          @view-all="router.push('/dashboard/goals')"
+        />
         <UpcomingBillsCard :currency-code="currency" />
       </div>
     </section>
@@ -388,30 +404,6 @@
           </div>
         </div>
       </div>
-    </section>
-
-    <section v-if="!isPageLoading && expectedAmount" class="dashboard-page__balance-section">
-      <DashboardBalanceChart
-        :expected-income="Number(expectedAmount) || 0"
-        :received-income="totalIncomeReceived || 0"
-        :estimated-savings="buckets.savingsAmount || 0"
-        :generated-savings="totalSavingGenerated || 0"
-        :planned-expenses="totalPlanned || 0"
-        :paid-expenses="totalExpensesPaid || 0"
-        :currency="currency"
-      />
-    </section>
-
-    <section
-      v-if="goals && goals.length > 0 && !isPageLoading"
-      class="dashboard-page__goals-section"
-    >
-      <ActiveGoalsCard
-        :goals="goals"
-        :currency-code="currency"
-        @create-goal="router.push('/dashboard/goals')"
-        @view-all="router.push('/dashboard/goals')"
-      />
     </section>
 
     <section

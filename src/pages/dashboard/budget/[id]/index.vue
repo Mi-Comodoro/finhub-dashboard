@@ -88,19 +88,9 @@
       size: 'sm',
       variant: 'ghost',
       icon: 'edit',
-      condition: planStatus.value !== 'CLOSED',
+      condition: statusConfig.canEdit(),
       click: () => {
         showEditModal.value = true
-      }
-    },
-    {
-      name: '+ Ingreso',
-      size: 'sm',
-      variant: 'ghost',
-      icon: 'trending_up',
-      condition: planStatus.value !== 'CLOSED',
-      click: () => {
-        showIncomeModal.value = true
       }
     },
     {
@@ -108,14 +98,14 @@
       size: 'sm',
       variant: 'primary',
       icon: 'content_copy',
-      condition: planStatus.value !== 'PLANNED'
+      condition: statusConfig.canDuplicate()
     },
     {
       name: 'Activar',
       size: 'sm',
       variant: 'secondary',
       icon: 'rocket_launch',
-      condition: planStatus.value == 'PLANNED',
+      condition: statusConfig.canActivate(),
       click: budgetStart
     },
     {
@@ -123,7 +113,7 @@
       size: 'sm',
       variant: 'danger',
       icon: 'delete',
-      condition: planStatus.value == 'PLANNED'
+      condition: statusConfig.canDelete()
     }
   ])
 
@@ -181,7 +171,7 @@
 
   const handleEditExpense = (row: Record<string, unknown>) => {
     editingExpense.value = {
-      id: row.id,
+      id: row.id as string,
       data: {
         name: row.name,
         expectedAmount: row.expectedAmount,
@@ -203,6 +193,28 @@
       successToast('Gasto eliminado', 'El gasto planificado fue eliminado correctamente.')
     }
   }
+  const statusConfig = {
+    isActive: () => planStatus.value === 'ACTIVE',
+    isPlanned: () => planStatus.value === 'PLANNED',
+    isClosed: () => planStatus.value === 'CLOSED',
+    canEdit: () => planStatus.value !== 'CLOSED',
+    canDuplicate: () => planStatus.value !== 'PLANNED',
+    canActivate: () => planStatus.value === 'PLANNED',
+    canDelete: () => planStatus.value === 'PLANNED'
+  }
+
+  const badgeVariant = computed(() =>
+    planStatus.value === 'ACTIVE'
+      ? 'success'
+      : planStatus.value === 'PLANNED'
+        ? 'warning'
+        : 'danger'
+  )
+
+  const displayStatus = computed(() => {
+    const statusMap = { ACTIVE: 'Activo', PLANNED: 'Planificado', CLOSED: 'Cerrado' }
+    return statusMap[planStatus.value] ?? planStatus.value
+  })
 </script>
 
 <template>
@@ -217,8 +229,8 @@
             </Heading>
 
             <div class="budget-detail__header-badges">
-              <Badge :variant="planStatus === 'ACTIVE' ? 'success' : 'warning'" size="sm">
-                {{ planStatus === 'ACTIVE' ? 'Activo' : 'PLANIFICADO' }}
+              <Badge :variant="badgeVariant" size="sm">
+                {{ displayStatus }}
               </Badge>
               <Badge variant="secondary" size="xs">{{ strategyInfo?.label }}</Badge>
               <Badge v-if="plan.isShared" variant="warning" size="xs">

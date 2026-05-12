@@ -174,6 +174,30 @@ export function useBudgetActions() {
     }
   }
 
+  const closeBudget = async (budgetId: string) => {
+    budgetStore.setLoading(true)
+    budgetStore.setError(null)
+
+    try {
+      const response = (await budgetApi.closeBudget(budgetId)) as CurrentBudget
+
+      if (!response.success || !response.result) return
+
+      budgetStore.setCurrentBudget(response.result)
+      const mappedBudget = mapSingleBudgetToBudget(response.result)
+      budgetStore.updateBudget(mappedBudget)
+
+      if (budgetStore.activeBudget?.id === budgetId) {
+        budgetStore.setActiveBudget(mappedBudget)
+      }
+    } catch (err) {
+      console.error('❌ Error closing budget:', err)
+      budgetStore.setError(createErrorMessage(err as FetchError))
+    } finally {
+      budgetStore.setLoading(false)
+    }
+  }
+
   const handleCreate = async (data: CreateBudgetPayload) => {
     const { success, result } = await budgetApi.createBudget({
       ...data,
@@ -198,7 +222,7 @@ export function useBudgetActions() {
   }
 
   const handleUpdate = async (id: string, data: UpdateBudgetPayload) => {
-    const { success, result } = await budgetApi.updateBudget(id, data)
+    const { success, result } = await budgetApi.updateBudget(id, { ...data })
 
     if (success && result) {
       const mappedBudget = mapSingleBudgetToBudget(result as SingleBudget)
@@ -223,6 +247,7 @@ export function useBudgetActions() {
     fetchBudgets,
     fetchBudgetById,
     enableBudget,
+    closeBudget,
     handleCreate,
     handleClone,
     handleUpdate,

@@ -120,7 +120,10 @@
 <template>
   <SectionCard title="Gastos Planificados">
     <template #action>
-      <Button variant="secondary" size="sm" icon="add" @click="openForm">Añadir Gastos</Button>
+      <div class="flex gap-2">
+        <Button variant="secondary" size="sm" icon="add" @click="openForm">Añadir Gastos</Button>
+        <Button variant="secondary" size="sm" icon="add" @click="openForm">Añadir Facturas</Button>
+      </div>
     </template>
     <template #default>
       <!-- 🔍 SEARCH -->

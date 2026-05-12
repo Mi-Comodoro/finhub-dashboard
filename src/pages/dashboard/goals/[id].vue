@@ -129,16 +129,10 @@
 
   // Planned savings for this goal - use from goal.plannedSavings if available (from backend)
   const goalSavings = computed<PlannedSaving[]>(() => {
-    if (goal.value?.plannedSavings) {
-      return goal.value.plannedSavings
+    if (!goal.value?.plannedSavings) {
+      return []
     }
-    // Fallback: normalize date to Date to match PlannedSaving type
-    return (plannedSavingItems.value ?? [])
-      .filter(s => s.savingGoalId === goal.value?.id)
-      .map(s => ({
-        ...s,
-        date: s.date instanceof Date ? s.date : new Date(s.date)
-      })) as PlannedSaving[]
+    return goal.value.plannedSavings
   })
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
@@ -152,8 +146,8 @@
     if (!completed.length) return null
     return (
       completed.reduce((earliest, s) => {
-        const sDate = new Date(s.completedAt ?? s.date)
-        const eDate = new Date(earliest.completedAt ?? earliest.date)
+        const sDate = new Date(s.completedAt)
+        const eDate = new Date(earliest.completedAt)
         return sDate < eDate ? s : earliest
       }).completedAt ?? completed[0]!.date
     )

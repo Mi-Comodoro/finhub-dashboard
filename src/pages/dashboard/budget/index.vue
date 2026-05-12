@@ -27,7 +27,7 @@
     currency
   } = useBudgetListApplication()
 
-  const { handleDelete } = useBudgetActions()
+  const { handleDelete, closeBudget } = useBudgetActions()
 
   const presenter = useBudgetListPresenter()
   const originalGetCardBorderClass = presenter.getCardBorderClass
@@ -113,8 +113,9 @@
     showCloneModal.value = true
   }
 
-  const close = (budget: CurrentBudgetPlan) => {
-    selectedBudget.value = budget
+  const close = async (budget: CurrentBudgetPlan) => {
+    await closeBudget(budget.id)
+    await loadBudgets(selectedYear.value)
   }
 
   const confirmDelete = async (budgetId: string) => {
