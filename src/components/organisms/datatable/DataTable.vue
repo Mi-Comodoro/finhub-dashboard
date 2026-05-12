@@ -13,7 +13,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <!-- HEADER -->
-        <thead class="bg-gray-50 uppercase text-gray-500">
+        <thead class="bg-gray-200 text-xs uppercase text-gray-700">
           <tr>
             <th
               v-for="col in columns"
@@ -49,7 +49,7 @@
             <td
               v-for="col in columns"
               :key="col.key"
-              class="p-3"
+              class="p-3 text-xs"
               :class="{
                 'text-right': col.align === 'right',
                 'text-left': col.align === 'left',

@@ -8,9 +8,17 @@ export interface TransactionSummary {
   source: string
   transactionDate: string
   category?: { id: string; name: string }
+  accountId?: string
+  account?: { id: string; name: string }
+  fromAccountId?: string
+  fromAccount?: { id: string; name: string }
+  toAccountId?: string
+  toAccount?: { id: string; name: string }
   plannedIncomeId?: string
   plannedExpenseId?: string
   description?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface TransactionFilters {

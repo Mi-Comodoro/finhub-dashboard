@@ -7,8 +7,20 @@
   import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'
   import { useTransactionMetricsPresenter } from '@/composables/presenters/useTransactionMetricsPresenter'
   import { useFeedback } from '@/composables/useFeedback'
+  import DateUtils from '@/utils/date'
   import { translate } from '@/utils/translateToUI'
   import type { TransactionSummary } from '~/types/domain'
+
+  type TransactionEndpoint = {
+    label: string
+    detail?: string
+  }
+
+  type TransactionRow = TransactionSummary & {
+    origin: TransactionEndpoint
+    destination: TransactionEndpoint
+  }
+
   definePageMeta({
     layout: 'dashboard',
     title: 'Transacciones',
@@ -38,7 +50,9 @@
   const budgetSelect = ref<string>('')
   const showForm = ref(false)
   const showQuickModal = ref(false)
+  const showDetailsModal = ref(false)
   const editingTransaction = ref<{ id: string; data: Record<string, unknown> } | null>(null)
+  const selectedTransaction = ref<TransactionRow | null>(null)
 
   const openQuickModal = () => {
     showQuickModal.value = true
@@ -51,6 +65,16 @@
   const closeForm = () => {
     showForm.value = false
     editingTransaction.value = null
+  }
+
+  const openDetailsModal = (row: TransactionRow) => {
+    selectedTransaction.value = row
+    showDetailsModal.value = true
+  }
+
+  const closeDetailsModal = () => {
+    showDetailsModal.value = false
+    selectedTransaction.value = null
   }
 
   const handleEditTransaction = (row: TransactionSummary) => {
@@ -66,6 +90,11 @@
       }
     }
     showForm.value = true
+  }
+
+  const handleEditFromDetails = (row: TransactionRow) => {
+    handleEditTransaction(row)
+    closeDetailsModal()
   }
 
   const handleDeleteTransaction = async (row: { id: string; amount: number; type: string }) => {
@@ -99,12 +128,73 @@
   // --- Tabla ---
   const columns: Column[] = [
     { key: 'transactionDate', label: 'Fecha', type: 'date', bold: true },
-    { key: 'source', label: 'Fuente', type: 'badge' },
+    { key: 'flow', label: 'Origen / destino' },
     { key: 'type', label: 'Tipo' },
-    { key: 'amount', label: 'Monto', type: 'currency' },
+    { key: 'amount', label: `Monto (${currency.value})`, type: 'currency' },
     { key: 'category', label: 'Categoría' },
     { key: 'actions', label: 'Acciones' }
   ]
+
+  const formatText = (value?: string | null) => {
+    if (!value) return ''
+    return capitalizeFirstLetter(translate[value] ?? value)
+  }
+
+  const getAccountName = (id?: string, account?: { id: string; name: string }) => {
+    if (account?.name) return account.name
+    if (!id) return ''
+    return accounts.value.find(item => item.id === id)?.name ?? ''
+  }
+
+  const getOrigin = (transaction: TransactionSummary): TransactionEndpoint => {
+    const fromAccountName = getAccountName(transaction.fromAccountId, transaction.fromAccount)
+    const accountName = getAccountName(transaction.accountId, transaction.account)
+
+    if (fromAccountName) {
+      return { label: fromAccountName, detail: 'Cuenta origen' }
+    }
+
+    if (transaction.type === 'income') {
+      return {
+        label: formatText(transaction.source) || 'Origen externo',
+        detail: 'Fuente del ingreso'
+      }
+    }
+
+    if (accountName) {
+      return { label: accountName, detail: 'Cuenta asociada' }
+    }
+
+    if (transaction.type === 'savings') {
+      return { label: formatText(transaction.source) || 'Presupuesto', detail: 'Origen del ahorro' }
+    }
+
+    return { label: 'Presupuesto', detail: 'Origen del egreso' }
+  }
+
+  const getDestination = (transaction: TransactionSummary): TransactionEndpoint => {
+    const toAccountName = getAccountName(transaction.toAccountId, transaction.toAccount)
+    const accountName = getAccountName(transaction.accountId, transaction.account)
+
+    if (toAccountName) {
+      return { label: toAccountName, detail: 'Cuenta destino' }
+    }
+
+    if (transaction.type === 'income') {
+      if (accountName) return { label: accountName, detail: 'Cuenta destino' }
+      return { label: 'Presupuesto', detail: 'Destino del ingreso' }
+    }
+
+    if (transaction.type === 'savings') {
+      if (accountName) return { label: accountName, detail: 'Cuenta de ahorro' }
+      return { label: 'Meta de ahorro', detail: 'Destino del ahorro' }
+    }
+
+    return {
+      label: transaction.category?.name || formatText(transaction.source) || 'Gasto',
+      detail: transaction.plannedExpenseId ? 'Gasto planificado' : 'Gasto no planificado'
+    }
+  }
 
   const result = computed(() =>
     transactions.value?.map((t: TransactionSummary) => ({
@@ -112,9 +202,21 @@
       transactionDate: t.transactionDate,
       source: t.source,
       amount: t.amount,
-      category: t.category?.name,
+      category: t.category,
       type: t.type,
-      plannedIncomeId: t.plannedIncomeId
+      plannedIncomeId: t.plannedIncomeId,
+      plannedExpenseId: t.plannedExpenseId,
+      description: t.description,
+      accountId: t.accountId,
+      account: t.account,
+      fromAccountId: t.fromAccountId,
+      fromAccount: t.fromAccount,
+      toAccountId: t.toAccountId,
+      toAccount: t.toAccount,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+      origin: getOrigin(t),
+      destination: getDestination(t)
     }))
   )
 
@@ -187,21 +289,30 @@
     <DataTable :columns="columns" :data="result ?? []">
       <template #cell-amount="{ row }">
         <Text
-          size="sm"
+          size="xs"
           weight="bold"
           class="transactions-page__amount"
           :class="getFormattedAmount(row).colorClass"
         >
           {{ getFormattedAmount(row).text }}
-          <span class="transactions-page__currency" :class="getFormattedAmount(row).colorClass">
-            {{ currency }}
-          </span>
         </Text>
       </template>
 
-      <template #cell-source="{ value, row }">
-        <div class="transactions-page__source">
-          <span>{{ capitalizeFirstLetter(translate[value] ?? value) }}</span>
+      <template #cell-flow="{ row }">
+        <div class="transactions-page__flow">
+          <div class="transactions-page__endpoint">
+            <span class="transactions-page__endpoint-label">{{ row.origin.label }}</span>
+            <span v-if="row.origin.detail" class="transactions-page__endpoint-detail">
+              {{ row.origin.detail }}
+            </span>
+          </div>
+          <span class="transactions-page__flow-icon material-symbols-outlined">arrow_forward</span>
+          <div class="transactions-page__endpoint">
+            <span class="transactions-page__endpoint-label">{{ row.destination.label }}</span>
+            <span v-if="row.destination.detail" class="transactions-page__endpoint-detail">
+              {{ row.destination.detail }}
+            </span>
+          </div>
           <Badge v-if="!row.plannedIncomeId && row.type === 'income'" size="xs">
             No planificado
           </Badge>
@@ -217,17 +328,34 @@
       </template>
 
       <template #cell-category="{ row, value }">
-        {{ row.type === 'income' || row.type === 'savings' ? 'N/A' : value }}
+        {{ row.type === 'income' || row.type === 'savings' ? 'N/A' : value?.name }}
       </template>
 
       <template #cell-actions="{ row }">
         <div class="transactions-page__actions">
-          <Button variant="ghost" size="sm" icon="edit" @click="handleEditTransaction(row)">
-            Editar
-          </Button>
-          <Button variant="ghost" size="sm" icon="delete" @click="handleDeleteTransaction(row)">
-            Eliminar
-          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            icon="visibility"
+            icon-only
+            @click="openDetailsModal(row)"
+          />
+
+          <Button
+            variant="secondary"
+            size="sm"
+            icon="edit"
+            icon-only
+            @click="handleEditTransaction(row)"
+          />
+
+          <Button
+            variant="danger"
+            size="sm"
+            icon="delete"
+            icon-only
+            @click="handleDeleteTransaction(row)"
+          />
         </div>
       </template>
 
@@ -282,6 +410,97 @@
     <ModalWizard v-model:show="showQuickModal">
       <QuickTransactionForm :goals="goals" :accounts="accounts" @on-close="closeQuickModal" />
     </ModalWizard>
+
+    <ModalWizard v-model:show="showDetailsModal">
+      <div v-if="selectedTransaction" class="transaction-detail">
+        <div class="transaction-detail__header">
+          <div>
+            <Heading level="h2" size="lg" weight="extrabold">Detalle de Transaccion</Heading>
+            <Text size="xs" color="muted">
+              {{ DateUtils.formatDate(selectedTransaction.transactionDate) }}
+            </Text>
+          </div>
+          <Button variant="ghost" size="sm" icon="close" icon-only @click="closeDetailsModal" />
+        </div>
+
+        <div class="transaction-detail__amount">
+          <Text size="xl" weight="bold" :class="getFormattedAmount(selectedTransaction).colorClass">
+            {{ getFormattedAmount(selectedTransaction).text }}
+          </Text>
+          <Badge
+            :variant="
+              selectedTransaction.type === 'income'
+                ? 'success'
+                : selectedTransaction.type === 'expense'
+                  ? 'danger'
+                  : 'warning'
+            "
+          >
+            {{ translate[selectedTransaction.type] ?? selectedTransaction.type }}
+          </Badge>
+        </div>
+
+        <div class="transaction-detail__flow">
+          <div class="transaction-detail__endpoint">
+            <Text size="xs" color="muted">Origen</Text>
+            <Text size="xs" weight="bold">{{ selectedTransaction.origin.label }}</Text>
+            <Text v-if="selectedTransaction.origin.detail" size="xs" color="muted">
+              {{ selectedTransaction.origin.detail }}
+            </Text>
+          </div>
+          <span class="transaction-detail__flow-icon material-symbols-outlined">arrow_forward</span>
+          <div class="transaction-detail__endpoint">
+            <Text size="xs" color="muted">Destino</Text>
+            <Text size="xs" weight="bold">{{ selectedTransaction.destination.label }}</Text>
+            <Text v-if="selectedTransaction.destination.detail" size="xs" color="muted">
+              {{ selectedTransaction.destination.detail }}
+            </Text>
+          </div>
+        </div>
+
+        <div class="transaction-detail__grid">
+          <div class="transaction-detail__field">
+            <Text size="xs" color="muted">Fuente</Text>
+            <Text size="xs">{{ formatText(selectedTransaction.source) || 'N/A' }}</Text>
+          </div>
+          <div class="transaction-detail__field">
+            <Text size="xs" color="muted">Categoria</Text>
+            <Text size="xs">{{ selectedTransaction.category?.name || 'N/A' }}</Text>
+          </div>
+          <div class="transaction-detail__field">
+            <Text size="xs" color="muted">Planificacion</Text>
+            <Text size="xs">
+              {{
+                selectedTransaction.plannedIncomeId || selectedTransaction.plannedExpenseId
+                  ? 'Planificada'
+                  : 'No planificada'
+              }}
+            </Text>
+          </div>
+          <div class="transaction-detail__field">
+            <Text size="xs" color="muted">ID</Text>
+            <Text size="xs">{{ selectedTransaction.id }}</Text>
+          </div>
+        </div>
+
+        <div class="transaction-detail__description">
+          <Text size="xs" color="muted">Descripcion</Text>
+          <Text size="xs">{{ selectedTransaction.description || 'Sin descripcion' }}</Text>
+        </div>
+
+        <div class="transaction-detail__actions">
+          <Button variant="outline" size="sm" @click="closeDetailsModal">Cerrar</Button>
+          <Button
+            variant="primary"
+            size="sm"
+            icon="edit"
+            @click="handleEditFromDetails(selectedTransaction)"
+          >
+            Editar
+          </Button>
+        </div>
+      </div>
+    </ModalWizard>
   </div>
 </template>
 
@@ -314,8 +533,24 @@
     @apply text-xs uppercase;
   }
 
-  .transactions-page__source {
-    @apply flex items-center gap-2;
+  .transactions-page__flow {
+    @apply flex min-w-80 items-center gap-2;
+  }
+
+  .transactions-page__endpoint {
+    @apply flex min-w-0 flex-col;
+  }
+
+  .transactions-page__endpoint-label {
+    @apply max-w-36 truncate text-sm font-semibold text-slate-900;
+  }
+
+  .transactions-page__endpoint-detail {
+    @apply max-w-36 truncate text-xs text-slate-500;
+  }
+
+  .transactions-page__flow-icon {
+    @apply text-base text-slate-400;
   }
 
   .transactions-page__empty {
@@ -332,5 +567,42 @@
 
   .transactions-page__footer-actions {
     @apply flex items-center gap-1;
+  }
+
+  .transaction-detail {
+    @apply flex w-full flex-col gap-5;
+  }
+
+  .transaction-detail__header {
+    @apply flex items-start justify-between gap-4;
+  }
+
+  .transaction-detail__amount {
+    @apply flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-4;
+  }
+
+  .transaction-detail__flow {
+    @apply grid grid-cols-[1fr_auto_1fr] items-center gap-3;
+  }
+
+  .transaction-detail__endpoint {
+    @apply min-h-24 rounded-lg border border-slate-200 p-4;
+  }
+
+  .transaction-detail__flow-icon {
+    @apply text-xl text-slate-400;
+  }
+
+  .transaction-detail__grid {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  .transaction-detail__field,
+  .transaction-detail__description {
+    @apply rounded-lg border border-slate-100 p-3;
+  }
+
+  .transaction-detail__actions {
+    @apply flex justify-end gap-2;
   }
 </style>

@@ -27,7 +27,7 @@
   }
 
   const menuItems: Omit<MenuItem, 'isActive'>[] = [
-    { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
+    { name: 'Dashboard', icon: 'dashboard_2', path: '/dashboard' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
     { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },

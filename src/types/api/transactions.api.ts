@@ -20,6 +20,10 @@ export interface Transaction {
   // relaciones enriquecidas opcionales (para vistas)
   category?: { id: string; name: string }
   account?: { id: string; name: string }
+  fromAccountId?: string
+  fromAccount?: { id: string; name: string }
+  toAccountId?: string
+  toAccount?: { id: string; name: string }
 
   // fechas
   transactionDate: Date
