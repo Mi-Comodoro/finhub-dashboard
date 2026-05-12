@@ -39,7 +39,7 @@
   const handleLogout = async () => {
     isOpen.value = false
     await logout()
-    await navigateTo('/login')
+    await navigateTo('/')
   }
 </script>
 
