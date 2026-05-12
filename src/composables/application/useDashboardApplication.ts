@@ -42,7 +42,7 @@ export const useDashboardApplication = () => {
   const expenses = computed(() => expensesStore.expenses)
   const totalSavingGenerated = computed(() => plannedSavingStore.totalSavingGenerated)
   const totalIncomeReceived = computed(() => transactionStore.totalIncomeReceived)
-  const totalPlanned = computed(() => expensesStore.totalPlanned)
+  const totalPlanned = computed(() => expensesStore.totalPlanned + expensesStore.totalPaid)
   const totalExpensesPaid = computed(() => transactionStore.totalExpensesPaid)
 
   return {
