@@ -79,7 +79,7 @@ export const useExpenseApplication = () => {
       store.setError('Error al crear gastos planificados')
     }
     await fetchExpenses()
-    return success
+    return { success }
   }
 
   // Orchestration: complete expense
