@@ -70,12 +70,13 @@ export function subtractAmounts(a: number, b: number, currency: Currency): numbe
  *
  * @param decimals - optional override for displayed decimal places
  */
-export function formatCurrency(amount: number, currency: Currency, decimals?: number): string {
-  const { locale } = CURRENCY_CONFIG[currency]
-  const d = decimals ?? CURRENCY_CONFIG[currency].decimals
+export function formatCurrency(amount: number, currency?: Currency, decimals?: number): string {
+  const resolved: Currency = currency && CURRENCY_CONFIG[currency] ? currency : 'COP'
+  const { locale } = CURRENCY_CONFIG[resolved]
+  const d = decimals ?? CURRENCY_CONFIG[resolved].decimals
   return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency,
+    currency: resolved,
     minimumFractionDigits: d,
     maximumFractionDigits: d
   }).format(amount)

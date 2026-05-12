@@ -319,6 +319,7 @@
         :budget-id="budgetId"
         :expense-id="editingExpense?.id"
         :initial-data="editingExpense?.data"
+        :currency="defaultCurrency"
         :mode="formMode"
         @success="handleFormSuccess"
         @close="closeForm"

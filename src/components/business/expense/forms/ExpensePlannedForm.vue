@@ -3,6 +3,7 @@
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { formatCurrency } from '@/utils/currency'
+  import type { Currency } from '@/utils/currency'
   import type { ExpenseData } from '~/types/domain'
 
   import { expensedPlannedFieldsSchema } from './schema/expense.fields.schema'
@@ -16,12 +17,14 @@
       expenseId?: string
       initialData?: Partial<ExpenseData> & { category?: string; bucket?: string; status?: string }
       mode?: 'create' | 'edit' | 'view'
+      currency?: Currency
     }>(),
     {
       budgetId: '',
       expenseId: undefined,
       initialData: undefined,
-      mode: 'create'
+      mode: 'create',
+      currency: 'COP'
     }
   )
 
@@ -120,7 +123,7 @@
         <div class="expense-planned-form__view-row">
           <span class="expense-planned-form__view-label">Monto</span>
           <span class="expense-planned-form__view-value">
-            {{ initialData?.expectedAmount != null ? formatCurrency(initialData.expectedAmount) : '—' }}
+            {{ initialData?.expectedAmount != null ? formatCurrency(initialData.expectedAmount, props.currency) : '—' }}
           </span>
         </div>
         <div class="expense-planned-form__view-row">
