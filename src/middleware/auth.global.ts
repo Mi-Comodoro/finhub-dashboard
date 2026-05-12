@@ -1,12 +1,9 @@
 export default defineNuxtRouteMiddleware(async to => {
   const { authStore, initSession } = useSession()
+
+  // Only call the API once per session — skip if already verified or already initialized
   if (!authStore.isInitialized) {
-    try {
-      await initSession()
-    } catch (e) {
-      authStore.setError(JSON.stringify(e))
-      throw e
-    }
+    await initSession()
   }
 
   const isLoggedIn = authStore.isAuthenticated
