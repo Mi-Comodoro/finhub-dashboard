@@ -33,6 +33,7 @@ export interface AuthState {
   onboarding: OnboardingStatus | null
   accountType: AccountType | null
   isInitialized: boolean
+  isVerified: boolean
   isLoading: boolean
   error: string | null
 }
