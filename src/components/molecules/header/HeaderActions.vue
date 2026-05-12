@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import { UserAvatar } from '@/components/atoms'
   import { NotificationCenter } from '@/components/molecules'
-  import { useUserStore } from '@/stores/user.store'
+  import UserAvatarDropdown from '@/components/business/layout/UserAvatarDropdown.vue'
   import { useAuthStore } from '~/stores/auth.store'
 
   import type { HeaderActionsProps } from './types/header-actions.types'
@@ -9,12 +8,6 @@
   withDefaults(defineProps<HeaderActionsProps>(), {
     className: ''
   })
-
-  const user = computed(() => userStore.userInfo)
-
-  // User dropdown state
-  const showUserDropdown = ref(false)
-  const userDropdownRef = ref<HTMLElement | null>(null)
 
   // Mock notifications data
   const notifications = ref([
@@ -42,28 +35,6 @@
   ])
 
   const { accountType } = useAuthStore()
-  const userStore = useUserStore()
-
-  // Logout function
-
-  const handleDocumentClick = (event: MouseEvent) => {
-    const target = event.target as Node | null
-
-    if (userDropdownRef.value && target && !userDropdownRef.value.contains(target)) {
-      showUserDropdown.value = false
-    }
-  }
-
-  // Close user dropdown when clicking outside
-  onMounted(() => {
-    document.addEventListener('click', handleDocumentClick)
-  })
-
-  onBeforeUnmount(() => {
-    document.removeEventListener('click', handleDocumentClick)
-  })
-
-  const userName = computed(() => user.value.displayName ?? user.value.name ?? 'Usuario')
 </script>
 
 <template>
@@ -80,6 +51,8 @@
 
     <!-- Notification Center -->
     <NotificationCenter :notifications="notifications" />
-    <UserAvatar :name="userName" class-name="ml-2" :avatar="user.photo!" />
+
+    <!-- User Avatar Dropdown -->
+    <UserAvatarDropdown class="ml-2" />
   </div>
 </template>
