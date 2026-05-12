@@ -2,9 +2,10 @@
   import { useDebounceFn } from '@vueuse/core'
 
   import type { Column, RowData } from '@/components/organisms'
+  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { useExpenseSectionApplication } from '@/composables/application/useExpenseSectionApplication'
 
-  const emit = defineEmits(['open-form', 'edit', 'remove', 'mark-as-payed'])
+  const emit = defineEmits(['open-form', 'edit', 'view', 'remove', 'mark-as-payed'])
 
   const props = withDefaults(
     defineProps<{
@@ -17,12 +18,16 @@
 
   const { setBudget, fetchExpenses, setSearch, setBucket, setPage, expenses, filters, meta } =
     useExpenseSectionApplication()
+  const { completeExpense } = useExpenseApplication()
 
   // 🔍 search local (UI)
   const search = ref('')
 
   // 🪣 bucket filter
   const selectedBucket = ref<string>('')
+
+  // loading id for mark-as-paid button
+  const markingAsPaidId = ref<string | null>(null)
 
   onMounted(() => {
     setBudget(props.budgetId)
@@ -60,13 +65,31 @@
    🎯 ACTIONS
 ========================= */
   const edit = (row: RowData) => emit('edit', row)
+  const view = (row: RowData) => emit('view', row)
   const remove = (row: RowData) => emit('remove', row)
-  const markAsPayed = (row: RowData) => emit('mark-as-payed', row)
   const openForm = () => emit('open-form')
+
+  const markAsPayed = async (row: RowData) => {
+    if (markingAsPaidId.value) return
+    markingAsPaidId.value = row.id as string
+    try {
+      const { success } = await completeExpense(row.id as string)
+      if (success) emit('mark-as-payed', row)
+    } finally {
+      markingAsPaidId.value = null
+    }
+  }
 
   /* =========================
    🎨 HELPERS
 ========================= */
+  const statusLabels: Record<string, string> = {
+    planned: 'Planificado',
+    paid: 'Pagado',
+    canceled: 'Cancelado',
+    skipped: 'Omitido'
+  }
+
   const getBucketClassName = (value: string): string => {
     switch (value) {
       case 'needs':
@@ -155,7 +178,7 @@
 
           <template #cell-status="{ value }">
             <Badge variant="secondary" size="xs">
-              {{ translate[value.toLowerCase()] || value.toLowerCase() }}
+              {{ statusLabels[value.toLowerCase()] ?? value.toLowerCase() }}
             </Badge>
           </template>
 
@@ -167,6 +190,7 @@
                 icon-only
                 variant="ghost"
                 size="sm"
+                :disabled="markingAsPaidId === row.id"
                 @click="markAsPayed(row)"
               />
               <Button
@@ -175,7 +199,7 @@
                 icon-only
                 variant="secondary"
                 size="sm"
-                @click="edit(row)"
+                @click="view(row)"
               />
               <Button
                 v-if="row.status === 'PLANNED'"
