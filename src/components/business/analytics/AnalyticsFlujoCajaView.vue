@@ -2,6 +2,7 @@
   import VChart from 'vue-echarts'
 
   import { Card, Heading, MetricCard, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { useAnalyticsCashFlowApplication } from '@/composables/application/useAnalyticsCashFlowApplication'
   import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
@@ -174,7 +175,14 @@
         </div>
 
         <div v-if="!hasData" class="cashflow-view__empty">
-          <Text size="sm" color="muted">No hay transacciones para el período seleccionado.</Text>
+          <EmptyStateIllustration
+            type="no-transactions"
+            class="cashflow-view__empty-illustration"
+          />
+          <Heading level="h3" size="lg" weight="semibold">Sin transacciones</Heading>
+          <Text size="sm" color="muted">
+            No hay movimientos para el período seleccionado.
+          </Text>
         </div>
 
         <ClientOnly v-else>
@@ -190,9 +198,13 @@
       <!-- Forecast section -->
       <div class="cashflow-view__section-title">
         <span>Pronóstico próximos 3 meses</span>
-        <span v-if="forecastWarning" class="cashflow-view__warning">
-          ⚠ {{ forecastWarning }}
+      </div>
+
+      <div v-if="forecastWarning" class="cashflow-view__forecast-banner">
+        <span class="material-symbols-outlined cashflow-view__forecast-banner-icon">
+          warning
         </span>
+        <Text size="sm" color="warning">{{ forecastWarning }}</Text>
       </div>
 
       <div v-if="loadingForecast" class="cashflow-view__forecast-kpis">
@@ -264,7 +276,11 @@
   }
 
   .cashflow-view__empty {
-    @apply flex h-48 items-center justify-center;
+    @apply flex flex-col items-center gap-3 py-12 text-center;
+  }
+
+  .cashflow-view__empty-illustration {
+    @apply h-32 w-32;
   }
 
   .cashflow-view__chart-fallback {
@@ -279,8 +295,12 @@
     @apply flex flex-wrap items-center gap-2 text-sm font-semibold text-neutral-700;
   }
 
-  .cashflow-view__warning {
-    @apply rounded-md bg-warning-50 px-2 py-1 text-xs font-normal text-warning-700;
+  .cashflow-view__forecast-banner {
+    @apply flex items-start gap-2 rounded-lg border border-warning-200 bg-warning-50 p-3;
+  }
+
+  .cashflow-view__forecast-banner-icon {
+    @apply shrink-0 text-lg leading-none text-warning-600;
   }
 
   .cashflow-view__forecast-kpis {
