@@ -14,6 +14,7 @@ export const useAuthStore = defineStore('auth', {
     onboarding: null,
     accountType: null,
     isInitialized: false,
+    isVerified: false,
     isLoading: false,
     error: null
   }),
@@ -49,10 +50,14 @@ export const useAuthStore = defineStore('auth', {
     setSession(session: AuthSession | null) {
       this.session = session
 
-      // Clear error on successful session set
       if (session) {
         this.error = null
+        this.isVerified = true
       }
+    },
+
+    setVerified(verified: boolean) {
+      this.isVerified = verified
     },
     changeAuthenticated(isAuthenticated: boolean) {
       if (!this.session) {
@@ -81,6 +86,7 @@ export const useAuthStore = defineStore('auth', {
       this.onboarding = null
       this.accountType = null
       this.error = null
+      this.isVerified = false
       // Keep isInitialized true to avoid re-initialization loops
     },
 

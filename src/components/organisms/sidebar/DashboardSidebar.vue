@@ -4,17 +4,11 @@
   import { AppLogo, AppVersion, Button } from '@/components/atoms'
   import { NavigationSection } from '@/components/molecules'
   import { useSidebar } from '@/composables/useSidebar'
-  import { useAuth } from '~/composables/useAuth'
-  import { useAuthStore } from '~/stores/auth.store'
 
   import type { MenuItem } from './types/dashboard-sidebar.types'
 
   const route = useRoute()
-  const router = useRouter()
 
-  const authStore = useAuthStore()
-
-  const { logout } = useAuth()
   const { isCollapsed, toggleCollapse, close } = useSidebar()
 
   const emit = defineEmits<{
@@ -35,7 +29,6 @@
   ]
 
   const settingsItems: Omit<MenuItem, 'isActive'>[] = [
-    { name: 'Mi Perfil', icon: 'person', path: '/dashboard/profile' },
     { name: 'Configuración', icon: 'settings', path: '/dashboard/settings' }
   ]
 
@@ -52,23 +45,6 @@
       isActive: isActiveRoute(item.path ?? '', route.path)
     }))
   })
-
-  const accountMenuItems = computed<MenuItem[]>(() => [
-    {
-      name: authStore.isLoading ? 'Cerrando sesión...' : 'Cerrar sesión',
-      icon: 'logout',
-      isActive: false,
-      onClick: async () => {
-        if (authStore.isLoading) return
-
-        try {
-          await logout()
-        } finally {
-          await router.push('/')
-        }
-      }
-    }
-  ])
 
   const isActiveRoute = (itemPath: string, currentPath: string): boolean => {
     if (currentPath === itemPath) return true
@@ -104,12 +80,6 @@
       <NavigationSection
         title="CONFIGURACIÓN"
         :items="settingsMenuItems"
-        :collapsed="isCollapsed"
-        @navigate="handleNavigate"
-      />
-      <NavigationSection
-        title="CUENTA"
-        :items="accountMenuItems"
         :collapsed="isCollapsed"
         @navigate="handleNavigate"
       />
