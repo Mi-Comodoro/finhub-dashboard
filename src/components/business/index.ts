@@ -1,7 +1,3 @@
-export { default as AnalyticsAhorroView } from './analytics/AnalyticsAhorroView.vue'
-export { default as AnalyticsFlujoCajaView } from './analytics/AnalyticsFlujoCajaView.vue'
-export { default as AnalyticsGastosView } from './analytics/AnalyticsGastosView.vue'
-export { default as AnalyticsSaludView } from './analytics/AnalyticsSaludView.vue'
 export { default as AccountSavings } from './account/AccountSavings.vue'
 export { default as AllocationSummary } from './account/AllocationSummary.vue'
 export { default as AccountSavingForm } from './account/forms/AccountSavingForm.vue'
