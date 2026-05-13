@@ -42,7 +42,7 @@
   const pillars = computed(() => [
     {
       label: 'Flujo de Caja',
-      icon: 'i-material-symbols-account-balance',
+      icon: 'account_balance',
       score: healthScore.value?.cashFlowScore ?? 0,
       max: 25,
       tip: 'Mide si tus ingresos cubren tus gastos con margen libre.',
@@ -50,7 +50,7 @@
     },
     {
       label: 'Ahorro y Metas',
-      icon: 'i-material-symbols-savings',
+      icon: 'savings',
       score: healthScore.value?.savingsScore ?? 0,
       max: 35,
       tip: 'Evalúa qué tanto estás ejecutando tu plan de ahorro.',
@@ -58,7 +58,7 @@
     },
     {
       label: 'Control de Gastos',
-      icon: 'i-material-symbols-price-check',
+      icon: 'price_check',
       score: healthScore.value?.expenseScore ?? 0,
       max: 20,
       tip: 'Compara tus gastos reales vs lo que planificaste.',
@@ -66,7 +66,7 @@
     },
     {
       label: 'Deudas',
-      icon: 'i-material-symbols-credit-card',
+      icon: 'credit_card',
       score: healthScore.value?.debtScore ?? 0,
       max: 20,
       tip: 'Analiza el impacto de tus deudas en tu salud financiera.',
@@ -86,9 +86,9 @@
   <div class="salud-view">
     <!-- Loading state -->
     <div v-if="healthScorePending" class="salud-view__loading">
-      <USkeleton class="salud-view__skeleton-score" />
+      <div class="salud-view__skeleton-score" />
       <div class="salud-view__skeleton-pillars">
-        <USkeleton v-for="i in 4" :key="i" class="salud-view__skeleton-pillar" />
+        <div v-for="i in 4" :key="i" class="salud-view__skeleton-pillar" />
       </div>
     </div>
 
@@ -158,17 +158,17 @@
         <Card v-for="pillar in pillars" :key="pillar.label" class="pillar-card">
           <div class="pillar-card__header">
             <div class="pillar-card__icon-wrapper">
-              <UIcon :name="pillar.icon" class="pillar-card__icon" />
+              <span class="material-symbols-outlined pillar-card__icon">{{ pillar.icon }}</span>
             </div>
             <span class="pillar-card__label">{{ pillar.label }}</span>
-            <UTooltip :text="pillar.tip">
-              <UIcon name="i-material-symbols-info-outline" class="pillar-card__info-icon" />
-            </UTooltip>
+            <span :title="pillar.tip" class="material-symbols-outlined pillar-card__info-icon">
+              info_outline
+            </span>
           </div>
 
           <template v-if="pillar.isNeutral">
             <div class="pillar-card__neutral">
-              <UBadge color="neutral" variant="soft" size="xs">en planificación</UBadge>
+              <span class="pillar-card__neutral-badge">en planificación</span>
               <Text size="xs" color="muted">Los datos de deudas estarán disponibles pronto.</Text>
             </div>
           </template>
@@ -203,7 +203,7 @@
   }
 
   .salud-view__skeleton-score {
-    @apply h-48 w-full rounded-xl;
+    @apply h-48 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .salud-view__skeleton-pillars {
@@ -211,7 +211,7 @@
   }
 
   .salud-view__skeleton-pillar {
-    @apply h-32 rounded-xl;
+    @apply h-32 animate-pulse rounded-xl bg-slate-100;
   }
 
   /* Empty */
@@ -292,7 +292,7 @@
   }
 
   .pillar-card__icon {
-    @apply h-4 w-4 text-primary-600;
+    @apply text-base leading-none text-primary-600;
   }
 
   .pillar-card__label {
@@ -300,7 +300,11 @@
   }
 
   .pillar-card__info-icon {
-    @apply h-4 w-4 cursor-help text-neutral-400;
+    @apply cursor-help text-base leading-none text-neutral-400;
+  }
+
+  .pillar-card__neutral-badge {
+    @apply inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600;
   }
 
   .pillar-card__score-row {

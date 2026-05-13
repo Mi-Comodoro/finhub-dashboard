@@ -1,24 +1,17 @@
 <script setup lang="ts">
   import VChart from 'vue-echarts'
 
-  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { Card, Heading, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { useAnalyticsExpensesApplication } from '@/composables/application/useAnalyticsExpensesApplication'
   import { useExpensesPresenter } from '@/composables/presenters/useExpensesPresenter'
-  import { useFinancesStore } from '@/stores/finances.store'
-  import type { Currency } from '@/utils/currency'
+  import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCurrency } from '@/utils/currency'
 
-  const period = inject('analyticsPeriod') as {
-    selectedYear: Ref<number>
-    selectedMonth: Ref<number>
-  }
+  const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
   const { selectedYear, selectedMonth } = period
 
-  const financesStore = useFinancesStore()
-  const currency = computed(() => financesStore.defaultCurrency as Currency)
-
-  const { fetchExpensesByPeriod } = useAnalyticsExpensesApplication()
+  const { fetchExpensesByPeriod, currency } = useAnalyticsExpensesApplication()
   const { groupByBucket, groupByCategory } = useExpensesPresenter()
 
   const { data: expenses, pending } = await useAsyncData(
@@ -69,10 +62,10 @@
 
 <template>
   <div class="gastos-view">
-    <USkeleton v-if="pending" class="gastos-view__skeleton" />
+    <div v-if="pending" class="gastos-view__skeleton" />
 
     <template v-else>
-      <div class="gastos-view__empty-wrapper" v-if="!hasData">
+      <div v-if="!hasData" class="gastos-view__empty-wrapper">
         <EmptyStateIllustration type="no-transactions" />
         <Text size="sm" color="muted">No hay gastos registrados para el período seleccionado.</Text>
       </div>
@@ -104,7 +97,7 @@
                 <VChart :option="chartOption" autoresize class="gastos-view__chart" />
                 <template #fallback>
                   <div class="gastos-view__chart-fallback">
-                    <USkeleton class="gastos-view__chart-skeleton" />
+                    <div class="gastos-view__chart-skeleton" />
                   </div>
                 </template>
               </ClientOnly>
@@ -155,7 +148,7 @@
   }
 
   .gastos-view__skeleton {
-    @apply h-96 w-full rounded-xl;
+    @apply h-96 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .gastos-view__empty-wrapper {
@@ -203,7 +196,7 @@
   }
 
   .gastos-view__chart-skeleton {
-    @apply h-full w-full rounded-lg;
+    @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
   }
 
   .gastos-view__table {

@@ -4,6 +4,7 @@
   import { Button, Heading, Text } from '@/components/atoms'
   import type { GoalsData } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
+  import { getProgressPercentage } from '@/utils/goal-formatters'
 
   interface Props {
     goals?: GoalsData[]
@@ -16,8 +17,7 @@
   })
 
   const emit = defineEmits<{
-    (e: 'create-goal'): void
-    (e: 'view-all'): void
+    (e: 'create-goal' | 'view-all'): void
   }>()
 
   const activeGoals = computed(() => (props.goals ?? []).filter(g => g.isActive).slice(0, 3))
@@ -32,10 +32,8 @@
   }
 
   function getProgress(goal: GoalsData): number {
-    const target = goal.targetAmount ?? 1
-    if (target <= 0) return 0
     const saved = getSavedAmount(goal)
-    return Math.min(Math.round((saved / target) * 100), 100)
+    return getProgressPercentage(saved, goal.targetAmount ?? null)
   }
 </script>
 

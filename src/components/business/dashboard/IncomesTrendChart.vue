@@ -16,6 +16,7 @@
   import { Heading, Text } from '@/components/atoms'
   import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
+  import { CHART_COLORS } from '@/utils/design-tokens'
   import type { BudgetHistoricalSummaryItem } from '~/types/domain'
 
   use([LineChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer])
@@ -76,16 +77,16 @@
         type: 'line',
         smooth: true,
         data: props.items.map(item => item.expectedIncome),
-        itemStyle: { color: '#B4B2A9' },
-        lineStyle: { color: '#B4B2A9', width: 3 }
+        itemStyle: { color: CHART_COLORS.planned },
+        lineStyle: { color: CHART_COLORS.planned, width: 3 }
       },
       {
         name: 'Recibido',
         type: 'line',
         smooth: true,
         data: props.items.map(item => item.receivedIncome),
-        itemStyle: { color: '#534AB7' },
-        lineStyle: { color: '#534AB7', width: 3 }
+        itemStyle: { color: CHART_COLORS.secondary },
+        lineStyle: { color: CHART_COLORS.secondary, width: 3 }
       }
     ]
   }))

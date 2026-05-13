@@ -3,9 +3,9 @@
   import { useRouter } from 'vue-router'
 
   import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
-  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import Badge from '@/components/atoms/badge/Badge.vue'
   import Button from '@/components/atoms/button/Button.vue'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import ActiveGoalsCard from '@/components/business/dashboard/ActiveGoalsCard.vue'

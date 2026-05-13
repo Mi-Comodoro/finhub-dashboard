@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
   import { onClickOutside } from '@vueuse/core'
+  import { computed, ref } from 'vue'
 
   import { useAuth } from '@/composables/useAuth'
   import { useUserStore } from '@/stores/user.store'
@@ -45,17 +45,22 @@
 
 <template>
   <div ref="dropdownRef" class="user-avatar-dropdown">
-    <button class="user-avatar-dropdown__trigger" @click="isOpen = !isOpen">
-      <NuxtImg
-        v-if="user.photo"
-        :src="user.photo"
-        :alt="user.displayName ?? user.name ?? 'Avatar'"
-        class="user-avatar-dropdown__image"
-      />
-      <span v-else class="user-avatar-dropdown__initials">
-        {{ initials }}
-      </span>
-    </button>
+    <ClientOnly>
+      <button class="user-avatar-dropdown__trigger" @click="isOpen = !isOpen">
+        <NuxtImg
+          v-if="user.photo"
+          :src="user.photo"
+          :alt="user.displayName ?? user.name ?? 'Avatar'"
+          class="user-avatar-dropdown__image"
+        />
+        <span v-else class="user-avatar-dropdown__initials">
+          {{ initials }}
+        </span>
+      </button>
+      <template #fallback>
+        <div class="user-avatar-dropdown__trigger user-avatar-dropdown__trigger--placeholder" />
+      </template>
+    </ClientOnly>
 
     <div v-if="isOpen" class="user-avatar-dropdown__menu">
       <div class="user-avatar-dropdown__user-info">
@@ -72,12 +77,12 @@
         class="user-avatar-dropdown__item"
         @click="isOpen = false"
       >
-        <UIcon name="i-material-symbols-person-outline" class="user-avatar-dropdown__item-icon" />
+        <span class="material-symbols-outlined user-avatar-dropdown__item-icon">person_outline</span>
         Mi Perfil
       </NuxtLink>
 
       <button class="user-avatar-dropdown__item user-avatar-dropdown__item--danger" @click="handleLogout">
-        <UIcon name="i-material-symbols-logout" class="user-avatar-dropdown__item-icon" />
+        <span class="material-symbols-outlined user-avatar-dropdown__item-icon">logout</span>
         Cerrar Sesión
       </button>
     </div>
@@ -132,7 +137,11 @@
     @apply text-danger-600 hover:bg-danger-50 hover:text-danger-700;
   }
 
+  .user-avatar-dropdown__trigger--placeholder {
+    @apply h-9 w-9 rounded-full bg-neutral-200;
+  }
+
   .user-avatar-dropdown__item-icon {
-    @apply h-4 w-4 flex-shrink-0;
+    @apply flex-shrink-0 text-base leading-none;
   }
 </style>
