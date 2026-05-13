@@ -63,12 +63,12 @@ export const useExpensesStore = defineStore('expenses', {
     totalPaid: state =>
       state.expenses
         .filter(e => e.status === 'PAID')
-        .reduce((sum, e) => sum + (e.expectedAmount ?? 0), 0),
+        .reduce((sum, e) => sum + Number(e.expectedAmount ?? 0), 0),
 
     totalPlanned: state =>
       state.expenses
         .filter(e => e.status === 'PLANNED')
-        .reduce((sum, e) => sum + (e.expectedAmount ?? 0), 0)
+        .reduce((sum, e) => sum + Number(e.expectedAmount ?? 0), 0)
   },
 
   actions: {
