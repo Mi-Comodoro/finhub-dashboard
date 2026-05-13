@@ -1,6 +1,8 @@
 import type { Ref } from 'vue'
 
 import { useAnalyticsApi } from '@/composables/api/useAnalyticsApi'
+import { useFinancesStore } from '@/stores/finances.store'
+import type { Currency } from '@/utils/currency'
 
 const MONTH_LABELS = [
   'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
@@ -9,6 +11,8 @@ const MONTH_LABELS = [
 
 export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
   const { getSavingsTrend } = useAnalyticsApi()
+  const financesStore = useFinancesStore()
+  const currency = computed(() => financesStore.defaultCurrency as Currency)
 
   const { data: rawTransactions, pending: isLoading } = useAsyncData(
     'analyticsSavingsTrend',
@@ -47,5 +51,5 @@ export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
     return totalSaved.value / (activeMonths || 1)
   })
 
-  return { savingsByMonth, isLoading, totalSaved, bestMonth, monthlyAvg }
+  return { savingsByMonth, isLoading, totalSaved, bestMonth, monthlyAvg, currency }
 }
