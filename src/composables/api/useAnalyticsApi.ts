@@ -8,11 +8,22 @@ export interface FinancialHealthScoreResponse {
   calculatedAt: string
 }
 
+export interface SavingsTrendItem {
+  id: string
+  amount: number
+  transactionDate: string
+}
+
 export function useAnalyticsApi() {
   const getFinancialHealthScore = () =>
     $fetch<{ success: boolean; result: FinancialHealthScoreResponse }>(
       '/api/analytics/financial-health-score'
     )
 
-  return { getFinancialHealthScore }
+  const getSavingsTrend = (year: number) =>
+    $fetch<{ success: boolean; result: SavingsTrendItem[] }>(
+      `/api/analytics/savings-trend?year=${year}`
+    )
+
+  return { getFinancialHealthScore, getSavingsTrend }
 }
