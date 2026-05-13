@@ -37,9 +37,13 @@ export function useBudgetApi() {
     $fetch<{ success: boolean; result: unknown }>(`/api/budgets/enable/${budgetId}`, {
       method: 'POST'
     })
-  const closeBudget = async (budgetId: string) =>
+  const closeBudget = async (
+    budgetId: string,
+    body?: { surplusAction?: 'transfer_to_goal' | 'carry_forward' | 'ignore'; targetGoalId?: string }
+  ) =>
     $fetch<{ success: boolean; result: unknown }>(`/api/budgets/close/${budgetId}`, {
-      method: 'POST'
+      method: 'POST',
+      body
     })
 
   const cloneBudget = async (sourceBudgetId: string, month: number, year: number) =>

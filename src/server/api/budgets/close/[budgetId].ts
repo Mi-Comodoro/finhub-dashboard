@@ -16,11 +16,14 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 401, message: 'No autenticado' })
   }
 
+  const body = await readBody(event).catch(() => ({}))
+
   const { success, data } = await $fetch<BackendCurrentBudget>(
     `${config.public.apiBase}/budgets/${budgetId}/close`,
     {
       headers: { authorization: `Bearer ${token}` },
       method: 'PATCH',
+      body,
       onResponseError: ({ response }) => {
         validateError(event, response.status)
       }

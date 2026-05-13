@@ -1,10 +1,14 @@
 <script setup lang="ts">
-  import { BudgetCloneForm, BudgetForm } from '@/components/business'
+  import { BudgetCloneForm, BudgetForm, BudgetSurplusModal } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
+  import { useBudgetClose } from '@/composables/application/useBudgetClose'
   import { useBudgetListApplication } from '@/composables/application/useBudgetListApplication'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useBudgetListPresenter } from '@/composables/presenters/useBudgetListPresenter'
   import { useFeedback } from '@/composables/useFeedback'
+  import { useFinancesStore } from '@/stores/finances.store'
+  import { useGoalsStore } from '@/stores/goals.store'
   import DateUtils from '@/utils/date'
   import type { CurrentBudgetPlan, PlannedIncomeSummary } from '~/types/domain'
 
@@ -27,7 +31,21 @@
     currency
   } = useBudgetListApplication()
 
-  const { handleDelete, closeBudget } = useBudgetActions()
+  const { handleDelete } = useBudgetActions()
+  const { fetchGoals } = useGoalsApplication()
+  const goalsStore = useGoalsStore()
+  const financesStore = useFinancesStore()
+
+  const {
+    showSurplusModal,
+    showDeficitModal,
+    surplus,
+    pendingClose,
+    isClosing,
+    initiateClosure,
+    executeClosure,
+    cancelClosure
+  } = useBudgetClose()
 
   const presenter = useBudgetListPresenter()
   const originalGetCardBorderClass = presenter.getCardBorderClass
@@ -40,8 +58,10 @@
   const showEditModal = ref(false)
   const showCloneModal = ref(false)
   const selectedBudget = ref<CurrentBudgetPlan | null>(null)
+  const closingBudget = ref<CurrentBudgetPlan | null>(null)
 
   const yearOptions = computed(() => getYearOptions())
+  const activeGoals = computed(() => goalsStore.goals.filter(g => g.isActive))
 
   const budgetInitialData = computed(() => {
     if (!selectedBudget.value) return undefined
@@ -61,15 +81,12 @@
   const getEstimatedSavings = (budgetId: string, savingsLimit: number) =>
     Math.round(getExpected(budgetId) * (savingsLimit / 100))
 
-  // Función para convertir nombre de mes a número (1-12)
-
   // Función personalizada para el borde de las tarjetas
   const getCardBorderClass = (budget: CurrentBudgetPlan): string => {
     const today = new Date()
     const currentYear = today.getFullYear()
     const currentMonth = today.getMonth() + 1
 
-    // Convertir budget.month (puede ser string con nombre del mes o número) a número
     let budgetMonth: number
     if (typeof budget.month === 'number') {
       budgetMonth = budget.month
@@ -88,13 +105,13 @@
     if (isActive && isPastMonth) {
       return 'budget-index__card--active-past'
     }
-    // Para cualquier otro caso, usar la lógica original del presenter
     return originalGetCardBorderClass(budget.status)
   }
 
   onMounted(async () => {
     await loadBudgets(selectedYear.value)
     allIncomes.value = await loadPlannedIncomes()
+    await fetchGoals()
   })
 
   watch(selectedYear, async year => {
@@ -114,8 +131,27 @@
   }
 
   const close = async (budget: CurrentBudgetPlan) => {
-    await closeBudget(budget.id)
+    closingBudget.value = budget
+    // Estimate libre sin comprometer from available plan data
+    const libresincomprometer =
+      getExpected(budget.id) - getEstimatedSavings(budget.id, budget.limits?.savings ?? 0)
+    await initiateClosure(budget, libresincomprometer)
+  }
+
+  const handleSurplusConfirm = async (action: string, goalId?: string) => {
+    if (!closingBudget.value) return
+    await executeClosure(
+      closingBudget.value.id,
+      action as 'transfer_to_goal' | 'carry_forward' | 'ignore',
+      goalId
+    )
+    closingBudget.value = null
     await loadBudgets(selectedYear.value)
+  }
+
+  const handleSurplusCancel = () => {
+    cancelClosure()
+    closingBudget.value = null
   }
 
   const confirmDelete = async (budgetId: string) => {
@@ -339,6 +375,48 @@
         @on-success="onFormSuccess"
       />
     </ModalWizard>
+
+    <!-- Modal de excedente: se muestra cuando hay saldo positivo al cerrar -->
+    <ModalWizard v-model:show="showSurplusModal">
+      <BudgetSurplusModal
+        :surplus="surplus"
+        :available-goals="activeGoals"
+        :is-loading="isClosing"
+        :currency="currency"
+        @confirm="handleSurplusConfirm"
+        @cancel="handleSurplusCancel"
+      />
+    </ModalWizard>
+
+    <!-- Modal de déficit: confirmación cuando el presupuesto cierra en negativo -->
+    <ModalWizard v-model:show="showDeficitModal">
+      <div class="deficit-modal">
+        <div class="deficit-modal__header">
+          <span class="material-symbols-outlined deficit-modal__icon">warning</span>
+          <Heading level="h1" size="xl" weight="extrabold" color="black">
+            El presupuesto tiene un déficit
+          </Heading>
+          <Text size="xs" color="muted">
+            El saldo al cierre es de
+            <strong>{{ formatCurrency(surplus, currency) }}</strong>. ¿Deseas cerrarlo de todas
+            formas?
+          </Text>
+        </div>
+        <div class="deficit-modal__actions">
+          <Button variant="ghost" size="sm" :disabled="isClosing" @click="handleSurplusCancel">
+            Cancelar
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            :loading="isClosing"
+            @click="handleSurplusConfirm('ignore')"
+          >
+            Cerrar de todas formas
+          </Button>
+        </div>
+      </div>
+    </ModalWizard>
   </div>
 </template>
 
@@ -471,5 +549,21 @@
 
   .budget-index__action--primary {
     @apply flex-1;
+  }
+
+  .deficit-modal {
+    @apply flex flex-col gap-6 p-6;
+  }
+
+  .deficit-modal__header {
+    @apply flex flex-col items-center gap-2 text-center;
+  }
+
+  .deficit-modal__icon {
+    @apply text-4xl text-danger-500;
+  }
+
+  .deficit-modal__actions {
+    @apply flex justify-end gap-3;
   }
 </style>
