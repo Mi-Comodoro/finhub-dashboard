@@ -1,3 +1,4 @@
+import { useAnalyticsApi } from '@/composables/api/useAnalyticsApi'
 import { useTransactionApi } from '@/composables/api/useTransactionApi'
 import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
@@ -13,6 +14,7 @@ export interface WeeklyGroup {
 }
 
 export function useAnalyticsCashFlowApplication() {
+  const analyticsApi = useAnalyticsApi()
   const transactionApi = useTransactionApi()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
@@ -73,5 +75,17 @@ export function useAnalyticsCashFlowApplication() {
 
   const currency = computed(() => financesStore.defaultCurrency as Currency)
 
-  return { fetchTransactionsByPeriod, groupTransactionsByWeek, currency }
+  const { data: forecast, pending: loadingForecast } = useAsyncData(
+    'analytics-cashflow-forecast',
+    () => analyticsApi.getCashFlowForecast().then(r => r.result)
+  )
+
+  const forecastWarning = computed(() => {
+    if (!forecast.value?.assumptions.basedOnBudget) {
+      return 'Sin presupuesto activo. El pronóstico usa valores en cero.'
+    }
+    return null
+  })
+
+  return { fetchTransactionsByPeriod, groupTransactionsByWeek, currency, forecast, loadingForecast, forecastWarning }
 }

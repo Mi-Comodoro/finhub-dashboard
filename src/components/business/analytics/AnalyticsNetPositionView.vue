@@ -1,0 +1,396 @@
+<script setup lang="ts">
+  import { BarChart, type BarSeriesOption, LineChart, type LineSeriesOption } from 'echarts/charts'
+  import {
+    GridComponent,
+    type GridComponentOption,
+    TooltipComponent,
+    type TooltipComponentOption
+  } from 'echarts/components'
+  import { type ComposeOption, use } from 'echarts/core'
+  import { CanvasRenderer } from 'echarts/renderers'
+  import VChart from 'vue-echarts'
+
+  import { Heading, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import { useAnalyticsNetPositionApplication } from '@/composables/application/useAnalyticsNetPositionApplication'
+  import { formatCompactCurrency, formatCurrency, formatNumber } from '@/utils/currency'
+  import { CHART_COLORS } from '@/utils/design-tokens'
+
+  use([LineChart, BarChart, GridComponent, TooltipComponent, CanvasRenderer])
+
+  type EChartsOption = ComposeOption<
+    LineSeriesOption | BarSeriesOption | GridComponentOption | TooltipComponentOption
+  >
+
+  const {
+    netPosition,
+    loadingPosition,
+    debtProjection,
+    loadingProjection,
+    netPositionColor,
+    debtRatioStatus,
+  } = useAnalyticsNetPositionApplication()
+
+  const isLoading = computed(() => loadingPosition.value || loadingProjection.value)
+
+  const ratioPercent = computed(() =>
+    Math.min((netPosition.value?.debtToIncomeRatio ?? 0) * 100, 100)
+  )
+
+  const chartOption = computed<EChartsOption>(() => ({
+    grid: { left: '2%', right: '2%', top: 16, bottom: '2%', containLabel: true },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params: Array<{ seriesName: string; value: number }>) =>
+        params.map(p => `${p.seriesName}: <strong>${formatCurrency(Number(p.value ?? 0), 'COP')}</strong>`).join('<br/>')
+    },
+    xAxis: {
+      type: 'category',
+      data: debtProjection.value?.projection.map(p => p.month) ?? [],
+      axisTick: { show: false },
+      axisLine: { lineStyle: { color: '#e2e8f0' } },
+      axisLabel: { color: '#64748b', fontSize: 12 }
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        color: '#64748b',
+        fontSize: 11,
+        formatter: (value: number) => formatCompactCurrency(value, 'COP')
+      },
+      splitLine: { lineStyle: { color: '#e2e8f0', type: 'dashed' } }
+    },
+    series: [
+      {
+        name: 'Balance proyectado',
+        type: 'line',
+        smooth: true,
+        data: debtProjection.value?.projection.map(p => p.projectedBalance) ?? [],
+        areaStyle: { opacity: 0.2, color: CHART_COLORS.expense },
+        itemStyle: { color: CHART_COLORS.expense },
+        lineStyle: { color: CHART_COLORS.expense, width: 3 }
+      },
+      {
+        name: 'Pagos mínimos',
+        type: 'bar',
+        data: debtProjection.value?.projection.map(p => p.minimumPayments) ?? [],
+        itemStyle: { color: CHART_COLORS.savings }
+      }
+    ]
+  }))
+</script>
+
+<template>
+  <div class="net-position-view">
+    <!-- Loading state -->
+    <div v-if="isLoading" class="net-position-view__loading">
+      <div class="net-position-view__kpis-skeleton">
+        <div v-for="i in 4" :key="i" class="net-position-view__kpi-skeleton" />
+      </div>
+      <div class="net-position-view__ratio-skeleton" />
+      <div class="net-position-view__chart-skeleton" />
+    </div>
+
+    <!-- Empty state -->
+    <div v-else-if="!netPosition" class="net-position-view__empty">
+      <EmptyStateIllustration type="no-transactions" class="net-position-view__empty-illustration" />
+      <Heading level="h3" size="lg" weight="semibold">Sin datos de posición neta</Heading>
+      <Text size="sm" color="muted">
+        Registra tus deudas para ver tu posición financiera
+      </Text>
+    </div>
+
+    <!-- Content -->
+    <div v-else class="net-position-view__content">
+      <!-- KPI cards -->
+      <div class="net-position-view__kpis">
+        <!-- Activos libres -->
+        <div class="net-position-view__kpi-card net-position-view__kpi-card--primary">
+          <div class="net-position-view__kpi-icon net-position-view__kpi-icon--primary">
+            <span class="material-symbols-outlined net-position-view__kpi-icon-svg">account_balance_wallet</span>
+          </div>
+          <div class="net-position-view__kpi-body">
+            <Text size="xs" color="muted">Activos libres</Text>
+            <Heading level="h3" size="xl" weight="bold" color="black">
+              {{ formatCurrency(netPosition.totalAssets, 'COP') }}
+            </Heading>
+          </div>
+        </div>
+
+        <!-- Deudas totales -->
+        <div class="net-position-view__kpi-card net-position-view__kpi-card--danger">
+          <div class="net-position-view__kpi-icon net-position-view__kpi-icon--danger">
+            <span class="material-symbols-outlined net-position-view__kpi-icon-svg">credit_card</span>
+          </div>
+          <div class="net-position-view__kpi-body">
+            <Text size="xs" color="muted">Deudas totales</Text>
+            <Heading level="h3" size="xl" weight="bold" color="black">
+              {{ formatCurrency(netPosition.totalDebts, 'COP') }}
+            </Heading>
+          </div>
+        </div>
+
+        <!-- Por cobrar -->
+        <div class="net-position-view__kpi-card net-position-view__kpi-card--warning">
+          <div class="net-position-view__kpi-icon net-position-view__kpi-icon--warning">
+            <span class="material-symbols-outlined net-position-view__kpi-icon-svg">payments</span>
+          </div>
+          <div class="net-position-view__kpi-body">
+            <Text size="xs" color="muted">Por cobrar</Text>
+            <Heading level="h3" size="xl" weight="bold" color="black">
+              {{ formatCurrency(netPosition.totalReceivable, 'COP') }}
+            </Heading>
+          </div>
+        </div>
+
+        <!-- Posición neta (dynamic color) -->
+        <div
+          :class="['net-position-view__kpi-card', `net-position-view__kpi-card--${netPositionColor}`]"
+        >
+          <div
+            :class="['net-position-view__kpi-icon', `net-position-view__kpi-icon--${netPositionColor}`]"
+          >
+            <span class="material-symbols-outlined net-position-view__kpi-icon-svg">balance</span>
+          </div>
+          <div class="net-position-view__kpi-body">
+            <Text size="xs" color="muted">Posición neta</Text>
+            <Heading level="h3" size="xl" weight="bold" color="black">
+              {{ formatCurrency(netPosition.netPosition, 'COP') }}
+            </Heading>
+          </div>
+        </div>
+      </div>
+
+      <!-- Debt ratio -->
+      <div class="net-position-view__ratio-card">
+        <div class="net-position-view__ratio-header">
+          <Heading level="h3" size="lg" weight="semibold">Ratio deuda / ingreso</Heading>
+          <span
+            :class="['net-position-view__ratio-badge', `net-position-view__ratio-badge--${debtRatioStatus.color}`]"
+          >
+            {{ debtRatioStatus.label }}
+          </span>
+        </div>
+
+        <div class="net-position-view__ratio-track">
+          <div
+            :class="['net-position-view__ratio-bar', `net-position-view__ratio-bar--${debtRatioStatus.color}`]"
+            :style="{ width: `${ratioPercent}%` }"
+          />
+        </div>
+
+        <div class="net-position-view__ratio-meta">
+          <Text size="sm" color="muted">
+            Por cada $1 de ingreso anual, debes
+            ${{ formatNumber(netPosition.debtToIncomeRatio, 'COP', 2) }}
+          </Text>
+          <Text size="sm" weight="semibold">
+            {{ (netPosition.debtToIncomeRatio * 100).toFixed(1) }}%
+          </Text>
+        </div>
+      </div>
+
+      <!-- Debt projection chart -->
+      <div class="net-position-view__chart-card">
+        <div class="net-position-view__chart-header">
+          <Heading level="h3" size="lg" weight="semibold">Proyección de deuda</Heading>
+          <Text size="xs" color="muted">Balance proyectado y pagos mínimos mensuales</Text>
+        </div>
+        <div class="net-position-view__chart-body">
+          <ClientOnly>
+            <VChart
+              v-if="debtProjection && (debtProjection.projection?.length ?? 0) > 0"
+              :option="chartOption"
+              autoresize
+              class="net-position-view__chart"
+            />
+            <div v-else class="net-position-view__chart-empty">
+              <Text size="sm" color="muted">Sin datos de proyección disponibles.</Text>
+            </div>
+            <template #fallback>
+              <div class="net-position-view__chart net-position-view__chart--loading">
+                <div class="net-position-view__chart-inner-skeleton" />
+              </div>
+            </template>
+          </ClientOnly>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="postcss">
+  .net-position-view {
+    @apply flex flex-col gap-4;
+  }
+
+  /* Loading */
+  .net-position-view__loading {
+    @apply flex flex-col gap-4;
+  }
+
+  .net-position-view__kpis-skeleton {
+    @apply grid grid-cols-2 gap-3 sm:grid-cols-4;
+  }
+
+  .net-position-view__kpi-skeleton {
+    @apply h-24 animate-pulse rounded-xl bg-slate-100;
+  }
+
+  .net-position-view__ratio-skeleton {
+    @apply h-24 animate-pulse rounded-xl bg-slate-100;
+  }
+
+  .net-position-view__chart-skeleton {
+    @apply h-72 animate-pulse rounded-xl bg-slate-100;
+  }
+
+  /* Empty */
+  .net-position-view__empty {
+    @apply flex flex-col items-center gap-3 py-12 text-center;
+  }
+
+  .net-position-view__empty-illustration {
+    @apply h-32 w-32;
+  }
+
+  /* Content */
+  .net-position-view__content {
+    @apply flex flex-col gap-4;
+  }
+
+  /* KPI grid */
+  .net-position-view__kpis {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .net-position-view__kpi-card {
+    @apply flex items-start gap-3 rounded-xl border p-4;
+  }
+
+  .net-position-view__kpi-card--primary {
+    @apply border-primary-100 bg-primary-50;
+  }
+
+  .net-position-view__kpi-card--danger {
+    @apply border-danger-100 bg-danger-50;
+  }
+
+  .net-position-view__kpi-card--warning {
+    @apply border-warning-100 bg-warning-50;
+  }
+
+  .net-position-view__kpi-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg;
+  }
+
+  .net-position-view__kpi-icon--primary {
+    @apply bg-primary-100;
+  }
+
+  .net-position-view__kpi-icon--danger {
+    @apply bg-danger-100;
+  }
+
+  .net-position-view__kpi-icon--warning {
+    @apply bg-warning-100;
+  }
+
+  .net-position-view__kpi-icon-svg {
+    @apply text-xl leading-none;
+  }
+
+  .net-position-view__kpi-icon--primary .net-position-view__kpi-icon-svg {
+    @apply text-primary-600;
+  }
+
+  .net-position-view__kpi-icon--danger .net-position-view__kpi-icon-svg {
+    @apply text-danger-600;
+  }
+
+  .net-position-view__kpi-icon--warning .net-position-view__kpi-icon-svg {
+    @apply text-warning-600;
+  }
+
+  .net-position-view__kpi-body {
+    @apply flex flex-col gap-0.5;
+  }
+
+  /* Ratio card */
+  .net-position-view__ratio-card {
+    @apply flex flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-5;
+  }
+
+  .net-position-view__ratio-header {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .net-position-view__ratio-track {
+    @apply h-3 overflow-hidden rounded-full bg-neutral-100;
+  }
+
+  .net-position-view__ratio-bar {
+    @apply h-full rounded-full transition-all duration-700;
+  }
+
+  .net-position-view__ratio-bar--primary {
+    @apply bg-primary-500;
+  }
+
+  .net-position-view__ratio-bar--warning {
+    @apply bg-warning-500;
+  }
+
+  .net-position-view__ratio-bar--danger {
+    @apply bg-danger-500;
+  }
+
+  .net-position-view__ratio-badge {
+    @apply inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  .net-position-view__ratio-badge--primary {
+    @apply bg-primary-100 text-primary-700;
+  }
+
+  .net-position-view__ratio-badge--warning {
+    @apply bg-warning-100 text-warning-700;
+  }
+
+  .net-position-view__ratio-badge--danger {
+    @apply bg-danger-100 text-danger-700;
+  }
+
+  .net-position-view__ratio-meta {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  /* Chart card */
+  .net-position-view__chart-card {
+    @apply rounded-xl border border-neutral-200 bg-white;
+  }
+
+  .net-position-view__chart-header {
+    @apply flex flex-col gap-0.5 border-b border-neutral-100 px-5 py-4;
+  }
+
+  .net-position-view__chart-body {
+    @apply p-5;
+  }
+
+  .net-position-view__chart {
+    @apply h-80 w-full;
+  }
+
+  .net-position-view__chart--loading {
+    @apply flex items-center justify-center;
+  }
+
+  .net-position-view__chart-inner-skeleton {
+    @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
+  }
+
+  .net-position-view__chart-empty {
+    @apply flex h-40 items-center justify-center;
+  }
+</style>

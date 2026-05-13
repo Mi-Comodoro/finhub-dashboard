@@ -3,6 +3,7 @@
     AnalyticsAhorroView,
     AnalyticsFlujoCajaView,
     AnalyticsGastosView,
+    AnalyticsNetPositionView,
     AnalyticsSaludView
   } from '@/components/business'
   import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
@@ -23,7 +24,8 @@
     { key: 'salud', label: 'Salud Financiera', icon: 'favorite' },
     { key: 'flujo', label: 'Flujo de Caja', icon: 'waterfall_chart' },
     { key: 'gastos', label: 'Gastos', icon: 'pie_chart' },
-    { key: 'ahorro', label: 'Ahorro', icon: 'savings' }
+    { key: 'ahorro', label: 'Ahorro', icon: 'savings' },
+    { key: 'posicion', label: 'Posición Neta', icon: 'account_balance' }
   ]
 </script>
 
@@ -66,6 +68,7 @@
       <AnalyticsFlujoCajaView v-if="activeTab === 'flujo'" />
       <AnalyticsGastosView v-if="activeTab === 'gastos'" />
       <AnalyticsAhorroView v-if="activeTab === 'ahorro'" />
+      <AnalyticsNetPositionView v-if="activeTab === 'posicion'" />
     </div>
   </div>
 </template>
