@@ -14,6 +14,20 @@ export interface SavingsTrendItem {
   transactionDate: string
 }
 
+export interface CashFlowForecastResponse {
+  months: Array<{
+    month: string
+    projectedIncome: number
+    projectedExpenses: number
+    projectedNet: number
+  }>
+  assumptions: {
+    basedOnBudget: boolean
+    incomeConstant: boolean
+    expensesConstant: boolean
+  }
+}
+
 export function useAnalyticsApi() {
   const getFinancialHealthScore = () =>
     $fetch<{ success: boolean; result: FinancialHealthScoreResponse }>(
@@ -25,5 +39,10 @@ export function useAnalyticsApi() {
       `/api/analytics/savings-trend?year=${year}`
     )
 
-  return { getFinancialHealthScore, getSavingsTrend }
+  const getCashFlowForecast = () =>
+    $fetch<{ success: boolean; result: CashFlowForecastResponse }>(
+      '/api/analytics/cash-flow-forecast'
+    )
+
+  return { getFinancialHealthScore, getSavingsTrend, getCashFlowForecast }
 }
