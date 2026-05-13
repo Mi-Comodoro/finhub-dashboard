@@ -49,6 +49,11 @@
       }}
     </Badge>
 
+    <!-- Help button -->
+    <NuxtLink to="/dashboard/help" class="header-actions__help-btn" title="Ayuda">
+      <span class="material-symbols-outlined header-actions__help-icon">help_outline</span>
+    </NuxtLink>
+
     <!-- Notification Center -->
     <NotificationCenter :notifications="notifications" />
 
@@ -56,3 +61,15 @@
     <UserAvatarDropdown class="ml-2" />
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .header-actions__help-btn {
+    @apply flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 transition-colors duration-150;
+    @apply hover:bg-neutral-100 hover:text-primary-600;
+  }
+
+  .header-actions__help-icon {
+    font-size: 1.25rem;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+</style>
