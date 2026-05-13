@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { QuickTransactionForm, TransactionForm } from '@/components/business'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import type { Column } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
@@ -361,6 +362,7 @@
 
       <template #empty>
         <div class="transactions-page__empty">
+          <EmptyStateIllustration type="no-transactions" class="transactions-page__empty-illustration" />
           <Text size="sm" color="muted">No hay transacciones para estos filtros</Text>
           <Button variant="ghost" size="sm" @click="filters.clearFilters">Limpiar filtros</Button>
         </div>
@@ -555,6 +557,10 @@
 
   .transactions-page__empty {
     @apply flex flex-col items-center gap-2 py-10 text-center;
+  }
+
+  .transactions-page__empty-illustration {
+    @apply max-w-[140px];
   }
 
   .transactions-page__footer {
