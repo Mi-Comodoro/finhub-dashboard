@@ -12,6 +12,7 @@
   import VChart from 'vue-echarts'
 
   import { Heading, Text } from '@/components/atoms'
+  import { CHART_COLORS } from '@/utils/design-tokens'
   import type { BudgetHistoricalSummaryItem } from '~/types/domain'
 
   use([BarChart, GridComponent, TooltipComponent, CanvasRenderer])
@@ -67,7 +68,7 @@
         type: 'bar',
         data: props.items.map(item => Number(item.savingsRate.toFixed(2))),
         itemStyle: {
-          color: '#534AB7',
+          color: CHART_COLORS.secondary,
           borderRadius: [8, 8, 0, 0]
         },
         barMaxWidth: 32

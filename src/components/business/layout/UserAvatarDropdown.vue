@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
   import { onClickOutside } from '@vueuse/core'
+  import { computed, ref } from 'vue'
 
   import { useAuth } from '@/composables/useAuth'
   import { useUserStore } from '@/stores/user.store'
