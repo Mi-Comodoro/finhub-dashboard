@@ -5,7 +5,7 @@
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { useAnalyticsExpensesApplication } from '@/composables/application/useAnalyticsExpensesApplication'
   import { useExpensesPresenter } from '@/composables/presenters/useExpensesPresenter'
-  import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
+  import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCurrency } from '@/utils/currency'
 
   const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
@@ -62,7 +62,7 @@
 
 <template>
   <div class="gastos-view">
-    <USkeleton v-if="pending" class="gastos-view__skeleton" />
+    <div v-if="pending" class="gastos-view__skeleton" />
 
     <template v-else>
       <div v-if="!hasData" class="gastos-view__empty-wrapper">
@@ -97,7 +97,7 @@
                 <VChart :option="chartOption" autoresize class="gastos-view__chart" />
                 <template #fallback>
                   <div class="gastos-view__chart-fallback">
-                    <USkeleton class="gastos-view__chart-skeleton" />
+                    <div class="gastos-view__chart-skeleton" />
                   </div>
                 </template>
               </ClientOnly>
@@ -148,7 +148,7 @@
   }
 
   .gastos-view__skeleton {
-    @apply h-96 w-full rounded-xl;
+    @apply h-96 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .gastos-view__empty-wrapper {
@@ -196,7 +196,7 @@
   }
 
   .gastos-view__chart-skeleton {
-    @apply h-full w-full rounded-lg;
+    @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
   }
 
   .gastos-view__table {

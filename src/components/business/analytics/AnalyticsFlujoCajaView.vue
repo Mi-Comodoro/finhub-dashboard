@@ -3,7 +3,7 @@
 
   import { Card, Heading, MetricCard, Text } from '@/components/atoms'
   import { useAnalyticsCashFlowApplication } from '@/composables/application/useAnalyticsCashFlowApplication'
-  import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
+  import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
@@ -94,7 +94,7 @@
 
 <template>
   <div class="cashflow-view">
-    <USkeleton v-if="pending" class="cashflow-view__skeleton" />
+    <div v-if="pending" class="cashflow-view__skeleton" />
 
     <template v-else>
       <div class="cashflow-view__kpis">
@@ -137,7 +137,7 @@
           <VChart :option="chartOption" style="height: 320px" autoresize />
           <template #fallback>
             <div class="cashflow-view__chart-fallback">
-              <USkeleton class="cashflow-view__chart-skeleton" />
+              <div class="cashflow-view__chart-skeleton" />
             </div>
           </template>
         </ClientOnly>
@@ -152,7 +152,7 @@
   }
 
   .cashflow-view__skeleton {
-    @apply h-64 w-full rounded-xl;
+    @apply h-64 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .cashflow-view__kpis {
@@ -176,6 +176,6 @@
   }
 
   .cashflow-view__chart-skeleton {
-    @apply h-full w-full rounded-lg;
+    @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
   }
 </style>
