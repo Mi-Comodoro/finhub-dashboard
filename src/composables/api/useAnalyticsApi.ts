@@ -1,3 +1,5 @@
+import type { DebtProjectionResponse, NetPositionResponse } from '@/types/analytics.types'
+
 export interface FinancialHealthScoreResponse {
   totalScore: number
   cashFlowScore: number
@@ -14,6 +16,20 @@ export interface SavingsTrendItem {
   transactionDate: string
 }
 
+export interface CashFlowForecastResponse {
+  months: Array<{
+    month: string
+    projectedIncome: number
+    projectedExpenses: number
+    projectedNet: number
+  }>
+  assumptions: {
+    basedOnBudget: boolean
+    incomeConstant: boolean
+    expensesConstant: boolean
+  }
+}
+
 export function useAnalyticsApi() {
   const getFinancialHealthScore = () =>
     $fetch<{ success: boolean; result: FinancialHealthScoreResponse }>(
@@ -25,5 +41,20 @@ export function useAnalyticsApi() {
       `/api/analytics/savings-trend?year=${year}`
     )
 
-  return { getFinancialHealthScore, getSavingsTrend }
+  const getCashFlowForecast = () =>
+    $fetch<{ success: boolean; result: CashFlowForecastResponse }>(
+      '/api/analytics/cash-flow-forecast'
+    )
+
+  const getNetPosition = () =>
+    $fetch<{ success: boolean; result: NetPositionResponse }>(
+      '/api/analytics/net-position'
+    )
+
+  const getDebtProjection = () =>
+    $fetch<{ success: boolean; result: DebtProjectionResponse }>(
+      '/api/analytics/debt-projection'
+    )
+
+  return { getFinancialHealthScore, getSavingsTrend, getCashFlowForecast, getNetPosition, getDebtProjection }
 }

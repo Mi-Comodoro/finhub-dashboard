@@ -6,6 +6,7 @@ export { default as UserBasicInformation } from './account/user-basic-informatio
 export { default as AnalyticsAhorroView } from './analytics/AnalyticsAhorroView.vue'
 export { default as AnalyticsFlujoCajaView } from './analytics/AnalyticsFlujoCajaView.vue'
 export { default as AnalyticsGastosView } from './analytics/AnalyticsGastosView.vue'
+export { default as AnalyticsNetPositionView } from './analytics/AnalyticsNetPositionView.vue'
 export { default as AnalyticsSaludView } from './analytics/AnalyticsSaludView.vue'
 export { default as BudgetDistribution } from './budget/BudgetDistribution.vue'
 export { default as BudgetSurplusModal } from './budget/BudgetSurplusModal.vue'

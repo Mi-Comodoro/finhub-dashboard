@@ -161,9 +161,7 @@
               <span class="material-symbols-outlined pillar-card__icon">{{ pillar.icon }}</span>
             </div>
             <span class="pillar-card__label">{{ pillar.label }}</span>
-            <span :title="pillar.tip" class="material-symbols-outlined pillar-card__info-icon">
-              info_outline
-            </span>
+            <span :title="pillar.tip" class="material-symbols-outlined pillar-card__info-icon">info</span>
           </div>
 
           <template v-if="pillar.isNeutral">
