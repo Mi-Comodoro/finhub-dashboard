@@ -171,8 +171,8 @@
         name: 'Solo aportes',
         type: 'line',
         data: props.baseData,
-        lineStyle: { color: '#94a3b8', type: 'dashed', width: 1.5 },
-        itemStyle: { color: '#94a3b8' },
+        lineStyle: { color: CHART_COLORS.planned, type: 'dashed', width: 1.5 },
+        itemStyle: { color: CHART_COLORS.planned },
         symbol: 'none'
       },
       {
@@ -202,12 +202,12 @@
                 silent: true,
                 symbol: 'none',
                 data: [{ yAxis: props.targetAmount }],
-                lineStyle: { color: '#f59e0b', type: 'dashed', width: 1.5 },
+                lineStyle: { color: CHART_COLORS.savings, type: 'dashed', width: 1.5 },
                 label: {
                   formatter: 'Objetivo',
                   position: 'insideEndTop',
                   fontSize: 11,
-                  color: '#f59e0b'
+                  color: CHART_COLORS.savings
                 }
               }
             }

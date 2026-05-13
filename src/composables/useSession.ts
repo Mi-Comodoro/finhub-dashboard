@@ -52,7 +52,7 @@ export const useSession = () => {
           try {
             const { success } = await authApi.refreshToken()
             if (success) return fetchUserMe(true)
-          } catch {}
+          } catch (_e) { /* refresh failed — fall through to original error */ }
         }
       }
       console.error('❌ Error fetching user:', error)

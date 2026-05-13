@@ -3,6 +3,7 @@ import { useTransactionApi } from '@/composables/api/useTransactionApi'
 import { useBudgetStore } from '@/stores/budget.store'
 import { useCategoryStore } from '@/stores/categories.store'
 import { useFinancesStore } from '@/stores/finances.store'
+import type { Currency } from '@/utils/currency'
 import type { TransactionSummary } from '~/types/domain'
 
 export interface ExpenseItem extends TransactionSummary {
@@ -54,5 +55,7 @@ export function useAnalyticsExpensesApplication() {
     }))
   }
 
-  return { fetchExpensesByPeriod }
+  const currency = computed(() => financesStore.defaultCurrency as Currency)
+
+  return { fetchExpensesByPeriod, currency }
 }

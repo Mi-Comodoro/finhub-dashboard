@@ -3,7 +3,7 @@
 
   import { Button, Heading, Text } from '@/components/atoms'
   import type { GoalsData } from '@/types/api'
-  import { formatCurrency, type Currency } from '@/utils/currency'
+  import { type Currency,formatCurrency } from '@/utils/currency'
 
   import type { SurplusAction } from './types/budget-surplus.types'
 

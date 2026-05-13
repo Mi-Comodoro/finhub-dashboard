@@ -3,20 +3,14 @@
 
   import { Card, Heading, MetricCard, Text } from '@/components/atoms'
   import { useAnalyticsCashFlowApplication } from '@/composables/application/useAnalyticsCashFlowApplication'
-  import type { Currency } from '@/utils/currency'
+  import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
-  import { useFinancesStore } from '@/stores/finances.store'
+  import { CHART_COLORS } from '@/utils/design-tokens'
 
-  const period = inject('analyticsPeriod') as {
-    selectedYear: Ref<number>
-    selectedMonth: Ref<number>
-  }
+  const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
   const { selectedYear, selectedMonth } = period
 
-  const financesStore = useFinancesStore()
-  const currency = computed(() => financesStore.defaultCurrency as Currency)
-
-  const { fetchTransactionsByPeriod, groupTransactionsByWeek } =
+  const { fetchTransactionsByPeriod, groupTransactionsByWeek, currency } =
     useAnalyticsCashFlowApplication()
 
   const { data: transactions, pending } = await useAsyncData(
@@ -71,25 +65,25 @@
         name: 'Ingresos',
         type: 'bar',
         data: weeklyGroups.value.map(w => w.income),
-        itemStyle: { color: '#14b8a6' }
+        itemStyle: { color: CHART_COLORS.income }
       },
       {
         name: 'Gastos',
         type: 'bar',
         data: weeklyGroups.value.map(w => w.expense),
-        itemStyle: { color: '#ef4444' }
+        itemStyle: { color: CHART_COLORS.expense }
       },
       {
         name: 'Ahorro',
         type: 'bar',
         data: weeklyGroups.value.map(w => w.savings),
-        itemStyle: { color: '#f59e0b' }
+        itemStyle: { color: CHART_COLORS.savings }
       },
       {
         name: 'Flujo Neto',
         type: 'line',
         data: weeklyGroups.value.map(w => w.netFlow),
-        itemStyle: { color: '#6366f1' },
+        itemStyle: { color: CHART_COLORS.secondary },
         lineStyle: { width: 2 },
         symbol: 'circle',
         symbolSize: 6
@@ -100,7 +94,7 @@
 
 <template>
   <div class="cashflow-view">
-    <USkeleton v-if="pending" class="cashflow-view__skeleton" />
+    <div v-if="pending" class="cashflow-view__skeleton" />
 
     <template v-else>
       <div class="cashflow-view__kpis">
@@ -143,7 +137,7 @@
           <VChart :option="chartOption" style="height: 320px" autoresize />
           <template #fallback>
             <div class="cashflow-view__chart-fallback">
-              <USkeleton class="cashflow-view__chart-skeleton" />
+              <div class="cashflow-view__chart-skeleton" />
             </div>
           </template>
         </ClientOnly>
@@ -158,7 +152,7 @@
   }
 
   .cashflow-view__skeleton {
-    @apply h-64 w-full rounded-xl;
+    @apply h-64 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .cashflow-view__kpis {
@@ -182,6 +176,6 @@
   }
 
   .cashflow-view__chart-skeleton {
-    @apply h-full w-full rounded-lg;
+    @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
   }
 </style>

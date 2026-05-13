@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { QuickTransactionForm, TransactionForm } from '@/components/business'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import { QuickTransactionForm, TransactionForm } from '@/components/business'
   import type { Column } from '@/components/organisms'
   import { ModalWizard } from '@/components/organisms'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'

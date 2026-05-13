@@ -20,10 +20,10 @@
   const activeTab = ref('salud')
 
   const tabs = [
-    { key: 'salud', label: 'Salud Financiera', icon: 'i-material-symbols-favorite' },
-    { key: 'flujo', label: 'Flujo de Caja', icon: 'i-material-symbols-waterfall-chart' },
-    { key: 'gastos', label: 'Gastos', icon: 'i-material-symbols-pie-chart' },
-    { key: 'ahorro', label: 'Ahorro', icon: 'i-material-symbols-savings' }
+    { key: 'salud', label: 'Salud Financiera', icon: 'favorite' },
+    { key: 'flujo', label: 'Flujo de Caja', icon: 'waterfall_chart' },
+    { key: 'gastos', label: 'Gastos', icon: 'pie_chart' },
+    { key: 'ahorro', label: 'Ahorro', icon: 'savings' }
   ]
 </script>
 
@@ -56,7 +56,7 @@
         :class="['analytics-tab', { 'analytics-tab--active': activeTab === tab.key }]"
         @click="activeTab = tab.key"
       >
-        <UIcon :name="tab.icon" class="analytics-tab__icon" />
+        <span class="material-symbols-outlined analytics-tab__icon">{{ tab.icon }}</span>
         <span class="analytics-tab__label">{{ tab.label }}</span>
       </button>
     </div>
@@ -110,7 +110,7 @@
   }
 
   .analytics-tab__icon {
-    @apply h-4 w-4 flex-shrink-0;
+    @apply flex-shrink-0 text-base leading-none;
   }
 
   .analytics-tab__label {
