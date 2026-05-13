@@ -3,6 +3,7 @@
   import { useRouter } from 'vue-router'
 
   import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import Badge from '@/components/atoms/badge/Badge.vue'
   import Button from '@/components/atoms/button/Button.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
@@ -414,6 +415,7 @@
     </section>
 
     <div v-if="!isPageLoading && !currentBudget" class="dashboard-page__no-budget">
+      <EmptyStateIllustration type="no-budget" class="dashboard-page__no-budget-illustration" />
       <Heading level="h3" size="lg" weight="semibold" class="dashboard-page__no-budget-title">
         No hay un presupuesto cargado para mostrar
       </Heading>
@@ -610,6 +612,10 @@
 
   .dashboard-page__no-budget {
     @apply rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .dashboard-page__no-budget-illustration {
+    @apply mx-auto mb-4 max-w-[140px];
   }
 
   .dashboard-page__no-budget-title {

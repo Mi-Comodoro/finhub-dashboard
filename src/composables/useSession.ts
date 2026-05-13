@@ -1,3 +1,4 @@
+import { useAuthApi } from '@/composables/api/useAuthApi'
 import { useUserApi } from '@/composables/api/useUserApi'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinancesStore } from '@/stores/finances.store'
@@ -10,6 +11,7 @@ export const useSession = () => {
   const financesStore = useFinancesStore()
   const userStore = useUserStore()
   const userApi = useUserApi()
+  const authApi = useAuthApi()
 
   const resolveSessionExpiresAt = (expiresAt?: number | null) => {
     if (expiresAt) {
@@ -25,7 +27,7 @@ export const useSession = () => {
     financesStore.clearFinances()
   }
 
-  const fetchUserMe = async () => {
+  const fetchUserMe = async (retried = false): Promise<UserMe['result'] | null> => {
     try {
       const { success, result } = await userApi.getUserMeWithCredentials()
 
@@ -41,6 +43,18 @@ export const useSession = () => {
       userStore.setUser(result.user)
       return result
     } catch (error) {
+      // On 401 and first attempt: try to refresh the token before giving up
+      if (!retried) {
+        const statusCode =
+          (error as Record<string, unknown>)?.statusCode ??
+          (error as Record<string, unknown>)?.status
+        if (statusCode === 401) {
+          try {
+            const { success } = await authApi.refreshToken()
+            if (success) return fetchUserMe(true)
+          } catch {}
+        }
+      }
       console.error('❌ Error fetching user:', error)
       return null
     }

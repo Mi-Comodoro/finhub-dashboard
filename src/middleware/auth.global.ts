@@ -1,12 +1,11 @@
+import { ACCESS_TOKEN } from '~/common/constants'
+
 export default defineNuxtRouteMiddleware(async to => {
   const { authStore, initSession } = useSession()
+
+  // Only call the API once per session — skip if already verified or already initialized
   if (!authStore.isInitialized) {
-    try {
-      await initSession()
-    } catch (e) {
-      authStore.setError(JSON.stringify(e))
-      throw e
-    }
+    await initSession()
   }
 
   const isLoggedIn = authStore.isAuthenticated
@@ -14,6 +13,13 @@ export default defineNuxtRouteMiddleware(async to => {
   const isHome = to.path === '/'
 
   if (!isLoggedIn && isDashboard) {
+    // On SSR: if the access-token cookie is present, initSession() likely failed due to
+    // a transient refresh race (new cookie set in response but not readable in same request).
+    // Return without redirecting — session.client.ts will recover the session client-side
+    // using the refreshed cookie the browser already has from the Set-Cookie response.
+    if (import.meta.server && useCookie(ACCESS_TOKEN).value) {
+      return
+    }
     return navigateTo('/', { replace: true })
   }
 

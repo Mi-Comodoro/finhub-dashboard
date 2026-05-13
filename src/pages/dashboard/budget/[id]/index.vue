@@ -44,7 +44,7 @@
   const route = useRoute()
   const router = useRouter()
 
-  const { loadBudgetDetail, markExpenseAsPaid, budgetSelected, expectedIncome, defaultCurrency } =
+  const { loadBudgetDetail, budgetSelected, expectedIncome, defaultCurrency } =
     useBudgetDetailApplication()
   const { deleteExpense } = useExpenseApplication()
   const { fetchByBudget: fetchTransactions } = useTransactionApplication()
@@ -126,6 +126,7 @@
   const showIncomeModal = ref(false)
   const showEditModal = ref(false)
   const editingExpense = ref<{ id: string; data: Record<string, unknown> } | null>(null)
+  const formMode = ref<'create' | 'edit' | 'view'>('create')
 
   const budgetEditInitialData = computed(() => {
     if (!plan.value) return undefined
@@ -148,12 +149,18 @@
 
   const openForm = () => {
     editingExpense.value = null
+    formMode.value = 'create'
     showForm.value = true
   }
 
   const closeForm = () => {
     showForm.value = false
     editingExpense.value = null
+    formMode.value = 'create'
+  }
+
+  const handleFormSuccess = () => {
+    closeForm()
   }
 
   const showSavingDistributionForm = ref(false)
@@ -162,11 +169,8 @@
     showSavingDistributionForm.value = false
   }
 
-  const handleMarkExpenseAsPaid = async (row: { id: string }) => {
-    const { success } = await markExpenseAsPaid(row.id)
-    if (success) {
-      successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
-    }
+  const handleMarkExpenseAsPaid = (_row: { id: string }) => {
+    successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
   }
 
   const handleEditExpense = (row: Record<string, unknown>) => {
@@ -181,6 +185,25 @@
         notes: row.notes
       }
     }
+    formMode.value = 'edit'
+    showForm.value = true
+  }
+
+  const handleViewExpense = (row: Record<string, unknown>) => {
+    editingExpense.value = {
+      id: row.id as string,
+      data: {
+        name: row.name,
+        expectedAmount: row.expectedAmount,
+        dueDate: row.dueDate,
+        category: row.category,
+        bucket: row.bucket,
+        status: row.status,
+        isEssential: row.isEssential,
+        notes: row.notes
+      }
+    }
+    formMode.value = 'view'
     showForm.value = true
   }
 
@@ -274,6 +297,7 @@
           @open-form="openForm"
           @mark-as-payed="handleMarkExpenseAsPaid"
           @edit="handleEditExpense"
+          @view="handleViewExpense"
           @remove="handleDeleteExpense"
         />
       </div>
@@ -295,7 +319,10 @@
         :budget-id="budgetId"
         :expense-id="editingExpense?.id"
         :initial-data="editingExpense?.data"
-        @on-close="closeForm"
+        :currency="defaultCurrency"
+        :mode="formMode"
+        @success="handleFormSuccess"
+        @close="closeForm"
       />
     </ModalWizard>
 

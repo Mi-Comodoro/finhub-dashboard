@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { Badge, Button, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { AccountSavingForm, GoalsForm } from '@/components/business'
   import { CardInfo } from '@/components/molecules'
   import { ModalWizard } from '@/components/organisms'
@@ -499,7 +500,7 @@
       </div>
       <div v-else class="goals-page__empty-section">
         <div class="goals-page__empty-content">
-          <Icon name="add_task" class="goals-page__empty-icon" size="2xl" />
+          <EmptyStateIllustration type="no-goals" class="goals-page__empty-icon" />
           <Heading level="h3" color="muted">Aún no tienes metas</Heading>
           <Text size="sm" color="muted" class="goals-page__empty-text">
             Primero crea tus cuentas para poder definir tus metas financieras y comenzar a organizar
@@ -878,7 +879,7 @@
   }
 
   .goals-page__empty-icon {
-    @apply text-slate-400 dark:text-slate-600;
+    @apply w-32;
   }
 
   .goals-page__empty-text {

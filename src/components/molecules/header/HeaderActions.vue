@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import { UserAvatar } from '@/components/atoms'
   import { NotificationCenter } from '@/components/molecules'
-  import { useUserStore } from '@/stores/user.store'
+  import UserAvatarDropdown from '@/components/business/layout/UserAvatarDropdown.vue'
   import { useAuthStore } from '~/stores/auth.store'
 
   import type { HeaderActionsProps } from './types/header-actions.types'
@@ -9,12 +8,6 @@
   withDefaults(defineProps<HeaderActionsProps>(), {
     className: ''
   })
-
-  const user = computed(() => userStore.userInfo)
-
-  // User dropdown state
-  const showUserDropdown = ref(false)
-  const userDropdownRef = ref<HTMLElement | null>(null)
 
   // Mock notifications data
   const notifications = ref([
@@ -42,28 +35,6 @@
   ])
 
   const { accountType } = useAuthStore()
-  const userStore = useUserStore()
-
-  // Logout function
-
-  const handleDocumentClick = (event: MouseEvent) => {
-    const target = event.target as Node | null
-
-    if (userDropdownRef.value && target && !userDropdownRef.value.contains(target)) {
-      showUserDropdown.value = false
-    }
-  }
-
-  // Close user dropdown when clicking outside
-  onMounted(() => {
-    document.addEventListener('click', handleDocumentClick)
-  })
-
-  onBeforeUnmount(() => {
-    document.removeEventListener('click', handleDocumentClick)
-  })
-
-  const userName = computed(() => user.value.displayName ?? user.value.name ?? 'Usuario')
 </script>
 
 <template>
@@ -78,8 +49,27 @@
       }}
     </Badge>
 
+    <!-- Help button -->
+    <NuxtLink to="/dashboard/help" class="header-actions__help-btn" title="Ayuda">
+      <span class="material-symbols-outlined header-actions__help-icon">help_outline</span>
+    </NuxtLink>
+
     <!-- Notification Center -->
     <NotificationCenter :notifications="notifications" />
-    <UserAvatar :name="userName" class-name="ml-2" :avatar="user.photo!" />
+
+    <!-- User Avatar Dropdown -->
+    <UserAvatarDropdown class="ml-2" />
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .header-actions__help-btn {
+    @apply flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 transition-colors duration-150;
+    @apply hover:bg-neutral-100 hover:text-primary-600;
+  }
+
+  .header-actions__help-icon {
+    font-size: 1.25rem;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+</style>
