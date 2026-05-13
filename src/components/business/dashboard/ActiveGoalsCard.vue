@@ -17,8 +17,7 @@
   })
 
   const emit = defineEmits<{
-    (e: 'create-goal'): void
-    (e: 'view-all'): void
+    (e: 'create-goal' | 'view-all'): void
   }>()
 
   const activeGoals = computed(() => (props.goals ?? []).filter(g => g.isActive).slice(0, 3))

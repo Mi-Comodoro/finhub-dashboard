@@ -70,11 +70,11 @@
     <div class="ahorro-view__kpis">
       <div class="ahorro-view__kpi-card">
         <div class="ahorro-view__kpi-icon">
-          <UIcon name="i-material-symbols-savings" class="ahorro-view__kpi-icon-svg" />
+          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">savings</span>
         </div>
         <div class="ahorro-view__kpi-content">
           <Text size="xs" color="muted">Total ahorrado en el año</Text>
-          <USkeleton v-if="isLoading" class="ahorro-view__kpi-skeleton" />
+          <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
           <Heading v-else level="h3" size="xl" weight="bold" color="black">
             {{ formatCurrency(totalSaved, 'COP') }}
           </Heading>
@@ -83,11 +83,11 @@
 
       <div class="ahorro-view__kpi-card">
         <div class="ahorro-view__kpi-icon">
-          <UIcon name="i-material-symbols-star" class="ahorro-view__kpi-icon-svg" />
+          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">star</span>
         </div>
         <div class="ahorro-view__kpi-content">
           <Text size="xs" color="muted">Mejor mes</Text>
-          <USkeleton v-if="isLoading" class="ahorro-view__kpi-skeleton" />
+          <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
           <template v-else>
             <Heading level="h3" size="xl" weight="bold" color="black">
               {{ formatCurrency(bestMonth?.actual ?? 0, 'COP') }}
@@ -99,11 +99,11 @@
 
       <div class="ahorro-view__kpi-card">
         <div class="ahorro-view__kpi-icon">
-          <UIcon name="i-material-symbols-query-stats" class="ahorro-view__kpi-icon-svg" />
+          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">query_stats</span>
         </div>
         <div class="ahorro-view__kpi-content">
           <Text size="xs" color="muted">Promedio mensual</Text>
-          <USkeleton v-if="isLoading" class="ahorro-view__kpi-skeleton" />
+          <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
           <Heading v-else level="h3" size="xl" weight="bold" color="black">
             {{ formatCurrency(monthlyAvg, 'COP') }}
           </Heading>
@@ -121,11 +121,11 @@
         <ClientOnly>
           <VChart v-if="!isLoading" :option="chartOption" autoresize class="ahorro-view__chart" />
           <div v-else class="ahorro-view__chart ahorro-view__chart--loading">
-            <USkeleton class="ahorro-view__chart-skeleton" />
+            <div class="ahorro-view__chart-skeleton" />
           </div>
           <template #fallback>
             <div class="ahorro-view__chart ahorro-view__chart--loading">
-              <USkeleton class="ahorro-view__chart-skeleton" />
+              <div class="ahorro-view__chart-skeleton" />
             </div>
           </template>
         </ClientOnly>
@@ -152,7 +152,7 @@
   }
 
   .ahorro-view__kpi-icon-svg {
-    @apply h-5 w-5 text-warning-600;
+    @apply text-xl leading-none text-warning-600;
   }
 
   .ahorro-view__kpi-content {
@@ -160,7 +160,7 @@
   }
 
   .ahorro-view__kpi-skeleton {
-    @apply mt-1 h-7 w-36 rounded;
+    @apply mt-1 h-7 w-36 animate-pulse rounded bg-slate-100;
   }
 
   .ahorro-view__chart-card {
@@ -184,6 +184,6 @@
   }
 
   .ahorro-view__chart-skeleton {
-    @apply h-full w-full rounded-lg;
+    @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
   }
 </style>

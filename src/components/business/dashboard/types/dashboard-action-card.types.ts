@@ -5,8 +5,5 @@ export interface DashboardActionCardProps {
 }
 
 export interface DashboardActionCardEmits {
-  (e: 'define-goals'): void
-  (e: 'add-to-goal'): void
-  (e: 'plan-expenses'): void
-  (e: 'carry-forward'): void
+  (e: 'define-goals' | 'add-to-goal' | 'plan-expenses' | 'carry-forward'): void
 }

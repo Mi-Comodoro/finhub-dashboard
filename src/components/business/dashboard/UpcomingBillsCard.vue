@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Badge, Button, Heading, Text } from '@/components/atoms'
+  import { Badge, Heading, Text } from '@/components/atoms'
   import { formatCurrency } from '@/utils/currency'
 
   interface Bill {

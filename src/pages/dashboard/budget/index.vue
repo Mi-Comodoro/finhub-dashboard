@@ -7,7 +7,6 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useBudgetListPresenter } from '@/composables/presenters/useBudgetListPresenter'
   import { useFeedback } from '@/composables/useFeedback'
-  import { useFinancesStore } from '@/stores/finances.store'
   import { useGoalsStore } from '@/stores/goals.store'
   import DateUtils from '@/utils/date'
   import type { CurrentBudgetPlan, PlannedIncomeSummary } from '~/types/domain'
@@ -34,13 +33,12 @@
   const { handleDelete } = useBudgetActions()
   const { fetchGoals } = useGoalsApplication()
   const goalsStore = useGoalsStore()
-  const financesStore = useFinancesStore()
 
   const {
     showSurplusModal,
     showDeficitModal,
     surplus,
-    pendingClose,
+    pendingClose: _pendingClose,
     isClosing,
     initiateClosure,
     executeClosure,
