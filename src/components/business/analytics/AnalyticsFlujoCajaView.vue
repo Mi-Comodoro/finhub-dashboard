@@ -5,6 +5,7 @@
   import { useAnalyticsCashFlowApplication } from '@/composables/application/useAnalyticsCashFlowApplication'
   import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
+  import { CHART_COLORS } from '@/utils/design-tokens'
 
   const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
   const { selectedYear, selectedMonth } = period
@@ -64,25 +65,25 @@
         name: 'Ingresos',
         type: 'bar',
         data: weeklyGroups.value.map(w => w.income),
-        itemStyle: { color: '#14b8a6' }
+        itemStyle: { color: CHART_COLORS.income }
       },
       {
         name: 'Gastos',
         type: 'bar',
         data: weeklyGroups.value.map(w => w.expense),
-        itemStyle: { color: '#ef4444' }
+        itemStyle: { color: CHART_COLORS.expense }
       },
       {
         name: 'Ahorro',
         type: 'bar',
         data: weeklyGroups.value.map(w => w.savings),
-        itemStyle: { color: '#f59e0b' }
+        itemStyle: { color: CHART_COLORS.savings }
       },
       {
         name: 'Flujo Neto',
         type: 'line',
         data: weeklyGroups.value.map(w => w.netFlow),
-        itemStyle: { color: '#6366f1' },
+        itemStyle: { color: CHART_COLORS.secondary },
         lineStyle: { width: 2 },
         symbol: 'circle',
         symbolSize: 6

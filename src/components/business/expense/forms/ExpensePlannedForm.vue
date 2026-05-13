@@ -2,8 +2,8 @@
   import { Form } from '@/components/organisms/forms'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
-  import { formatCurrency } from '@/utils/currency'
   import type { Currency } from '@/utils/currency'
+  import { formatCurrency } from '@/utils/currency'
   import type { ExpenseData } from '~/types/domain'
 
   import { expensedPlannedFieldsSchema } from './schema/expense.fields.schema'

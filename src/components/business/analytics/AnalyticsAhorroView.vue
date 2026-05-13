@@ -12,8 +12,9 @@
 
   import { Heading, Text } from '@/components/atoms'
   import { useAnalyticsSavingsTrendApplication } from '@/composables/application/useAnalyticsSavingsTrendApplication'
-  import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
+  import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
+  import { CHART_COLORS } from '@/utils/design-tokens'
 
   use([LineChart, GridComponent, TooltipComponent, CanvasRenderer])
 
@@ -26,8 +27,6 @@
 
   const { savingsByMonth, isLoading, totalSaved, bestMonth, monthlyAvg } =
     useAnalyticsSavingsTrendApplication(selectedYear)
-
-  const SAVINGS_COLOR = '#f59e0b'
 
   const chartOption = computed<EChartsOption>(() => ({
     grid: { left: '2%', right: '2%', top: 16, bottom: '2%', containLabel: true },
@@ -58,9 +57,9 @@
         type: 'line',
         smooth: true,
         data: savingsByMonth.value.map(m => m.actual),
-        areaStyle: { opacity: 0.15, color: SAVINGS_COLOR },
-        itemStyle: { color: SAVINGS_COLOR },
-        lineStyle: { color: SAVINGS_COLOR, width: 3 }
+        areaStyle: { opacity: 0.15, color: CHART_COLORS.savings },
+        itemStyle: { color: CHART_COLORS.savings },
+        lineStyle: { color: CHART_COLORS.savings, width: 3 }
       }
     ]
   }))

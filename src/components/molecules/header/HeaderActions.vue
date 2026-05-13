@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { NotificationCenter } from '@/components/molecules'
   import UserAvatarDropdown from '@/components/business/layout/UserAvatarDropdown.vue'
+  import { NotificationCenter } from '@/components/molecules'
   import { useAuthStore } from '~/stores/auth.store'
 
   import type { HeaderActionsProps } from './types/header-actions.types'

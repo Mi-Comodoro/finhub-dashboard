@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import VChart from 'vue-echarts'
 
-  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { Card, Heading, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { useAnalyticsExpensesApplication } from '@/composables/application/useAnalyticsExpensesApplication'
   import { useExpensesPresenter } from '@/composables/presenters/useExpensesPresenter'
   import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
@@ -65,7 +65,7 @@
     <USkeleton v-if="pending" class="gastos-view__skeleton" />
 
     <template v-else>
-      <div class="gastos-view__empty-wrapper" v-if="!hasData">
+      <div v-if="!hasData" class="gastos-view__empty-wrapper">
         <EmptyStateIllustration type="no-transactions" />
         <Text size="sm" color="muted">No hay gastos registrados para el período seleccionado.</Text>
       </div>
