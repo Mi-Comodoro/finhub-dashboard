@@ -24,6 +24,7 @@
   } from '@/utils/goals.utils'
 
   const router = useRouter()
+  const { showModal } = useModalStore()
 
   const {
     loadGoalsData,
@@ -124,7 +125,7 @@
     if (goalsProgress.value < 1) {
       const { success } = await loadGoalsData()
       if (!success && goalsError.value) {
-        useModalStore().showModal('error', {
+        showModal('error', {
           title: goalsError.value.title,
           message: goalsError.value.message,
           actionLabel: 'Aceptar',
