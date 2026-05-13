@@ -10,8 +10,14 @@
   const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
   const { selectedYear, selectedMonth } = period
 
-  const { fetchTransactionsByPeriod, groupTransactionsByWeek, currency } =
-    useAnalyticsCashFlowApplication()
+  const {
+    fetchTransactionsByPeriod,
+    groupTransactionsByWeek,
+    currency,
+    forecast,
+    loadingForecast,
+    forecastWarning,
+  } = useAnalyticsCashFlowApplication()
 
   const { data: transactions, pending } = await useAsyncData(
     'analytics-cashflow',
@@ -38,6 +44,44 @@
   const netFlowVariant = computed(() => (netFlow.value >= 0 ? 'income' : 'expense'))
 
   const hasData = computed(() => (transactions.value ?? []).length > 0)
+
+  const forecastChartOption = computed(() => ({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['Ingresos proy.', 'Gastos proy.', 'Neto proy.'], top: 8 },
+    grid: { left: '3%', right: '4%', bottom: '3%', top: '15%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: forecast.value?.months.map(m => m.month) ?? [],
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        formatter: (value: number) => formatCompactCurrency(value, currency.value),
+      },
+    },
+    series: [
+      {
+        name: 'Ingresos proy.',
+        type: 'line',
+        data: forecast.value?.months.map(m => m.projectedIncome) ?? [],
+        lineStyle: { type: 'dashed' },
+        itemStyle: { color: CHART_COLORS.income },
+      },
+      {
+        name: 'Gastos proy.',
+        type: 'line',
+        data: forecast.value?.months.map(m => m.projectedExpenses) ?? [],
+        lineStyle: { type: 'dashed' },
+        itemStyle: { color: CHART_COLORS.expense },
+      },
+      {
+        name: 'Neto proy.',
+        type: 'bar',
+        data: forecast.value?.months.map(m => m.projectedNet) ?? [],
+        itemStyle: { color: CHART_COLORS.savings },
+      },
+    ],
+  }))
 
   const chartOption = computed(() => ({
     tooltip: {
@@ -142,6 +186,58 @@
           </template>
         </ClientOnly>
       </Card>
+
+      <!-- Forecast section -->
+      <div class="cashflow-view__section-title">
+        <span>Pronóstico próximos 3 meses</span>
+        <span v-if="forecastWarning" class="cashflow-view__warning">
+          ⚠ {{ forecastWarning }}
+        </span>
+      </div>
+
+      <div v-if="loadingForecast" class="cashflow-view__forecast-kpis">
+        <div v-for="n in 3" :key="n" class="cashflow-view__forecast-skeleton" />
+      </div>
+
+      <template v-else>
+        <div class="cashflow-view__forecast-kpis">
+          <div
+            v-for="month in forecast?.months ?? []"
+            :key="month.month"
+            class="cashflow-view__forecast-card"
+          >
+            <p class="cashflow-view__forecast-month">{{ month.month }}</p>
+            <p
+              class="cashflow-view__forecast-net"
+              :class="
+                month.projectedNet >= 0
+                  ? 'cashflow-view__forecast-net--positive'
+                  : 'cashflow-view__forecast-net--negative'
+              "
+            >
+              {{ formatCurrency(month.projectedNet, currency) }}
+            </p>
+            <div class="cashflow-view__forecast-detail">
+              <span>↑ {{ formatCurrency(month.projectedIncome, currency) }}</span>
+              <span>↓ {{ formatCurrency(month.projectedExpenses, currency) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <Card class="cashflow-view__chart-card">
+          <div class="cashflow-view__chart-header">
+            <Heading level="h3" size="lg" weight="semibold">Pronóstico — Líneas Proyectadas</Heading>
+          </div>
+          <ClientOnly>
+            <VChart :option="forecastChartOption" style="height: 320px" autoresize />
+            <template #fallback>
+              <div class="cashflow-view__chart-fallback">
+                <div class="cashflow-view__chart-skeleton" />
+              </div>
+            </template>
+          </ClientOnly>
+        </Card>
+      </template>
     </template>
   </div>
 </template>
@@ -177,5 +273,45 @@
 
   .cashflow-view__chart-skeleton {
     @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
+  }
+
+  .cashflow-view__section-title {
+    @apply flex flex-wrap items-center gap-2 text-sm font-semibold text-neutral-700;
+  }
+
+  .cashflow-view__warning {
+    @apply rounded-md bg-warning-50 px-2 py-1 text-xs font-normal text-warning-700;
+  }
+
+  .cashflow-view__forecast-kpis {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-3;
+  }
+
+  .cashflow-view__forecast-skeleton {
+    @apply h-28 animate-pulse rounded-xl bg-slate-100;
+  }
+
+  .cashflow-view__forecast-card {
+    @apply flex flex-col gap-1 rounded-xl border border-neutral-200 bg-white p-4;
+  }
+
+  .cashflow-view__forecast-month {
+    @apply text-xs font-semibold uppercase tracking-wide text-neutral-500;
+  }
+
+  .cashflow-view__forecast-net {
+    @apply text-xl font-bold;
+  }
+
+  .cashflow-view__forecast-net--positive {
+    @apply text-primary-700;
+  }
+
+  .cashflow-view__forecast-net--negative {
+    @apply text-danger-700;
+  }
+
+  .cashflow-view__forecast-detail {
+    @apply flex gap-3 text-xs text-neutral-500;
   }
 </style>
