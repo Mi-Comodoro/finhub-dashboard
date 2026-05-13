@@ -1,6 +1,7 @@
 import { useTransactionApi } from '@/composables/api/useTransactionApi'
 import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
+import type { Currency } from '@/utils/currency'
 import type { TransactionSummary } from '~/types/domain'
 
 export interface WeeklyGroup {
@@ -70,5 +71,7 @@ export function useAnalyticsCashFlowApplication() {
       }))
   }
 
-  return { fetchTransactionsByPeriod, groupTransactionsByWeek }
+  const currency = computed(() => financesStore.defaultCurrency as Currency)
+
+  return { fetchTransactionsByPeriod, groupTransactionsByWeek, currency }
 }

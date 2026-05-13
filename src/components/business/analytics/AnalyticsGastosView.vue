@@ -5,20 +5,13 @@
   import { Card, Heading, Text } from '@/components/atoms'
   import { useAnalyticsExpensesApplication } from '@/composables/application/useAnalyticsExpensesApplication'
   import { useExpensesPresenter } from '@/composables/presenters/useExpensesPresenter'
-  import { useFinancesStore } from '@/stores/finances.store'
-  import type { Currency } from '@/utils/currency'
+  import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCurrency } from '@/utils/currency'
 
-  const period = inject('analyticsPeriod') as {
-    selectedYear: Ref<number>
-    selectedMonth: Ref<number>
-  }
+  const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
   const { selectedYear, selectedMonth } = period
 
-  const financesStore = useFinancesStore()
-  const currency = computed(() => financesStore.defaultCurrency as Currency)
-
-  const { fetchExpensesByPeriod } = useAnalyticsExpensesApplication()
+  const { fetchExpensesByPeriod, currency } = useAnalyticsExpensesApplication()
   const { groupByBucket, groupByCategory } = useExpensesPresenter()
 
   const { data: expenses, pending } = await useAsyncData(

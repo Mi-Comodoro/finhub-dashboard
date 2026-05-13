@@ -3,20 +3,13 @@
 
   import { Card, Heading, MetricCard, Text } from '@/components/atoms'
   import { useAnalyticsCashFlowApplication } from '@/composables/application/useAnalyticsCashFlowApplication'
-  import type { Currency } from '@/utils/currency'
+  import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
-  import { useFinancesStore } from '@/stores/finances.store'
 
-  const period = inject('analyticsPeriod') as {
-    selectedYear: Ref<number>
-    selectedMonth: Ref<number>
-  }
+  const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
   const { selectedYear, selectedMonth } = period
 
-  const financesStore = useFinancesStore()
-  const currency = computed(() => financesStore.defaultCurrency as Currency)
-
-  const { fetchTransactionsByPeriod, groupTransactionsByWeek } =
+  const { fetchTransactionsByPeriod, groupTransactionsByWeek, currency } =
     useAnalyticsCashFlowApplication()
 
   const { data: transactions, pending } = await useAsyncData(
