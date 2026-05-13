@@ -67,7 +67,10 @@
     <template v-else>
       <div v-if="!hasData" class="gastos-view__empty-wrapper">
         <EmptyStateIllustration type="no-transactions" />
-        <Text size="sm" color="muted">No hay gastos registrados para el período seleccionado.</Text>
+        <Heading level="h3" size="lg" weight="semibold">Sin gastos registrados</Heading>
+        <Text size="sm" color="muted">
+          No hay gastos para el período seleccionado.
+        </Text>
       </div>
 
       <template v-else>

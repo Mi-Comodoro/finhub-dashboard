@@ -196,6 +196,15 @@
           <Heading level="h3" size="lg" weight="semibold">Proyección de deuda</Heading>
           <Text size="xs" color="muted">Balance proyectado y pagos mínimos mensuales</Text>
         </div>
+        <div
+          v-if="debtProjection?.simplified"
+          class="net-position-view__simplified-note"
+        >
+          <span class="material-symbols-outlined net-position-view__simplified-icon">info</span>
+          <Text size="xs" color="muted">
+            Proyección lineal simplificada. No incluye interés compuesto.
+          </Text>
+        </div>
         <div class="net-position-view__chart-body">
           <ClientOnly>
             <VChart
@@ -372,6 +381,14 @@
 
   .net-position-view__chart-header {
     @apply flex flex-col gap-0.5 border-b border-neutral-100 px-5 py-4;
+  }
+
+  .net-position-view__simplified-note {
+    @apply flex items-center gap-1.5 border-b border-neutral-100 px-5 pb-3;
+  }
+
+  .net-position-view__simplified-icon {
+    @apply text-sm leading-none text-neutral-400;
   }
 
   .net-position-view__chart-body {

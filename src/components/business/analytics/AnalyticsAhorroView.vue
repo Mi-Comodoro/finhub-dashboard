@@ -11,6 +11,7 @@
   import VChart from 'vue-echarts'
 
   import { Heading, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { useAnalyticsSavingsTrendApplication } from '@/composables/application/useAnalyticsSavingsTrendApplication'
   import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
@@ -25,7 +26,7 @@
   const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
   const { selectedYear } = period
 
-  const { savingsByMonth, isLoading, totalSaved, bestMonth, monthlyAvg } =
+  const { savingsByMonth, isLoading, totalSaved, bestMonth, monthlyAvg, currency } =
     useAnalyticsSavingsTrendApplication(selectedYear)
 
   const chartOption = computed<EChartsOption>(() => ({
@@ -33,7 +34,7 @@
     tooltip: {
       trigger: 'axis',
       formatter: (params: Array<{ axisValue: string; value: number }>) =>
-        `${params[0].axisValue}: <strong>${formatCurrency(Number(params[0].value ?? 0), 'COP')}</strong>`
+        `${params[0].axisValue}: <strong>${formatCurrency(Number(params[0].value ?? 0), currency.value)}</strong>`
     },
     xAxis: {
       type: 'category',
@@ -47,7 +48,7 @@
       axisLabel: {
         color: '#64748b',
         fontSize: 11,
-        formatter: (value: number) => formatCompactCurrency(value, 'COP')
+        formatter: (value: number) => formatCompactCurrency(value, currency.value)
       },
       splitLine: { lineStyle: { color: '#e2e8f0', type: 'dashed' } }
     },
@@ -76,7 +77,7 @@
           <Text size="xs" color="muted">Total ahorrado en el año</Text>
           <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
           <Heading v-else level="h3" size="xl" weight="bold" color="black">
-            {{ formatCurrency(totalSaved, 'COP') }}
+            {{ formatCurrency(totalSaved, currency.value) }}
           </Heading>
         </div>
       </div>
@@ -90,7 +91,7 @@
           <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
           <template v-else>
             <Heading level="h3" size="xl" weight="bold" color="black">
-              {{ formatCurrency(bestMonth?.actual ?? 0, 'COP') }}
+              {{ formatCurrency(bestMonth?.actual ?? 0, currency.value) }}
             </Heading>
             <Text size="xs" color="muted">{{ bestMonth?.label }}</Text>
           </template>
@@ -105,13 +106,24 @@
           <Text size="xs" color="muted">Promedio mensual</Text>
           <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
           <Heading v-else level="h3" size="xl" weight="bold" color="black">
-            {{ formatCurrency(monthlyAvg, 'COP') }}
+            {{ formatCurrency(monthlyAvg, currency.value) }}
           </Heading>
         </div>
       </div>
     </div>
 
-    <div class="ahorro-view__chart-card">
+    <div v-if="!isLoading && totalSaved === 0" class="ahorro-view__empty">
+      <EmptyStateIllustration
+        type="no-transactions"
+        class="ahorro-view__empty-illustration"
+      />
+      <Heading level="h3" size="lg" weight="semibold">Sin ahorro registrado</Heading>
+      <Text size="sm" color="muted">
+        Registra aportes a tus metas para ver la tendencia anual.
+      </Text>
+    </div>
+
+    <div v-else class="ahorro-view__chart-card">
       <div class="ahorro-view__chart-header">
         <Heading level="h3" size="lg" weight="semibold">Tendencia de ahorro</Heading>
         <Text size="xs" color="muted">Ahorro real mes a mes durante {{ selectedYear }}</Text>
@@ -185,5 +197,13 @@
 
   .ahorro-view__chart-skeleton {
     @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
+  }
+
+  .ahorro-view__empty {
+    @apply flex flex-col items-center gap-3 py-12 text-center;
+  }
+
+  .ahorro-view__empty-illustration {
+    @apply h-32 w-32;
   }
 </style>
