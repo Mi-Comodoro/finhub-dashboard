@@ -1,5 +1,13 @@
 import type { Budget } from '~/types/domain'
 
+export interface UpdateBudgetDto {
+  name?: string
+  strategy?: 'BALANCED' | 'CUSTOM'
+  needsLimit?: number
+  wantsLimit?: number
+  savingsLimit?: number
+}
+
 export function useBudgetApi() {
   const getBudgets = async (financeId: string, year?: number) => {
     const query = year ? `?year=${year}` : ''
