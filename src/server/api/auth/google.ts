@@ -16,9 +16,17 @@ export default defineEventHandler(async event => {
   deleteCookie(event, ACCOUNT_TYPE)
   deleteCookie(event, TOKEN_EXPIRES_AT)
 
+  const backendBody = {
+    data: {
+      idToken: payload.idToken,
+      name: payload.name,
+      ...(payload.rejectPhoto ? { rejectPhoto: true } : {})
+    }
+  }
+
   const response = await $fetch<AuthResponse>(`${config.public.apiBase}/auth/google`, {
     method: 'POST',
-    body,
+    body: backendBody,
     onResponseError: ({ response }) => {
       console.error('❌ Error del backend en /auth/google:', response.status, response.statusText)
       loginError(response.status)

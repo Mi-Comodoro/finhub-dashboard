@@ -66,6 +66,21 @@ export const useProfileApplication = () => {
     }
   }
 
+  const avatarUrl = computed<string | null>(() => {
+    if (!userStore.photo || userStore.rejectPhoto) return null
+    return userStore.photo
+  })
+
+  const avatarInitials = computed<string>(() => {
+    const name = userStore.name ?? ''
+    return name
+      .split(' ')
+      .slice(0, 2)
+      .map(n => n[0] ?? '')
+      .join('')
+      .toUpperCase()
+  })
+
   const user = computed(() => ({
     displayName: userStore.displayName,
     email: userStore.email,
@@ -88,6 +103,8 @@ export const useProfileApplication = () => {
     updatePersonalInfo,
     updateFinancialInfo,
     user,
-    finances
+    finances,
+    avatarUrl,
+    avatarInitials
   }
 }

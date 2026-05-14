@@ -8,10 +8,10 @@ export const useAuthApi = () => {
     })
   }
 
-  const loginWithGoogleToken = async (idToken: string, name: string) => {
+  const loginWithGoogleToken = async (idToken: string, name: string, rejectPhoto?: boolean) => {
     return await $fetch<AuthResponseResult>('/api/auth/google', {
       method: 'POST',
-      body: { data: { idToken, name } }
+      body: { data: { idToken, name, ...(rejectPhoto ? { rejectPhoto: true } : {}) } }
     })
   }
 
