@@ -3,7 +3,8 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Entorno de desarrollo
-- **Node.js requerido: v22.x**
+- **Node.js requerido: v22.12.0+** (los bindings nativos de oxc-parser requieren >=22.12.0)
+- **Package manager: pnpm** (no npm ni yarn)
 - ESLint falla silenciosamente o no resuelve plugins
   correctamente con versiones anteriores a Node 22.
 - Verificar versión activa: `node --version`
@@ -13,16 +14,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Development:**
 ```bash
-npm run dev          # Start Nuxt dev server
-npm run build        # Build for production
-npm run preview      # Preview production build
+pnpm dev             # Start Nuxt dev server
+pnpm build           # Build for production
+pnpm preview         # Preview production build
 ```
 
 **Code Quality:**
 ```bash
-npm run lint         # Run ESLint
-npm run lint:fix     # Fix ESLint errors automatically
-npm run format       # Format code with Prettier
+pnpm lint            # Run ESLint
+pnpm lint:fix        # Fix ESLint errors automatically
+pnpm format          # Format code with Prettier
+```
+
+**Packages:**
+```bash
+pnpm add <package>       # Add a dependency
+pnpm add -D <package>    # Add a dev dependency
+pnpm install             # Install all dependencies
 ```
 
 ## Architecture Overview
@@ -181,6 +189,53 @@ Neutral       → neutral   (slate)    bg-neutral-100  text-neutral-600
 - Use `CHART_COLORS` from `utils/design-tokens.ts`
 - Always wrap `VChart` in `<ClientOnly>`
 - Always set explicit height on charts
+
+## UI/UX Reference — Gold Standard
+
+Referencias visuales para cualquier componente o página nueva:
+  - src/pages/dashboard/index.vue          (Dashboard)
+  - src/pages/dashboard/goals/index.vue    (Goals)
+  - src/pages/dashboard/budget/index.vue   (Budgets)
+
+Checklist antes de crear cualquier componente:
+
+Espaciado:
+  gap entre secciones: gap-4
+  padding interno de cards: p-5
+  header de página: px-4 py-2
+
+Cards:
+  @apply rounded-xl border border-neutral-200 bg-white;
+  @apply dark:border-neutral-700 dark:bg-neutral-800;
+
+Tipografía:
+  Título página: Heading level="h1" size="2xl" weight="extrabold"
+  Subtítulo:     Text size="xs" color="muted"
+  Sección:       Heading level="h3" size="lg" weight="semibold"
+
+Colores semánticos (no cambiar):
+  primary   → ingresos, acciones positivas
+  warning   → ahorro
+  danger    → gastos, deuda alta
+  success   → metas cumplidas
+  secondary → flujo neto
+
+Iconos: material-symbols-outlined
+  <span class="material-symbols-outlined">nombre</span>
+
+Loading skeleton:
+  @apply animate-pulse rounded-xl bg-slate-100 h-[N] w-full;
+  NUNCA usar USkeleton
+
+Empty State (estándar):
+  <EmptyStateIllustration type="no-transactions"
+    class="empty-state__illustration" />
+  .empty-state__illustration { @apply h-32 w-32 mx-auto; }
+  Contenedor: @apply flex flex-col items-center gap-3 py-12 text-center;
+  + Heading level="h3" size="lg" weight="semibold"
+  + Text size="sm" color="muted"
+
+Gestor de paquetes: pnpm (no npm)
 
 ## Nuxt UI
 

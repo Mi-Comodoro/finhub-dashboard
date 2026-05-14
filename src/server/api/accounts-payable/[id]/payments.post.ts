@@ -1,4 +1,5 @@
 import { ACCESS_TOKEN } from '~/common/constants'
+
 import { validateError } from '../../utils/auth.error'
 
 export default defineEventHandler(async event => {

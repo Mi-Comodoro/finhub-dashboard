@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+
 import type { AccountReceivable, AccountReceivableSummary } from '~/types/accounts-receivable.types'
 
 interface AccountsReceivableState {

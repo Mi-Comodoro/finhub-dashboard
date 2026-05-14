@@ -1,9 +1,10 @@
 <script setup lang="ts">
   import { Form } from '@/components/organisms/forms'
-  import type { AccountPayable, RegisterPaymentDto } from '~/types/accounts-payable.types'
-  import { formatCurrency } from '@/utils/currency'
   import { useFinancesStore } from '@/stores/finances.store'
   import type { Currency } from '@/utils/currency'
+  import { formatCurrency } from '@/utils/currency'
+  import type { AccountPayable, RegisterPaymentDto } from '~/types/accounts-payable.types'
+
   import { paymentFieldsSchema } from './schema/account-payable.fields.schema'
 
   const props = defineProps<{

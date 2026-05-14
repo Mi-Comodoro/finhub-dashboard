@@ -1,4 +1,5 @@
 import { storeToRefs } from 'pinia'
+
 import { useAccountsReceivableApi } from '~/composables/api/useAccountsReceivableApi'
 import { useFinancesApplication } from '~/composables/application/useFinancesApplication'
 import { useAccountsReceivableStore } from '~/stores/accounts-receivable.store'
