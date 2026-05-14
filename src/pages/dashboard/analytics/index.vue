@@ -6,6 +6,7 @@
     AnalyticsNetPositionView,
     AnalyticsSaludView
   } from '@/components/business'
+  import { Select } from '@/components/molecules'
   import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
 
   definePageMeta({
@@ -40,14 +41,16 @@
       </div>
 
       <div class="analytics-page__period">
-        <select v-model="selectedMonth" class="analytics-page__select">
-          <option v-for="m in availableMonths" :key="m.value" :value="m.value">
-            {{ m.label }}
-          </option>
-        </select>
-        <select v-model="selectedYear" class="analytics-page__select">
-          <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
-        </select>
+        <Select
+          v-model="selectedMonth"
+          name="month"
+          :options="availableMonths.map(m => ({ label: m.label, value: m.value }))"
+        />
+        <Select
+          v-model="selectedYear"
+          name="year"
+          :options="availableYears.map(y => ({ label: String(y), value: y }))"
+        />
       </div>
     </div>
 
@@ -88,12 +91,6 @@
 
   .analytics-page__period {
     @apply flex items-center gap-2;
-  }
-
-  .analytics-page__select {
-    @apply rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 outline-none transition-colors;
-    @apply hover:border-primary-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-100;
-    @apply dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200;
   }
 
   .analytics-page__tabs {
