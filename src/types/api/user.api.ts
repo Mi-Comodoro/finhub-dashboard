@@ -37,6 +37,7 @@ export type UserMe = {
       name: string
       displayName: string
       photo?: string
+      rejectPhoto?: boolean
       phone: string
       gender: string
       trialEndsAt?: Date
