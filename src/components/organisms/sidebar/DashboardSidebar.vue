@@ -25,7 +25,9 @@
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
     { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
-    { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' }
+    { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' },
+    { name: 'Cuentas por Pagar', icon: 'credit_score', path: '/dashboard/debts' },
+    { name: 'Cuentas por Cobrar', icon: 'payments', path: '/dashboard/receivables' }
   ]
 
   const settingsItems: Omit<MenuItem, 'isActive'>[] = [
