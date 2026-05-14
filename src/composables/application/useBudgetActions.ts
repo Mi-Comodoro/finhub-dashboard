@@ -54,7 +54,8 @@ const mapCurrentBudgetToPlan = (result: SingleBudget): CurrentBudgetPlan => ({
   ownerId: result.ownerId,
   partnerId: result.partnerId,
   strategy: result.strategy,
-  frequency: result.frequency
+  frequency: result.frequency,
+  freeAmount: result.freeAmount
 })
 
 interface CreateBudgetPayload {

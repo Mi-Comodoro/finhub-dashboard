@@ -52,6 +52,18 @@ export function useBudgetApi() {
       body: { mode: 'clone', sourceBudgetId, month, year }
     })
 
+  interface TransferBalanceDto {
+    targetBudgetId?: string
+    goalId?: string
+    amount: number
+  }
+
+  const transferBalance = async (id: string, dto: TransferBalanceDto) =>
+    $fetch<{ success: boolean }>(`/api/budgets/${id}/transfer-balance`, {
+      method: 'POST',
+      body: dto
+    })
+
   return {
     getBudgets,
     getCurrentBudget,
@@ -61,6 +73,7 @@ export function useBudgetApi() {
     deleteBudget,
     enableBudget,
     closeBudget,
-    cloneBudget
+    cloneBudget,
+    transferBalance
   }
 }

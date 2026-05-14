@@ -84,6 +84,7 @@ export type BackendCurrentBudgetData = {
   updatedBy: string | null
   strategy: string
   frequency: string
+  freeAmount?: number
 }
 export type BackendCurrentBudget = {
   success: boolean
@@ -107,6 +108,7 @@ export type SingleBudget = {
   partnerId: string | null
   strategy: BudgetStrategy['name']
   frequency: BudgetFrequency
+  freeAmount?: number
 }
 /** Response from the Nuxt server handler /api/budgets/[financeId]/current */
 export type CurrentBudget = {
