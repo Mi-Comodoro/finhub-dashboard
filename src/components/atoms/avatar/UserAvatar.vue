@@ -9,15 +9,17 @@
     className: ''
   })
 
-  const user = computed(() => userStore.userInfo)
+  const showPhoto = computed<boolean>(() => !!userStore.photo && !userStore.rejectPhoto)
 
-  const getInitials = (name: string): string => {
+  const initials = computed<string>(() => {
+    const name = userStore.name ?? ''
     return name
       .split(' ')
-      .map(n => n[0]?.toUpperCase())
-      .join('')
       .slice(0, 2)
-  }
+      .map(n => n[0] ?? '')
+      .join('')
+      .toUpperCase()
+  })
 
   const sizeClasses: Record<AvatarSize, string> = {
     xs: 'h-6 w-6 text-xs',
@@ -30,25 +32,38 @@
 
 <template>
   <div
-    :class="[
-      'flex items-center justify-center rounded-full font-medium text-white',
-      sizeClasses[size],
-      className
-    ]"
+    class="user-avatar"
+    :class="[sizeClasses[size], showPhoto ? 'user-avatar--photo' : 'user-avatar--initials', className]"
   >
-    <span
-      v-if="!user.photo"
-      class="flex h-full w-full items-center justify-center rounded-full bg-primary-500 font-medium text-white"
-    >
-      {{ getInitials(user.name ?? 'Avatar') }}
-    </span>
     <NuxtImg
-      v-else
-      :src="user.photo"
-      :alt="user.name ?? 'Avatar'"
-      class="h-full w-full rounded-full object-cover"
-      :class="sizeClasses[size]"
-      @error="e => console.error('[UserAvatar] Error loading image:', e)"
+      v-if="showPhoto"
+      :src="userStore.photo!"
+      :alt="userStore.name ?? 'Avatar'"
+      class="user-avatar__image"
+      @error="() => { if (!userStore.rejectPhoto) console.warn('[UserAvatar] Error loading image') }"
     />
+    <span v-else class="user-avatar__initials">{{ initials }}</span>
   </div>
 </template>
+
+<style scoped lang="postcss">
+.user-avatar {
+  @apply flex items-center justify-center rounded-full overflow-hidden;
+}
+
+.user-avatar--photo {
+  @apply bg-transparent;
+}
+
+.user-avatar--initials {
+  @apply bg-primary-500 font-medium text-white;
+}
+
+.user-avatar__image {
+  @apply h-full w-full object-cover;
+}
+
+.user-avatar__initials {
+  @apply flex items-center justify-center h-full w-full;
+}
+</style>
