@@ -1,5 +1,6 @@
 import { ACCESS_TOKEN } from '~/common/constants'
 import type { AccountReceivableSummary } from '~/types/accounts-receivable.types'
+
 import { validateError } from '../utils/auth.error'
 
 export default defineEventHandler(async event => {

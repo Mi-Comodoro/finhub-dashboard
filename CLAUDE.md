@@ -3,7 +3,8 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Entorno de desarrollo
-- **Node.js requerido: v22.x**
+- **Node.js requerido: v22.12.0+** (los bindings nativos de oxc-parser requieren >=22.12.0)
+- **Package manager: pnpm** (no npm ni yarn)
 - ESLint falla silenciosamente o no resuelve plugins
   correctamente con versiones anteriores a Node 22.
 - Verificar versión activa: `node --version`
@@ -13,16 +14,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Development:**
 ```bash
-npm run dev          # Start Nuxt dev server
-npm run build        # Build for production
-npm run preview      # Preview production build
+pnpm dev             # Start Nuxt dev server
+pnpm build           # Build for production
+pnpm preview         # Preview production build
 ```
 
 **Code Quality:**
 ```bash
-npm run lint         # Run ESLint
-npm run lint:fix     # Fix ESLint errors automatically
-npm run format       # Format code with Prettier
+pnpm lint            # Run ESLint
+pnpm lint:fix        # Fix ESLint errors automatically
+pnpm format          # Format code with Prettier
+```
+
+**Packages:**
+```bash
+pnpm add <package>       # Add a dependency
+pnpm add -D <package>    # Add a dev dependency
+pnpm install             # Install all dependencies
 ```
 
 ## Architecture Overview

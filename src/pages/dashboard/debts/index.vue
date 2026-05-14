@@ -1,9 +1,10 @@
 <script setup lang="ts">
   import VChart from 'vue-echarts'
+
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
-  import { ModalWizard } from '@/components/organisms'
   import AccountPayableForm from '@/components/business/debts/forms/AccountPayableForm.vue'
   import AccountPayablePaymentForm from '@/components/business/debts/forms/AccountPayablePaymentForm.vue'
+  import { ModalWizard } from '@/components/organisms'
   import { useAccountsPayableApplication } from '@/composables/application/useAccountsPayableApplication'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
