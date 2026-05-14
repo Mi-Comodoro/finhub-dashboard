@@ -167,7 +167,12 @@
           <template v-if="pillar.isNeutral">
             <div class="pillar-card__neutral">
               <span class="pillar-card__neutral-badge">en planificación</span>
-              <Text size="xs" color="muted">Los datos de deudas estarán disponibles pronto.</Text>
+              <Text size="xs" color="muted">
+                Registra tus deudas en Cuentas por Pagar para ver este indicador.
+              </Text>
+              <NuxtLink to="/dashboard/debts" class="pillar-card__neutral-link">
+                Registrar deudas
+              </NuxtLink>
             </div>
           </template>
 
@@ -339,5 +344,10 @@
 
   .pillar-card__neutral {
     @apply flex flex-col gap-2;
+  }
+
+  .pillar-card__neutral-link {
+    @apply text-xs font-medium text-primary-600 underline underline-offset-2;
+    @apply hover:text-primary-700 dark:text-primary-400;
   }
 </style>
