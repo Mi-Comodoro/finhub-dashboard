@@ -106,6 +106,7 @@ export interface CurrentBudgetPlan {
   partnerId: string | null
   strategy: BudgetStrategy['name']
   frequency: BudgetFrequency
+  freeAmount?: number
 }
 
 export interface BudgetHistoricalSummaryItem {

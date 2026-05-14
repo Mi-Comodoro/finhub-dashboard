@@ -11,6 +11,7 @@
     Text
   } from '@/components/atoms'
   import {
+    BudgetClosedBanner,
     BudgetDistribution,
     BudgetForm,
     BudgetIncome,
@@ -25,7 +26,9 @@
   } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
+  import { useBudgetTransferApplication } from '@/composables/application/useBudgetTransferApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
@@ -52,6 +55,8 @@
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
   const { lastUpdate } = usePlannedIncomeApplication()
+  const { fetchGoals, goals } = useGoalsApplication()
+  const { transferToBudget, transferToGoal } = useBudgetTransferApplication()
 
   const budgetId = route.params['id'] as string
 
@@ -59,9 +64,8 @@
     const { success, error } = await loadBudgetDetail(budgetId)
     if (!success && error) handleError(error)
 
-    // Cargar transacciones y planned savings en paralelo
     if (budgetId) {
-      await Promise.all([fetchTransactions(budgetId), fetchPlannedSavings(budgetId)])
+      await Promise.all([fetchTransactions(budgetId), fetchPlannedSavings(budgetId), fetchGoals()])
     }
   })
 
@@ -226,6 +230,33 @@
     canDelete: () => planStatus.value === 'PLANNED'
   }
 
+  const isClosed = computed(() => planStatus.value === 'CLOSED')
+  const hasPendingBalance = computed(() => isClosed.value && (plan.value?.freeAmount ?? 0) > 0)
+  const activeGoals = computed(() => goals.value.filter(g => g.isActive))
+
+  const refreshBudget = async () => {
+    const { success, error } = await loadBudgetDetail(budgetId)
+    if (!success && error) handleError(error)
+  }
+
+  const handleTransferToBudget = async () => {
+    const amount = plan.value?.freeAmount ?? 0
+    const { success } = await transferToBudget(budgetId, amount)
+    if (success) {
+      successToast('Saldo transferido', 'El saldo fue transferido al presupuesto activo.')
+      await refreshBudget()
+    }
+  }
+
+  const handleTransferToGoal = async (goalId: string) => {
+    const amount = plan.value?.freeAmount ?? 0
+    const { success } = await transferToGoal(budgetId, goalId, amount)
+    if (success) {
+      successToast('Saldo transferido', 'El saldo fue abonado a la meta de ahorro.')
+      await refreshBudget()
+    }
+  }
+
   const badgeVariant = computed(() =>
     planStatus.value === 'ACTIVE'
       ? 'success'
@@ -286,6 +317,20 @@
           </Button>
         </template>
       </div>
+    </div>
+
+    <BudgetClosedBanner
+      v-if="isClosed && hasPendingBalance"
+      :budget="plan"
+      :available-goals="activeGoals"
+      class="budget-detail__banner"
+      @transfer-to-budget="handleTransferToBudget"
+      @transfer-to-goal="handleTransferToGoal"
+    />
+
+    <div v-else-if="isClosed" class="budget-detail__closed-badge">
+      <span class="material-symbols-outlined">lock</span>
+      <Text size="sm" color="muted">Presupuesto cerrado</Text>
     </div>
 
     <div class="budget-detail__layout">
@@ -400,6 +445,14 @@
 
   .budget-detail__header-actions {
     @apply ml-auto flex items-center gap-2;
+  }
+
+  .budget-detail__banner {
+    @apply mx-4;
+  }
+
+  .budget-detail__closed-badge {
+    @apply mx-4 flex items-center gap-2 text-neutral-500;
   }
 
   .budget-detail__layout {

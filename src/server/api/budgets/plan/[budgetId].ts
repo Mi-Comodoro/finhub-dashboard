@@ -44,7 +44,8 @@ export default defineEventHandler(async event => {
       financesId: data.financesId,
       partnerId: data.partnerId,
       strategy: data.strategy,
-      frequency: data.frequency
+      frequency: data.frequency,
+      freeAmount: data.freeAmount
     }
   }
 })

@@ -8,6 +8,7 @@ export { default as AnalyticsFlujoCajaView } from './analytics/AnalyticsFlujoCaj
 export { default as AnalyticsGastosView } from './analytics/AnalyticsGastosView.vue'
 export { default as AnalyticsNetPositionView } from './analytics/AnalyticsNetPositionView.vue'
 export { default as AnalyticsSaludView } from './analytics/AnalyticsSaludView.vue'
+export { default as BudgetClosedBanner } from './budget/BudgetClosedBanner.vue'
 export { default as BudgetDistribution } from './budget/BudgetDistribution.vue'
 export { default as BudgetSurplusModal } from './budget/BudgetSurplusModal.vue'
 export { default as BudgetCloneForm } from './budget/forms/BudgetCloneForm.vue'
