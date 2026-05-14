@@ -13,7 +13,7 @@
   import {
     BudgetClosedBanner,
     BudgetDistribution,
-    BudgetForm,
+    BudgetEditForm,
     BudgetIncome,
     BudgetInsights,
     ExpensePlannedForm,
@@ -136,8 +136,6 @@
     if (!plan.value) return undefined
     return {
       name: plan.value.name,
-      month: Number(plan.value.month),
-      year: Number(plan.value.year),
       strategy: plan.value.strategy as 'BALANCED' | 'CUSTOM',
       needsLimit: plan.value.limits.needs,
       wantsLimit: plan.value.limits.wants,
@@ -386,9 +384,8 @@
     </ModalWizard>
 
     <ModalWizard v-model:show="showEditModal">
-      <BudgetForm
-        mode="edit"
-        :budget-id="plan?.id"
+      <BudgetEditForm
+        :budget-id="plan!.id"
         :initial-data="budgetEditInitialData"
         @on-close="handleEditClose"
       />
