@@ -66,7 +66,7 @@
 
     <template v-else>
       <div v-if="!hasData" class="gastos-view__empty-wrapper">
-        <EmptyStateIllustration type="no-transactions" />
+        <EmptyStateIllustration type="no-transactions" class="gastos-view__empty-illustration" />
         <Heading level="h3" size="lg" weight="semibold">Sin gastos registrados</Heading>
         <Text size="sm" color="muted">
           No hay gastos para el período seleccionado.
@@ -155,7 +155,11 @@
   }
 
   .gastos-view__empty-wrapper {
-    @apply flex flex-col items-center justify-center gap-3 py-12;
+    @apply flex flex-col items-center gap-3 py-12 text-center;
+  }
+
+  .gastos-view__empty-illustration {
+    @apply h-32 w-32;
   }
 
   .gastos-view__card {

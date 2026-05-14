@@ -175,7 +175,7 @@
       <USkeleton v-if="loadingAccounts" class="debts-page__list-skeleton" />
 
       <div v-else-if="!accounts || accounts.length === 0" class="debts-page__empty">
-        <EmptyStateIllustration type="no-transactions" />
+        <EmptyStateIllustration type="no-transactions" class="debts-page__empty-illustration" />
         <Text size="sm" color="muted" class="debts-page__empty-text">
           Sin deudas registradas. Agrega tus préstamos, tarjetas y otros compromisos.
         </Text>
@@ -342,7 +342,11 @@
   }
 
   .debts-page__empty {
-    @apply flex flex-col items-center gap-4 py-12;
+    @apply flex flex-col items-center gap-3 py-12 text-center;
+  }
+
+  .debts-page__empty-illustration {
+    @apply h-32 w-32;
   }
 
   .debts-page__empty-text {

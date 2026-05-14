@@ -182,6 +182,53 @@ Neutral       → neutral   (slate)    bg-neutral-100  text-neutral-600
 - Always wrap `VChart` in `<ClientOnly>`
 - Always set explicit height on charts
 
+## UI/UX Reference — Gold Standard
+
+Referencias visuales para cualquier componente o página nueva:
+  - src/pages/dashboard/index.vue          (Dashboard)
+  - src/pages/dashboard/goals/index.vue    (Goals)
+  - src/pages/dashboard/budget/index.vue   (Budgets)
+
+Checklist antes de crear cualquier componente:
+
+Espaciado:
+  gap entre secciones: gap-4
+  padding interno de cards: p-5
+  header de página: px-4 py-2
+
+Cards:
+  @apply rounded-xl border border-neutral-200 bg-white;
+  @apply dark:border-neutral-700 dark:bg-neutral-800;
+
+Tipografía:
+  Título página: Heading level="h1" size="2xl" weight="extrabold"
+  Subtítulo:     Text size="xs" color="muted"
+  Sección:       Heading level="h3" size="lg" weight="semibold"
+
+Colores semánticos (no cambiar):
+  primary   → ingresos, acciones positivas
+  warning   → ahorro
+  danger    → gastos, deuda alta
+  success   → metas cumplidas
+  secondary → flujo neto
+
+Iconos: material-symbols-outlined
+  <span class="material-symbols-outlined">nombre</span>
+
+Loading skeleton:
+  @apply animate-pulse rounded-xl bg-slate-100 h-[N] w-full;
+  NUNCA usar USkeleton
+
+Empty State (estándar):
+  <EmptyStateIllustration type="no-transactions"
+    class="empty-state__illustration" />
+  .empty-state__illustration { @apply h-32 w-32 mx-auto; }
+  Contenedor: @apply flex flex-col items-center gap-3 py-12 text-center;
+  + Heading level="h3" size="lg" weight="semibold"
+  + Text size="sm" color="muted"
+
+Gestor de paquetes: pnpm (no npm)
+
 ## Nuxt UI
 
 Integrado como librería de presentación.

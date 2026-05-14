@@ -313,7 +313,7 @@
 
       <!-- Empty state -->
       <div v-if="!isLoading && accounts.length === 0" class="receivables-page__empty">
-        <EmptyStateIllustration type="no-transactions" />
+        <EmptyStateIllustration type="no-transactions" class="receivables-page__empty-illustration" />
         <Heading level="h3" size="lg" weight="semibold">Sin cobros registrados</Heading>
         <Text size="sm" color="muted">
           Registra el dinero que te deben para hacer seguimiento.
@@ -451,7 +451,11 @@
   }
 
   .receivables-page__empty {
-    @apply flex flex-col items-center gap-4 py-16 text-center;
+    @apply flex flex-col items-center gap-3 py-12 text-center;
+  }
+
+  .receivables-page__empty-illustration {
+    @apply h-32 w-32;
   }
 
   .receivables-page__delete-modal {
