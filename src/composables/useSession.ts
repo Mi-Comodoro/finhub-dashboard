@@ -89,7 +89,8 @@ export const useSession = () => {
           id: userData.user.id,
           email: userData.user.email,
           displayName: userData.user.displayName,
-          avatar: userData.user.photo || null
+          avatar: userData.user.photo || null,
+          role: (userData.user.role as 'admin' | 'user') ?? 'user'
         },
         isAuthenticated: true,
         sessionExpiresAt: resolveSessionExpiresAt(userData.expiresAt)
