@@ -93,12 +93,12 @@
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="!healthScore" class="salud-view__empty">
-      <EmptyStateIllustration type="help" class="salud-view__empty-illustration" />
-      <Heading level="h3" size="lg" weight="semibold">Sin datos suficientes</Heading>
-      <Text size="sm" color="muted">
-        Registra ingresos, gastos y metas para calcular tu salud financiera.
-      </Text>
+    <div v-else-if="!healthScore" class="analytics-view__empty">
+      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
+      <p class="analytics-view__empty-title">Información insuficiente</p>
+      <p class="analytics-view__empty-description">
+        Necesitas al menos un presupuesto activo para calcular tu salud financiera
+      </p>
     </div>
 
     <!-- Content -->
@@ -218,12 +218,20 @@
   }
 
   /* Empty */
-  .salud-view__empty {
+  .analytics-view__empty {
     @apply flex flex-col items-center gap-3 py-12 text-center;
   }
 
-  .salud-view__empty-illustration {
-    @apply h-32 w-32;
+  .analytics-view__empty-illustration {
+    @apply h-32 w-32 mx-auto;
+  }
+
+  .analytics-view__empty-title {
+    @apply text-base font-semibold text-neutral-800;
+  }
+
+  .analytics-view__empty-description {
+    @apply text-sm text-neutral-500 max-w-xs;
   }
 
   /* Content */

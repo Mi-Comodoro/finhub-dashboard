@@ -92,12 +92,12 @@
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="!netPosition" class="net-position-view__empty">
-      <EmptyStateIllustration type="no-transactions" class="net-position-view__empty-illustration" />
-      <Heading level="h3" size="lg" weight="semibold">Sin datos de posición neta</Heading>
-      <Text size="sm" color="muted">
+    <div v-else-if="!netPosition" class="analytics-view__empty">
+      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
+      <p class="analytics-view__empty-title">Sin datos de posición neta</p>
+      <p class="analytics-view__empty-description">
         Registra tus deudas para ver tu posición financiera
-      </Text>
+      </p>
     </div>
 
     <!-- Content -->
@@ -255,12 +255,20 @@
   }
 
   /* Empty */
-  .net-position-view__empty {
+  .analytics-view__empty {
     @apply flex flex-col items-center gap-3 py-12 text-center;
   }
 
-  .net-position-view__empty-illustration {
-    @apply h-32 w-32;
+  .analytics-view__empty-illustration {
+    @apply h-32 w-32 mx-auto;
+  }
+
+  .analytics-view__empty-title {
+    @apply text-base font-semibold text-neutral-800;
+  }
+
+  .analytics-view__empty-description {
+    @apply text-sm text-neutral-500 max-w-xs;
   }
 
   /* Content */

@@ -174,15 +174,18 @@
           <Heading level="h3" size="lg" weight="semibold">Flujo de Caja por Semana</Heading>
         </div>
 
-        <div v-if="!hasData" class="cashflow-view__empty">
+        <div v-if="!hasData" class="analytics-view__empty">
           <EmptyStateIllustration
             type="no-transactions"
-            class="cashflow-view__empty-illustration"
+            class="analytics-view__empty-illustration"
           />
-          <Heading level="h3" size="lg" weight="semibold">Sin transacciones</Heading>
-          <Text size="sm" color="muted">
-            No hay movimientos para el período seleccionado.
-          </Text>
+          <p class="analytics-view__empty-title">Sin movimientos registrados</p>
+          <p class="analytics-view__empty-description">
+            Registra ingresos y gastos para ver tu flujo de caja
+          </p>
+          <NuxtLink to="/dashboard/budget" class="analytics-view__empty-cta">
+            Ir al presupuesto
+          </NuxtLink>
         </div>
 
         <ClientOnly v-else>
@@ -275,12 +278,24 @@
     @apply mb-4;
   }
 
-  .cashflow-view__empty {
+  .analytics-view__empty {
     @apply flex flex-col items-center gap-3 py-12 text-center;
   }
 
-  .cashflow-view__empty-illustration {
-    @apply h-32 w-32;
+  .analytics-view__empty-illustration {
+    @apply h-32 w-32 mx-auto;
+  }
+
+  .analytics-view__empty-title {
+    @apply text-base font-semibold text-neutral-800;
+  }
+
+  .analytics-view__empty-description {
+    @apply text-sm text-neutral-500 max-w-xs;
+  }
+
+  .analytics-view__empty-cta {
+    @apply text-sm font-medium text-primary-600 underline;
   }
 
   .cashflow-view__chart-fallback {
