@@ -15,6 +15,7 @@
     Select
   } from '@/components/molecules'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
+  import { useFeedback } from '@/composables/useFeedBack'
   import DateUtils from '@/utils/date'
   definePageMeta({
     layout: 'dashboard',
@@ -23,6 +24,7 @@
 
   // Application layer
   const { updatePersonalInfo, updateFinancialInfo, user, finances } = useProfileApplication()
+  const { success: showSuccess, error: showError } = useFeedback()
 
   // Reactive data
   const isEditingPersonal = ref(false)
@@ -194,9 +196,13 @@
 
       if (success) {
         isEditingPersonal.value = false
+        showSuccess('Perfil actualizado', 'Tu información personal fue guardada correctamente.')
+      } else {
+        showError('Error al guardar', 'No se pudo actualizar tu información. Intenta de nuevo.')
       }
     } catch (error) {
       console.error('Error saving personal info:', error)
+      showError('Error al guardar', 'Ocurrió un error inesperado.')
     } finally {
       isSaving.value = false
     }

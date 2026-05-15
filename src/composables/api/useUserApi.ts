@@ -1,6 +1,13 @@
 import type { UserMe } from '@/types/api'
 import type { OnboardingFormData } from '~/types/ui'
 
+interface UserProfileUpdate {
+  displayName?: string
+  phone?: string
+  gender?: string
+  country?: string
+}
+
 export const useUserApi = () => {
   const getUserMe = async () => {
     return await $fetch<UserMe>('/api/users/me')
@@ -20,9 +27,17 @@ export const useUserApi = () => {
     })
   }
 
+  const updateUserProfile = async (data: UserProfileUpdate) => {
+    return await $fetch<{ success: boolean; result: UserProfileUpdate }>(
+      '/api/users/me',
+      { method: 'PATCH', body: data }
+    )
+  }
+
   return {
     getUserMe,
     getUserMeWithCredentials,
-    completeOnboarding
+    completeOnboarding,
+    updateUserProfile
   }
 }

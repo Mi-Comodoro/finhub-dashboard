@@ -1,3 +1,4 @@
+import { useUserApi } from '@/composables/api/useUserApi'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useUserStore } from '@/stores/user.store'
 import type { Currency } from '@/utils/currency'
@@ -13,6 +14,7 @@ interface UserUpdate {
 export const useProfileApplication = () => {
   const userStore = useUserStore()
   const financesStore = useFinancesStore()
+  const { updateUserProfile } = useUserApi()
 
   const updatePersonalInfo = async (data: UserUpdate) => {
     try {
@@ -21,9 +23,18 @@ export const useProfileApplication = () => {
         return { success: false }
       }
 
+      const response = await updateUserProfile({
+        displayName: data.displayName,
+        phone: data.phone,
+        gender: data.gender,
+        country: data.country
+      })
+
+      if (!response.success) return { success: false }
+
       userStore.setUser({
         id: userStore.id,
-        name: userStore.userInfo.name || '',
+        name: userStore.name || '',
         displayName: data.displayName || userStore.displayName || '',
         email: data.email || userStore.email || '',
         phone: data.phone || userStore.phone || '',
