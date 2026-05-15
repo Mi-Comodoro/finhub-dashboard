@@ -103,7 +103,7 @@
 
       <p class="login-form__consent">
         Al continuar, autorizas el tratamiento de tu nombre, correo e imagen según nuestra
-        <NuxtLink to="/privacidad" class="login-form__consent-link" target="_blank">
+        <NuxtLink to="/privacy" class="login-form__consent-link" target="_blank">
           Política de Privacidad
         </NuxtLink>
         .
