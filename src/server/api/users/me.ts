@@ -38,7 +38,8 @@ export default defineEventHandler(async event => {
         createdAt: data.createdAt,
         trialEndsAt: data.userProfile.trialEndsAt,
         isActive: data.userProfile.isActive,
-        country: data.userProfile.country
+        country: data.userProfile.country,
+        role: data.role ?? data.userProfile.role
       },
       finances: data.finances,
       onboarding: data.onboarding,

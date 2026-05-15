@@ -4,10 +4,12 @@
   import { AppLogo, AppVersion, Button } from '@/components/atoms'
   import { NavigationSection } from '@/components/molecules'
   import { useSidebar } from '@/composables/useSidebar'
+  import { useAuthStore } from '@/stores/auth.store'
 
   import type { MenuItem } from './types/dashboard-sidebar.types'
 
   const route = useRoute()
+  const authStore = useAuthStore()
 
   const { isCollapsed, toggleCollapse, close } = useSidebar()
 
@@ -34,6 +36,12 @@
     { name: 'Configuración', icon: 'settings', path: '/dashboard/settings' }
   ]
 
+  const adminItems: Omit<MenuItem, 'isActive'>[] = [
+    { name: 'Admin', icon: 'shield', path: '/admin' }
+  ]
+
+  const isAdmin = computed(() => authStore.user?.role === 'admin')
+
   const mainMenuItems = computed<MenuItem[]>(() => {
     return menuItems.map(item => ({
       ...item,
@@ -43,6 +51,14 @@
 
   const settingsMenuItems = computed<MenuItem[]>(() => {
     return settingsItems.map(item => ({
+      ...item,
+      isActive: isActiveRoute(item.path ?? '', route.path)
+    }))
+  })
+
+  const adminMenuItems = computed<MenuItem[]>(() => {
+    if (!isAdmin.value) return []
+    return adminItems.map(item => ({
       ...item,
       isActive: isActiveRoute(item.path ?? '', route.path)
     }))
@@ -82,6 +98,13 @@
       <NavigationSection
         title="CONFIGURACIÓN"
         :items="settingsMenuItems"
+        :collapsed="isCollapsed"
+        @navigate="handleNavigate"
+      />
+      <NavigationSection
+        v-if="isAdmin"
+        title="ADMINISTRACIÓN"
+        :items="adminMenuItems"
         :collapsed="isCollapsed"
         @navigate="handleNavigate"
       />

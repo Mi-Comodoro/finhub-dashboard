@@ -1,3 +1,4 @@
+export * from './admin.domain'
 export * from './auth.domain'
 export * from './budget.domain'
 export * from './common.domain'

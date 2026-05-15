@@ -4,11 +4,14 @@
  * These types represent what the business cares about, not API responses
  */
 
+export type UserRole = 'admin' | 'user'
+
 export interface User {
   readonly id: string
   readonly email: string
   readonly displayName: string
   readonly avatar: string | null
+  readonly role?: UserRole
   /*   readonly emailVerified: boolean
   readonly createdAt: Date
   readonly lastLoginAt: Date */
