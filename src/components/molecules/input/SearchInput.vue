@@ -18,7 +18,10 @@
     readonly: false
   })
 
-  const emit = defineEmits(['update:modelValue', 'blur'])
+  const emit = defineEmits<{
+    'update:modelValue': [value: string]
+    blur: []
+  }>()
 
   const modelValue = ref(props.modelValue ?? '')
 
