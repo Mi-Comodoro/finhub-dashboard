@@ -5,9 +5,9 @@ export const userBasicDataFieldsSchema = (): FormSchema => {
     fields: {
       displayName: {
         type: 'text',
-        label: '¿Como quieres que te llamemos?',
-        placeholder: 'Jhon',
-        required: true
+        label: '¿Cómo quieres que te llamemos?',
+        placeholder: 'Tu nombre en Mi Comodoro',
+        hint: 'Puedes cambiarlo cuando quieras desde tu perfil'
       },
       phone: {
         type: 'phone', // nuevo tipo

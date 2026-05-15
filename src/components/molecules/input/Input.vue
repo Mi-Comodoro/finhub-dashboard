@@ -177,6 +177,9 @@
       <p v-if="hasError" :class="['input-error', `input-error--${size}`]">
         {{ displayErrorMessage }}
       </p>
+      <p v-else-if="hint" class="input-hint">
+        {{ hint }}
+      </p>
     </div>
   </div>
 </template>
@@ -245,6 +248,10 @@
 
   .input-error--lg {
     @apply text-base;
+  }
+
+  .input-hint {
+    @apply mt-1 text-xs text-neutral-400;
   }
 
   .input-prefix {

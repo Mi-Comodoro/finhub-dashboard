@@ -16,6 +16,7 @@ export interface InputProps {
   variant?: InputVariant
   readonly?: boolean
   label?: string
+  hint?: string
   id?: string
   name?: string
   modelValue?: string | number

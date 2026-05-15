@@ -52,6 +52,7 @@
     prefix?: string
     options?: FieldOption[]
 
+    hint?: string
     validate?: (_value: unknown) => true | string
     visibleWhen?: (_form: Record<string, commonField>) => boolean
     // Nuevas propiedades para campos compuestos
@@ -228,6 +229,7 @@
               :type="schema.fields[fieldKey]!.type"
               :label="schema.fields[fieldKey]!.label"
               :placeholder="schema.fields[fieldKey]!.placeholder"
+              :hint="schema.fields[fieldKey]!.hint"
               :required="isFieldRequired(fieldKey)"
               :pattern="schema.fields[fieldKey]!.pattern"
               :prefix="schema.fields[fieldKey]!.prefix"

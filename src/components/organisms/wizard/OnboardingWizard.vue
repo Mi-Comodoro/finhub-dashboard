@@ -100,9 +100,7 @@
 
   // Función para validar si todos los datos están completos
   const isDataComplete = () => {
-    const hasPersonalInfo =
-      wizardData.personalInfo.displayName.trim() !== '' &&
-      wizardData.personalInfo.phone.trim() !== ''
+    const hasPersonalInfo = wizardData.personalInfo.phone.trim() !== ''
 
     const hasFinances =
       wizardData.finances.currency.trim() !== '' && wizardData.finances.profile.trim() !== ''
