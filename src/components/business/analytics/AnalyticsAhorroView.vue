@@ -112,15 +112,18 @@
       </div>
     </div>
 
-    <div v-if="!isLoading && totalSaved === 0" class="ahorro-view__empty">
+    <div v-if="!isLoading && totalSaved === 0" class="analytics-view__empty">
       <EmptyStateIllustration
         type="no-transactions"
-        class="ahorro-view__empty-illustration"
+        class="analytics-view__empty-illustration"
       />
-      <Heading level="h3" size="lg" weight="semibold">Sin ahorro registrado</Heading>
-      <Text size="sm" color="muted">
-        Registra aportes a tus metas para ver la tendencia anual.
-      </Text>
+      <p class="analytics-view__empty-title">Sin datos de ahorro</p>
+      <p class="analytics-view__empty-description">
+        Completa un aporte a tus metas para ver tu tendencia
+      </p>
+      <NuxtLink to="/dashboard/savings" class="analytics-view__empty-cta">
+        Ver metas
+      </NuxtLink>
     </div>
 
     <div v-else class="ahorro-view__chart-card">
@@ -199,11 +202,23 @@
     @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
   }
 
-  .ahorro-view__empty {
+  .analytics-view__empty {
     @apply flex flex-col items-center gap-3 py-12 text-center;
   }
 
-  .ahorro-view__empty-illustration {
-    @apply h-32 w-32;
+  .analytics-view__empty-illustration {
+    @apply h-32 w-32 mx-auto;
+  }
+
+  .analytics-view__empty-title {
+    @apply text-base font-semibold text-neutral-800;
+  }
+
+  .analytics-view__empty-description {
+    @apply text-sm text-neutral-500 max-w-xs;
+  }
+
+  .analytics-view__empty-cta {
+    @apply text-sm font-medium text-primary-600 underline;
   }
 </style>
