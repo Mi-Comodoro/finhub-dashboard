@@ -42,7 +42,7 @@
 
   const netFlow = computed(() => totalIncome.value - totalExpense.value)
 
-  const netFlowVariant = computed(() => (netFlow.value >= 0 ? 'income' : 'expense'))
+  const netFlowVariant = computed(() => (!netFlow.value || netFlow.value >= 0 ? 'income' : 'expense'))
 
   const hasData = computed(() => (transactions.value ?? []).length > 0)
 
@@ -64,21 +64,21 @@
       {
         name: 'Ingresos proy.',
         type: 'line',
-        data: forecast.value?.months.map(m => m.projectedIncome) ?? [],
+        data: forecast.value?.months.map(m => m.projectedIncome ?? 0) ?? [],
         lineStyle: { type: 'dashed' },
         itemStyle: { color: CHART_COLORS.income },
       },
       {
         name: 'Gastos proy.',
         type: 'line',
-        data: forecast.value?.months.map(m => m.projectedExpenses) ?? [],
+        data: forecast.value?.months.map(m => m.projectedExpenses ?? 0) ?? [],
         lineStyle: { type: 'dashed' },
         itemStyle: { color: CHART_COLORS.expense },
       },
       {
         name: 'Neto proy.',
         type: 'bar',
-        data: forecast.value?.months.map(m => m.projectedNet) ?? [],
+        data: forecast.value?.months.map(m => m.projectedNet ?? 0) ?? [],
         itemStyle: { color: CHART_COLORS.savings },
       },
     ],
@@ -230,11 +230,11 @@
                   : 'cashflow-view__forecast-net--negative'
               "
             >
-              {{ formatCurrency(month.projectedNet, currency) }}
+              {{ formatCurrency(month.projectedNet ?? 0, currency) }}
             </p>
             <div class="cashflow-view__forecast-detail">
-              <span>↑ {{ formatCurrency(month.projectedIncome, currency) }}</span>
-              <span>↓ {{ formatCurrency(month.projectedExpenses, currency) }}</span>
+              <span>↑ {{ formatCurrency(month.projectedIncome ?? 0, currency) }}</span>
+              <span>↓ {{ formatCurrency(month.projectedExpenses ?? 0, currency) }}</span>
             </div>
           </div>
         </div>

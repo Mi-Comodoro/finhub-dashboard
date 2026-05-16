@@ -20,7 +20,8 @@ export function useAnalyticsCashFlowApplication() {
   const financesStore = useFinancesStore()
 
   const ensureBudgetsLoaded = async (year: number) => {
-    if (!budgetStore.budgetPlans.length) {
+    const hasYearLoaded = budgetStore.budgetPlans.some(b => Number(b.year) === year)
+    if (!hasYearLoaded) {
       const { useBudgetActions } = await import('./useBudgetActions')
       const { fetchBudgets } = useBudgetActions()
       await fetchBudgets(financesStore.financeId, year)
