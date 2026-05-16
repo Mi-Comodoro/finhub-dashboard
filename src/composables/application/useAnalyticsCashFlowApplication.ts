@@ -76,17 +76,10 @@ export function useAnalyticsCashFlowApplication() {
 
   const currency = computed(() => financesStore.defaultCurrency as Currency)
 
-  const { data: forecast, pending: loadingForecast } = useAsyncData(
-    'analytics-cashflow-forecast',
-    () => analyticsApi.getCashFlowForecast().then(r => r.result)
-  )
+  const fetchForecast = async (year: number, month: number) => {
+    const { result } = await analyticsApi.getCashFlowForecast(year, month)
+    return result
+  }
 
-  const forecastWarning = computed(() => {
-    if (!forecast.value?.assumptions.basedOnBudget) {
-      return 'Sin presupuesto activo. El pronóstico usa valores en cero.'
-    }
-    return null
-  })
-
-  return { fetchTransactionsByPeriod, groupTransactionsByWeek, currency, forecast, loadingForecast, forecastWarning }
+  return { fetchTransactionsByPeriod, groupTransactionsByWeek, currency, fetchForecast }
 }

@@ -15,15 +15,25 @@
     fetchTransactionsByPeriod,
     groupTransactionsByWeek,
     currency,
-    forecast,
-    loadingForecast,
-    forecastWarning,
+    fetchForecast,
   } = useAnalyticsCashFlowApplication()
 
   const { data: transactions, pending } = await useAsyncData(
     'analytics-cashflow',
     () => fetchTransactionsByPeriod(selectedYear.value, selectedMonth.value),
     { watch: [selectedYear, selectedMonth] }
+  )
+
+  const { data: forecast, pending: loadingForecast } = await useAsyncData(
+    'analytics-cashflow-forecast',
+    () => fetchForecast(selectedYear.value, selectedMonth.value),
+    { watch: [selectedYear, selectedMonth] }
+  )
+
+  const forecastWarning = computed(() =>
+    !forecast.value?.assumptions.basedOnBudget
+      ? 'Sin presupuesto activo. El pronóstico usa valores en cero.'
+      : null
   )
 
   const weeklyGroups = computed(() => groupTransactionsByWeek(transactions.value ?? []))
