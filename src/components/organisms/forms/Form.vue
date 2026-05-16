@@ -98,7 +98,7 @@
 
     // Required validation
     if (isFieldRequired(key) && (value === null || value === undefined || value === '')) {
-      errors[key] = 'Este campo es obligatorio'
+      errors[key] = field.errorMessage || 'Este campo es obligatorio'
       return false
     }
     // PHONE SPECIAL CASE 🔥
