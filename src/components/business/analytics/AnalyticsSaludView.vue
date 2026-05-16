@@ -3,7 +3,7 @@
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
 
-  const { healthScore, healthScorePending } = useAnalyticsApplication()
+  const { healthScore, healthScorePending, healthScoreError } = useAnalyticsApplication()
 
   const CIRCUMFERENCE = 2 * Math.PI * 50
 
@@ -90,6 +90,15 @@
       <div class="salud-view__skeleton-pillars">
         <div v-for="i in 4" :key="i" class="salud-view__skeleton-pillar" />
       </div>
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="healthScoreError" class="analytics-view__empty">
+      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
+      <p class="analytics-view__empty-title">No se pudo cargar la salud financiera</p>
+      <p class="analytics-view__empty-description">
+        Verifica tu conexión e intenta de nuevo
+      </p>
     </div>
 
     <!-- Empty state -->
