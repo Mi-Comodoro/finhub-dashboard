@@ -10,6 +10,11 @@ export interface ExpenseItem extends TransactionSummary {
   categoryType?: string
 }
 
+const MONTH_NAMES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+]
+
 export function useAnalyticsExpensesApplication() {
   const transactionApi = useTransactionApi()
   const categoryApi = useCategoryApi()
@@ -38,7 +43,7 @@ export function useAnalyticsExpensesApplication() {
     await ensureCategoriesLoaded()
 
     const budget = budgetStore.budgetPlans.find(
-      b => Number(b.month) === month && Number(b.year) === year
+      b => b.month === MONTH_NAMES[month - 1] && b.year === year
     )
 
     if (!budget) return []
