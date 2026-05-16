@@ -16,7 +16,8 @@ export const accountReceivableFieldsSchema = (): FormSchema => ({
     originalAmount: {
       type: 'money',
       label: 'Monto original',
-      required: true
+      required: true,
+      validate: (v: unknown) => (Number(v) > 0 ? true : 'El monto debe ser mayor a cero')
     },
     dueDate: {
       type: 'date',
