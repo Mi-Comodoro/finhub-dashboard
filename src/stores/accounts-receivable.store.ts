@@ -33,6 +33,10 @@ export const useAccountsReceivableStore = defineStore('accounts-receivable', {
     setSummary(summary: AccountReceivableSummary | null) {
       this.summary = summary
     },
+    updateAccount(account: AccountReceivable) {
+      const index = this.accounts.findIndex(a => a.id === account.id)
+      if (index !== -1) this.accounts[index] = account
+    },
     clearData() {
       this.accounts = []
       this.summary = null
