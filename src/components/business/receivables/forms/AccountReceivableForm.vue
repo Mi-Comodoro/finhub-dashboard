@@ -1,6 +1,4 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
-
   import { Form } from '@/components/organisms/forms'
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
   import type { CreateAccountReceivableDto } from '@/types/accounts-receivable.types'
@@ -24,16 +22,23 @@
   const { createAccount, updateAccount } = useAccountsReceivableApplication()
   const isEditMode = computed(() => !!props.accountId)
   const formSchema = computed(() => accountReceivableFieldsSchema())
+  const isSubmitting = ref(false)
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    const dto = data as unknown as CreateAccountReceivableDto
+    if (isSubmitting.value) return
+    isSubmitting.value = true
+    try {
+      const dto = data as unknown as CreateAccountReceivableDto
 
-    if (isEditMode.value && props.accountId) {
-      const { success } = await updateAccount(props.accountId, dto)
-      if (success) close()
-    } else {
-      const { success } = await createAccount(dto)
-      if (success) close()
+      if (isEditMode.value && props.accountId) {
+        const { success } = await updateAccount(props.accountId, dto)
+        if (success) close()
+      } else {
+        const { success } = await createAccount(dto)
+        if (success) close()
+      }
+    } finally {
+      isSubmitting.value = false
     }
   }
 </script>
@@ -58,11 +63,11 @@
       icon-size="md"
     />
 
-    <Form :schema="formSchema" :initial-data="initialData" @submit="handleSubmit">
+    <Form :schema="formSchema" :model-value="initialData" @submit="handleSubmit">
       <template #actions>
         <div class="account-receivable-form__actions">
           <Button type="button" variant="ghost" size="sm" @click.stop="close">Cancelar</Button>
-          <Button type="submit" variant="primary" size="sm">
+          <Button type="submit" variant="primary" size="sm" :loading="isSubmitting">
             {{ isEditMode ? 'Actualizar' : 'Guardar' }}
           </Button>
         </div>
