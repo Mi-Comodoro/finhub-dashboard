@@ -121,7 +121,7 @@
       <p class="analytics-view__empty-description">
         Completa un aporte a tus metas para ver tu tendencia
       </p>
-      <NuxtLink to="/dashboard/savings" class="analytics-view__empty-cta">
+      <NuxtLink to="/dashboard/goals" class="analytics-view__empty-cta">
         Ver metas
       </NuxtLink>
     </div>

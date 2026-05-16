@@ -41,9 +41,9 @@ export function useAnalyticsApi() {
       `/api/analytics/savings-trend?year=${year}`
     )
 
-  const getCashFlowForecast = () =>
+  const getCashFlowForecast = (year: number, month: number) =>
     $fetch<{ success: boolean; result: CashFlowForecastResponse }>(
-      '/api/analytics/cash-flow-forecast'
+      `/api/analytics/cash-flow-forecast?year=${year}&month=${month}`
     )
 
   const getNetPosition = () =>

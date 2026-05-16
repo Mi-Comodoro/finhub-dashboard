@@ -56,12 +56,11 @@
   })
 
   const formattedValue = computed(() => {
+    if (props.value === undefined || props.value === null) return ''
     if (typeof props.value === 'string') return props.value
-    const code = (props.currencyCode ? props.currencyCode : 'COP') as Currency
-    if (props.currency) {
-      return props.value ? formatCurrency(props.value, code, props.decimals) : ''
-    }
-    return props.value ? formatNumber(props.value, code, props.decimals) : 0
+    const code = (props.currencyCode ?? 'COP') as Currency
+    if (props.currency) return formatCurrency(props.value, code, props.decimals)
+    return formatNumber(props.value, code, props.decimals)
   })
 </script>
 
@@ -85,7 +84,7 @@
 
       <!-- Value -->
       <Heading
-        v-if="value"
+        v-if="value !== undefined && value !== null"
         level="h3"
         size="2xl"
         weight="bold"

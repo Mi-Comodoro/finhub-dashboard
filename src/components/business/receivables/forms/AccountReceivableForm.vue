@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { Form } from '@/components/organisms/forms'
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
+  import { useFeedback } from '@/composables/useFeedback'
   import type { CreateAccountReceivableDto } from '@/types/accounts-receivable.types'
 
   import { accountReceivableFieldsSchema } from './schema/account-receivable.fields.schema'
@@ -20,22 +21,30 @@
   const close = () => emit('onClose')
 
   const { createAccount, updateAccount } = useAccountsReceivableApplication()
+  const { error: errorToast } = useFeedback()
   const isEditMode = computed(() => !!props.accountId)
   const formSchema = computed(() => accountReceivableFieldsSchema())
   const isSubmitting = ref(false)
+
+  const buildDto = (data: Record<string, unknown>): CreateAccountReceivableDto =>
+    Object.fromEntries(
+      Object.entries(data).filter(([, v]) => v !== null && v !== undefined && v !== '')
+    ) as unknown as CreateAccountReceivableDto
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (isSubmitting.value) return
     isSubmitting.value = true
     try {
-      const dto = data as unknown as CreateAccountReceivableDto
+      const dto = buildDto(data)
 
       if (isEditMode.value && props.accountId) {
         const { success } = await updateAccount(props.accountId, dto)
         if (success) close()
+        else errorToast('Error', 'No se pudo actualizar el cobro.')
       } else {
         const { success } = await createAccount(dto)
         if (success) close()
+        else errorToast('Error', 'No se pudo crear el cobro.')
       }
     } finally {
       isSubmitting.value = false

@@ -1,5 +1,5 @@
+import { useIncomeApi } from '@/composables/api/useIncomeApi'
 import { useBudgetActions } from '@/composables/application/useBudgetActions'
-import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
 import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import type { PlannedIncomeSummary } from '~/types/domain'
@@ -8,7 +8,7 @@ export function useBudgetListApplication() {
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
   const { fetchBudgets } = useBudgetActions()
-  const { fetchPlannedIncome } = usePlannedIncomeApplication()
+  const incomeApi = useIncomeApi()
 
   const loadBudgets = async (year: number) => {
     const financeId = financesStore.profile?.id
@@ -18,8 +18,10 @@ export function useBudgetListApplication() {
   }
 
   const loadPlannedIncomes = async (): Promise<PlannedIncomeSummary[]> => {
-    const { result } = await fetchPlannedIncome()
-    return result ?? []
+    const budgetIds = budgetStore.budgetPlans.map(b => b.id)
+    if (budgetIds.length === 0) return []
+    const results = await Promise.all(budgetIds.map(id => incomeApi.getPlannedIncomesByBudget(id)))
+    return results.flatMap(r => r.result ?? [])
   }
 
   const getExpectedIncomeForBudget = (

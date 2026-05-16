@@ -12,6 +12,9 @@ export function useAccountsReceivableApi() {
   const getSummary = () =>
     $fetch<{ success: boolean; result: AccountReceivableSummary }>('/api/receivables/summary')
 
+  const getById = (id: string) =>
+    $fetch<{ success: boolean; result: AccountReceivable }>(`/api/receivables/${id}`)
+
   const create = (dto: CreateAccountReceivableDto) =>
     $fetch<{ success: boolean; result: AccountReceivable }>('/api/receivables', {
       method: 'POST',
@@ -33,5 +36,5 @@ export function useAccountsReceivableApi() {
       body: dto
     })
 
-  return { getAll, getSummary, create, update, remove, registerCollection }
+  return { getAll, getById, getSummary, create, update, remove, registerCollection }
 }

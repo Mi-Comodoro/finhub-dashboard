@@ -1,22 +1,18 @@
 import { ACCESS_TOKEN } from '~/common/constants'
-import type { CashFlowForecastResponse } from '~/composables/api/useAnalyticsApi'
+import type { AccountReceivable } from '~/types/accounts-receivable.types'
 
 import { validateError } from '../utils/auth.error'
 
 export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
   const token = getCookie(event, ACCESS_TOKEN)
-  const { month, year } = getQuery(event)
+  const id = getRouterParam(event, 'id')
 
   if (!token) throw createError({ statusCode: 401, message: 'No autenticado' })
+  if (!id) throw createError({ statusCode: 400, message: 'ID requerido' })
 
-  const params = new URLSearchParams()
-  if (month) params.set('month', String(month))
-  if (year) params.set('year', String(year))
-  const qs = params.size ? `?${params.toString()}` : ''
-
-  const { success, data } = await $fetch<{ success: boolean; data: CashFlowForecastResponse }>(
-    `${config.public.apiBase}/analytics/cash-flow-forecast${qs}`,
+  const { success, data } = await $fetch<{ success: boolean; data: AccountReceivable }>(
+    `${config.public.apiBase}/accounts-receivable/${id}`,
     {
       headers: { authorization: `Bearer ${token}` },
       onResponseError: ({ response }) => validateError(event, response.status)

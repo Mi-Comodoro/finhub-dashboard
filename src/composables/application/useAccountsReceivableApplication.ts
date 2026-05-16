@@ -42,6 +42,16 @@ export const useAccountsReceivableApplication = () => {
     await Promise.all([fetchAccounts(), fetchSummary()])
   }
 
+  const fetchById = async (id: string) => {
+    try {
+      const { success, result } = await api.getById(id)
+      if (success && result) store.updateAccount(result)
+      return { success, result }
+    } catch {
+      return { success: false, result: null }
+    }
+  }
+
   const createAccount = async (dto: CreateAccountReceivableDto) => {
     try {
       store.setLoading(true)
@@ -162,6 +172,7 @@ export const useAccountsReceivableApplication = () => {
     agingData,
     flowData,
     loadAll,
+    fetchById,
     createAccount,
     updateAccount,
     deleteAccount,
