@@ -3,6 +3,7 @@
 
   import { Form } from '@/components/organisms/forms'
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
+  import { useFeedback } from '@/composables/useFeedback'
   import type { AccountReceivable, RegisterCollectionDto } from '@/types/accounts-receivable.types'
   import { formatCurrency } from '@/utils/currency'
 
@@ -16,15 +17,24 @@
   const close = () => emit('onClose')
 
   const { registerCollection, currency } = useAccountsReceivableApplication()
+  const { error: errorToast } = useFeedback()
   const formSchema = computed(() => collectionFieldsSchema())
+  const isSubmitting = ref(false)
 
   const today = new Date().toISOString().split('T')[0]
   const initialData = { collectionDate: today }
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    const dto = data as unknown as RegisterCollectionDto
-    const { success } = await registerCollection(props.account.id, dto)
-    if (success) close()
+    if (isSubmitting.value) return
+    isSubmitting.value = true
+    try {
+      const dto = data as unknown as RegisterCollectionDto
+      const { success } = await registerCollection(props.account.id, dto)
+      if (success) close()
+      else errorToast('Error', 'No se pudo registrar el cobro.')
+    } finally {
+      isSubmitting.value = false
+    }
   }
 </script>
 
@@ -51,11 +61,11 @@
       </Heading>
     </div>
 
-    <Form :schema="formSchema" :initial-data="initialData" @submit="handleSubmit">
+    <Form :schema="formSchema" :model-value="initialData" @submit="handleSubmit">
       <template #actions>
         <div class="collection-form__actions">
           <Button type="button" variant="ghost" size="sm" @click.stop="close">Cancelar</Button>
-          <Button type="submit" variant="primary" size="sm">Registrar</Button>
+          <Button type="submit" variant="primary" size="sm" :loading="isSubmitting">Registrar</Button>
         </div>
       </template>
     </Form>
