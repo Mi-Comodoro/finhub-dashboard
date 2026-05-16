@@ -8,7 +8,11 @@
   import { useAccountsPayableApplication } from '@/composables/application/useAccountsPayableApplication'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
-  import type { AccountPayable, CreateAccountPayableDto, RegisterPaymentDto } from '~/types/accounts-payable.types'
+  import type {
+    AccountPayable,
+    CreateAccountPayableDto,
+    RegisterPaymentDto
+  } from '~/types/accounts-payable.types'
 
   definePageMeta({
     layout: 'dashboard',
@@ -31,6 +35,7 @@
   } = useAccountsPayableApplication()
 
   const showForm = ref(false)
+  const isFormLoading = ref(false)
   const selectedAccount = ref<AccountPayable | null>(null)
   const showPaymentModal = ref(false)
   const paymentTarget = ref<AccountPayable | null>(null)
@@ -52,12 +57,17 @@
   }
 
   const handleFormSuccess = async (dto: CreateAccountPayableDto) => {
-    if (selectedAccount.value) {
-      await updateAccount(selectedAccount.value.id, dto)
-    } else {
-      await createAccount(dto)
+    isFormLoading.value = true
+    try {
+      if (selectedAccount.value) {
+        await updateAccount(selectedAccount.value.id, dto)
+      } else {
+        await createAccount(dto)
+      }
+      showForm.value = false
+    } finally {
+      isFormLoading.value = false
     }
-    showForm.value = false
   }
 
   const handlePaymentSuccess = async (dto: RegisterPaymentDto) => {
@@ -87,7 +97,8 @@
   }
 
   const typeLabel = (type: string) => TYPE_LABELS[type] ?? type
-  const typeVariant = (type: string) => TYPE_VARIANTS[type] ?? 'default'
+  const typeVariant = (type: string): BadgeVariant =>
+    (TYPE_VARIANTS[type] as BadgeVariant) ?? 'default'
 
   const paidPercent = (account: AccountPayable) => {
     if (!account.originalAmount) return 0
@@ -117,10 +128,7 @@
         <Heading level="h1" size="2xl" weight="extrabold">Cuentas por Pagar</Heading>
         <Text size="xs" color="muted">Gestiona tus deudas y compromisos financieros.</Text>
       </div>
-      <Button variant="primary" size="sm" @click="openCreate">
-        <span class="material-symbols-outlined">add</span>
-        Agregar deuda
-      </Button>
+      <Button variant="primary" size="sm" icon="add" @click="openCreate">Agregar deuda</Button>
     </div>
 
     <div class="debts-page__kpis">
@@ -155,7 +163,9 @@
         <Text size="xs" color="muted">Próximo vencimiento</Text>
         <USkeleton v-if="loadingSummary" class="debts-page__kpi-skeleton" />
         <Heading v-else level="h2" size="base" weight="extrabold">
-          {{ summary?.nextDueDate ? DateUtils.formatDate(summary.nextDueDate) : 'Sin vencimientos' }}
+          {{
+            summary?.nextDueDate ? DateUtils.formatDate(summary.nextDueDate) : 'Sin vencimientos'
+          }}
         </Heading>
         <Badge v-if="(summary?.overdueCount ?? 0) > 0" variant="danger">
           {{ summary?.overdueCount }} vencida{{ (summary?.overdueCount ?? 0) > 1 ? 's' : '' }}
@@ -183,58 +193,54 @@
       </div>
 
       <template v-else>
-      <div
-        v-for="account in accounts ?? []"
-        :key="account.id"
-        class="debts-page__account-card"
-      >
-        <div class="debts-page__account-header">
-          <Heading level="h3" size="base" weight="semibold">{{ account.name }}</Heading>
-          <div class="debts-page__account-badges">
-            <Badge :variant="typeVariant(account.type)">{{ typeLabel(account.type) }}</Badge>
-            <Badge v-if="account.status === 'overdue'" variant="danger">Vencida</Badge>
-            <Badge v-if="account.status === 'paid'" variant="success">Pagada</Badge>
+        <div v-for="account in accounts ?? []" :key="account.id" class="debts-page__account-card">
+          <div class="debts-page__account-header">
+            <Heading level="h3" size="base" weight="semibold">{{ account.name }}</Heading>
+            <div class="debts-page__account-badges">
+              <Badge :variant="typeVariant(account.type)">{{ typeLabel(account.type) }}</Badge>
+              <Badge v-if="account.status === 'overdue'" variant="danger">Vencida</Badge>
+              <Badge v-if="account.status === 'paid'" variant="success">Pagada</Badge>
+            </div>
           </div>
-        </div>
 
-        <div class="debts-page__account-progress">
-          <div class="debts-page__account-amounts">
-            <Text size="sm" color="muted">Balance actual</Text>
-            <Text size="sm" weight="bold">
-              {{ formatCurrency(account.currentBalance, currency) }}
+          <div class="debts-page__account-progress">
+            <div class="debts-page__account-amounts">
+              <Text size="sm" color="muted">Balance actual</Text>
+              <Text size="sm" weight="bold">
+                {{ formatCurrency(account.currentBalance, currency) }}
+              </Text>
+            </div>
+            <div class="debts-page__progress-track">
+              <div
+                class="debts-page__progress-fill"
+                :style="{ width: `${paidPercent(account)}%` }"
+              />
+            </div>
+            <Text size="xs" color="muted">
+              {{ paidPercent(account).toFixed(0) }}% pagado de
+              {{ formatCurrency(account.originalAmount, currency) }}
             </Text>
           </div>
-          <div class="debts-page__progress-track">
-            <div
-              class="debts-page__progress-fill"
-              :style="{ width: `${paidPercent(account)}%` }"
-            />
-          </div>
-          <Text size="xs" color="muted">
-            {{ paidPercent(account).toFixed(0) }}% pagado de
-            {{ formatCurrency(account.originalAmount, currency) }}
+
+          <Text v-if="account.nextPaymentDate" size="xs" color="muted">
+            Próximo pago: {{ DateUtils.formatDate(account.nextPaymentDate) }}
           </Text>
-        </div>
 
-        <Text v-if="account.nextPaymentDate" size="xs" color="muted">
-          Próximo pago: {{ DateUtils.formatDate(account.nextPaymentDate) }}
-        </Text>
-
-        <div class="debts-page__account-actions">
-          <Button size="sm" variant="secondary" @click="openPayment(account)">
-            Registrar pago
-          </Button>
-          <Button size="sm" variant="ghost" @click="openEdit(account)">Editar</Button>
-          <Button
-            size="sm"
-            variant="danger-ghost"
-            :loading="itemToDelete === account.id"
-            @click="handleDelete(account.id)"
-          >
-            Eliminar
-          </Button>
+          <div class="debts-page__account-actions">
+            <Button size="sm" variant="secondary" @click="openPayment(account)">
+              Registrar pago
+            </Button>
+            <Button size="sm" variant="ghost" @click="openEdit(account)">Editar</Button>
+            <Button
+              size="sm"
+              variant="danger"
+              :loading="itemToDelete === account.id"
+              @click="handleDelete(account.id)"
+            >
+              Eliminar
+            </Button>
+          </div>
         </div>
-      </div>
       </template>
     </div>
 
@@ -242,6 +248,7 @@
       <AccountPayableForm
         :mode="selectedAccount ? 'edit' : 'create'"
         :initial-data="selectedAccount"
+        :is-loading="isFormLoading"
         @success="handleFormSuccess"
         @close="showForm = false"
       />

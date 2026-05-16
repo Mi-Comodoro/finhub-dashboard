@@ -8,10 +8,12 @@
     defineProps<{
       mode?: 'create' | 'edit'
       initialData?: AccountPayable | null
+      isLoading?: boolean
     }>(),
     {
       mode: 'create',
-      initialData: null
+      initialData: null,
+      isLoading: false
     }
   )
 
@@ -83,7 +85,7 @@
       <template #actions>
         <div class="account-payable-form__actions">
           <Button type="button" variant="ghost" size="sm" @click="emit('close')">Cancelar</Button>
-          <Button type="submit" variant="primary" size="sm">
+          <Button type="submit" variant="primary" size="sm" :loading="isLoading">
             {{ mode === 'edit' ? 'Actualizar' : 'Guardar' }}
           </Button>
         </div>
