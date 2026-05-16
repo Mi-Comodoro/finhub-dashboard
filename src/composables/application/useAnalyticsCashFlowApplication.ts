@@ -13,6 +13,11 @@ export interface WeeklyGroup {
   netFlow: number
 }
 
+const MONTH_NAMES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+]
+
 export function useAnalyticsCashFlowApplication() {
   const analyticsApi = useAnalyticsApi()
   const transactionApi = useTransactionApi()
@@ -35,7 +40,7 @@ export function useAnalyticsCashFlowApplication() {
     await ensureBudgetsLoaded(year)
 
     const budget = budgetStore.budgetPlans.find(
-      b => Number(b.month) === month && Number(b.year) === year
+      b => b.month === MONTH_NAMES[month - 1] && b.year === year
     )
 
     if (!budget) return []
