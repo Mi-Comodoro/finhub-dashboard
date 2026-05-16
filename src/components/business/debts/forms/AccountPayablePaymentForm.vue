@@ -7,7 +7,7 @@
 
   import { paymentFieldsSchema } from './schema/account-payable.fields.schema'
 
-  const props = defineProps<{
+  defineProps<{
     account: AccountPayable | null
   }>()
 
