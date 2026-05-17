@@ -46,7 +46,7 @@ export const useExpenseApplication = () => {
   )
 
   const wantsProgress = computed(() =>
-    getPercentage(needsAmount.value, wantsAmountCompleted.value ?? 0)
+    getPercentage(wantsAmount.value, wantsAmountCompleted.value ?? 0)
   )
   const needsProgress = computed(() =>
     getPercentage(needsAmount.value, needsAmountCompleted.value ?? 0)
@@ -151,6 +151,8 @@ export const useExpenseApplication = () => {
     wantsProgress,
     needsAmount,
     wantsAmount,
+    needsAmountCompleted,
+    wantsAmountCompleted,
     fetchExpenses,
     addExpense,
     completeExpense,
