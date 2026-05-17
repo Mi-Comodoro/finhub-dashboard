@@ -12,6 +12,7 @@ export const accountPayableFieldsSchema = (): FormSchema => ({
       type: 'radio-card',
       label: 'Tipo',
       required: true,
+      size: 'sm',
       options: [
         { label: 'Préstamo', value: 'loan', icon: 'account_balance' },
         { label: 'Tarjeta', value: 'credit_card', icon: 'credit_card' },
@@ -29,10 +30,9 @@ export const accountPayableFieldsSchema = (): FormSchema => ({
       label: 'Pago mínimo mensual (opcional)'
     },
     interestRate: {
-      type: 'number',
+      type: 'percentage',
       label: 'Tasa de interés % EA (opcional)',
-      placeholder: 'Ej. 12.5',
-      prefix: '%EA'
+      placeholder: 'Ej. 12.5'
     },
     nextPaymentDate: {
       type: 'date',
