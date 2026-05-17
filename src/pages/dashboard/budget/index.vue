@@ -77,7 +77,7 @@
   const getExpected = (budgetId: string) => getExpectedIncomeForBudget(budgetId, allIncomes.value)
 
   const getEstimatedSavings = (budgetId: string, savingsLimit: number) =>
-    Math.round(getExpected(budgetId) * (savingsLimit / 100))
+    Math.round(getExpected(budgetId) * (Number(savingsLimit) / 100))
 
   // Función personalizada para el borde de las tarjetas
   const getCardBorderClass = (budget: CurrentBudgetPlan): string => {
@@ -131,8 +131,9 @@
   const close = async (budget: CurrentBudgetPlan) => {
     closingBudget.value = budget
     // Estimate libre sin comprometer from available plan data
-    const libresincomprometer =
-      getExpected(budget.id) - getEstimatedSavings(budget.id, budget.limits?.savings ?? 0)
+    const raw =
+      Number(getExpected(budget.id)) - Number(getEstimatedSavings(budget.id, budget.limits?.savings ?? 0))
+    const libresincomprometer = isNaN(raw) ? 0 : raw
     await initiateClosure(budget, libresincomprometer)
   }
 
