@@ -7,6 +7,12 @@ import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { usePlannedIncomeStore } from '@/stores/planned-income.store'
 
+// Module-level refs so all instances of this composable share the same data.
+// loadBudgetDetail (called from the page) updates these; BudgetDistribution
+// reads them without needing a second fetch.
+const needsSpent = ref(0)
+const wantsSpent = ref(0)
+
 export function useBudgetDetailApplication() {
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
@@ -14,10 +20,6 @@ export function useBudgetDetailApplication() {
   const { fetchBudgetById } = useBudgetActions()
   const { fetchPlannedIncomeByBudgetId } = usePlannedIncomeApplication()
   const expenseApi = useExpenseApi()
-
-  // Distribution totals fetched without pagination to avoid partial reads
-  const needsSpent = ref(0)
-  const wantsSpent = ref(0)
 
   const loadBudgetDetail = async (budgetId: string) => {
     await fetchBudgetById(budgetId)
