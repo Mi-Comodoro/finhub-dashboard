@@ -69,7 +69,7 @@
     return 'Selecciona el tipo de movimiento a registrar.'
   })
 
-  const formData = ref<Record<string, unknown>>({
+  const formData = ref<Record<string, string | number | boolean | Date | null>>({
     type: '',
     amount: 0,
     date: new Date(),
@@ -86,7 +86,7 @@
     }
   )
 
-  const handleFormUpdate = (data: Record<string, unknown>) => {
+  const handleFormUpdate = (data: Record<string, string | number | boolean | Date | null>) => {
     formData.value = data
   }
 
