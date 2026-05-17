@@ -17,13 +17,13 @@
     }
   )
 
-  const emit = defineEmits(['onClose'])
+  const emit = defineEmits<{ onClose: [] }>()
   const close = () => emit('onClose')
 
   const { createAccount, updateAccount } = useAccountsReceivableApplication()
   const { error: errorToast } = useFeedback()
   const isEditMode = computed(() => !!props.accountId)
-  const formSchema = computed(() => accountReceivableFieldsSchema())
+  const formSchema = accountReceivableFieldsSchema()
   const isSubmitting = ref(false)
 
   const buildDto = (data: Record<string, unknown>): CreateAccountReceivableDto =>

@@ -53,8 +53,12 @@ export function useAccountsPayableApplication() {
     await refreshAll()
   }
 
-  const ratioStatus = computed(() => {
+  const ratioStatus = computed<{
+    label: string
+    color: 'default' | 'primary' | 'warning' | 'danger'
+  }>(() => {
     const ratio = summary.value?.debtToIncomeRatio ?? 0
+    if (ratio == 0) return { label: 'Neutro', color: 'default' }
     if (ratio < 0.3) return { label: 'Saludable', color: 'primary' }
     if (ratio < 0.5) return { label: 'Moderado', color: 'warning' }
     return { label: 'Alto riesgo', color: 'danger' }
