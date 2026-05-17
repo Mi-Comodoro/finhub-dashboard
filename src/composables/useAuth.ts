@@ -56,7 +56,8 @@ export const useAuth = () => {
         id: result.user.id,
         email: result.user.email,
         displayName: result.user.displayName,
-        avatar: result.user.photo || null
+        avatar: result.user.photo || null,
+        role: (result.user.role as 'admin' | 'user') ?? 'user'
       },
       isAuthenticated: true,
       sessionExpiresAt: resolveSessionExpiresAt(resolvedExpiresAt)
