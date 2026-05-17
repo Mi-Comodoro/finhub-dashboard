@@ -31,7 +31,7 @@
         type: props.initialData.type,
         originalAmount: props.initialData.originalAmount,
         minimumPayment: props.initialData.minimumPayment ?? 0,
-        interestRate: props.initialData.interestRate ?? '',
+        interestRate: props.initialData.interestRate ?? null,
         nextPaymentDate: props.initialData.nextPaymentDate
           ? new Date(props.initialData.nextPaymentDate)
           : null,
@@ -43,7 +43,7 @@
       type: 'loan',
       originalAmount: 0,
       minimumPayment: 0,
-      interestRate: '',
+      interestRate: null,
       nextPaymentDate: null,
       notes: ''
     }
