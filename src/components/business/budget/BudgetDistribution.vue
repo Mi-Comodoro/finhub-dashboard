@@ -1,12 +1,15 @@
 <script setup lang="ts">
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
-  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
   import { getPercentage, percentOf } from '@/utils/currency'
 
-  const { budgetSelected: plan, defaultCurrency: currency, expectedIncome } =
-    useBudgetDetailApplication()
-  const { needsAmountCompleted, wantsAmountCompleted } = useExpenseApplication()
+  const {
+    budgetSelected: plan,
+    defaultCurrency: currency,
+    expectedIncome,
+    needsSpent,
+    wantsSpent
+  } = useBudgetDetailApplication()
   const { savingAmountCompleted } = useSavingPlannedApplication()
 
   const isBalanced = computed(() => plan.value?.strategy === 'BALANCED')
@@ -26,8 +29,8 @@
     return percentOf(expectedIncome.value ?? 0, plan.value.limits.savings, currency.value)
   })
 
-  const needsProgress = computed(() => getPercentage(needsAmount.value, needsAmountCompleted.value))
-  const wantsProgress = computed(() => getPercentage(wantsAmount.value, wantsAmountCompleted.value))
+  const needsProgress = computed(() => getPercentage(needsAmount.value, needsSpent.value))
+  const wantsProgress = computed(() => getPercentage(wantsAmount.value, wantsSpent.value))
   const savingProgress = computed(() =>
     getPercentage(savingsAmount.value, savingAmountCompleted.value ?? 0)
   )
