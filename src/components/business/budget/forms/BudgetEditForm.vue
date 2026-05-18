@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { Form } from '@/components/organisms/forms'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
+  import { replaceUnderscoresWithSpaces } from '@/utils/strings'
 
   import { budgetEditFieldsSchema } from './schema/budget.edit.fields.schema'
 
@@ -23,13 +24,18 @@
   const formSchema = budgetEditFieldsSchema()
 
   const formData = ref(
-    props.initialData ?? {
-      name: '',
-      strategy: 'BALANCED' as 'BALANCED' | 'CUSTOM',
-      needsLimit: 50,
-      wantsLimit: 30,
-      savingsLimit: 20
-    }
+    props.initialData
+      ? {
+          ...props.initialData,
+          name: replaceUnderscoresWithSpaces(props.initialData.name)
+        }
+      : {
+          name: '',
+          strategy: 'BALANCED' as 'BALANCED' | 'CUSTOM',
+          needsLimit: 50,
+          wantsLimit: 30,
+          savingsLimit: 20
+        }
   )
 
   const handleSubmit = async (data: {
@@ -42,7 +48,7 @@
     const { handleUpdate } = useBudgetActions()
 
     const payload = {
-      name: data.name,
+      name: data.name.replace(/ /g, '_'),
       strategy: data.strategy,
       needsLimit: data.strategy === 'BALANCED' ? 50 : Number(data.needsLimit ?? 50),
       wantsLimit: data.strategy === 'BALANCED' ? 30 : Number(data.wantsLimit ?? 30),
