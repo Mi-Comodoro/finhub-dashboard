@@ -131,7 +131,7 @@
         const { success } = await createTransaction({
           type: type as 'income' | 'expense',
           amount,
-          transactionDate: date,
+          transactionDate: date instanceof Date ? date.toISOString() : new Date(date).toISOString(),
           description,
           source: 'manual',
           budgetId

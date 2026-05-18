@@ -57,14 +57,22 @@
       return
     }
     try {
+      const isoDate = data.dueDate
+        ? new Date(data.dueDate as unknown as string | Date).toISOString()
+        : undefined
+
       if (isEditMode.value && props.expenseId) {
-        const { success } = await updateExpense(props.expenseId, data)
+        const { success } = await updateExpense(props.expenseId, {
+          ...data,
+          ...(isoDate ? { dueDate: isoDate as unknown as Date } : {})
+        })
         if (success) {
           emit('success')
         }
       } else {
         const buildData = {
           ...data,
+          ...(isoDate ? { dueDate: isoDate as unknown as Date } : {}),
           budgetId: props.budgetId,
           status: 'PLANNED'
         }

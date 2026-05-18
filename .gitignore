@@ -142,3 +142,4 @@ package-lock.json
 Agent.md
 
 .output
+.claude/settings.local.json

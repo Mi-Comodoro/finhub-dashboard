@@ -73,11 +73,12 @@
     }
 
     try {
+      const rawDate = data.date as Date | string
       const buildData = {
         contributionType: data.contributionType as string,
         accountId: data.contributionType === 'internal' ? (data.accountId as string) : undefined,
         amount: Number(data.amount) || 0,
-        date: data.date as Date,
+        date: (rawDate instanceof Date ? rawDate : new Date(rawDate)).toISOString() as unknown as Date,
         notes: (data.notes as string) || undefined
       }
 
