@@ -3,7 +3,6 @@
   import ContributionForm from '@/components/business/savings/forms/ContributionForm.vue'
   import GoalsForm from '@/components/business/savings/forms/GoalsForm.vue'
   import GoalMovements from '@/components/business/savings/GoalMovements.vue'
-  import GoalProjectionChart from '@/components/business/savings/GoalProjectionChart.vue'
   import GoalSidebarPanel from '@/components/business/savings/GoalSidebarPanel.vue'
   import GoalDetailInsights from '@/components/business/savings/insight/GoalDetailInsights.vue'
   import { ModalWizard } from '@/components/organisms'
@@ -13,6 +12,10 @@
   import { useGoalDetailPresenter } from '@/composables/presenters/useGoalDetailPresenter'
   import type { GoalHistory, GoalsData, PlannedSaving } from '@/types/api'
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
+
+  const GoalProjectionChart = defineAsyncComponent(
+    () => import('@/components/business/savings/GoalProjectionChart.vue')
+  )
 
   definePageMeta({
     layout: 'dashboard',

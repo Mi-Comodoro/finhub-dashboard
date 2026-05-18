@@ -10,13 +10,11 @@
   import Text from '@/components/atoms/typography/Text.vue'
   import ActiveGoalsCard from '@/components/business/dashboard/ActiveGoalsCard.vue'
   import DashboardActionCard from '@/components/business/dashboard/DashboardActionCard.vue'
-  import DashboardBalanceChart from '@/components/business/dashboard/DashboardBalanceChart.vue'
   import FinancialHealthGauge from '@/components/business/dashboard/FinancialHealthGauge.vue'
   import UpcomingBillsCard from '@/components/business/dashboard/UpcomingBillsCard.vue'
   import FinancialTipCarousel from '@/components/business/savings/FinancialTipCarousel.vue'
   import PlannedSavingList from '@/components/business/savings/PlannedSavingList.vue'
   import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
-  import BudgetDonutChartEnhanced from '@/components/molecules/budget-donut-chart/BudgetDonutChartEnhanced.vue'
   import FinancialProgressCard from '@/components/molecules/financial-progress-card/FinancialProgressCard.vue'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
   import OnboardingWizard from '@/components/organisms/wizard/OnboardingWizard.vue'
@@ -30,6 +28,13 @@
   import { useCommon } from '@/composables/useCommon'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
   import { FINANCIAL_TIPS } from '@/utils/financial-tips'
+
+  const DashboardBalanceChart = defineAsyncComponent(
+    () => import('@/components/business/dashboard/DashboardBalanceChart.vue')
+  )
+  const BudgetDonutChartEnhanced = defineAsyncComponent(
+    () => import('@/components/molecules/budget-donut-chart/BudgetDonutChartEnhanced.vue')
+  )
 
   const router = useRouter()
 

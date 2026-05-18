@@ -1,13 +1,22 @@
 <script setup lang="ts">
-  import {
-    AnalyticsAhorroView,
-    AnalyticsFlujoCajaView,
-    AnalyticsGastosView,
-    AnalyticsNetPositionView,
-    AnalyticsSaludView
-  } from '@/components/business'
   import { Select } from '@/components/molecules'
   import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
+
+  const AnalyticsSaludView = defineAsyncComponent(
+    () => import('@/components/business/analytics/AnalyticsSaludView.vue')
+  )
+  const AnalyticsFlujoCajaView = defineAsyncComponent(
+    () => import('@/components/business/analytics/AnalyticsFlujoCajaView.vue')
+  )
+  const AnalyticsGastosView = defineAsyncComponent(
+    () => import('@/components/business/analytics/AnalyticsGastosView.vue')
+  )
+  const AnalyticsAhorroView = defineAsyncComponent(
+    () => import('@/components/business/analytics/AnalyticsAhorroView.vue')
+  )
+  const AnalyticsNetPositionView = defineAsyncComponent(
+    () => import('@/components/business/analytics/AnalyticsNetPositionView.vue')
+  )
 
   definePageMeta({
     layout: 'dashboard',
