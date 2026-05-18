@@ -35,6 +35,7 @@ export { default as SavingDistributionForm } from './savings/forms/SavingDistrib
 export { default as PlannedSavingList } from './savings/PlannedSavingList.vue'
 export { default as SavingsDistribution } from './savings/SavingsDistribution.vue'
 export { default as Tips } from './tips/Tips.vue'
+export { default as GroupForm } from './groups/forms/GroupForm.vue'
 export { default as QuickTransactionForm } from './transaction/forms/QuickTransactionForm.vue'
 export { default as TransactionForm } from './transaction/forms/TransactionForm.vue'
 export { default as TransactionFiltersBar } from './transactions/TransactionFiltersBar.vue'
