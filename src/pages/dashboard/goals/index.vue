@@ -2,6 +2,7 @@
   import { Badge, Button, Text } from '@/components/atoms'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { AccountSavingForm, GoalsForm } from '@/components/business'
+  import FinancialTipCarousel from '@/components/business/savings/FinancialTipCarousel.vue'
   import { CardInfo } from '@/components/molecules'
   import { ModalWizard } from '@/components/organisms'
   import { useToast } from '@/components/organisms/toast/useToast'
@@ -13,6 +14,7 @@
   import { useCommon } from '@/composables/useCommon'
   import type { CompoundingFrequency, GoalsData, PlannedSaving } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
+  import { FINANCIAL_TIPS } from '@/utils/financial-tips'
   import { getProgressPercentage as getProgressPercentageUtil } from '@/utils/goal-formatters'
   import {
     getGoalTerm,
@@ -115,6 +117,32 @@
       variant: 'success'
     }
   ])
+
+  const GOALS_TIPS = {
+    compound: {
+      id: 'g1',
+      icon: 'trending_up',
+      message: 'El interés compuesto es tu aliado',
+      subMessage: 'Con una tasa activa tu ahorro crece solo. La clave es la constancia.'
+    },
+    onTrack: {
+      id: 'g2',
+      icon: 'check_circle',
+      message: '¡Vas por buen camino!',
+      subMessage: 'Cada aporte, por pequeño que sea, te acerca a tu meta.'
+    }
+  }
+
+  const displayTips = computed(() => {
+    const tips = [...FINANCIAL_TIPS.common, ...FINANCIAL_TIPS.savings]
+    if (accounts.value.some(a => Number(a.interestRate) > 0)) {
+      return [GOALS_TIPS.compound, ...tips]
+    }
+    if (goals.value.some(g => g.isActive)) {
+      return [GOALS_TIPS.onTrack, ...tips]
+    }
+    return tips
+  })
 
   definePageMeta({
     layout: 'dashboard',
@@ -395,20 +423,7 @@
       </div>
     </div>
     <AllocationSummary />
-    <div>
-      <Card class="goals-page__tip-card">
-        <IconBadge icon="lightbulb" variant="primary" size="md" />
-        <div class="goals-page__tip-content">
-          <Heading level="h1" size="sm" weight="extrabold" class="goals-page__tip-title">
-            Divide y Venceras
-          </Heading>
-          <Text size="xs" color="muted" class="goals-page__tip-text">
-            Si tienes metas a largo plazo, dividelas en objetivos, cada objetivo te acerca mas a la
-            meta.
-          </Text>
-        </div>
-      </Card>
-    </div>
+    <FinancialTipCarousel :tips="displayTips" />
     <div class="goals-page__grid">
       <div v-if="isGoalsExists" class="goals-page__goals-section">
         <!-- Vista tarjetas -->
@@ -758,22 +773,6 @@
 
   .goals-page__title {
     @apply mb-1;
-  }
-
-  .goals-page__tip-card {
-    @apply flex w-full items-start gap-2;
-  }
-
-  .goals-page__tip-content {
-    @apply w-full leading-relaxed;
-  }
-
-  .goals-page__tip-title {
-    @apply !text-primary-800;
-  }
-
-  .goals-page__tip-text {
-    @apply w-full;
   }
 
   .goals-page__grid {
