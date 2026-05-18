@@ -19,5 +19,10 @@ export const contributionFieldsSchema = (): FormSchema => ({
       placeholder: 'Agrega una nota (opcional)',
       required: false
     }
-  }
+  },
+  layout: [
+    { type: 'row', fields: ['amount'] },
+    { type: 'row', fields: ['date'] },
+    { type: 'row', fields: ['note'] }
+  ]
 })
