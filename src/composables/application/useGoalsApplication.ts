@@ -183,11 +183,9 @@ export const useGoalsApplication = () => {
   const addContribution = async (
     goalId: string,
     data: {
-      contributionType: string
-      accountId?: string
       amount: number
-      date: Date
-      notes?: string
+      date: string
+      note?: string
     }
   ): Promise<{ success: boolean }> => {
     try {
