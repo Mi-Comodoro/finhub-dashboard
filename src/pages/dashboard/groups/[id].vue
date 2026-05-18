@@ -35,12 +35,12 @@
     () => currentMemberRole.value === 'OWNER' || currentMemberRole.value === 'EDITOR'
   )
 
-  // Invite modal state
+  // Invite member state
   const showInviteModal = ref(false)
   const inviteUserId = ref('')
   const isInviting = ref(false)
 
-  // Delete modal state
+  // Delete group state
   const showDeleteModal = ref(false)
   const isDeleting = ref(false)
 
@@ -124,8 +124,9 @@
     <!-- Loading skeleton -->
     <div v-if="isLoading && !selectedGroup" class="group-detail__skeleton-block" />
 
+    <!-- Content -->
     <template v-else-if="selectedGroup">
-      <!-- Page header -->
+      <!-- Header -->
       <div class="group-detail__header">
         <div class="group-detail__header-info">
           <div class="group-detail__title-row">
@@ -173,13 +174,13 @@
         </div>
       </div>
 
-      <!-- Members card -->
+      <!-- Members section -->
       <Card class="group-detail__members-card">
         <div class="group-detail__members-header">
           <Heading level="h3" size="lg" weight="semibold">Miembros</Heading>
         </div>
 
-        <div v-if="!selectedGroup.members?.length" class="group-detail__members-empty">
+        <div v-if="selectedGroup.members?.length === 0" class="group-detail__members-empty">
           <Text size="sm" color="muted">No hay miembros en este grupo.</Text>
         </div>
 
@@ -361,10 +362,6 @@
 
   .group-detail__member-actions {
     @apply flex items-center gap-2;
-  }
-
-  .group-detail__expenses-card {
-    @apply !p-5;
   }
 
   .group-detail__invite-modal {

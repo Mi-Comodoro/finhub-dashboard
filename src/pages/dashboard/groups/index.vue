@@ -13,6 +13,7 @@
 
   const router = useRouter()
   const { success: successToast } = useFeedback()
+
   const { groups, isLoading, fetchGroups } = useGroupsApplication()
 
   const showCreateModal = ref(false)

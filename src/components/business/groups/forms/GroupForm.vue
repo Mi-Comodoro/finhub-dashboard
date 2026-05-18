@@ -23,6 +23,7 @@
   const { createGroup, updateGroup } = useGroupsApplication()
 
   const isEditMode = computed(() => props.mode === 'edit' && !!props.groupId)
+
   const formSchema = groupFieldsSchema()
 
   const formData = computed(() => ({

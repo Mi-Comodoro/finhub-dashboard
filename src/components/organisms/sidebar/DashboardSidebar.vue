@@ -29,7 +29,8 @@
     { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
     { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' },
     { name: 'Cuentas por Pagar', icon: 'credit_score', path: '/dashboard/debts' },
-    { name: 'Cuentas por Cobrar', icon: 'payments', path: '/dashboard/receivables' }
+    { name: 'Cuentas por Cobrar', icon: 'payments', path: '/dashboard/receivables' },
+    { name: 'Grupos', icon: 'group', path: '/dashboard/groups' }
   ]
 
   const settingsItems: Omit<MenuItem, 'isActive'>[] = [
