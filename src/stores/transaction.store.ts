@@ -27,14 +27,14 @@ export const useTransactionStore = defineStore('transaction', {
       if (!state.items) return 0
       return state.items
         .filter(t => t.type === 'income')
-        .reduce((acc, t) => acc + (t.amount ?? 0), 0)
+        .reduce((acc, t) => acc + Number(t.amount ?? 0), 0)
     },
 
     totalExpensesPaid(state): number {
       if (!state.items) return 0
       return state.items
         .filter(t => t.type === 'expense')
-        .reduce((acc, t) => acc + (t.amount ?? 0), 0)
+        .reduce((acc, t) => acc + Number(t.amount ?? 0), 0)
     },
 
     totalSavings(state): number {

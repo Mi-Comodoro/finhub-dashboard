@@ -1,5 +1,6 @@
 import type { FetchError } from 'ofetch'
 
+import type { TransactionData } from '@/composables/api/useTransactionApi'
 import { useTransactionApi } from '@/composables/api/useTransactionApi'
 import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
 import { useBudgetStore } from '@/stores/budget.store'
@@ -131,7 +132,7 @@ export const useTransactionApplication = () => {
   const createTransaction = async (data: Record<string, unknown>) => {
     try {
       transactionStore.setLoading(true)
-      const { success } = await transactionApi.createTransaction(data)
+      const { success } = await transactionApi.createTransaction(data as unknown as TransactionData)
 
       if (!success) {
         transactionStore.setError({
@@ -158,7 +159,7 @@ export const useTransactionApplication = () => {
   const updateTransaction = async (id: string, data: Record<string, unknown>) => {
     try {
       transactionStore.setLoading(true)
-      const { success } = await transactionApi.updateTransaction(id, data)
+      const { success } = await transactionApi.updateTransaction(id, data as unknown as Partial<TransactionData>)
 
       if (!success) {
         transactionStore.setError({

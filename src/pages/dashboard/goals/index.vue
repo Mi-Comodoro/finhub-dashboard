@@ -9,10 +9,9 @@
   import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
-  import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
-  import type { CompoundingFrequency, GoalsData } from '@/types/api'
+  import type { CompoundingFrequency, GoalsData, PlannedSaving } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
   import { getProgressPercentage as getProgressPercentageUtil } from '@/utils/goal-formatters'
   import {
@@ -29,6 +28,7 @@
   const {
     loadGoalsData,
     loadSavingAllocations,
+    fetchGoalDetail,
     error: goalsError,
     goals,
     removeGoal
@@ -55,14 +55,14 @@
   const { currentBudgetId } = useSetupApplication()
   const { budgetStatus } = useCommon()
   const { currency } = useFinancesApplication()
-  const { items: plannedSavingItems, fetchByBudget: fetchPlannedSavings } =
-    usePlannedSavingApplication()
 
-  // Helper functions to calculate progress per goal
+  const goalSavingsMap = ref<Record<string, PlannedSaving[]>>({})
+
   const getSavedAmountForGoal = (goalId: string): number => {
-    if (!plannedSavingItems.value) return 0
-    return plannedSavingItems.value
-      .filter(item => item.savingGoal?.id === goalId && item.status === 'completed')
+    const savings = goalSavingsMap.value[goalId]
+    if (!savings) return 0
+    return savings
+      .filter(item => item.status === 'completed')
       .reduce((acc, item) => acc + (item.amount ?? 0), 0)
   }
 
@@ -135,8 +135,14 @@
     }
     if (currentBudgetId.value) {
       await loadSavingAllocations(currentBudgetId.value)
-      // Load planned savings to calculate progress
-      await fetchPlannedSavings(currentBudgetId.value)
+    }
+    if (goals.value.length > 0) {
+      const results = await Promise.all(goals.value.map(g => fetchGoalDetail(g.id)))
+      goalSavingsMap.value = Object.fromEntries(
+        results
+          .filter(r => r.success && r.result != null)
+          .map(r => [r.result!.id, r.result!.plannedSavings ?? []])
+      )
     }
   })
 

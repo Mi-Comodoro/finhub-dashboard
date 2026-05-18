@@ -1,15 +1,39 @@
 <script setup lang="ts">
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
-  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
+  import { getPercentage, percentOf } from '@/utils/currency'
 
-  const { budgetSelected: plan, defaultCurrency: currency } = useBudgetDetailApplication()
-  const { savingProgress, savingsAmount } = useSavingPlannedApplication()
-  const { needsProgress, wantsProgress, needsAmount, wantsAmount } = useExpenseApplication()
+  const {
+    budgetSelected: plan,
+    defaultCurrency: currency,
+    expectedIncome,
+    needsSpent,
+    wantsSpent
+  } = useBudgetDetailApplication()
+  const { savingAmountCompleted } = useSavingPlannedApplication()
 
-  // ─── Derived amounts ──────────────────────────────────────────────────────
+  const isBalanced = computed(() => plan.value?.strategy === 'BALANCED')
 
-  const isBalanced = plan.value?.strategy === 'BALANCED'
+  // Amounts derived from the selected budget limits — NOT from currentBudgetPlan,
+  // which is only set for the active budget and would be null on detail navigation.
+  const needsAmount = computed(() => {
+    if (!plan.value) return 0
+    return percentOf(expectedIncome.value ?? 0, plan.value.limits.needs, currency.value)
+  })
+  const wantsAmount = computed(() => {
+    if (!plan.value) return 0
+    return percentOf(expectedIncome.value ?? 0, plan.value.limits.wants, currency.value)
+  })
+  const savingsAmount = computed(() => {
+    if (!plan.value) return 0
+    return percentOf(expectedIncome.value ?? 0, plan.value.limits.savings, currency.value)
+  })
+
+  const needsProgress = computed(() => getPercentage(needsAmount.value, needsSpent.value))
+  const wantsProgress = computed(() => getPercentage(wantsAmount.value, wantsSpent.value))
+  const savingProgress = computed(() =>
+    getPercentage(savingsAmount.value, savingAmountCompleted.value ?? 0)
+  )
 
   const options = computed(() => {
     if (!plan.value) return []
