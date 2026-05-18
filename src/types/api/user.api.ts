@@ -8,6 +8,7 @@ export type BackendUserMe = {
     email: string
     onboarding: string
     createdAt: Date
+    role?: string
     userProfile: {
       type: AccountType
       name: string
@@ -18,6 +19,7 @@ export type BackendUserMe = {
       trialEndsAt: Date
       isActive: boolean
       country: string
+      role?: string
     }
     finances: {
       id: string
@@ -37,12 +39,14 @@ export type UserMe = {
       name: string
       displayName: string
       photo?: string
+      rejectPhoto?: boolean
       phone: string
       gender: string
       trialEndsAt?: Date
       isActive: boolean
       country: string
       createdAt?: Date
+      role?: string
     }
     finances: {
       id: string

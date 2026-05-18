@@ -6,11 +6,12 @@ export function useAnalyticsApplication() {
   const {
     data: healthScore,
     pending: healthScorePending,
+    error: healthScoreError,
     refresh: refreshHealthScore
   } = useAsyncData('healthScore', async () => {
     const response = await analyticsApi.getFinancialHealthScore()
     return response.result
   })
 
-  return { healthScore, healthScorePending, refreshHealthScore }
+  return { healthScore, healthScorePending, healthScoreError, refreshHealthScore }
 }

@@ -1,6 +1,7 @@
 import type { Ref } from 'vue'
 
-import { useAnalyticsApi } from '@/composables/api/useAnalyticsApi'
+import { useTransactionApi } from '@/composables/api/useTransactionApi'
+import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import type { Currency } from '@/utils/currency'
 
@@ -10,13 +11,33 @@ const MONTH_LABELS = [
 ]
 
 export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
-  const { getSavingsTrend } = useAnalyticsApi()
+  const transactionApi = useTransactionApi()
+  const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
   const currency = computed(() => financesStore.defaultCurrency as Currency)
 
+  const fetchSavingsForYear = async (yr: number) => {
+    const hasYearLoaded = budgetStore.budgetPlans.some(b => Number(b.year) === yr)
+    if (!hasYearLoaded) {
+      const { useBudgetActions } = await import('./useBudgetActions')
+      const { fetchBudgets } = useBudgetActions()
+      await fetchBudgets(financesStore.financeId, yr)
+    }
+
+    const budgetsForYear = budgetStore.budgetPlans.filter(b => Number(b.year) === yr)
+    const results = await Promise.all(
+      budgetsForYear.map(budget => {
+        const query = new URLSearchParams({ type: 'savings', limit: '500' }).toString()
+        return transactionApi.getTransactionsByBudget(budget.id, query)
+      })
+    )
+
+    return results.flatMap(r => (r.success && r.result ? r.result.transactions : []))
+  }
+
   const { data: rawTransactions, pending: isLoading } = useAsyncData(
     'analyticsSavingsTrend',
-    () => getSavingsTrend(year.value).then(r => r.result),
+    () => fetchSavingsForYear(year.value),
     { watch: [year] }
   )
 

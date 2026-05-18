@@ -17,7 +17,7 @@ export const usePlannedIncomeStore = defineStore('plannedIncome', {
       if (!state.summary) return 0
       return state.summary
         .filter(income => income.status === 'RECEIVED')
-        .reduce((sum, income) => sum + (income.amount ?? 0), 0)
+        .reduce((sum, income) => sum + Number(income.amount ?? 0), 0)
     }
   },
 

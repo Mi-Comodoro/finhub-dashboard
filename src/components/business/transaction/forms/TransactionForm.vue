@@ -42,7 +42,7 @@
     emit('onClose')
   }
 
-  const handleSubmit = async (data: TransactionData) => {
+  const handleSubmit = async (data: Record<string, unknown>) => {
     if (!props.budgetId) {
       console.warn('[TransactionForm] budgetId is required but was not provided')
       return
@@ -54,10 +54,7 @@
           emit('onClose')
         }
       } else {
-        const buildData = {
-          ...data,
-          budgetId: props.budgetId
-        }
+        const buildData = { ...data, budgetId: props.budgetId }
         const { success } = await createTransaction(buildData)
         if (success) {
           emit('onClose')

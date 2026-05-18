@@ -10,6 +10,10 @@
   import type { FinancesData } from '../forms/types/financial-goals-form.types'
   // State
   import type { OnboardingWizardEmits } from './types/onboarding-wizard.types'
+  // TODO: when a plan-selection step is added to this wizard, consume useOnboardingPlan here:
+  //   const { getPlan } = useOnboardingPlan()
+  //   const selectedPlan = getPlan()
+  //   Use `selectedPlan` to pre-select the plan card in the new step.
 
   const ONBOARDING_KEY = 'finhub_onboarding_draft'
 
@@ -100,9 +104,7 @@
 
   // Función para validar si todos los datos están completos
   const isDataComplete = () => {
-    const hasPersonalInfo =
-      wizardData.personalInfo.displayName.trim() !== '' &&
-      wizardData.personalInfo.phone.trim() !== ''
+    const hasPersonalInfo = wizardData.personalInfo.phone.trim() !== ''
 
     const hasFinances =
       wizardData.finances.currency.trim() !== '' && wizardData.finances.profile.trim() !== ''

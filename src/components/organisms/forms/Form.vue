@@ -36,6 +36,7 @@
     type:
       | 'text'
       | 'number'
+      | 'percentage'
       | 'select'
       | 'date'
       | 'switch'
@@ -52,6 +53,8 @@
     prefix?: string
     options?: FieldOption[]
 
+    size?: 'sm' | 'md'
+    hint?: string
     validate?: (_value: unknown) => true | string
     visibleWhen?: (_form: Record<string, commonField>) => boolean
     // Nuevas propiedades para campos compuestos
@@ -98,7 +101,7 @@
 
     // Required validation
     if (isFieldRequired(key) && (value === null || value === undefined || value === '')) {
-      errors[key] = 'Este campo es obligatorio'
+      errors[key] = field.errorMessage || 'Este campo es obligatorio'
       return false
     }
     // PHONE SPECIAL CASE 🔥
@@ -175,6 +178,9 @@
             case 'money':
               formData[key] = 0
               break
+            case 'percentage':
+              formData[key] = null
+              break
             case 'date':
               formData[key] = null
               break
@@ -219,8 +225,16 @@
       >
         <template v-for="fieldKey in row.fields" :key="fieldKey">
           <template v-if="isFieldVisible(fieldKey)">
+            <PercentageInput
+              v-if="schema.fields[fieldKey]!.type === 'percentage'"
+              v-model="formData[fieldKey] as number"
+              :label="schema.fields[fieldKey]!.label"
+              :required="isFieldRequired(fieldKey)"
+              :placeholder="schema.fields[fieldKey]!.placeholder"
+            />
+
             <Input
-              v-if="
+              v-else-if="
                 schema.fields[fieldKey]!.type === 'text' ||
                 schema.fields[fieldKey]!.type === 'number'
               "
@@ -228,6 +242,7 @@
               :type="schema.fields[fieldKey]!.type"
               :label="schema.fields[fieldKey]!.label"
               :placeholder="schema.fields[fieldKey]!.placeholder"
+              :hint="schema.fields[fieldKey]!.hint"
               :required="isFieldRequired(fieldKey)"
               :pattern="schema.fields[fieldKey]!.pattern"
               :prefix="schema.fields[fieldKey]!.prefix"
@@ -286,16 +301,34 @@
               label="Porcentaje de Distribucion"
             />
 
-            <RadioButton
-              v-else-if="schema.fields[fieldKey]!.type === 'radio-card'"
-              v-model="formData[fieldKey] as string"
-              name="budgetFrequency"
-              :label="schema.fields[fieldKey]!.label"
-              :required="isFieldRequired(fieldKey)"
-              variant="card"
-              direction="row"
-              :options="schema.fields[fieldKey]?.options!"
-            />
+            <template v-else-if="schema.fields[fieldKey]!.type === 'radio-card'">
+              <div v-if="schema.fields[fieldKey]!.size === 'sm'" class="card-radio-group">
+                <label v-if="schema.fields[fieldKey]!.label" class="card-radio-group__label">
+                  {{ schema.fields[fieldKey]!.label }}
+                </label>
+                <div class="card-radio-group__options">
+                  <CardRadio
+                    v-for="opt in schema.fields[fieldKey]!.options"
+                    :key="String(opt.value)"
+                    v-model="formData[fieldKey] as string"
+                    :value="String(opt.value)"
+                    :label="opt.label"
+                    :icon="opt.icon"
+                    size="sm"
+                  />
+                </div>
+              </div>
+              <RadioButton
+                v-else
+                v-model="formData[fieldKey] as string"
+                name="budgetFrequency"
+                :label="schema.fields[fieldKey]!.label"
+                :required="isFieldRequired(fieldKey)"
+                variant="card"
+                direction="row"
+                :options="schema.fields[fieldKey]?.options!"
+              />
+            </template>
 
             <PhoneInput
               v-else-if="schema.fields[fieldKey]!.type === 'phone'"
@@ -312,3 +345,17 @@
     <slot name="actions" />
   </form>
 </template>
+
+<style scoped lang="postcss">
+  .card-radio-group {
+    @apply flex flex-col gap-2;
+  }
+
+  .card-radio-group__label {
+    @apply text-sm font-bold text-black dark:text-white;
+  }
+
+  .card-radio-group__options {
+    @apply flex flex-row gap-2;
+  }
+</style>

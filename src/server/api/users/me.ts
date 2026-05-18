@@ -3,6 +3,16 @@ import type { BackendUserMe } from '~/types/api'
 
 import { validateError } from '../utils/auth.error'
 
+const extractRoleFromJwt = (token: string): string | undefined => {
+  try {
+    const payload = token.split('.')[1]
+    const decoded = Buffer.from(payload, 'base64url').toString('utf-8')
+    return (JSON.parse(decoded) as Record<string, unknown>).role as string | undefined
+  } catch {
+    return undefined
+  }
+}
+
 export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
   const token = getCookie(event, ACCESS_TOKEN)
@@ -38,7 +48,8 @@ export default defineEventHandler(async event => {
         createdAt: data.createdAt,
         trialEndsAt: data.userProfile.trialEndsAt,
         isActive: data.userProfile.isActive,
-        country: data.userProfile.country
+        country: data.userProfile.country,
+        role: data.role ?? data.userProfile.role ?? extractRoleFromJwt(token)
       },
       finances: data.finances,
       onboarding: data.onboarding,

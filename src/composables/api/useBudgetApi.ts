@@ -1,5 +1,13 @@
 import type { Budget } from '~/types/domain'
 
+export interface UpdateBudgetDto {
+  name?: string
+  strategy?: 'BALANCED' | 'CUSTOM'
+  needsLimit?: number
+  wantsLimit?: number
+  savingsLimit?: number
+}
+
 export function useBudgetApi() {
   const getBudgets = async (financeId: string, year?: number) => {
     const query = year ? `?year=${year}` : ''
@@ -52,6 +60,18 @@ export function useBudgetApi() {
       body: { mode: 'clone', sourceBudgetId, month, year }
     })
 
+  interface TransferBalanceDto {
+    targetBudgetId?: string
+    goalId?: string
+    amount: number
+  }
+
+  const transferBalance = async (id: string, dto: TransferBalanceDto) =>
+    $fetch<{ success: boolean }>(`/api/budgets/${id}/transfer-balance`, {
+      method: 'POST',
+      body: dto
+    })
+
   return {
     getBudgets,
     getCurrentBudget,
@@ -61,6 +81,7 @@ export function useBudgetApi() {
     deleteBudget,
     enableBudget,
     closeBudget,
-    cloneBudget
+    cloneBudget,
+    transferBalance
   }
 }

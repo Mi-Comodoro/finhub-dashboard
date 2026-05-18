@@ -82,22 +82,23 @@ export const goalsFieldsSchema = (
   fields: {
     name: {
       type: 'text',
-      label: 'Proposito',
+      label: 'Nombre',
       placeholder: 'Ej: Mi primer apto',
-      required: true
+      required: true,
+      errorMessage: 'El nombre es requerido'
     },
     targetAmount: {
       type: 'money',
-      label: 'Meta',
+      label: 'Monto objetivo',
       placeholder: '15.99',
       required: false,
       pattern: /^\d+(\.\d{1,2})?$/,
-      errorMessage: 'Monto invalido',
+      errorMessage: 'Monto inválido',
       prefix: 'COP',
       validate: (value: unknown) => {
         if (!value && value !== 0) return true
         const num = Number(value)
-        if (isNaN(num) || num <= 0) return 'El monto debe ser mayor a 0'
+        if (isNaN(num) || num <= 0) return 'El monto debe ser mayor a cero'
         return true
       }
     },
@@ -110,14 +111,14 @@ export const goalsFieldsSchema = (
     },
     reason: {
       type: 'select',
-      label: 'Motivo',
+      label: 'Motivo de ahorro',
       placeholder: 'Selecciona una categoria',
       options: reasonOptions,
       required: true
     },
     targetDate: {
       type: 'date',
-      label: 'Fecha de cumplimiento',
+      label: 'Fecha límite',
       placeholder: 'Selecciona la fecha (opcional)',
       required: false,
       validate: (value: unknown) => {

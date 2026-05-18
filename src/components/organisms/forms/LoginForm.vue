@@ -101,6 +101,14 @@
         </span>
       </Button>
 
+      <p class="login-form__consent">
+        Al continuar, autorizas el tratamiento de tu nombre, correo e imagen según nuestra
+        <NuxtLink to="/privacy" class="login-form__consent-link" target="_blank">
+          Política de Privacidad
+        </NuxtLink>
+        .
+      </p>
+
       <div class="relative my-4">
         <div class="absolute inset-0 flex items-center">
           <div
@@ -163,3 +171,16 @@
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .login-form__consent {
+    @apply text-center text-xs leading-relaxed text-neutral-500;
+    @apply dark:text-neutral-400;
+  }
+
+  .login-form__consent-link {
+    @apply text-primary-600 underline underline-offset-2;
+    @apply hover:text-primary-700;
+    @apply dark:text-primary-400;
+  }
+</style>

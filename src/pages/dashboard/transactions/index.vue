@@ -52,6 +52,8 @@
   const showForm = ref(false)
   const showQuickModal = ref(false)
   const showDetailsModal = ref(false)
+  const showDeleteModal = ref(false)
+  const transactionToDelete = ref<{ id: string; amount: number; type: string } | null>(null)
   const editingTransaction = ref<{ id: string; data: Record<string, unknown> } | null>(null)
   const selectedTransaction = ref<TransactionRow | null>(null)
 
@@ -98,16 +100,19 @@
     closeDetailsModal()
   }
 
-  const handleDeleteTransaction = async (row: { id: string; amount: number; type: string }) => {
-    const confirmed = confirm(
-      `¿Estás seguro de eliminar esta transacción de ${formatCurrency(row.amount, currency.value)}?`
-    )
-    if (!confirmed) return
+  const handleDeleteTransaction = (row: { id: string; amount: number; type: string }) => {
+    transactionToDelete.value = row
+    showDeleteModal.value = true
+  }
 
-    const { success } = await deleteTransaction(row.id)
+  const confirmDelete = async () => {
+    if (!transactionToDelete.value) return
+    const { success } = await deleteTransaction(transactionToDelete.value.id)
     if (success) {
       successToast('Transacción eliminada', 'La transacción fue eliminada correctamente.')
     }
+    showDeleteModal.value = false
+    transactionToDelete.value = null
   }
 
   // --- Fetch centralizado ---
@@ -413,6 +418,26 @@
       <QuickTransactionForm :goals="goals" :accounts="accounts" @on-close="closeQuickModal" />
     </ModalWizard>
 
+    <ModalWizard v-model:show="showDeleteModal">
+      <div class="delete-confirmation">
+        <Heading level="h2" size="lg" weight="extrabold">Eliminar transacción</Heading>
+        <Text size="sm" color="muted">
+          ¿Estás seguro de eliminar esta transacción de
+          <strong>
+            {{
+              transactionToDelete
+                ? formatCurrency(transactionToDelete.amount, currency)
+                : ''
+            }}
+          </strong>? Esta acción no se puede deshacer.
+        </Text>
+        <div class="delete-confirmation__actions">
+          <Button variant="ghost" size="sm" @click="showDeleteModal = false">Cancelar</Button>
+          <Button variant="danger" size="sm" @click="confirmDelete">Eliminar</Button>
+        </div>
+      </div>
+    </ModalWizard>
+
     <ModalWizard v-model:show="showDetailsModal">
       <div v-if="selectedTransaction" class="transaction-detail">
         <div class="transaction-detail__header">
@@ -609,6 +634,14 @@
   }
 
   .transaction-detail__actions {
+    @apply flex justify-end gap-2;
+  }
+
+  .delete-confirmation {
+    @apply flex flex-col gap-4;
+  }
+
+  .delete-confirmation__actions {
     @apply flex justify-end gap-2;
   }
 </style>

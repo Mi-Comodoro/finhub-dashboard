@@ -1,10 +1,17 @@
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
+import { useExpenseApi } from '@/composables/api/useExpenseApi'
 import { useBudgetActions } from '@/composables/application/useBudgetActions'
 import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
 import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { usePlannedIncomeStore } from '@/stores/planned-income.store'
+
+// Module-level refs so all instances of this composable share the same data.
+// loadBudgetDetail (called from the page) updates these; BudgetDistribution
+// reads them without needing a second fetch.
+const needsSpent = ref(0)
+const wantsSpent = ref(0)
 
 export function useBudgetDetailApplication() {
   const budgetStore = useBudgetStore()
@@ -12,10 +19,26 @@ export function useBudgetDetailApplication() {
   const plannedIncomeStore = usePlannedIncomeStore()
   const { fetchBudgetById } = useBudgetActions()
   const { fetchPlannedIncomeByBudgetId } = usePlannedIncomeApplication()
+  const expenseApi = useExpenseApi()
 
   const loadBudgetDetail = async (budgetId: string) => {
     await fetchBudgetById(budgetId)
     await fetchPlannedIncomeByBudgetId(budgetId)
+
+    try {
+      const { result } = await expenseApi.findAllExpenses({ budgetId, status: 'PAID', limit: 1000 })
+      if (result?.data) {
+        needsSpent.value = result.data
+          .filter(e => e.bucket === 'needs')
+          .reduce((sum, e) => sum + Number(e.expectedAmount ?? 0), 0)
+        wantsSpent.value = result.data
+          .filter(e => e.bucket === 'wants')
+          .reduce((sum, e) => sum + Number(e.expectedAmount ?? 0), 0)
+      }
+    } catch {
+      needsSpent.value = 0
+      wantsSpent.value = 0
+    }
 
     const error = (budgetStore.error || plannedIncomeStore.error) as {
       status: number
@@ -45,6 +68,8 @@ export function useBudgetDetailApplication() {
     markExpenseAsPaid,
     budgetSelected,
     expectedIncome,
-    defaultCurrency
+    defaultCurrency,
+    needsSpent,
+    wantsSpent
   }
 }

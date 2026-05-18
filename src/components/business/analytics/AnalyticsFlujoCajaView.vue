@@ -15,15 +15,25 @@
     fetchTransactionsByPeriod,
     groupTransactionsByWeek,
     currency,
-    forecast,
-    loadingForecast,
-    forecastWarning,
+    fetchForecast,
   } = useAnalyticsCashFlowApplication()
 
   const { data: transactions, pending } = await useAsyncData(
     'analytics-cashflow',
     () => fetchTransactionsByPeriod(selectedYear.value, selectedMonth.value),
     { watch: [selectedYear, selectedMonth] }
+  )
+
+  const { data: forecast, pending: loadingForecast } = await useAsyncData(
+    'analytics-cashflow-forecast',
+    () => fetchForecast(selectedYear.value, selectedMonth.value),
+    { watch: [selectedYear, selectedMonth] }
+  )
+
+  const forecastWarning = computed(() =>
+    !forecast.value?.assumptions.basedOnBudget
+      ? 'Sin presupuesto activo. El pronóstico usa valores en cero.'
+      : null
   )
 
   const weeklyGroups = computed(() => groupTransactionsByWeek(transactions.value ?? []))
@@ -42,7 +52,7 @@
 
   const netFlow = computed(() => totalIncome.value - totalExpense.value)
 
-  const netFlowVariant = computed(() => (netFlow.value >= 0 ? 'income' : 'expense'))
+  const netFlowVariant = computed(() => (!netFlow.value || netFlow.value >= 0 ? 'income' : 'expense'))
 
   const hasData = computed(() => (transactions.value ?? []).length > 0)
 
@@ -64,21 +74,21 @@
       {
         name: 'Ingresos proy.',
         type: 'line',
-        data: forecast.value?.months.map(m => m.projectedIncome) ?? [],
+        data: forecast.value?.months.map(m => m.projectedIncome ?? 0) ?? [],
         lineStyle: { type: 'dashed' },
         itemStyle: { color: CHART_COLORS.income },
       },
       {
         name: 'Gastos proy.',
         type: 'line',
-        data: forecast.value?.months.map(m => m.projectedExpenses) ?? [],
+        data: forecast.value?.months.map(m => m.projectedExpenses ?? 0) ?? [],
         lineStyle: { type: 'dashed' },
         itemStyle: { color: CHART_COLORS.expense },
       },
       {
         name: 'Neto proy.',
         type: 'bar',
-        data: forecast.value?.months.map(m => m.projectedNet) ?? [],
+        data: forecast.value?.months.map(m => m.projectedNet ?? 0) ?? [],
         itemStyle: { color: CHART_COLORS.savings },
       },
     ],
@@ -174,15 +184,18 @@
           <Heading level="h3" size="lg" weight="semibold">Flujo de Caja por Semana</Heading>
         </div>
 
-        <div v-if="!hasData" class="cashflow-view__empty">
+        <div v-if="!hasData" class="analytics-view__empty">
           <EmptyStateIllustration
             type="no-transactions"
-            class="cashflow-view__empty-illustration"
+            class="analytics-view__empty-illustration"
           />
-          <Heading level="h3" size="lg" weight="semibold">Sin transacciones</Heading>
-          <Text size="sm" color="muted">
-            No hay movimientos para el período seleccionado.
-          </Text>
+          <p class="analytics-view__empty-title">Sin movimientos registrados</p>
+          <p class="analytics-view__empty-description">
+            Registra ingresos y gastos para ver tu flujo de caja
+          </p>
+          <NuxtLink to="/dashboard/budget" class="analytics-view__empty-cta">
+            Ir al presupuesto
+          </NuxtLink>
         </div>
 
         <ClientOnly v-else>
@@ -227,11 +240,11 @@
                   : 'cashflow-view__forecast-net--negative'
               "
             >
-              {{ formatCurrency(month.projectedNet, currency) }}
+              {{ formatCurrency(month.projectedNet ?? 0, currency) }}
             </p>
             <div class="cashflow-view__forecast-detail">
-              <span>↑ {{ formatCurrency(month.projectedIncome, currency) }}</span>
-              <span>↓ {{ formatCurrency(month.projectedExpenses, currency) }}</span>
+              <span>↑ {{ formatCurrency(month.projectedIncome ?? 0, currency) }}</span>
+              <span>↓ {{ formatCurrency(month.projectedExpenses ?? 0, currency) }}</span>
             </div>
           </div>
         </div>
@@ -275,12 +288,24 @@
     @apply mb-4;
   }
 
-  .cashflow-view__empty {
+  .analytics-view__empty {
     @apply flex flex-col items-center gap-3 py-12 text-center;
   }
 
-  .cashflow-view__empty-illustration {
-    @apply h-32 w-32;
+  .analytics-view__empty-illustration {
+    @apply h-32 w-32 mx-auto;
+  }
+
+  .analytics-view__empty-title {
+    @apply text-base font-semibold text-neutral-800;
+  }
+
+  .analytics-view__empty-description {
+    @apply text-sm text-neutral-500 max-w-xs;
+  }
+
+  .analytics-view__empty-cta {
+    @apply text-sm font-medium text-primary-600 underline;
   }
 
   .cashflow-view__chart-fallback {

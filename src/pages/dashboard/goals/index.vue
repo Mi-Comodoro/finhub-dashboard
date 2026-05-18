@@ -2,6 +2,7 @@
   import { Badge, Button, Text } from '@/components/atoms'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { AccountSavingForm, GoalsForm } from '@/components/business'
+  import FinancialTipCarousel from '@/components/business/savings/FinancialTipCarousel.vue'
   import { CardInfo } from '@/components/molecules'
   import { ModalWizard } from '@/components/organisms'
   import { useToast } from '@/components/organisms/toast/useToast'
@@ -9,11 +10,11 @@
   import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
-  import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
-  import type { CompoundingFrequency, GoalsData } from '@/types/api'
+  import type { CompoundingFrequency, GoalsData, PlannedSaving } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
+  import { FINANCIAL_TIPS } from '@/utils/financial-tips'
   import { getProgressPercentage as getProgressPercentageUtil } from '@/utils/goal-formatters'
   import {
     getGoalTerm,
@@ -29,6 +30,7 @@
   const {
     loadGoalsData,
     loadSavingAllocations,
+    fetchGoalDetail,
     error: goalsError,
     goals,
     removeGoal
@@ -55,14 +57,14 @@
   const { currentBudgetId } = useSetupApplication()
   const { budgetStatus } = useCommon()
   const { currency } = useFinancesApplication()
-  const { items: plannedSavingItems, fetchByBudget: fetchPlannedSavings } =
-    usePlannedSavingApplication()
 
-  // Helper functions to calculate progress per goal
+  const goalSavingsMap = ref<Record<string, PlannedSaving[]>>({})
+
   const getSavedAmountForGoal = (goalId: string): number => {
-    if (!plannedSavingItems.value) return 0
-    return plannedSavingItems.value
-      .filter(item => item.savingGoal?.id === goalId && item.status === 'completed')
+    const savings = goalSavingsMap.value[goalId]
+    if (!savings) return 0
+    return savings
+      .filter(item => item.status === 'completed')
       .reduce((acc, item) => acc + (item.amount ?? 0), 0)
   }
 
@@ -116,6 +118,32 @@
     }
   ])
 
+  const GOALS_TIPS = {
+    compound: {
+      id: 'g1',
+      icon: 'trending_up',
+      message: 'El interés compuesto es tu aliado',
+      subMessage: 'Con una tasa activa tu ahorro crece solo. La clave es la constancia.'
+    },
+    onTrack: {
+      id: 'g2',
+      icon: 'check_circle',
+      message: '¡Vas por buen camino!',
+      subMessage: 'Cada aporte, por pequeño que sea, te acerca a tu meta.'
+    }
+  }
+
+  const displayTips = computed(() => {
+    const tips = [...FINANCIAL_TIPS.common, ...FINANCIAL_TIPS.savings]
+    if (accounts.value.some(a => Number(a.interestRate) > 0)) {
+      return [GOALS_TIPS.compound, ...tips]
+    }
+    if (goals.value.some(g => g.isActive)) {
+      return [GOALS_TIPS.onTrack, ...tips]
+    }
+    return tips
+  })
+
   definePageMeta({
     layout: 'dashboard',
     title: 'Metas',
@@ -135,8 +163,14 @@
     }
     if (currentBudgetId.value) {
       await loadSavingAllocations(currentBudgetId.value)
-      // Load planned savings to calculate progress
-      await fetchPlannedSavings(currentBudgetId.value)
+    }
+    if (goals.value.length > 0) {
+      const results = await Promise.all(goals.value.map(g => fetchGoalDetail(g.id)))
+      goalSavingsMap.value = Object.fromEntries(
+        results
+          .filter(r => r.success && r.result != null)
+          .map(r => [r.result!.id, r.result!.plannedSavings ?? []])
+      )
     }
   })
 
@@ -389,20 +423,7 @@
       </div>
     </div>
     <AllocationSummary />
-    <div>
-      <Card class="goals-page__tip-card">
-        <IconBadge icon="lightbulb" variant="primary" size="md" />
-        <div class="goals-page__tip-content">
-          <Heading level="h1" size="sm" weight="extrabold" class="goals-page__tip-title">
-            Divide y Venceras
-          </Heading>
-          <Text size="xs" color="muted" class="goals-page__tip-text">
-            Si tienes metas a largo plazo, dividelas en objetivos, cada objetivo te acerca mas a la
-            meta.
-          </Text>
-        </div>
-      </Card>
-    </div>
+    <FinancialTipCarousel :tips="displayTips" />
     <div class="goals-page__grid">
       <div v-if="isGoalsExists" class="goals-page__goals-section">
         <!-- Vista tarjetas -->
@@ -752,22 +773,6 @@
 
   .goals-page__title {
     @apply mb-1;
-  }
-
-  .goals-page__tip-card {
-    @apply flex w-full items-start gap-2;
-  }
-
-  .goals-page__tip-content {
-    @apply w-full leading-relaxed;
-  }
-
-  .goals-page__tip-title {
-    @apply !text-primary-800;
-  }
-
-  .goals-page__tip-text {
-    @apply w-full;
   }
 
   .goals-page__grid {

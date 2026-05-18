@@ -9,6 +9,7 @@ export const useUserStore = defineStore('user', {
     name: null as string | null,
     displayName: null as string | null,
     photo: null as string | null,
+    rejectPhoto: false as boolean,
     phone: null as string | null,
     gender: 'prefer_not_to_say' as 'male' | 'female' | 'prefer_not_to_say',
     createdAt: null as Date | null,
@@ -38,6 +39,7 @@ export const useUserStore = defineStore('user', {
       this.name = userData.name ?? this.name
       this.displayName = userData.displayName ?? this.displayName
       this.photo = userData.photo ?? this.photo
+      this.rejectPhoto = userData.rejectPhoto ?? this.rejectPhoto
       this.phone = userData.phone ?? this.phone
       this.gender = (
         ['male', 'female', 'prefer_not_to_say'].includes(userData.gender as string)
@@ -55,6 +57,7 @@ export const useUserStore = defineStore('user', {
       this.name = null
       this.displayName = null
       this.photo = null
+      this.rejectPhoto = false
       this.phone = null
       this.gender = 'prefer_not_to_say'
       this.createdAt = null

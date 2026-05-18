@@ -65,12 +65,15 @@
     <div v-if="pending" class="gastos-view__skeleton" />
 
     <template v-else>
-      <div v-if="!hasData" class="gastos-view__empty-wrapper">
-        <EmptyStateIllustration type="no-transactions" />
-        <Heading level="h3" size="lg" weight="semibold">Sin gastos registrados</Heading>
-        <Text size="sm" color="muted">
-          No hay gastos para el período seleccionado.
-        </Text>
+      <div v-if="!hasData" class="analytics-view__empty">
+        <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
+        <p class="analytics-view__empty-title">Sin gastos este período</p>
+        <p class="analytics-view__empty-description">
+          Tus gastos por categoría aparecerán aquí
+        </p>
+        <NuxtLink to="/dashboard/budget" class="analytics-view__empty-cta">
+          Ver presupuesto
+        </NuxtLink>
       </div>
 
       <template v-else>
@@ -154,8 +157,24 @@
     @apply h-96 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
-  .gastos-view__empty-wrapper {
-    @apply flex flex-col items-center justify-center gap-3 py-12;
+  .analytics-view__empty {
+    @apply flex flex-col items-center gap-3 py-12 text-center;
+  }
+
+  .analytics-view__empty-illustration {
+    @apply h-32 w-32 mx-auto;
+  }
+
+  .analytics-view__empty-title {
+    @apply text-base font-semibold text-neutral-800;
+  }
+
+  .analytics-view__empty-description {
+    @apply text-sm text-neutral-500 max-w-xs;
+  }
+
+  .analytics-view__empty-cta {
+    @apply text-sm font-medium text-primary-600 underline;
   }
 
   .gastos-view__card {
