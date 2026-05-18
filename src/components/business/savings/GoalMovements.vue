@@ -4,7 +4,7 @@
   import { computed } from 'vue'
 
   import { Badge, Card, Heading, Text } from '@/components/atoms'
-  import type { PlannedSaving } from '@/types/api'
+  import type { PlannedSaving, PlannedSavingType } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
 
   interface GoalMovementsProps {
@@ -17,29 +17,29 @@
     movements: () => []
   })
 
-  const sortedMovements = computed(() => {
-    return [...props.movements].sort((a, b) => {
-      const dateA = new Date(a.completedAt)
-      const dateB = new Date(b.completedAt)
-      return dateB.getTime() - dateA.getTime()
-    })
-  })
+  const sortedMovements = computed(() =>
+    [...props.movements].sort(
+      (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+    )
+  )
 
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'dd MMM yyyy, HH:mm', { locale: es })
+  const formatDate = (dateString: string) =>
+    format(new Date(dateString), 'dd/MMM/yyyy', { locale: es })
+
+  const TYPE_LABELS: Record<PlannedSavingType, string> = {
+    aporte: 'Aporte',
+    interes: 'Interés',
+    ajuste: 'Ajuste'
   }
 
-  const getStatusVariant = (status: string) => {
-    if (status === 'completed') return 'success'
-    if (status === 'skipped') return 'danger'
-    return 'warning'
+  const TYPE_VARIANTS: Record<PlannedSavingType, 'success' | 'secondary' | 'neutral'> = {
+    aporte: 'success',
+    interes: 'secondary',
+    ajuste: 'neutral'
   }
 
-  const getStatusLabel = (status: string) => {
-    if (status === 'completed') return 'Realizado'
-    if (status === 'skipped') return 'Omitido'
-    return 'Pendiente'
-  }
+  const getTypeLabel = (type?: PlannedSavingType) => TYPE_LABELS[type ?? 'aporte']
+  const getTypeVariant = (type?: PlannedSavingType) => TYPE_VARIANTS[type ?? 'aporte']
 </script>
 
 <template>
@@ -52,27 +52,31 @@
 
     <div v-else class="goal-movements__table">
       <div class="goal-movements__header">
-        <div class="goal-movements__header-cell goal-movements__header-cell--date">Fecha</div>
-        <div class="goal-movements__header-cell goal-movements__header-cell--amount">Monto</div>
-        <div class="goal-movements__header-cell goal-movements__header-cell--type">Tipo</div>
-        <div class="goal-movements__header-cell goal-movements__header-cell--status">Estado</div>
+        <div class="goal-movements__col--date">Fecha</div>
+        <div class="goal-movements__col--amount">Monto</div>
+        <div class="goal-movements__col--type">Tipo</div>
+        <div class="goal-movements__col--note">Nota</div>
       </div>
 
       <div class="goal-movements__body">
-        <div v-for="movement in sortedMovements" :key="movement.id" class="goal-movements__row">
-          <div class="goal-movements__cell goal-movements__cell--date">
-            <Text size="sm">{{ formatDate(String(movement.completedAt)) }}</Text>
+        <div
+          v-for="movement in sortedMovements"
+          :key="movement.id"
+          class="goal-movements__row"
+        >
+          <div class="goal-movements__col--date">
+            <Text size="sm">{{ formatDate(String(movement.completedAt || movement.date)) }}</Text>
           </div>
-          <div class="goal-movements__cell goal-movements__cell--amount">
+          <div class="goal-movements__col--amount">
             <Text size="sm" weight="semibold">{{ formatCurrency(movement.amount, 'COP') }}</Text>
           </div>
-          <div class="goal-movements__cell goal-movements__cell--type">
-            <Text size="sm">Aporte</Text>
-          </div>
-          <div class="goal-movements__cell goal-movements__cell--status">
-            <Badge :variant="getStatusVariant(movement.status)" size="xs">
-              {{ getStatusLabel(movement.status) }}
+          <div class="goal-movements__col--type">
+            <Badge :variant="getTypeVariant(movement.type)" size="xs">
+              {{ getTypeLabel(movement.type) }}
             </Badge>
+          </div>
+          <div class="goal-movements__col--note">
+            <Text size="sm" color="muted">{{ movement.note ?? '—' }}</Text>
           </div>
         </div>
       </div>
@@ -94,27 +98,7 @@
   }
 
   .goal-movements__header {
-    @apply grid grid-cols-12 gap-4 border-b border-neutral-200 pb-2 dark:border-neutral-700;
-  }
-
-  .goal-movements__header-cell {
-    @apply text-sm font-medium text-neutral-600 dark:text-neutral-400;
-  }
-
-  .goal-movements__header-cell--date {
-    @apply col-span-4;
-  }
-
-  .goal-movements__header-cell--amount {
-    @apply col-span-3;
-  }
-
-  .goal-movements__header-cell--type {
-    @apply col-span-2;
-  }
-
-  .goal-movements__header-cell--status {
-    @apply col-span-3;
+    @apply grid grid-cols-12 gap-4 border-b border-neutral-200 pb-2 text-sm font-medium text-neutral-600 dark:border-neutral-700 dark:text-neutral-400;
   }
 
   .goal-movements__body {
@@ -125,23 +109,19 @@
     @apply grid grid-cols-12 gap-4 rounded-lg border border-neutral-200 p-3 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800;
   }
 
-  .goal-movements__cell {
-    @apply flex items-center;
+  .goal-movements__col--date {
+    @apply col-span-3 flex items-center;
   }
 
-  .goal-movements__cell--date {
-    @apply col-span-4;
+  .goal-movements__col--amount {
+    @apply col-span-3 flex items-center;
   }
 
-  .goal-movements__cell--amount {
-    @apply col-span-3;
+  .goal-movements__col--type {
+    @apply col-span-2 flex items-center;
   }
 
-  .goal-movements__cell--type {
-    @apply col-span-2;
-  }
-
-  .goal-movements__cell--status {
-    @apply col-span-3;
+  .goal-movements__col--note {
+    @apply col-span-4 flex items-center;
   }
 </style>

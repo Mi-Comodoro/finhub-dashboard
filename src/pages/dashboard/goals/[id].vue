@@ -366,7 +366,6 @@
     <ModalWizard v-model:show="showContributionModal">
       <ContributionForm
         :goal-id="goalId"
-        :accounts="accountsFromGoals"
         @on-close="handleContributionSuccess"
       />
     </ModalWizard>

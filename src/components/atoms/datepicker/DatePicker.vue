@@ -7,8 +7,6 @@
 
   type ViewMode = 'calendar' | 'months' | 'years'
 
-  const date = new Date()
-  const calendar = new Calendar(date.getFullYear(), date.getMonth())
   const props = withDefaults(defineProps<DatePickerProps>(), {
     mode: 'single',
     locale: 'es',
@@ -17,8 +15,17 @@
   })
   const emit = defineEmits(['update:modelValue', 'apply', 'cancel'] as const)
 
-  const currentMonth = ref(date)
-  const dynamicMonth = ref<Date | null>(null)
+  const viewDate = computed<Date>(() => {
+    if (props.modelValue instanceof Date) return props.modelValue
+    return new Date()
+  })
+
+  const calendar = new Calendar(viewDate.value.getFullYear(), viewDate.value.getMonth())
+  const date = new Date()
+  const currentMonth = ref(viewDate.value)
+  const dynamicMonth = ref<Date | null>(
+    props.modelValue instanceof Date ? props.modelValue : null
+  )
   const viewMode = ref<ViewMode>('calendar')
   const yearPageStart = ref(Math.floor(date.getFullYear() / 12) * 12)
 

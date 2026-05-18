@@ -1,5 +1,12 @@
 import type { FormSchema } from '@/components/organisms/forms/Form.vue'
 
+export const TYPE_LABELS: Record<string, string> = {
+  gasto_fijo: 'Gasto Fijo',
+  gasto_variable: 'Gasto Variable',
+  ahorro: 'Ahorro',
+  ingreso: 'Ingreso'
+}
+
 export const budgetEditFieldsSchema = (): FormSchema => ({
   fields: {
     name: {
@@ -13,6 +20,7 @@ export const budgetEditFieldsSchema = (): FormSchema => ({
       type: 'radio-card',
       label: 'Estrategia de presupuesto',
       required: true,
+      size: 'sm',
       options: [
         {
           label: '50/30/20',

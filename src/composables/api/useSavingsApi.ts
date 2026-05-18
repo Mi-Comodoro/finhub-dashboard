@@ -51,11 +51,9 @@ export function useSavingsApi() {
   const createContribution = async (
     goalId: string,
     data: {
-      contributionType: string
-      accountId?: string
       amount: number
-      date: Date
-      notes?: string
+      date: string
+      note?: string
     }
   ) =>
     $fetch<{ success: boolean }>(`/api/savings/goals/${goalId}/contributions`, {
