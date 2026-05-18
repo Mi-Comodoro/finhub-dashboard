@@ -59,11 +59,7 @@
 
     <!-- Loading -->
     <div v-if="isLoading" class="groups-page__skeleton-grid">
-      <div
-        v-for="n in 3"
-        :key="n"
-        class="groups-page__skeleton"
-      />
+      <div v-for="n in 3" :key="n" class="groups-page__skeleton" />
     </div>
 
     <!-- Empty state -->

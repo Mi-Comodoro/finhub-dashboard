@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import TravelExpenseSection from '@/components/business/groups/travel-expense/TravelExpenseSection.vue'
   import { ModalWizard } from '@/components/organisms'
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
   import { useFeedback } from '@/composables/useFeedback'
@@ -138,8 +139,7 @@
             />
           </div>
           <Text size="xs" color="muted">
-            {{ selectedGroup.members?.length ?? 0 }} miembros ·
-            {{ selectedGroup.maxMembers }} máximo
+            {{ selectedGroup.members?.length ?? 0 }} miembros · {{ selectedGroup.maxMembers }} máximo
           </Text>
         </div>
 
@@ -218,9 +218,19 @@
           </li>
         </ul>
       </Card>
+
+      <!-- Travel expenses section -->
+      <Card class="group-detail__expenses-card">
+        <TravelExpenseSection
+          :group-id="groupId"
+          :members="selectedGroup.members ?? []"
+          :can-manage="canManageMembers"
+          :current-user-id="currentUserId"
+        />
+      </Card>
     </template>
 
-    <!-- Invite modal -->
+    <!-- Invite member modal -->
     <ModalWizard :show="showInviteModal">
       <div class="group-detail__invite-modal">
         <CardInfo
