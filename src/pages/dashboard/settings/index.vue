@@ -1,10 +1,14 @@
 <script setup lang="ts">
   import { FINANCIAL_PROFILE_OPTIONS } from '@/common/constants'
+  import { usePlansApplication } from '@/composables/application/usePlansApplication'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useAuth } from '@/composables/useAuth'
   import { useFeedback } from '@/composables/useFeedback'
   import { useAuthStore } from '@/stores/auth.store'
+  import type { PlanData } from '@/types/api'
+  import type { Currency } from '@/utils/currency'
+  import { formatCurrency } from '@/utils/currency'
 
   definePageMeta({
     layout: 'dashboard',
@@ -16,6 +20,7 @@
     useSettingsApplication()
   const { user, finances, avatarUrl, avatarInitials, updatePersonalInfo, updateFinancialInfo } =
     useProfileApplication()
+  const { fetchPublicPlans, publicPlans } = usePlansApplication()
   const { logout } = useAuth()
   const { success: successToast, error: errorToast } = useFeedback()
   const authStore = useAuthStore()
@@ -272,30 +277,17 @@
   const isFree = computed(() => accountType.value === 'FREE')
   const showUpgrade = computed(() => isTrial.value || isFree.value)
 
-  // Feature comparison table
-  type FeatureValue = boolean | string
-  interface PlanFeature {
-    label: string
-    free: FeatureValue
-    plus: FeatureValue
-    pro: FeatureValue
-  }
+  const PLAN_ORDER: Record<string, number> = { free: 0, plus: 1, pro: 2 }
 
-  const planFeatures: PlanFeature[] = [
-    { label: 'Presupuestos activos',  free: '1',             plus: '3',               pro: 'Ilimitados'       },
-    { label: 'Transacciones',         free: 'Ilimitadas',    plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
-    { label: 'Metas de ahorro',       free: 'Ilimitadas',    plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
-    { label: 'Cuentas de referencia',  free: '3',             plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
-    { label: 'Categorías',            free: 'Predefinidas',  plus: 'Personalizadas',  pro: 'Personalizadas'   },
-    { label: 'Proyecciones',          free: '1 año',         plus: '3 años',          pro: '10+ años'         },
-    { label: 'Reportes',              free: 'Básico',        plus: 'Mensual + Anual', pro: 'Completos'        },
-    { label: 'Compartido con',        free: false,           plus: '2 personas',      pro: '6 personas'       },
-    { label: 'Histórico',             free: '6 meses',       plus: '18 meses',        pro: 'Ilimitado'        },
-    { label: 'Exportar datos',        free: false,           plus: 'CSV',             pro: 'CSV · PDF · Excel'},
-    { label: 'Mi Despensa',           free: false,           plus: false,             pro: true               },
-  ]
+  const sortedPublicPlans = computed(() =>
+    [...publicPlans.value].sort((a, b) => {
+      const aIdx = PLAN_ORDER[a.name.toLowerCase()] ?? 99
+      const bIdx = PLAN_ORDER[b.name.toLowerCase()] ?? 99
+      return aIdx - bIdx
+    })
+  )
 
-  const activeColumn = computed(() => {
+  const activePlanName = computed(() => {
     switch (accountType.value) {
       case 'PLUS': return 'plus'
       case 'PRO':
@@ -305,8 +297,14 @@
     }
   })
 
+  const isActivePlan = (plan: PlanData) =>
+    plan.name.toLowerCase() === activePlanName.value
+
+  const planPrice = (plan: PlanData) =>
+    plan.price === 0 ? 'Gratis' : formatCurrency(plan.price, plan.currency as Currency)
+
   onMounted(async () => {
-    await fetchSettings()
+    await Promise.all([fetchSettings(), fetchPublicPlans()])
   })
 </script>
 
@@ -564,90 +562,43 @@
                 </div>
               </div>
 
-              <!-- Feature comparison table -->
+              <!-- Plan cards -->
               <div class="plan-comparison">
                 <div class="plan-comparison__header">
                   <Heading level="h3" size="sm" weight="semibold">Comparar planes</Heading>
                 </div>
 
-                <div class="plan-table">
-                  <!-- Column headers -->
-                  <div class="plan-table__row plan-table__row--head">
-                    <div class="plan-table__feature-col" />
-                    <div
-                      class="plan-table__plan-col"
-                      :class="{ 'plan-table__plan-col--active': activeColumn === 'free' }"
-                    >
-                      <Text size="xs" weight="semibold">Gratis</Text>
-                    </div>
-                    <div
-                      class="plan-table__plan-col"
-                      :class="{ 'plan-table__plan-col--active': activeColumn === 'plus' }"
-                    >
-                      <Text size="xs" weight="semibold">Plus</Text>
-                    </div>
-                    <div
-                      class="plan-table__plan-col"
-                      :class="{ 'plan-table__plan-col--active': activeColumn === 'pro' }"
-                    >
-                      <Text size="xs" weight="semibold">Pro</Text>
-                    </div>
-                  </div>
+                <div v-if="!publicPlans.length" class="plan-cards">
+                  <div v-for="i in 3" :key="i" class="plan-card plan-card--skeleton" />
+                </div>
 
-                  <!-- Feature rows -->
+                <div v-else class="plan-cards">
                   <div
-                    v-for="feature in planFeatures"
-                    :key="feature.label"
-                    class="plan-table__row"
+                    v-for="plan in sortedPublicPlans"
+                    :key="plan.id"
+                    class="plan-card"
+                    :class="{ 'plan-card--active': isActivePlan(plan) }"
                   >
-                    <div class="plan-table__feature-col">
-                      <Text size="xs">{{ feature.label }}</Text>
+                    <div class="plan-card__header">
+                      <Text size="sm" weight="semibold">{{ plan.name }}</Text>
+                      <span v-if="isActivePlan(plan)" class="plan-card__badge">Tu plan</span>
                     </div>
-
-                    <div
-                      class="plan-table__plan-col"
-                      :class="{ 'plan-table__plan-col--active': activeColumn === 'free' }"
-                    >
-                      <template v-if="typeof feature.free === 'boolean'">
-                        <span
-                          class="material-symbols-outlined plan-table__icon"
-                          :class="feature.free ? 'plan-table__icon--yes' : 'plan-table__icon--no'"
-                        >
-                          {{ feature.free ? 'check_circle' : 'cancel' }}
+                    <div class="plan-card__price">
+                      <span class="plan-card__price-value">{{ planPrice(plan) }}</span>
+                      <Text v-if="plan.price > 0" size="xs" color="muted">/mes</Text>
+                    </div>
+                    <ul class="plan-card__features">
+                      <li
+                        v-for="feature in plan.features"
+                        :key="feature"
+                        class="plan-card__feature"
+                      >
+                        <span class="material-symbols-outlined plan-card__feature-icon">
+                          check_circle
                         </span>
-                      </template>
-                      <Text v-else size="xs">{{ feature.free }}</Text>
-                    </div>
-
-                    <div
-                      class="plan-table__plan-col"
-                      :class="{ 'plan-table__plan-col--active': activeColumn === 'plus' }"
-                    >
-                      <template v-if="typeof feature.plus === 'boolean'">
-                        <span
-                          class="material-symbols-outlined plan-table__icon"
-                          :class="feature.plus ? 'plan-table__icon--yes' : 'plan-table__icon--no'"
-                        >
-                          {{ feature.plus ? 'check_circle' : 'cancel' }}
-                        </span>
-                      </template>
-                      <Text v-else size="xs">{{ feature.plus }}</Text>
-                    </div>
-
-                    <div
-                      class="plan-table__plan-col"
-                      :class="{ 'plan-table__plan-col--active': activeColumn === 'pro' }"
-                    >
-                      <template v-if="typeof feature.pro === 'boolean'">
-                        <span
-                          class="material-symbols-outlined plan-table__icon"
-                          :class="feature.pro ? 'plan-table__icon--yes' : 'plan-table__icon--no'"
-                        >
-                          {{ feature.pro ? 'check_circle' : 'cancel' }}
-                        </span>
-                      </template>
-                      <Text v-else size="xs">{{ feature.pro }}</Text>
-                    </div>
+                        <Text size="xs">{{ feature }}</Text>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -1048,50 +999,59 @@
     @apply text-2xl text-success-600;
   }
 
-  /* Feature comparison table */
+  /* Plan comparison cards */
   .plan-comparison {
-    @apply space-y-2;
+    @apply space-y-3;
   }
 
-  .plan-table {
-    @apply rounded-xl border border-neutral-200 overflow-hidden dark:border-neutral-700;
+  .plan-cards {
+    @apply grid gap-3;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
-  .plan-table__row {
-    @apply grid items-center border-b border-neutral-200 last:border-0 dark:border-neutral-700;
-    grid-template-columns: 1fr repeat(3, minmax(90px, 120px));
+  .plan-card {
+    @apply rounded-xl border border-neutral-200 p-4 space-y-3;
+    @apply dark:border-neutral-700 dark:bg-neutral-800/40;
   }
 
-  .plan-table__row--head {
-    @apply bg-neutral-100 dark:bg-neutral-800;
+  .plan-card--active {
+    @apply border-primary-300 bg-primary-50;
+    @apply dark:border-primary-700 dark:bg-primary-900/20;
   }
 
-  .plan-table__feature-col {
-    @apply px-4 py-3;
+  .plan-card--skeleton {
+    @apply animate-pulse bg-neutral-100 h-44;
+    @apply dark:bg-neutral-800;
   }
 
-  .plan-table__plan-col {
-    @apply flex flex-col items-center justify-center px-3 py-3 text-center;
+  .plan-card__header {
+    @apply flex items-center justify-between gap-2;
   }
 
-  .plan-table__plan-col--active {
-    @apply bg-primary-50 dark:bg-primary-900/20;
+  .plan-card__badge {
+    @apply shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold;
+    @apply bg-primary-100 text-primary-700;
+    @apply dark:bg-primary-900/40 dark:text-primary-300;
   }
 
-  .plan-table__row--head .plan-table__plan-col--active {
-    @apply bg-primary-100 dark:bg-primary-900/40;
+  .plan-card__price {
+    @apply flex items-baseline gap-1;
   }
 
-  .plan-table__icon {
-    @apply text-base;
+  .plan-card__price-value {
+    @apply text-lg font-extrabold text-neutral-900 dark:text-neutral-100;
   }
 
-  .plan-table__icon--yes {
-    @apply text-success-600;
+  .plan-card__features {
+    @apply space-y-1.5;
   }
 
-  .plan-table__icon--no {
-    @apply text-neutral-300;
+  .plan-card__feature {
+    @apply flex items-start gap-1.5;
+  }
+
+  .plan-card__feature-icon {
+    @apply text-sm shrink-0 text-success-500 mt-0.5;
   }
 
 </style>
