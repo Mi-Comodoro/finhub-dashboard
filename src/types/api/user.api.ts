@@ -18,6 +18,7 @@ export type BackendUserMe = {
       gender: string
       trialEndsAt: Date
       isActive: boolean
+      isPhoneVerified: boolean
       country: string
       role?: string
     }
@@ -44,6 +45,7 @@ export type UserMe = {
       gender: string
       trialEndsAt?: Date
       isActive: boolean
+      isPhoneVerified?: boolean
       country: string
       createdAt?: Date
       role?: string

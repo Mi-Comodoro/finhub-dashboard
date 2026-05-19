@@ -15,6 +15,7 @@ export const useUserStore = defineStore('user', {
     createdAt: null as Date | null,
     trialEndsAt: null as Date | null,
     isActive: false,
+    isPhoneVerified: false as boolean,
     country: null as string | null
   }),
 
@@ -49,6 +50,7 @@ export const useUserStore = defineStore('user', {
       this.createdAt = userData.createdAt ? new Date(userData.createdAt) : this.createdAt
       this.trialEndsAt = userData.trialEndsAt ? new Date(userData.trialEndsAt) : this.trialEndsAt
       this.isActive = userData.isActive ?? this.isActive
+      this.isPhoneVerified = userData.isPhoneVerified ?? this.isPhoneVerified
       this.country = userData.country ?? this.country
     },
     clearUser() {
@@ -63,6 +65,7 @@ export const useUserStore = defineStore('user', {
       this.createdAt = null
       this.trialEndsAt = null
       this.isActive = false
+      this.isPhoneVerified = false
       this.country = null
     }
   }

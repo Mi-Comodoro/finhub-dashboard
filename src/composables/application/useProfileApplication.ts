@@ -3,6 +3,7 @@ import { useFinancesStore } from '@/stores/finances.store'
 import { useUserStore } from '@/stores/user.store'
 import type { Currency } from '@/utils/currency'
 
+
 interface UserUpdate {
   displayName?: string
   email?: string
@@ -14,7 +15,7 @@ interface UserUpdate {
 export const useProfileApplication = () => {
   const userStore = useUserStore()
   const financesStore = useFinancesStore()
-  const { updateUserProfile } = useUserApi()
+  const { updateUserProfile, updateFinancialProfile } = useUserApi()
 
   const updatePersonalInfo = async (data: UserUpdate) => {
     try {
@@ -23,12 +24,13 @@ export const useProfileApplication = () => {
         return { success: false }
       }
 
-      const response = await updateUserProfile({
-        displayName: data.displayName,
-        phone: data.phone,
-        gender: data.gender,
-        country: data.country
-      })
+      const payload: UserUpdate = {}
+      if (data.displayName) payload.displayName = data.displayName
+      if (data.phone) payload.phone = data.phone
+      if (data.gender) payload.gender = data.gender
+      if (data.country) payload.country = data.country
+
+      const response = await updateUserProfile(payload)
 
       if (!response.success) return { success: false }
 
@@ -58,17 +60,16 @@ export const useProfileApplication = () => {
     usage: string
   }) => {
     try {
-      if (financesStore.financialProfile) {
-        financesStore.updateFinancialProfile({
-          currency: data.currency as Currency,
-          profile: data.profile,
-          usage: data.usage
-        })
+      const financeId = financesStore.financeId
+      if (!financeId) {
+        console.error('Finance ID is required to update financial profile')
+        return { success: false }
       }
 
-      financesStore.updateConfig({
-        defaultCurrency: data.currency as Currency
-      })
+      const response = await updateFinancialProfile(financeId, { profile: data.profile })
+      if (!response.success) return { success: false }
+
+      financesStore.updateFinancialProfile({ profile: data.profile })
 
       return { success: true }
     } catch (error) {
@@ -101,7 +102,8 @@ export const useProfileApplication = () => {
     gender: userStore.gender,
     country: userStore.country,
     trialEndsAt: userStore.trialEndsAt,
-    createdAt: userStore.createdAt
+    createdAt: userStore.createdAt,
+    isPhoneVerified: userStore.isPhoneVerified
   }))
 
   const finances = computed(() => ({

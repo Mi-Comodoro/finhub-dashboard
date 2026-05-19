@@ -43,9 +43,13 @@
       {{
         accountType?.toUpperCase() === 'TRIAL'
           ? 'Periodo de Prueba'
-          : accountType?.toUpperCase() === 'PREMIUM'
-            ? 'Premium'
-            : 'FREE'
+          : accountType?.toUpperCase() === 'PRO'
+            ? 'Pro'
+            : accountType?.toUpperCase() === 'PLUS'
+              ? 'Plus'
+              : accountType?.toUpperCase() === 'PARTNER'
+                ? 'Partner'
+                : 'Gratis'
       }}
     </Badge>
 

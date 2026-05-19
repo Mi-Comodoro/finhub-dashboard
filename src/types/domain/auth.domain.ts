@@ -29,7 +29,7 @@ export interface OnboardingStatus {
 
 export type OnboardingStep = 'personal-info' | 'finances-config' | 'budget-strategy' | 'completed'
 
-export type AccountType = 'TRIAL' | 'FREE' | 'PREMIUM'
+export type AccountType = 'TRIAL' | 'FREE' | 'PLUS' | 'PRO' | 'PARTNER'
 
 export interface AuthState {
   session: AuthSession | null

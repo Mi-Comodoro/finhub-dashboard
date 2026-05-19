@@ -20,7 +20,7 @@ export function useExpenseApi() {
         createdAt: Date
         updatedAt: Date
       }
-    }>('/api/expenses', {
+    }>('/api/expense', {
       method: 'POST',
       body: data
     })
@@ -51,7 +51,7 @@ export function useExpenseApi() {
           totalPages: number
         }
       }
-    }>('/api/expenses/findAll', {
+    }>('/api/expense/findAll', {
       method: 'GET',
       query
     })
@@ -63,7 +63,7 @@ export function useExpenseApi() {
         plannedExpense: { id: string; status: ExpenseStatus }
         transaction: { id: string; amount: number; type: string }
       }
-    }>(`/api/expenses/${id}/complete`, {
+    }>(`/api/expense/${id}/complete`, {
       method: 'PATCH'
     })
 
@@ -84,7 +84,7 @@ export function useExpenseApi() {
         createdAt: Date
         updatedAt: Date
       }
-    }>(`/api/expenses/${id}`, {
+    }>(`/api/expense/${id}`, {
       method: 'PATCH',
       body: data
     })
@@ -93,7 +93,7 @@ export function useExpenseApi() {
     $fetch<{
       success: boolean
       result: { id: string }
-    }>(`/api/expenses/${id}`, {
+    }>(`/api/expense/${id}`, {
       method: 'DELETE'
     })
 
