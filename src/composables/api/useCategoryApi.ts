@@ -12,7 +12,7 @@ export function useCategoryApi() {
 
   const updateCategory = async (id: string, data: Record<string, unknown>) =>
     $fetch<{ success: boolean; result: CategoriesData }>(`/api/categories/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       body: data
     })
 

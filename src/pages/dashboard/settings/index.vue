@@ -1,10 +1,10 @@
 <script setup lang="ts">
-  import { useAuth } from '@/composables/useAuth'
+  import { FINANCIAL_PROFILE_OPTIONS } from '@/common/constants'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
+  import { useAuth } from '@/composables/useAuth'
   import { useFeedback } from '@/composables/useFeedback'
   import { useAuthStore } from '@/stores/auth.store'
-  import { FINANCIAL_PROFILE_OPTIONS } from '@/common/constants'
 
   definePageMeta({
     layout: 'dashboard',
