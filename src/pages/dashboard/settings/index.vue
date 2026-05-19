@@ -4,7 +4,6 @@
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useFeedback } from '@/composables/useFeedback'
   import { useAuthStore } from '@/stores/auth.store'
-  import { formatCurrency } from '@/utils/currency'
 
   definePageMeta({
     layout: 'dashboard',
@@ -152,6 +151,8 @@
     })
   })
 
+  const trialIsUrgent = computed(() => daysRemaining.value <= 7)
+
   const planLabel = computed(() => {
     switch (accountType.value) {
       case 'TRIAL': return 'Pro Trial'
@@ -165,7 +166,7 @@
 
   const planVariant = computed(() => {
     switch (accountType.value) {
-      case 'TRIAL': return 'warning'
+      case 'TRIAL': return trialIsUrgent.value ? 'danger' : 'warning'
       case 'PLUS': return 'secondary'
       case 'PRO': return 'primary'
       case 'PARTNER': return 'success'
@@ -178,6 +179,36 @@
   const isPaid = computed(() =>
     accountType.value === 'PLUS' || accountType.value === 'PRO' || accountType.value === 'PARTNER'
   )
+  const showUpgrade = computed(() => isTrial.value || isFree.value)
+
+  // Feature comparison table
+  type FeatureValue = boolean | string
+  interface PlanFeature {
+    label: string
+    free: FeatureValue
+    plus: FeatureValue
+    pro: FeatureValue
+  }
+
+  const planFeatures: PlanFeature[] = [
+    { label: 'Presupuestos activos',      free: '1',           plus: 'Ilimitados',  pro: 'Ilimitados' },
+    { label: 'Metas de ahorro',           free: '1',           plus: 'Ilimitadas',  pro: 'Ilimitadas' },
+    { label: 'Transacciones por mes',     free: 'Hasta 30',    plus: 'Ilimitadas',  pro: 'Ilimitadas' },
+    { label: 'Categorías personalizadas', free: false,         plus: true,          pro: true },
+    { label: 'Reportes',                  free: 'Básico',      plus: 'Avanzado',    pro: 'Completo' },
+    { label: 'Exportar datos',            free: false,         plus: false,         pro: true },
+    { label: 'Soporte',                   free: 'Comunidad',   plus: 'Email',       pro: 'Prioritario' }
+  ]
+
+  const activeColumn = computed(() => {
+    switch (accountType.value) {
+      case 'PLUS': return 'plus'
+      case 'PRO':
+      case 'TRIAL':
+      case 'PARTNER': return 'pro'
+      default: return 'free'
+    }
+  })
 
   onMounted(async () => {
     await fetchSettings()
@@ -364,8 +395,8 @@
             </div>
           </Card>
 
-          <!-- Plan / Trial -->
-          <Card class="settings-card settings-card--plan">
+          <!-- Plan -->
+          <Card class="settings-card">
             <div class="settings-card__header">
               <span class="material-symbols-outlined settings-card__icon settings-card__icon--primary">
                 workspace_premium
@@ -380,50 +411,150 @@
             </div>
 
             <div class="settings-card__body">
-              <!-- Trial info -->
-              <template v-if="isTrial">
-                <div class="plan-trial">
-                  <div class="plan-trial__stats">
-                    <div class="plan-trial__stat">
-                      <Text size="xs" color="muted">Días restantes</Text>
-                      <Text size="lg" weight="bold" color="primary">{{ daysRemaining }}</Text>
-                    </div>
-                    <div class="plan-trial__stat">
-                      <Text size="xs" color="muted">Vence el</Text>
-                      <Text size="sm" weight="semibold">{{ trialExpirationLabel }}</Text>
-                    </div>
-                    <div class="plan-trial__stat">
-                      <Text size="xs" color="muted">Duración total</Text>
-                      <Text size="sm" weight="semibold">{{ TRIAL_DAYS }} días</Text>
+
+              <!-- Trial countdown -->
+              <div
+                v-if="isTrial"
+                class="trial-banner"
+                :class="trialIsUrgent ? 'trial-banner--urgent' : 'trial-banner--normal'"
+              >
+                <div class="trial-banner__top">
+                  <div class="trial-banner__countdown">
+                    <Text size="xs" color="muted">Tiempo restante del trial</Text>
+                    <div class="trial-banner__days">
+                      <span class="trial-banner__days-number">{{ daysRemaining }}</span>
+                      <Text size="sm" color="muted">días</Text>
                     </div>
                   </div>
-
-                  <div class="plan-trial__progress">
-                    <div class="plan-trial__progress-header">
-                      <Text size="xs" color="muted">Progreso del trial</Text>
-                      <Text size="xs" weight="semibold">{{ trialProgress }}% usado</Text>
-                    </div>
-                    <ProgressBar :progress="trialProgress" variant="warning" size="sm" />
-                  </div>
-                </div>
-              </template>
-
-              <!-- Paid plan info -->
-              <template v-if="isPaid">
-                <div class="plan-paid">
-                  <span class="material-symbols-outlined plan-paid__icon">verified</span>
-                  <div>
-                    <Text size="sm" weight="semibold">Tienes acceso completo</Text>
-                    <Text size="xs" color="muted">Disfruta de todas las funcionalidades</Text>
+                  <div class="trial-banner__meta">
+                    <Text size="xs" color="muted">Vence el {{ trialExpirationLabel }}</Text>
+                    <Text v-if="trialIsUrgent" size="xs" color="error">
+                      Al vencer pasarás al plan Gratis automáticamente.
+                    </Text>
+                    <Text v-else size="xs" color="muted">
+                      Al vencer pasarás al plan Gratis automáticamente.
+                    </Text>
                   </div>
                 </div>
-              </template>
+                <div class="trial-banner__progress">
+                  <div class="trial-banner__progress-labels">
+                    <Text size="xs" color="muted">Inicio</Text>
+                    <Text size="xs" color="muted">{{ trialProgress }}% transcurrido</Text>
+                    <Text size="xs" color="muted">Día {{ TRIAL_DAYS }}</Text>
+                  </div>
+                  <ProgressBar
+                    :progress="trialProgress"
+                    :variant="trialIsUrgent ? 'danger' : 'warning'"
+                    size="sm"
+                  />
+                </div>
+              </div>
 
-              <!-- Upgrade CTAs (trial or free) -->
-              <template v-if="isTrial || isFree">
+              <!-- Partner badge -->
+              <div v-if="accountType === 'PARTNER'" class="plan-partner">
+                <span class="material-symbols-outlined plan-partner__icon">handshake</span>
+                <div>
+                  <Text size="sm" weight="semibold">Cuenta Partner</Text>
+                  <Text size="xs" color="muted">Acceso Pro completo sin costo</Text>
+                </div>
+              </div>
+
+              <!-- Feature comparison table -->
+              <div class="plan-comparison">
+                <div class="plan-comparison__header">
+                  <Heading level="h3" size="sm" weight="semibold">Comparar planes</Heading>
+                </div>
+
+                <div class="plan-table">
+                  <!-- Column headers -->
+                  <div class="plan-table__row plan-table__row--head">
+                    <div class="plan-table__feature-col" />
+                    <div
+                      class="plan-table__plan-col"
+                      :class="{ 'plan-table__plan-col--active': activeColumn === 'free' }"
+                    >
+                      <Text size="xs" weight="semibold">Gratis</Text>
+                      <Text size="xs" color="muted">$0</Text>
+                    </div>
+                    <div
+                      class="plan-table__plan-col"
+                      :class="{ 'plan-table__plan-col--active': activeColumn === 'plus' }"
+                    >
+                      <Text size="xs" weight="semibold">Plus</Text>
+                      <Text size="xs" color="muted">$19.900</Text>
+                    </div>
+                    <div
+                      class="plan-table__plan-col"
+                      :class="{ 'plan-table__plan-col--active': activeColumn === 'pro' }"
+                    >
+                      <Text size="xs" weight="semibold">Pro</Text>
+                      <Text size="xs" color="muted">$34.900</Text>
+                    </div>
+                  </div>
+
+                  <!-- Feature rows -->
+                  <div
+                    v-for="feature in planFeatures"
+                    :key="feature.label"
+                    class="plan-table__row"
+                  >
+                    <div class="plan-table__feature-col">
+                      <Text size="xs">{{ feature.label }}</Text>
+                    </div>
+
+                    <div
+                      class="plan-table__plan-col"
+                      :class="{ 'plan-table__plan-col--active': activeColumn === 'free' }"
+                    >
+                      <template v-if="typeof feature.free === 'boolean'">
+                        <span
+                          class="material-symbols-outlined plan-table__icon"
+                          :class="feature.free ? 'plan-table__icon--yes' : 'plan-table__icon--no'"
+                        >
+                          {{ feature.free ? 'check_circle' : 'cancel' }}
+                        </span>
+                      </template>
+                      <Text v-else size="xs">{{ feature.free }}</Text>
+                    </div>
+
+                    <div
+                      class="plan-table__plan-col"
+                      :class="{ 'plan-table__plan-col--active': activeColumn === 'plus' }"
+                    >
+                      <template v-if="typeof feature.plus === 'boolean'">
+                        <span
+                          class="material-symbols-outlined plan-table__icon"
+                          :class="feature.plus ? 'plan-table__icon--yes' : 'plan-table__icon--no'"
+                        >
+                          {{ feature.plus ? 'check_circle' : 'cancel' }}
+                        </span>
+                      </template>
+                      <Text v-else size="xs">{{ feature.plus }}</Text>
+                    </div>
+
+                    <div
+                      class="plan-table__plan-col"
+                      :class="{ 'plan-table__plan-col--active': activeColumn === 'pro' }"
+                    >
+                      <template v-if="typeof feature.pro === 'boolean'">
+                        <span
+                          class="material-symbols-outlined plan-table__icon"
+                          :class="feature.pro ? 'plan-table__icon--yes' : 'plan-table__icon--no'"
+                        >
+                          {{ feature.pro ? 'check_circle' : 'cancel' }}
+                        </span>
+                      </template>
+                      <Text v-else size="xs">{{ feature.pro }}</Text>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Upgrade CTAs -->
+              <template v-if="showUpgrade">
                 <div class="plan-upgrade">
-                  <Text size="sm" weight="semibold" class="plan-upgrade__title">
-                    Elige tu plan
+                  <Text size="sm" weight="semibold">
+                    {{ trialIsUrgent ? 'Tu trial está por vencer — elige un plan' : 'Elige tu plan' }}
                   </Text>
 
                   <div class="plan-cards">
@@ -434,25 +565,9 @@
                         <Text size="xs" color="muted">Para uso personal avanzado</Text>
                       </div>
                       <div class="plan-card__price">
-                        <Text size="xl" weight="bold" color="primary">
-                          {{ formatCurrency(19900, 'COP') }}
-                        </Text>
-                        <Text size="xs" color="muted">/mes</Text>
+                        <Text size="xl" weight="bold" color="primary">$19.900</Text>
+                        <Text size="xs" color="muted">COP/mes</Text>
                       </div>
-                      <ul class="plan-card__features">
-                        <li class="plan-card__feature">
-                          <span class="material-symbols-outlined plan-card__check">check_circle</span>
-                          <Text size="xs">Presupuestos ilimitados</Text>
-                        </li>
-                        <li class="plan-card__feature">
-                          <span class="material-symbols-outlined plan-card__check">check_circle</span>
-                          <Text size="xs">Metas de ahorro</Text>
-                        </li>
-                        <li class="plan-card__feature">
-                          <span class="material-symbols-outlined plan-card__check">check_circle</span>
-                          <Text size="xs">Reportes mensuales</Text>
-                        </li>
-                      </ul>
                       <Button variant="secondary" size="sm" class="plan-card__cta">
                         Elegir Plus
                       </Button>
@@ -463,28 +578,12 @@
                       <div class="plan-card__badge">Recomendado</div>
                       <div class="plan-card__header">
                         <Heading level="h3" size="sm" weight="bold">Pro</Heading>
-                        <Text size="xs" color="muted">Para el control total</Text>
+                        <Text size="xs" color="muted">Control total de tus finanzas</Text>
                       </div>
                       <div class="plan-card__price">
-                        <Text size="xl" weight="bold" color="primary">
-                          {{ formatCurrency(34900, 'COP') }}
-                        </Text>
-                        <Text size="xs" color="muted">/mes</Text>
+                        <Text size="xl" weight="bold" color="primary">$34.900</Text>
+                        <Text size="xs" color="muted">COP/mes</Text>
                       </div>
-                      <ul class="plan-card__features">
-                        <li class="plan-card__feature">
-                          <span class="material-symbols-outlined plan-card__check">check_circle</span>
-                          <Text size="xs">Todo lo de Plus</Text>
-                        </li>
-                        <li class="plan-card__feature">
-                          <span class="material-symbols-outlined plan-card__check">check_circle</span>
-                          <Text size="xs">Reportes avanzados</Text>
-                        </li>
-                        <li class="plan-card__feature">
-                          <span class="material-symbols-outlined plan-card__check">check_circle</span>
-                          <Text size="xs">Soporte prioritario</Text>
-                        </li>
-                      </ul>
                       <Button variant="primary" size="sm" class="plan-card__cta">
                         Elegir Pro
                       </Button>
@@ -492,6 +591,7 @@
                   </div>
                 </div>
               </template>
+
             </div>
           </Card>
         </template>
@@ -760,6 +860,10 @@
     @apply bg-warning-100 text-warning-700;
   }
 
+  .plan-badge--danger {
+    @apply bg-danger-100 text-danger-700;
+  }
+
   .plan-badge--primary {
     @apply bg-primary-100 text-primary-700;
   }
@@ -776,43 +880,109 @@
     @apply bg-neutral-100 text-neutral-600;
   }
 
-  /* Trial info */
-  .plan-trial {
-    @apply space-y-4;
+  /* Trial countdown banner */
+  .trial-banner {
+    @apply rounded-xl border p-4 space-y-3;
   }
 
-  .plan-trial__stats {
-    @apply grid grid-cols-3 gap-3;
+  .trial-banner--normal {
+    @apply border-warning-200 bg-warning-50 dark:border-warning-800 dark:bg-warning-900/20;
   }
 
-  .plan-trial__stat {
-    @apply flex flex-col gap-1 rounded-lg border border-neutral-100 p-3 dark:border-neutral-700;
+  .trial-banner--urgent {
+    @apply border-danger-200 bg-danger-50 dark:border-danger-800 dark:bg-danger-900/20;
   }
 
-  .plan-trial__progress {
-    @apply space-y-2;
+  .trial-banner__top {
+    @apply flex items-start justify-between gap-4;
   }
 
-  .plan-trial__progress-header {
+  .trial-banner__countdown {
+    @apply flex flex-col gap-1;
+  }
+
+  .trial-banner__days {
+    @apply flex items-baseline gap-1.5;
+  }
+
+  .trial-banner__days-number {
+    @apply text-3xl font-extrabold text-warning-700 leading-none;
+  }
+
+  .trial-banner--urgent .trial-banner__days-number {
+    @apply text-danger-700;
+  }
+
+  .trial-banner__meta {
+    @apply flex flex-col gap-1 text-right;
+  }
+
+  .trial-banner__progress {
+    @apply space-y-1;
+  }
+
+  .trial-banner__progress-labels {
     @apply flex items-center justify-between;
   }
 
-  /* Paid plan */
-  .plan-paid {
-    @apply flex items-center gap-3 rounded-lg border border-success-200 bg-success-50 p-4;
+  /* Partner badge */
+  .plan-partner {
+    @apply flex items-center gap-3 rounded-xl border border-success-200 bg-success-50 p-4 dark:border-success-800 dark:bg-success-900/20;
   }
 
-  .plan-paid__icon {
+  .plan-partner__icon {
     @apply text-2xl text-success-600;
   }
 
-  /* Upgrade section */
-  .plan-upgrade {
-    @apply space-y-3;
+  /* Feature comparison table */
+  .plan-comparison {
+    @apply space-y-2;
   }
 
-  .plan-upgrade__title {
-    @apply text-neutral-700 dark:text-neutral-300;
+  .plan-table {
+    @apply rounded-xl border border-neutral-200 overflow-hidden dark:border-neutral-700;
+  }
+
+  .plan-table__row {
+    @apply grid items-center border-b border-neutral-100 last:border-0 dark:border-neutral-700;
+    grid-template-columns: 1fr repeat(3, 80px);
+  }
+
+  .plan-table__row--head {
+    @apply bg-neutral-50 dark:bg-neutral-800/50;
+  }
+
+  .plan-table__feature-col {
+    @apply px-3 py-2.5;
+  }
+
+  .plan-table__plan-col {
+    @apply flex flex-col items-center justify-center px-2 py-2.5 text-center;
+  }
+
+  .plan-table__plan-col--active {
+    @apply bg-primary-50 dark:bg-primary-900/20;
+  }
+
+  .plan-table__row--head .plan-table__plan-col--active {
+    @apply bg-primary-100 dark:bg-primary-900/40;
+  }
+
+  .plan-table__icon {
+    @apply text-base;
+  }
+
+  .plan-table__icon--yes {
+    @apply text-success-600;
+  }
+
+  .plan-table__icon--no {
+    @apply text-neutral-300;
+  }
+
+  /* Upgrade CTA section */
+  .plan-upgrade {
+    @apply space-y-3;
   }
 
   .plan-cards {
@@ -837,18 +1007,6 @@
 
   .plan-card__price {
     @apply flex items-baseline gap-1;
-  }
-
-  .plan-card__features {
-    @apply flex-1 space-y-1.5;
-  }
-
-  .plan-card__feature {
-    @apply flex items-center gap-1.5;
-  }
-
-  .plan-card__check {
-    @apply text-base text-success-600;
   }
 
   .plan-card__cta {
