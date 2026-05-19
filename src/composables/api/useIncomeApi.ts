@@ -1,8 +1,10 @@
 import type { PlannedIncomeSummary, PlannedSavingSummary } from '~/types/domain'
 
 export function useIncomeApi() {
-  const getCurrentIncome = async () =>
-    $fetch<{ success: boolean; result: unknown }>('/api/incomes/current')
+  const getCurrentIncome = async (year: number, month: number) =>
+    $fetch<{ success: boolean; result: unknown }>('/api/incomes/current', {
+      query: { year, month }
+    })
 
   const getPlannedIncomes = async () =>
     $fetch<{ success: boolean; result: PlannedIncomeSummary[] }>('/api/planned-incomes')

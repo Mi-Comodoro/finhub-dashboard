@@ -22,7 +22,7 @@ export const useIncomeApplication = () => {
       const month = date.getMonth() + 1
       const year = date.getFullYear()
 
-      const { success, result } = (await incomeApi.getCurrentIncome()) as {
+      const { success, result } = (await incomeApi.getCurrentIncome(year, month)) as {
         success: boolean
         result: {
           expectedIncomes: { source: string; amount: number; date: Date }[]
