@@ -3,8 +3,8 @@
 
   import { AppLogo, AppVersion, Button } from '@/components/atoms'
   import { NavigationSection } from '@/components/molecules'
-  import { useSidebarMode } from '@/composables/ui/useSidebarMode'
   import { useSidebar } from '@/composables/useSidebar'
+  import { useSidebarMode } from '@/composables/ui/useSidebarMode'
   import { useAuthStore } from '@/stores/auth.store'
 
   import type { MenuItem } from './types/dashboard-sidebar.types'
