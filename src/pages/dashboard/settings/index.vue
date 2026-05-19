@@ -32,17 +32,34 @@
 
   // [1] Perfil
   const displayNameForm = ref('')
+  const phoneForm = ref('')
+  const genderForm = ref<'male' | 'female' | 'prefer_not_to_say'>('prefer_not_to_say')
+
+  const genderOptions = [
+    { label: 'Masculino', value: 'male' },
+    { label: 'Femenino', value: 'female' },
+    { label: 'Prefiero no decirlo', value: 'prefer_not_to_say' }
+  ]
 
   watch(
-    () => user.value?.displayName,
+    () => user.value,
     val => {
-      if (val) displayNameForm.value = val
+      if (!val) return
+      if (val.displayName) displayNameForm.value = val.displayName
+      if (val.phoneNumber) phoneForm.value = val.phoneNumber
+      if (val.gender) genderForm.value = val.gender as typeof genderForm.value
     },
-    { immediate: true }
+    { immediate: true, deep: true }
   )
 
+  const isPhoneVerified = computed(() => user.value?.isPhoneVerified ?? false)
+
   const handleSaveProfile = async () => {
-    const { success } = await updatePersonalInfo({ displayName: displayNameForm.value })
+    const { success } = await updatePersonalInfo({
+      displayName: displayNameForm.value,
+      phone: phoneForm.value,
+      gender: genderForm.value
+    })
     if (success) successToast('Perfil actualizado', 'Tu nombre fue guardado correctamente.')
   }
 
@@ -247,6 +264,38 @@
                 type="email"
                 class="settings-card__input settings-card__input--readonly"
                 readonly
+              />
+            </div>
+
+            <div class="settings-card__field">
+              <div class="settings-card__label-row">
+                <Text size="sm" weight="medium" class="settings-card__label">
+                  Teléfono
+                </Text>
+                <span
+                  class="phone-badge"
+                  :class="isPhoneVerified ? 'phone-badge--verified' : 'phone-badge--unverified'"
+                >
+                  <span class="material-symbols-outlined phone-badge__icon">
+                    {{ isPhoneVerified ? 'verified' : 'cancel' }}
+                  </span>
+                  {{ isPhoneVerified ? 'Verificado' : 'No verificado' }}
+                </span>
+              </div>
+              <input
+                v-model="phoneForm"
+                type="tel"
+                class="settings-card__input"
+                placeholder="+57 300 000 0000"
+              />
+            </div>
+
+            <div class="settings-card__field">
+              <Text size="sm" weight="medium" class="settings-card__label">Sexo</Text>
+              <Select
+                v-model="genderForm"
+                name="gender"
+                :options="genderOptions"
               />
             </div>
 
@@ -628,6 +677,10 @@
     @apply text-neutral-600 dark:text-neutral-400;
   }
 
+  .settings-card__label-row {
+    @apply flex items-center justify-between;
+  }
+
   .settings-card__input {
     @apply w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-primary-400 focus:ring-1 focus:ring-primary-400 dark:border-neutral-700 dark:bg-neutral-900;
   }
@@ -674,6 +727,23 @@
 
   .settings-card__actions--start {
     @apply justify-start;
+  }
+
+  /* Phone verification badge */
+  .phone-badge {
+    @apply flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+
+  .phone-badge--verified {
+    @apply bg-success-50 text-success-700;
+  }
+
+  .phone-badge--unverified {
+    @apply bg-neutral-100 text-neutral-500;
+  }
+
+  .phone-badge__icon {
+    @apply text-sm leading-none;
   }
 
   /* Plan header */

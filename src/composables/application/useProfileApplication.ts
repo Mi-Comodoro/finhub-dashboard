@@ -101,7 +101,8 @@ export const useProfileApplication = () => {
     gender: userStore.gender,
     country: userStore.country,
     trialEndsAt: userStore.trialEndsAt,
-    createdAt: userStore.createdAt
+    createdAt: userStore.createdAt,
+    isPhoneVerified: userStore.isPhoneVerified
   }))
 
   const finances = computed(() => ({

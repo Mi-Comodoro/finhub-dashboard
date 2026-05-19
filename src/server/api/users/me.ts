@@ -48,6 +48,7 @@ export default defineEventHandler(async event => {
         createdAt: data.createdAt,
         trialEndsAt: data.userProfile.trialEndsAt,
         isActive: data.userProfile.isActive,
+        isPhoneVerified: data.userProfile.isPhoneVerified,
         country: data.userProfile.country,
         role: data.role ?? data.userProfile.role ?? extractRoleFromJwt(token)
       },
