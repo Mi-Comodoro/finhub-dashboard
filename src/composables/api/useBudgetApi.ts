@@ -42,15 +42,15 @@ export function useBudgetApi() {
     $fetch<{ success: boolean }>(`/api/budgets/${id}`, { method: 'DELETE' })
 
   const enableBudget = async (budgetId: string) =>
-    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/enable/${budgetId}`, {
-      method: 'POST'
+    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/${budgetId}/active`, {
+      method: 'PATCH'
     })
   const closeBudget = async (
     budgetId: string,
     body?: { surplusAction?: 'transfer_to_goal' | 'carry_forward' | 'ignore'; targetGoalId?: string }
   ) =>
-    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/close/${budgetId}`, {
-      method: 'POST',
+    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/${budgetId}/close`, {
+      method: 'PATCH',
       body
     })
 
