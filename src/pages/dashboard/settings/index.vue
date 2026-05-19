@@ -18,7 +18,7 @@
   const { logout } = useAuth()
   const { success: successToast } = useFeedback()
 
-  // [1] Perfil form state
+  // [1] Perfil
   const displayNameForm = ref('')
 
   watch(
@@ -34,7 +34,7 @@
     if (success) successToast('Perfil actualizado', 'Tu nombre fue guardado correctamente.')
   }
 
-  // [2] Cuenta form state
+  // [2] Cuenta
   const currencyForm = ref('COP')
   const languageForm = ref('es')
   const savingsPercentageForm = ref(20)
@@ -70,7 +70,7 @@
       successToast('Cuenta actualizada', 'Tus preferencias de cuenta fueron guardadas.')
   }
 
-  // [3] Notificaciones form state
+  // [3] Notificaciones
   const notificationsEnabledForm = ref(true)
   const budgetAlertThresholdForm = ref(80)
 
@@ -112,127 +112,129 @@
     <div v-if="isLoading && !settings" class="settings-page__loading">
       <div class="settings-page__skeleton" />
       <div class="settings-page__skeleton settings-page__skeleton--short" />
+      <div class="settings-page__skeleton settings-page__skeleton--short" />
     </div>
 
-    <UAccordion
-      v-else
-      :items="[
-        { label: 'Perfil', icon: 'i-material-symbols-person', slot: 'perfil' },
-        { label: 'Cuenta', icon: 'i-material-symbols-manage-accounts', slot: 'cuenta' },
-        { label: 'Notificaciones', icon: 'i-material-symbols-notifications', slot: 'notificaciones' },
-        { label: 'App', icon: 'i-material-symbols-info', slot: 'app' }
-      ]"
-      :default-open="0"
-      class="settings-page__accordion"
-    >
+    <div v-else class="settings-page__sections">
       <!-- [1] Perfil -->
-      <template #perfil>
-        <div class="settings-section">
-          <div class="settings-section__avatar">
-            <UAvatar
-              v-if="avatarUrl"
-              :src="avatarUrl"
-              size="xl"
-              :alt="user?.displayName ?? ''"
-            />
-            <div v-else class="settings-section__avatar-initials">
-              <Text size="lg" weight="bold">{{ avatarInitials }}</Text>
+      <Card class="settings-card">
+        <div class="settings-card__header">
+          <span class="material-symbols-outlined settings-card__icon settings-card__icon--primary">
+            person
+          </span>
+          <div>
+            <Heading level="h2" size="lg" weight="bold">Perfil</Heading>
+            <Text size="xs" color="muted">Tu información personal</Text>
+          </div>
+        </div>
+
+        <div class="settings-card__body">
+          <div class="settings-card__avatar-row">
+            <div class="settings-card__avatar">
+              <img v-if="avatarUrl" :src="avatarUrl" class="settings-card__avatar-img" alt="avatar" />
+              <span v-else class="settings-card__avatar-initials">{{ avatarInitials }}</span>
+            </div>
+            <div>
+              <Text size="sm" weight="medium">{{ user?.displayName ?? '' }}</Text>
+              <Text size="xs" color="muted">{{ user?.email ?? '' }}</Text>
             </div>
           </div>
 
-          <div class="settings-section__field">
-            <Text size="sm" weight="medium" class="settings-section__label">Nombre visible</Text>
-            <input
-              v-model="displayNameForm"
-              type="text"
-              class="settings-section__input"
-              placeholder="Tu nombre"
-            />
+          <div class="settings-card__field">
+            <Text size="sm" weight="medium" class="settings-card__label">Nombre visible</Text>
+            <input v-model="displayNameForm" type="text" class="settings-card__input" placeholder="Tu nombre" />
           </div>
 
-          <div class="settings-section__field">
-            <Text size="sm" weight="medium" class="settings-section__label">Correo electrónico</Text>
+          <div class="settings-card__field">
+            <Text size="sm" weight="medium" class="settings-card__label">Correo electrónico</Text>
             <input
               :value="user?.email ?? ''"
               type="email"
-              class="settings-section__input settings-section__input--readonly"
+              class="settings-card__input settings-card__input--readonly"
               readonly
             />
           </div>
 
-          <div class="settings-section__actions">
+          <div class="settings-card__actions">
             <Button variant="primary" size="sm" :disabled="isLoading" @click="handleSaveProfile">
               Guardar perfil
             </Button>
           </div>
         </div>
-      </template>
+      </Card>
 
       <!-- [2] Cuenta -->
-      <template #cuenta>
-        <div class="settings-section">
-          <div class="settings-section__field">
-            <Text size="sm" weight="medium" class="settings-section__label">Moneda principal</Text>
-            <Select
-              v-model="currencyForm"
-              name="currency"
-              label=""
-              :options="currencyOptions"
-            />
+      <Card class="settings-card">
+        <div class="settings-card__header">
+          <span class="material-symbols-outlined settings-card__icon settings-card__icon--primary">
+            manage_accounts
+          </span>
+          <div>
+            <Heading level="h2" size="lg" weight="bold">Cuenta</Heading>
+            <Text size="xs" color="muted">Moneda, idioma y ahorro predeterminado</Text>
           </div>
+        </div>
 
-          <div class="settings-section__field">
-            <Text size="sm" weight="medium" class="settings-section__label">Idioma</Text>
-            <Select
-              v-model="languageForm"
-              name="language"
-              label=""
-              :options="languageOptions"
-            />
-          </div>
+        <div class="settings-card__body">
+          <Select
+            v-model="currencyForm"
+            name="currency"
+            label="Moneda principal"
+            :options="currencyOptions"
+          />
+          <Select
+            v-model="languageForm"
+            name="language"
+            label="Idioma"
+            :options="languageOptions"
+          />
 
-          <div class="settings-section__field">
-            <Text size="sm" weight="medium" class="settings-section__label">
+          <div class="settings-card__field">
+            <Text size="sm" weight="medium" class="settings-card__label">
               Porcentaje de ahorro predeterminado
             </Text>
-            <div class="settings-section__percentage">
+            <div class="settings-card__row">
               <input
                 v-model.number="savingsPercentageForm"
                 type="number"
                 min="0"
                 max="100"
-                class="settings-section__input settings-section__input--narrow"
+                class="settings-card__input settings-card__input--narrow"
               />
               <Text size="sm" color="muted">%</Text>
             </div>
           </div>
 
-          <div class="settings-section__actions">
+          <div class="settings-card__actions">
             <Button variant="primary" size="sm" :disabled="isLoading" @click="handleSaveCuenta">
               Guardar cuenta
             </Button>
           </div>
         </div>
-      </template>
+      </Card>
 
       <!-- [3] Notificaciones -->
-      <template #notificaciones>
-        <div class="settings-section">
-          <div class="settings-section__toggle-row">
+      <Card class="settings-card">
+        <div class="settings-card__header">
+          <span class="material-symbols-outlined settings-card__icon">notifications</span>
+          <div>
+            <Heading level="h2" size="lg" weight="bold">Notificaciones</Heading>
+            <Text size="xs" color="muted">Alertas y recordatorios</Text>
+          </div>
+        </div>
+
+        <div class="settings-card__body">
+          <div class="settings-card__toggle-row">
             <div>
               <Text size="sm" weight="medium">Notificaciones activas</Text>
               <Text size="xs" color="muted">Recibir alertas y recordatorios</Text>
             </div>
-            <input
-              v-model="notificationsEnabledForm"
-              type="checkbox"
-              class="settings-section__toggle"
-            />
+            <input v-model="notificationsEnabledForm" type="checkbox" class="settings-card__toggle" />
           </div>
 
-          <div class="settings-section__field">
-            <div class="settings-section__slider-header">
-              <Text size="sm" weight="medium" class="settings-section__label">
+          <div class="settings-card__field">
+            <div class="settings-card__slider-header">
+              <Text size="sm" weight="medium" class="settings-card__label">
                 Umbral de alerta de presupuesto
               </Text>
               <Text size="sm" weight="bold" color="primary">{{ budgetAlertThresholdForm }}%</Text>
@@ -243,43 +245,46 @@
               min="50"
               max="100"
               step="5"
-              class="settings-section__slider"
+              class="settings-card__slider"
             />
-            <div class="settings-section__slider-labels">
+            <div class="settings-card__slider-labels">
               <Text size="xs" color="muted">50%</Text>
               <Text size="xs" color="muted">100%</Text>
             </div>
           </div>
 
-          <div class="settings-section__actions">
-            <Button
-              variant="primary"
-              size="sm"
-              :disabled="isLoading"
-              @click="handleSaveNotifications"
-            >
+          <div class="settings-card__actions">
+            <Button variant="primary" size="sm" :disabled="isLoading" @click="handleSaveNotifications">
               Guardar notificaciones
             </Button>
           </div>
         </div>
-      </template>
+      </Card>
 
       <!-- [4] App info -->
-      <template #app>
-        <div class="settings-section">
-          <div class="settings-section__info-row">
+      <Card class="settings-card">
+        <div class="settings-card__header">
+          <span class="material-symbols-outlined settings-card__icon">info</span>
+          <div>
+            <Heading level="h2" size="lg" weight="bold">App</Heading>
+            <Text size="xs" color="muted">Información y sesión</Text>
+          </div>
+        </div>
+
+        <div class="settings-card__body">
+          <div class="settings-card__info-row">
             <Text size="sm" color="muted">Versión</Text>
             <Text size="sm" weight="medium">1.0.0-beta</Text>
           </div>
 
-          <div class="settings-section__actions settings-section__actions--start">
+          <div class="settings-card__actions settings-card__actions--start">
             <Button variant="danger" size="sm" icon="logout" @click="handleLogout">
               Cerrar sesión
             </Button>
           </div>
         </div>
-      </template>
-    </UAccordion>
+      </Card>
+    </div>
   </div>
 </template>
 
@@ -297,82 +302,106 @@
   }
 
   .settings-page__skeleton {
-    @apply animate-pulse rounded-xl bg-slate-100 h-16 w-full;
+    @apply animate-pulse rounded-xl bg-slate-100 h-32 w-full;
   }
 
   .settings-page__skeleton--short {
-    @apply h-12 w-3/4;
+    @apply h-24;
   }
 
-  .settings-page__accordion {
-    @apply rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800;
+  .settings-page__sections {
+    @apply space-y-4;
   }
 
-  .settings-section {
+  .settings-card {
+    @apply !p-0 overflow-hidden;
+  }
+
+  .settings-card__header {
+    @apply flex items-center gap-3 border-b border-neutral-100 px-5 py-4 dark:border-neutral-700;
+  }
+
+  .settings-card__icon {
+    @apply text-neutral-500 text-xl;
+  }
+
+  .settings-card__icon--primary {
+    @apply text-primary-600;
+  }
+
+  .settings-card__body {
     @apply space-y-4 p-5;
   }
 
-  .settings-section__avatar {
-    @apply flex items-center gap-4 pb-2;
+  .settings-card__avatar-row {
+    @apply flex items-center gap-3 pb-2;
   }
 
-  .settings-section__avatar-initials {
-    @apply flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-700;
+  .settings-card__avatar {
+    @apply flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-100;
   }
 
-  .settings-section__field {
-    @apply flex flex-col gap-2;
+  .settings-card__avatar-img {
+    @apply h-full w-full object-cover;
   }
 
-  .settings-section__label {
-    @apply text-neutral-700 dark:text-neutral-300;
+  .settings-card__avatar-initials {
+    @apply text-base font-bold text-primary-700;
   }
 
-  .settings-section__input {
+  .settings-card__field {
+    @apply flex flex-col gap-1;
+  }
+
+  .settings-card__label {
+    @apply text-neutral-600 dark:text-neutral-400;
+  }
+
+  .settings-card__input {
     @apply w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-primary-400 focus:ring-1 focus:ring-primary-400 dark:border-neutral-700 dark:bg-neutral-900;
   }
 
-  .settings-section__input--readonly {
+  .settings-card__input--readonly {
     @apply cursor-not-allowed bg-neutral-50 text-neutral-400 dark:bg-neutral-800;
   }
 
-  .settings-section__input--narrow {
+  .settings-card__input--narrow {
     @apply w-24;
   }
 
-  .settings-section__percentage {
+  .settings-card__row {
     @apply flex items-center gap-2;
   }
 
-  .settings-section__toggle-row {
-    @apply flex items-center justify-between rounded-lg border border-neutral-100 p-4 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-700;
+  .settings-card__toggle-row {
+    @apply flex items-center justify-between rounded-lg border border-neutral-100 p-4 dark:border-neutral-700;
   }
 
-  .settings-section__toggle {
+  .settings-card__toggle {
     @apply h-5 w-10 cursor-pointer appearance-none rounded-full bg-neutral-300 transition-colors checked:bg-primary-600;
   }
 
-  .settings-section__slider-header {
+  .settings-card__slider-header {
     @apply flex items-center justify-between;
   }
 
-  .settings-section__slider {
+  .settings-card__slider {
     @apply w-full cursor-pointer accent-primary-600;
   }
 
-  .settings-section__slider-labels {
+  .settings-card__slider-labels {
     @apply flex justify-between;
   }
 
-  .settings-section__info-row {
+  .settings-card__info-row {
     @apply flex items-center justify-between rounded-lg border border-neutral-100 px-4 py-3 dark:border-neutral-700;
   }
 
-  .settings-section__actions {
+  .settings-card__actions {
     @apply flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-700;
   }
 
-  .settings-section__actions--start {
+  .settings-card__actions--start {
     @apply justify-start;
   }
 </style>
