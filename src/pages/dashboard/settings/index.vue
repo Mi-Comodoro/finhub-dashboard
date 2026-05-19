@@ -191,7 +191,7 @@
     { label: 'Presupuestos activos',  free: '1',             plus: '3',               pro: 'Ilimitados'       },
     { label: 'Transacciones',         free: 'Ilimitadas',    plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
     { label: 'Metas de ahorro',       free: 'Ilimitadas',    plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
-    { label: 'Cuentas registradas',   free: '3',             plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
+    { label: 'Cuentas de referencia',  free: '3',             plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
     { label: 'Categorías',            free: 'Predefinidas',  plus: 'Personalizadas',  pro: 'Personalizadas'   },
     { label: 'Proyecciones',          free: '1 año',         plus: '3 años',          pro: '10+ años'         },
     { label: 'Reportes',              free: 'Básico',        plus: 'Mensual + Anual', pro: 'Completos'        },
