@@ -4,6 +4,7 @@
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useFeedback } from '@/composables/useFeedback'
   import { useAuthStore } from '@/stores/auth.store'
+  import { FINANCIAL_PROFILE_OPTIONS } from '@/common/constants'
 
   definePageMeta({
     layout: 'dashboard',
@@ -13,25 +14,28 @@
 
   const { settings, isLoading, fetchSettings, updateSettings, updateBudgetDefaults } =
     useSettingsApplication()
-  const { user, avatarUrl, avatarInitials, updatePersonalInfo } = useProfileApplication()
+  const { user, finances, avatarUrl, avatarInitials, updatePersonalInfo, updateFinancialInfo } =
+    useProfileApplication()
   const { logout } = useAuth()
-  const { success: successToast } = useFeedback()
+  const { success: successToast, error: errorToast } = useFeedback()
   const authStore = useAuthStore()
 
-  type TabId = 'profile' | 'account' | 'notifications' | 'app'
+  type TabId = 'profile' | 'account' | 'notifications' | 'app' | 'billing'
 
   const activeTab = ref<TabId>('profile')
 
-  const tabs: { id: TabId; label: string; icon: string }[] = [
+  const tabs: { id: TabId; label: string; icon: string; disabled?: boolean }[] = [
     { id: 'profile', label: 'Perfil', icon: 'person' },
     { id: 'account', label: 'Cuenta', icon: 'manage_accounts' },
-    { id: 'notifications', label: 'Notificaciones', icon: 'notifications' },
+    { id: 'billing', label: 'Facturación', icon: 'receipt_long', disabled: true },
+    { id: 'notifications', label: 'Notificaciones', icon: 'notifications', disabled: true },
     { id: 'app', label: 'App', icon: 'info' }
   ]
 
   // [1] Perfil
   const displayNameForm = ref('')
-  const phoneForm = ref('')
+  const dialCodeForm = ref('+57')
+  const phoneNumberForm = ref('')
   const genderForm = ref<'male' | 'female' | 'prefer_not_to_say'>('prefer_not_to_say')
 
   const genderOptions = [
@@ -40,32 +44,93 @@
     { label: 'Prefiero no decirlo', value: 'prefer_not_to_say' }
   ]
 
+  const dialCodeOptions = [
+    { value: '+57',  label: '🇨🇴 +57'  },
+    { value: '+1',   label: '🇺🇸 +1'   },
+    { value: '+52',  label: '🇲🇽 +52'  },
+    { value: '+54',  label: '🇦🇷 +54'  },
+    { value: '+56',  label: '🇨🇱 +56'  },
+    { value: '+51',  label: '🇵🇪 +51'  },
+    { value: '+58',  label: '🇻🇪 +58'  },
+    { value: '+593', label: '🇪🇨 +593' },
+    { value: '+507', label: '🇵🇦 +507' },
+    { value: '+506', label: '🇨🇷 +506' },
+    { value: '+503', label: '🇸🇻 +503' },
+    { value: '+502', label: '🇬🇹 +502' },
+    { value: '+504', label: '🇭🇳 +504' },
+    { value: '+505', label: '🇳🇮 +505' },
+  ]
+
+  const parsePhone = (full: string): { dialCode: string; number: string } => {
+    const codes = dialCodeOptions.map(o => o.value).sort((a, b) => b.length - a.length)
+    const match = codes.find(code => full.startsWith(code))
+    return match ? { dialCode: match, number: full.slice(match.length) } : { dialCode: '+57', number: full }
+  }
+
+  type ProfileSnapshot = { displayName: string; dialCode: string; phoneNumber: string; gender: 'male' | 'female' | 'prefer_not_to_say' }
+  const profileSnapshot = ref<ProfileSnapshot>({ displayName: '', dialCode: '+57', phoneNumber: '', gender: 'prefer_not_to_say' })
+
   watch(
     () => user.value,
     val => {
       if (!val) return
-      if (val.displayName) displayNameForm.value = val.displayName
-      if (val.phoneNumber) phoneForm.value = val.phoneNumber
-      if (val.gender) genderForm.value = val.gender as typeof genderForm.value
+      if (val.displayName) {
+        displayNameForm.value = val.displayName
+        profileSnapshot.value.displayName = val.displayName
+      }
+      if (val.phoneNumber) {
+        const { dialCode, number } = parsePhone(val.phoneNumber)
+        dialCodeForm.value = dialCode
+        phoneNumberForm.value = number
+        profileSnapshot.value.dialCode = dialCode
+        profileSnapshot.value.phoneNumber = number
+      }
+      if (val.gender) {
+        genderForm.value = val.gender as typeof genderForm.value
+        profileSnapshot.value.gender = val.gender as typeof genderForm.value
+      }
     },
     { immediate: true, deep: true }
   )
 
   const isPhoneVerified = computed(() => user.value?.isPhoneVerified ?? false)
 
+  const isProfileDirty = computed(() =>
+    displayNameForm.value !== profileSnapshot.value.displayName ||
+    dialCodeForm.value !== profileSnapshot.value.dialCode ||
+    phoneNumberForm.value !== profileSnapshot.value.phoneNumber ||
+    genderForm.value !== profileSnapshot.value.gender
+  )
+
+  const isSavingProfile = ref(false)
+
   const handleSaveProfile = async () => {
-    const { success } = await updatePersonalInfo({
-      displayName: displayNameForm.value,
-      phone: phoneForm.value,
-      gender: genderForm.value
-    })
-    if (success) successToast('Perfil actualizado', 'Tu nombre fue guardado correctamente.')
+    isSavingProfile.value = true
+    try {
+      const fullPhone = phoneNumberForm.value.trim()
+        ? `${dialCodeForm.value}${phoneNumberForm.value.trim()}`
+        : undefined
+      const { success } = await updatePersonalInfo({
+        displayName: displayNameForm.value,
+        phone: fullPhone,
+        gender: genderForm.value
+      })
+      if (success) {
+        profileSnapshot.value = { displayName: displayNameForm.value, dialCode: dialCodeForm.value, phoneNumber: phoneNumberForm.value, gender: genderForm.value }
+        successToast('Perfil actualizado', 'Tu información personal fue guardada correctamente.')
+      } else {
+        errorToast('No se pudo guardar', 'Intenta de nuevo en unos segundos.')
+      }
+    } finally {
+      isSavingProfile.value = false
+    }
   }
 
-  // [2] Cuenta
-  const currencyForm = ref('COP')
-  const languageForm = ref('es')
-  const savingsPercentageForm = ref(20)
+  // [2] Finances (profile subsection)
+  const financialProfileForm = ref('')
+  const financialCurrencyForm = ref('COP')
+
+  const financialProfileOptions = FINANCIAL_PROFILE_OPTIONS
 
   const currencyOptions = [
     { label: 'COP - Peso Colombiano', value: 'COP' },
@@ -73,34 +138,54 @@
     { label: 'EUR - Euro', value: 'EUR' }
   ]
 
-  const languageOptions = [
-    { label: 'Español', value: 'es' },
-    { label: 'English', value: 'en' }
-  ]
+  const financesSnapshot = ref({ profile: '', currency: 'COP' })
 
   watch(
-    () => settings.value,
+    () => finances.value,
     val => {
       if (!val) return
-      currencyForm.value = val.currency
-      languageForm.value = val.language
-      savingsPercentageForm.value = val.savingsPercentage
+      if (val.profile) {
+        financialProfileForm.value = val.profile
+        financesSnapshot.value.profile = val.profile
+      }
+      if (val.currency) {
+        financialCurrencyForm.value = val.currency
+        financesSnapshot.value.currency = val.currency
+      }
     },
     { immediate: true, deep: true }
   )
 
-  const handleSaveCuenta = async () => {
-    const [r1, r2] = await Promise.all([
-      updateSettings({ currency: currencyForm.value, language: languageForm.value }),
-      updateBudgetDefaults({ savingsPercentage: savingsPercentageForm.value })
-    ])
-    if (r1.success && r2.success)
-      successToast('Cuenta actualizada', 'Tus preferencias de cuenta fueron guardadas.')
+  const isFinancesDirty = computed(() =>
+    financialProfileForm.value !== financesSnapshot.value.profile
+  )
+
+  const isSavingFinances = ref(false)
+
+  const handleSaveFinances = async () => {
+    isSavingFinances.value = true
+    try {
+      const { success } = await updateFinancialInfo({
+        currency: financialCurrencyForm.value,
+        profile: financialProfileForm.value,
+        usage: finances.value?.usage ?? ''
+      })
+      if (success) {
+        financesSnapshot.value = { profile: financialProfileForm.value, currency: financialCurrencyForm.value }
+        successToast('Finanzas actualizadas', 'Tu perfil financiero fue guardado correctamente.')
+      } else {
+        errorToast('No se pudo guardar', 'Intenta de nuevo en unos segundos.')
+      }
+    } finally {
+      isSavingFinances.value = false
+    }
   }
 
   // [3] Notificaciones
   const notificationsEnabledForm = ref(true)
   const budgetAlertThresholdForm = ref(80)
+
+  const notificationsSnapshot = ref({ enabled: true, threshold: 80 })
 
   watch(
     () => settings.value,
@@ -108,8 +193,15 @@
       if (!val) return
       notificationsEnabledForm.value = val.notificationsEnabled
       budgetAlertThresholdForm.value = val.budgetAlertThreshold
+      notificationsSnapshot.value.enabled = val.notificationsEnabled
+      notificationsSnapshot.value.threshold = val.budgetAlertThreshold
     },
     { immediate: true, deep: true }
+  )
+
+  const isNotificationsDirty = computed(() =>
+    notificationsEnabledForm.value !== notificationsSnapshot.value.enabled ||
+    budgetAlertThresholdForm.value !== notificationsSnapshot.value.threshold
   )
 
   const handleSaveNotifications = async () => {
@@ -117,8 +209,10 @@
       updateSettings({ notificationsEnabled: notificationsEnabledForm.value }),
       updateBudgetDefaults({ budgetAlertThreshold: budgetAlertThresholdForm.value })
     ])
-    if (r1.success && r2.success)
+    if (r1.success && r2.success) {
+      notificationsSnapshot.value = { enabled: notificationsEnabledForm.value, threshold: budgetAlertThresholdForm.value }
       successToast('Notificaciones guardadas', 'Tus preferencias de alertas fueron actualizadas.')
+    }
   }
 
   const handleLogout = async () => {
@@ -235,16 +329,21 @@
           v-for="tab in tabs"
           :key="tab.id"
           class="settings-panel__nav-item"
-          :class="{ 'settings-panel__nav-item--active': activeTab === tab.id }"
-          @click="activeTab = tab.id"
+          :class="{
+            'settings-panel__nav-item--active': activeTab === tab.id,
+            'settings-panel__nav-item--disabled': tab.disabled
+          }"
+          :disabled="tab.disabled"
+          @click="!tab.disabled && (activeTab = tab.id)"
         >
           <span
             class="material-symbols-outlined settings-panel__nav-icon"
-            :class="{ 'settings-panel__nav-icon--active': activeTab === tab.id }"
+            :class="{ 'settings-panel__nav-icon--active': activeTab === tab.id && !tab.disabled }"
           >{{ tab.icon }}</span>
           <Text size="sm" :weight="activeTab === tab.id ? 'semibold' : 'normal'">
             {{ tab.label }}
           </Text>
+          <span v-if="tab.disabled" class="settings-panel__nav-soon">Próximo</span>
         </button>
       </nav>
 
@@ -252,155 +351,157 @@
       <div class="settings-panel__body">
 
         <!-- [1] Perfil -->
-        <div v-if="activeTab === 'profile'" class="settings-section">
-          <div class="settings-section__header">
-            <span class="material-symbols-outlined settings-section__icon settings-section__icon--primary">
-              person
-            </span>
-            <div>
-              <Heading level="h2" size="lg" weight="bold">Perfil</Heading>
-              <Text size="xs" color="muted">Tu información personal</Text>
-            </div>
-          </div>
-
-          <div class="settings-section__body">
-            <div class="settings-card__avatar-row">
-              <div class="settings-card__avatar">
-                <img
-                  v-if="avatarUrl"
-                  :src="avatarUrl"
-                  class="settings-card__avatar-img"
-                  alt="avatar"
-                />
-                <span v-else class="settings-card__avatar-initials">{{ avatarInitials }}</span>
-              </div>
-              <div>
-                <Text size="sm" weight="medium">{{ user?.displayName ?? '' }}</Text>
-                <Text size="xs" color="muted">{{ user?.email ?? '' }}</Text>
-              </div>
-            </div>
-
-            <div class="settings-card__field">
-              <Text size="sm" weight="medium" class="settings-card__label">Nombre visible</Text>
-              <input
-                v-model="displayNameForm"
-                type="text"
-                class="settings-card__input"
-                placeholder="Tu nombre"
-              />
-            </div>
-
-            <div class="settings-card__field">
-              <Text size="sm" weight="medium" class="settings-card__label">
-                Correo electrónico
-              </Text>
-              <input
-                :value="user?.email ?? ''"
-                type="email"
-                class="settings-card__input settings-card__input--readonly"
-                readonly
-              />
-            </div>
-
-            <div class="settings-card__field">
-              <div class="settings-card__label-row">
-                <Text size="sm" weight="medium" class="settings-card__label">
-                  Teléfono
-                </Text>
-                <span
-                  class="phone-badge"
-                  :class="isPhoneVerified ? 'phone-badge--verified' : 'phone-badge--unverified'"
-                >
-                  <span class="material-symbols-outlined phone-badge__icon">
-                    {{ isPhoneVerified ? 'verified' : 'cancel' }}
-                  </span>
-                  {{ isPhoneVerified ? 'Verificado' : 'No verificado' }}
-                </span>
-              </div>
-              <input
-                v-model="phoneForm"
-                type="tel"
-                class="settings-card__input"
-                placeholder="+57 300 000 0000"
-              />
-            </div>
-
-            <div class="settings-card__field">
-              <Text size="sm" weight="medium" class="settings-card__label">Sexo</Text>
-              <Select
-                v-model="genderForm"
-                name="gender"
-                :options="genderOptions"
-              />
-            </div>
-
-            <div class="settings-card__actions">
-              <Button variant="primary" size="sm" :disabled="isLoading" @click="handleSaveProfile">
-                Guardar perfil
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <!-- [2] Cuenta -->
-        <template v-if="activeTab === 'account'">
-          <!-- Preferences -->
+        <template v-if="activeTab === 'profile'">
           <div class="settings-section">
             <div class="settings-section__header">
               <span class="material-symbols-outlined settings-section__icon settings-section__icon--primary">
-                manage_accounts
+                person
               </span>
               <div>
-                <Heading level="h2" size="lg" weight="bold">Cuenta</Heading>
-                <Text size="xs" color="muted">Moneda, idioma y ahorro predeterminado</Text>
+                <Heading level="h2" size="lg" weight="bold">Perfil</Heading>
+                <Text size="xs" color="muted">Tu información personal</Text>
               </div>
             </div>
 
             <div class="settings-section__body">
-              <Select
-                v-model="currencyForm"
-                name="currency"
-                label="Moneda principal"
-                :options="currencyOptions"
-              />
-              <Select
-                v-model="languageForm"
-                name="language"
-                label="Idioma"
-                :options="languageOptions"
-              />
-
-              <div class="settings-card__field">
-                <Text size="sm" weight="medium" class="settings-card__label">
-                  Porcentaje de ahorro predeterminado
-                </Text>
-                <div class="settings-card__row">
-                  <input
-                    v-model.number="savingsPercentageForm"
-                    type="number"
-                    min="0"
-                    max="100"
-                    class="settings-card__input settings-card__input--narrow"
+              <div class="settings-card__avatar-row">
+                <div class="settings-card__avatar">
+                  <img
+                    v-if="avatarUrl"
+                    :src="avatarUrl"
+                    class="settings-card__avatar-img"
+                    alt="avatar"
                   />
-                  <Text size="sm" color="muted">%</Text>
+                  <span v-else class="settings-card__avatar-initials">{{ avatarInitials }}</span>
+                </div>
+                <div>
+                  <Text size="sm" weight="medium">{{ user?.displayName ?? '' }}</Text>
+                  <Text size="xs" color="muted">{{ user?.email ?? '' }}</Text>
                 </div>
               </div>
 
+              <div class="settings-card__field">
+                <Text size="sm" weight="medium" class="settings-card__label">Nombre visible</Text>
+                <input
+                  v-model="displayNameForm"
+                  type="text"
+                  class="settings-card__input"
+                  placeholder="Tu nombre"
+                />
+              </div>
+
+              <div class="settings-card__field">
+                <Text size="sm" weight="medium" class="settings-card__label">
+                  Correo electrónico
+                </Text>
+                <input
+                  :value="user?.email ?? ''"
+                  type="email"
+                  class="settings-card__input settings-card__input--readonly"
+                  readonly
+                />
+              </div>
+
+              <div class="settings-card__field">
+                <Text size="sm" weight="medium" class="settings-card__label">Teléfono</Text>
+                <div class="settings-card__phone-row">
+                  <div class="settings-card__dial-col">
+                    <Select
+                      v-model="dialCodeForm"
+                      name="dialCode"
+                      :options="dialCodeOptions"
+                    />
+                  </div>
+                  <div class="settings-card__phone-input-wrap">
+                    <input
+                      v-model="phoneNumberForm"
+                      type="tel"
+                      class="settings-card__input settings-card__input--phone"
+                      placeholder="300 000 0000"
+                    />
+                    <span
+                      class="material-symbols-outlined settings-card__phone-status-icon"
+                      :class="isPhoneVerified ? 'settings-card__phone-status-icon--verified' : 'settings-card__phone-status-icon--unverified'"
+                    >
+                      {{ isPhoneVerified ? 'check_circle' : 'cancel' }}
+                    </span>
+                  </div>
+                  <Button
+                    v-if="!isPhoneVerified"
+                    variant="secondary"
+                    size="sm"
+                    icon="sms"
+                    disabled
+                  >
+                    Verificar
+                  </Button>
+                </div>
+              </div>
+
+              <div class="settings-card__field">
+                <Text size="sm" weight="medium" class="settings-card__label">Sexo</Text>
+                <Select
+                  v-model="genderForm"
+                  name="gender"
+                  :options="genderOptions"
+                />
+              </div>
+
               <div class="settings-card__actions">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  :disabled="isLoading"
-                  @click="handleSaveCuenta"
-                >
-                  Guardar cuenta
+                <Button variant="primary" size="sm" :disabled="isSavingProfile || !isProfileDirty" :loading="isSavingProfile" @click="handleSaveProfile">
+                  Guardar perfil
                 </Button>
               </div>
             </div>
           </div>
 
-          <!-- Plan -->
+          <!-- Finanzas subsection -->
           <div class="settings-section settings-section--divided">
+            <div class="settings-section__header">
+              <span class="material-symbols-outlined settings-section__icon settings-section__icon--warning">
+                account_balance_wallet
+              </span>
+              <div>
+                <Heading level="h2" size="lg" weight="bold">Finanzas</Heading>
+                <Text size="xs" color="muted">Tu perfil financiero y moneda</Text>
+              </div>
+            </div>
+
+            <div class="settings-section__body">
+              <Select
+                v-model="financialProfileForm"
+                name="financialProfile"
+                label="Perfil financiero"
+                :options="financialProfileOptions"
+              />
+
+              <div class="settings-card__field">
+                <Text size="sm" weight="medium" class="settings-card__label">Moneda principal</Text>
+                <input
+                  :value="financialCurrencyForm"
+                  type="text"
+                  class="settings-card__input settings-card__input--readonly"
+                  readonly
+                />
+              </div>
+
+              <AlertBanner variant="warning" icon="lock">
+                La moneda se configuró al crear tu cuenta. Por ahora no puedes cambiarla desde aquí — próximamente habilitaremos esta opción.
+              </AlertBanner>
+
+              <div class="settings-card__actions">
+                <Button variant="primary" size="sm" :disabled="isSavingFinances || !isFinancesDirty" :loading="isSavingFinances" @click="handleSaveFinances">
+                  Guardar finanzas
+                </Button>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- [2] Cuenta -->
+        <template v-if="activeTab === 'account'">
+          <!-- Plan -->
+          <div class="settings-section">
             <div class="settings-section__header">
               <span class="material-symbols-outlined settings-section__icon settings-section__icon--primary">
                 workspace_premium
@@ -616,7 +717,7 @@
               <Button
                 variant="primary"
                 size="sm"
-                :disabled="isLoading"
+                :disabled="isLoading || !isNotificationsDirty"
                 @click="handleSaveNotifications"
               >
                 Guardar notificaciones
@@ -699,6 +800,17 @@
     @apply dark:bg-neutral-900 dark:text-white;
   }
 
+  .settings-panel__nav-item--disabled {
+    @apply cursor-not-allowed opacity-50 hover:bg-transparent hover:text-neutral-600;
+    @apply dark:hover:bg-transparent dark:hover:text-neutral-400;
+  }
+
+  .settings-panel__nav-soon {
+    @apply ml-auto text-[10px] font-medium rounded-full px-1.5 py-0.5;
+    @apply bg-neutral-200 text-neutral-500;
+    @apply dark:bg-neutral-700 dark:text-neutral-400;
+  }
+
   .settings-panel__nav-icon {
     @apply text-xl shrink-0 text-neutral-400 transition-colors;
   }
@@ -732,6 +844,11 @@
   .settings-section__icon--primary {
     @apply text-primary-600;
   }
+
+  .settings-section__icon--warning {
+    @apply text-warning-600;
+  }
+
 
   .settings-section__body {
     @apply space-y-4 px-6 py-5;
@@ -783,6 +900,34 @@
     @apply flex items-center gap-2;
   }
 
+  .settings-card__phone-row {
+    @apply flex items-center gap-2;
+  }
+
+  .settings-card__dial-col {
+    @apply w-28 shrink-0;
+  }
+
+  .settings-card__phone-input-wrap {
+    @apply relative flex-1;
+  }
+
+  .settings-card__input--phone {
+    @apply w-full pr-8;
+  }
+
+  .settings-card__phone-status-icon {
+    @apply absolute right-2.5 top-1/2 -translate-y-1/2 text-base leading-none pointer-events-none;
+  }
+
+  .settings-card__phone-status-icon--verified {
+    @apply text-success-500;
+  }
+
+  .settings-card__phone-status-icon--unverified {
+    @apply text-neutral-400;
+  }
+
   .settings-card__toggle-row {
     @apply flex items-center justify-between rounded-lg border border-neutral-200 p-4 dark:border-neutral-700;
   }
@@ -813,23 +958,6 @@
 
   .settings-card__actions--start {
     @apply justify-start;
-  }
-
-  /* Phone verification badge */
-  .phone-badge {
-    @apply flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
-  }
-
-  .phone-badge--verified {
-    @apply bg-success-50 text-success-700;
-  }
-
-  .phone-badge--unverified {
-    @apply bg-neutral-100 text-neutral-500;
-  }
-
-  .phone-badge__icon {
-    @apply text-sm leading-none;
   }
 
   /* Plan header */
