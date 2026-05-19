@@ -11,7 +11,7 @@ export default defineEventHandler(async event => {
   deleteCookie(event, ACCOUNT_TYPE)
   deleteCookie(event, TOKEN_EXPIRES_AT)
 
-  const response = await $fetch<AuthResponse>(`${config.public.apiBase}/auth/login`, {
+  const response = await $fetch<AuthResponse>(`${config.public.apiBase}/auth/signin`, {
     method: 'POST',
     body,
     onResponseError: ({ response }) => {
