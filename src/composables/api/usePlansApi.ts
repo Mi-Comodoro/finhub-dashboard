@@ -1,6 +1,9 @@
 import type { PlanData } from '~/types/api'
 
 export const usePlansApi = () => {
+  const getPublicPlans = async () =>
+    $fetch<{ success: boolean; result: PlanData[] }>('/api/plans')
+
   const getAdminPlans = async () =>
     $fetch<{ success: boolean; result: PlanData[] }>('/api/admin/plans')
 
@@ -21,5 +24,5 @@ export const usePlansApi = () => {
       method: 'DELETE'
     })
 
-  return { getAdminPlans, createPlan, updatePlan, deletePlan }
+  return { getPublicPlans, getAdminPlans, createPlan, updatePlan, deletePlan }
 }

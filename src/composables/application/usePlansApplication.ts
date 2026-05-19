@@ -7,6 +7,17 @@ export const usePlansApplication = () => {
   const plansStore = usePlansStore()
   const plansApi = usePlansApi()
 
+  const fetchPublicPlans = async () => {
+    try {
+      const { success, result } = await plansApi.getPublicPlans()
+      if (!success) return { success: false }
+      plansStore.setPublicPlans(result)
+      return { success: true }
+    } catch {
+      return { success: false }
+    }
+  }
+
   const fetchPlans = async () => {
     try {
       plansStore.setLoading(true)
@@ -96,15 +107,18 @@ export const usePlansApplication = () => {
   }
 
   const plans = computed(() => plansStore.plans)
+  const publicPlans = computed(() => plansStore.publicPlans)
   const isLoading = computed(() => plansStore.isLoading)
   const error = computed(() => plansStore.error)
 
   return {
+    fetchPublicPlans,
     fetchPlans,
     createPlan,
     updatePlan,
     deletePlan,
     plans,
+    publicPlans,
     isLoading,
     error
   }

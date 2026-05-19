@@ -3,6 +3,7 @@ import type { PlanData } from '~/types/api'
 export const usePlansStore = defineStore('plans', {
   state: () => ({
     plans: [] as PlanData[],
+    publicPlans: [] as PlanData[],
     isLoading: false,
     error: null as string | null
   }),
@@ -12,6 +13,10 @@ export const usePlansStore = defineStore('plans', {
   actions: {
     setPlans(plans: PlanData[]) {
       this.plans = plans
+    },
+
+    setPublicPlans(plans: PlanData[]) {
+      this.publicPlans = plans
     },
 
     addPlan(plan: PlanData) {
