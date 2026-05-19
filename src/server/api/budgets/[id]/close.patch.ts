@@ -6,9 +6,9 @@ import { validateError } from '../../utils/auth.error'
 export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
   const token = getCookie(event, ACCESS_TOKEN)
-  const budgetId = getRouterParam(event, 'budgetId')
+  const id = getRouterParam(event, 'id')
 
-  if (!budgetId) {
+  if (!id) {
     throw createError({ statusCode: 400, message: 'budgetId es requerido' })
   }
 
@@ -19,7 +19,7 @@ export default defineEventHandler(async event => {
   const body = await readBody(event).catch(() => ({}))
 
   const { success, data } = await $fetch<BackendCurrentBudget>(
-    `${config.public.apiBase}/budgets/${budgetId}/close`,
+    `${config.public.apiBase}/budgets/${id}/close`,
     {
       headers: { authorization: `Bearer ${token}` },
       method: 'PATCH',
