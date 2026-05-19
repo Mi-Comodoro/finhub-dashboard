@@ -5,11 +5,11 @@ export function useIncomeApi() {
     $fetch<{ success: boolean; result: unknown }>('/api/incomes/current')
 
   const getPlannedIncomes = async () =>
-    $fetch<{ success: boolean; result: PlannedIncomeSummary[] }>('/api/incomes/planned')
+    $fetch<{ success: boolean; result: PlannedIncomeSummary[] }>('/api/planned-incomes')
 
   const getPlannedIncomesByBudget = async (budgetId: string) =>
     $fetch<{ success: boolean; result: PlannedIncomeSummary[] }>(
-      `/api/incomes/planned/by-budget/${budgetId}`
+      `/api/planned-incomes/by-budget/${budgetId}`
     )
 
   const markPlannedIncomeAsReceived = async (id: string) =>
@@ -19,22 +19,22 @@ export function useIncomeApi() {
         plannedIncome: PlannedIncomeSummary | null
         plannedSavings: PlannedSavingSummary[]
       } | null
-    }>(`/api/incomes/planned/${id}`, { method: 'PATCH' })
+    }>(`/api/planned-incomes/${id}`, { method: 'PATCH' })
 
   const updatePlannedIncome = async (id: string, data: Record<string, unknown>) =>
-    $fetch<{ success: boolean; result: unknown }>(`/api/incomes/planned/${id}`, {
+    $fetch<{ success: boolean; result: unknown }>(`/api/planned-incomes/${id}`, {
       method: 'PATCH',
       body: data
     })
 
   const createPlannedIncome = async (data: Record<string, unknown>) =>
-    $fetch<{ success: boolean; result: PlannedIncomeSummary }>('/api/incomes/planned', {
+    $fetch<{ success: boolean; result: PlannedIncomeSummary }>('/api/planned-incomes', {
       method: 'POST',
       body: data
     })
 
   const deletePlannedIncome = async (id: string) =>
-    $fetch<{ success: boolean; result: { id: string } }>(`/api/incomes/planned/${id}`, {
+    $fetch<{ success: boolean; result: { id: string } }>(`/api/planned-incomes/${id}`, {
       method: 'DELETE'
     })
 
