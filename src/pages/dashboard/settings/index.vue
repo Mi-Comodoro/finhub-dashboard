@@ -228,17 +228,20 @@
       <div class="settings-page__skeleton settings-page__skeleton--short" />
     </div>
 
-    <div v-else class="settings-page__layout">
+    <div v-else class="settings-panel">
       <!-- Left nav -->
-      <nav class="settings-nav">
+      <nav class="settings-panel__nav">
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          class="settings-nav__item"
-          :class="{ 'settings-nav__item--active': activeTab === tab.id }"
+          class="settings-panel__nav-item"
+          :class="{ 'settings-panel__nav-item--active': activeTab === tab.id }"
           @click="activeTab = tab.id"
         >
-          <span class="material-symbols-outlined settings-nav__icon">{{ tab.icon }}</span>
+          <span
+            class="material-symbols-outlined settings-panel__nav-icon"
+            :class="{ 'settings-panel__nav-icon--active': activeTab === tab.id }"
+          >{{ tab.icon }}</span>
           <Text size="sm" :weight="activeTab === tab.id ? 'semibold' : 'normal'">
             {{ tab.label }}
           </Text>
@@ -246,12 +249,12 @@
       </nav>
 
       <!-- Right content -->
-      <div class="settings-content">
+      <div class="settings-panel__body">
 
         <!-- [1] Perfil -->
-        <Card v-if="activeTab === 'profile'" class="settings-card">
-          <div class="settings-card__header">
-            <span class="material-symbols-outlined settings-card__icon settings-card__icon--primary">
+        <div v-if="activeTab === 'profile'" class="settings-section">
+          <div class="settings-section__header">
+            <span class="material-symbols-outlined settings-section__icon settings-section__icon--primary">
               person
             </span>
             <div>
@@ -260,7 +263,7 @@
             </div>
           </div>
 
-          <div class="settings-card__body">
+          <div class="settings-section__body">
             <div class="settings-card__avatar-row">
               <div class="settings-card__avatar">
                 <img
@@ -337,14 +340,14 @@
               </Button>
             </div>
           </div>
-        </Card>
+        </div>
 
         <!-- [2] Cuenta -->
         <template v-if="activeTab === 'account'">
           <!-- Preferences -->
-          <Card class="settings-card">
-            <div class="settings-card__header">
-              <span class="material-symbols-outlined settings-card__icon settings-card__icon--primary">
+          <div class="settings-section">
+            <div class="settings-section__header">
+              <span class="material-symbols-outlined settings-section__icon settings-section__icon--primary">
                 manage_accounts
               </span>
               <div>
@@ -353,7 +356,7 @@
               </div>
             </div>
 
-            <div class="settings-card__body">
+            <div class="settings-section__body">
               <Select
                 v-model="currencyForm"
                 name="currency"
@@ -394,12 +397,12 @@
                 </Button>
               </div>
             </div>
-          </Card>
+          </div>
 
           <!-- Plan -->
-          <Card class="settings-card">
-            <div class="settings-card__header">
-              <span class="material-symbols-outlined settings-card__icon settings-card__icon--primary">
+          <div class="settings-section settings-section--divided">
+            <div class="settings-section__header">
+              <span class="material-symbols-outlined settings-section__icon settings-section__icon--primary">
                 workspace_premium
               </span>
               <div class="plan-header__info">
@@ -411,7 +414,7 @@
               </span>
             </div>
 
-            <div class="settings-card__body">
+            <div class="settings-section__body">
 
               <!-- Trial countdown -->
               <div
@@ -560,20 +563,20 @@
               </div>
 
             </div>
-          </Card>
+          </div>
         </template>
 
         <!-- [3] Notificaciones -->
-        <Card v-if="activeTab === 'notifications'" class="settings-card">
-          <div class="settings-card__header">
-            <span class="material-symbols-outlined settings-card__icon">notifications</span>
+        <div v-if="activeTab === 'notifications'" class="settings-section">
+          <div class="settings-section__header">
+            <span class="material-symbols-outlined settings-section__icon">notifications</span>
             <div>
               <Heading level="h2" size="lg" weight="bold">Notificaciones</Heading>
               <Text size="xs" color="muted">Alertas y recordatorios</Text>
             </div>
           </div>
 
-          <div class="settings-card__body">
+          <div class="settings-section__body">
             <div class="settings-card__toggle-row">
               <div>
                 <Text size="sm" weight="medium">Notificaciones activas</Text>
@@ -620,19 +623,19 @@
               </Button>
             </div>
           </div>
-        </Card>
+        </div>
 
         <!-- [4] App -->
-        <Card v-if="activeTab === 'app'" class="settings-card">
-          <div class="settings-card__header">
-            <span class="material-symbols-outlined settings-card__icon">info</span>
+        <div v-if="activeTab === 'app'" class="settings-section">
+          <div class="settings-section__header">
+            <span class="material-symbols-outlined settings-section__icon">info</span>
             <div>
               <Heading level="h2" size="lg" weight="bold">App</Heading>
               <Text size="xs" color="muted">Información y sesión</Text>
             </div>
           </div>
 
-          <div class="settings-card__body">
+          <div class="settings-section__body">
             <div class="settings-card__info-row">
               <Text size="sm" color="muted">Versión</Text>
               <Text size="sm" weight="medium">1.0.0-beta</Text>
@@ -644,7 +647,7 @@
               </Button>
             </div>
           </div>
-        </Card>
+        </div>
 
       </div>
     </div>
@@ -672,52 +675,66 @@
     @apply h-24;
   }
 
-  .settings-page__layout {
-    @apply flex gap-4 items-start;
+  /* Unified panel */
+  .settings-panel {
+    @apply flex rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-sm;
+    @apply dark:border-neutral-700 dark:bg-neutral-900;
   }
 
   /* Left nav */
-  .settings-nav {
-    @apply flex flex-col gap-1 w-44 shrink-0;
+  .settings-panel__nav {
+    @apply flex flex-col gap-0.5 w-52 shrink-0 p-2;
+    @apply border-r border-neutral-200 bg-neutral-50;
+    @apply dark:border-neutral-700 dark:bg-neutral-800/50;
   }
 
-  .settings-nav__item {
+  .settings-panel__nav-item {
     @apply flex items-center gap-3 rounded-lg px-3 py-2.5 cursor-pointer transition-colors text-left w-full;
-    @apply text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800;
+    @apply text-neutral-600 hover:bg-neutral-200/60 hover:text-neutral-900;
+    @apply dark:text-neutral-400 dark:hover:bg-neutral-700/40 dark:hover:text-neutral-100;
   }
 
-  .settings-nav__item--active {
-    @apply bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400;
+  .settings-panel__nav-item--active {
+    @apply bg-white text-neutral-900 shadow-sm;
+    @apply dark:bg-neutral-900 dark:text-white;
   }
 
-  .settings-nav__icon {
-    @apply text-xl shrink-0;
+  .settings-panel__nav-icon {
+    @apply text-xl shrink-0 text-neutral-400 transition-colors;
   }
 
-  /* Right content */
-  .settings-content {
-    @apply flex-1 min-w-0 space-y-4;
-  }
-
-  /* Cards */
-  .settings-card {
-    @apply !p-0 overflow-hidden;
-  }
-
-  .settings-card__header {
-    @apply flex items-center gap-3 border-b border-neutral-100 px-5 py-4 dark:border-neutral-700;
-  }
-
-  .settings-card__icon {
-    @apply text-neutral-500 text-xl;
-  }
-
-  .settings-card__icon--primary {
+  .settings-panel__nav-icon--active {
     @apply text-primary-600;
   }
 
-  .settings-card__body {
-    @apply space-y-4 p-5;
+  /* Right content */
+  .settings-panel__body {
+    @apply flex-1 min-w-0;
+  }
+
+  /* Sections */
+  .settings-section {
+    @apply min-h-0;
+  }
+
+  .settings-section--divided {
+    @apply border-t border-neutral-200 dark:border-neutral-700;
+  }
+
+  .settings-section__header {
+    @apply flex items-center gap-3 border-b border-neutral-200 px-6 py-4 dark:border-neutral-700;
+  }
+
+  .settings-section__icon {
+    @apply text-neutral-400 text-xl shrink-0;
+  }
+
+  .settings-section__icon--primary {
+    @apply text-primary-600;
+  }
+
+  .settings-section__body {
+    @apply space-y-4 px-6 py-5;
   }
 
   .settings-card__avatar-row {
@@ -741,7 +758,7 @@
   }
 
   .settings-card__label {
-    @apply text-neutral-600 dark:text-neutral-400;
+    @apply text-neutral-700 dark:text-neutral-300;
   }
 
   .settings-card__label-row {
@@ -749,11 +766,13 @@
   }
 
   .settings-card__input {
-    @apply w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-primary-400 focus:ring-1 focus:ring-primary-400 dark:border-neutral-700 dark:bg-neutral-900;
+    @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none transition-colors;
+    @apply focus:border-primary-500 focus:ring-1 focus:ring-primary-500;
+    @apply dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100;
   }
 
   .settings-card__input--readonly {
-    @apply cursor-not-allowed bg-neutral-50 text-neutral-400 dark:bg-neutral-800;
+    @apply cursor-not-allowed bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400;
   }
 
   .settings-card__input--narrow {
@@ -765,7 +784,7 @@
   }
 
   .settings-card__toggle-row {
-    @apply flex items-center justify-between rounded-lg border border-neutral-100 p-4 dark:border-neutral-700;
+    @apply flex items-center justify-between rounded-lg border border-neutral-200 p-4 dark:border-neutral-700;
   }
 
   .settings-card__toggle {
@@ -785,11 +804,11 @@
   }
 
   .settings-card__info-row {
-    @apply flex items-center justify-between rounded-lg border border-neutral-100 px-4 py-3 dark:border-neutral-700;
+    @apply flex items-center justify-between rounded-lg border border-neutral-200 px-4 py-3 dark:border-neutral-700;
   }
 
   .settings-card__actions {
-    @apply flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-700;
+    @apply flex justify-end border-t border-neutral-200 pt-4 dark:border-neutral-700;
   }
 
   .settings-card__actions--start {
@@ -911,12 +930,12 @@
   }
 
   .plan-table__row {
-    @apply grid items-center border-b border-neutral-100 last:border-0 dark:border-neutral-700;
+    @apply grid items-center border-b border-neutral-200 last:border-0 dark:border-neutral-700;
     grid-template-columns: 1fr repeat(3, minmax(90px, 120px));
   }
 
   .plan-table__row--head {
-    @apply bg-neutral-50 dark:bg-neutral-800/50;
+    @apply bg-neutral-100 dark:bg-neutral-800;
   }
 
   .plan-table__feature-col {
