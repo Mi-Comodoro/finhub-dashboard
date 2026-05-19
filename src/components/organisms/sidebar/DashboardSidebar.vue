@@ -122,9 +122,13 @@
             :sub-title="
               accountType?.toUpperCase() === 'TRIAL'
                 ? 'Periodo de Prueba'
-                : accountType?.toUpperCase() === 'PREMIUM'
-                  ? 'Premium'
-                  : 'FREE'
+                : accountType?.toUpperCase() === 'PRO'
+                  ? 'Pro'
+                  : accountType?.toUpperCase() === 'PLUS'
+                    ? 'Plus'
+                    : accountType?.toUpperCase() === 'PARTNER'
+                      ? 'Partner'
+                      : 'Gratis'
             "
             sub-title-color="black"
             sub-title-size="xs"

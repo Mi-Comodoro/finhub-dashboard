@@ -1,50 +1,23 @@
-import type { BudgetDefaults, NotificationSettings } from '@/stores/settings.store'
+import type { SettingsData } from '@/stores/settings.store'
 
-export interface SettingsResponse {
-  notifications: NotificationSettings
-  budgetDefaults: BudgetDefaults
-  currency: string
-}
+export type UpdateSettingsDto = Pick<SettingsData, 'currency' | 'language' | 'notificationsEnabled'>
+export type UpdateBudgetDefaultsDto = Pick<SettingsData, 'budgetAlertThreshold' | 'savingsPercentage'>
 
 export function useSettingsApi() {
   const getSettings = async () =>
-    $fetch<{ success: boolean; result: SettingsResponse }>('/api/settings')
+    $fetch<{ success: boolean; result: SettingsData }>('/api/settings')
 
-  const updateNotifications = async (notifications: NotificationSettings) =>
-    $fetch<{ success: boolean; result: { notifications: NotificationSettings } }>(
-      '/api/settings/notifications',
-      {
-        method: 'PATCH',
-        body: notifications
-      }
-    )
-
-  const updateBudgetDefaults = async (budgetDefaults: BudgetDefaults) =>
-    $fetch<{ success: boolean; result: { budgetDefaults: BudgetDefaults } }>(
-      '/api/settings/budget-defaults',
-      {
-        method: 'PATCH',
-        body: budgetDefaults
-      }
-    )
-
-  const updateCurrency = async (currency: string) =>
-    $fetch<{ success: boolean; result: { currency: string } }>('/api/settings/currency', {
+  const updateSettings = async (dto: Partial<UpdateSettingsDto>) =>
+    $fetch<{ success: boolean; result: SettingsData }>('/api/settings', {
       method: 'PATCH',
-      body: { currency }
+      body: dto
     })
 
-  const updateSettings = async (settings: Partial<SettingsResponse>) =>
-    $fetch<{ success: boolean; result: SettingsResponse }>('/api/settings', {
+  const updateBudgetDefaults = async (dto: Partial<UpdateBudgetDefaultsDto>) =>
+    $fetch<{ success: boolean; result: SettingsData }>('/api/settings/budget-defaults', {
       method: 'PATCH',
-      body: settings
+      body: dto
     })
 
-  return {
-    getSettings,
-    updateNotifications,
-    updateBudgetDefaults,
-    updateCurrency,
-    updateSettings
-  }
+  return { getSettings, updateSettings, updateBudgetDefaults }
 }

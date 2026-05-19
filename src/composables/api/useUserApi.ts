@@ -34,10 +34,18 @@ export const useUserApi = () => {
     )
   }
 
+  const updateFinancialProfile = async (financeId: string, data: { profile: string }) => {
+    return await $fetch<{ success: boolean; result: { profile: string } }>(
+      `/api/finances/${financeId}`,
+      { method: 'PATCH', body: data }
+    )
+  }
+
   return {
     getUserMe,
     getUserMeWithCredentials,
     completeOnboarding,
-    updateUserProfile
+    updateUserProfile,
+    updateFinancialProfile
   }
 }
