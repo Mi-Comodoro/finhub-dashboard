@@ -188,13 +188,16 @@
   }
 
   const planFeatures: PlanFeature[] = [
-    { label: 'Presupuestos activos',      free: '1',           plus: 'Ilimitados',  pro: 'Ilimitados' },
-    { label: 'Metas de ahorro',           free: '1',           plus: 'Ilimitadas',  pro: 'Ilimitadas' },
-    { label: 'Transacciones por mes',     free: 'Hasta 30',    plus: 'Ilimitadas',  pro: 'Ilimitadas' },
-    { label: 'Categorías personalizadas', free: false,         plus: true,          pro: true },
-    { label: 'Reportes',                  free: 'Básico',      plus: 'Avanzado',    pro: 'Completo' },
-    { label: 'Exportar datos',            free: false,         plus: false,         pro: true },
-    { label: 'Soporte',                   free: 'Comunidad',   plus: 'Email',       pro: 'Prioritario' }
+    { label: 'Presupuestos activos',  free: '1',             plus: '3',               pro: 'Ilimitados'       },
+    { label: 'Transacciones',         free: 'Ilimitadas',    plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
+    { label: 'Metas de ahorro',       free: 'Ilimitadas',    plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
+    { label: 'Cuentas registradas',   free: '3',             plus: 'Ilimitadas',      pro: 'Ilimitadas'       },
+    { label: 'Categorías',            free: 'Predefinidas',  plus: 'Personalizadas',  pro: 'Personalizadas'   },
+    { label: 'Proyecciones',          free: '1 año',         plus: '3 años',          pro: '10+ años'         },
+    { label: 'Reportes',              free: 'Básico',        plus: 'Mensual + Anual', pro: 'Completos'        },
+    { label: 'Compartido con',        free: false,           plus: '2 personas',      pro: '6 personas'       },
+    { label: 'Histórico',             free: '6 meses',       plus: '18 meses',        pro: 'Ilimitado'        },
+    { label: 'Exportar datos',        free: false,           plus: 'CSV',             pro: 'CSV · PDF · Excel'},
   ]
 
   const activeColumn = computed(() => {
