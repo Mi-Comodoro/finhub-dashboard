@@ -176,9 +176,6 @@
 
   const isTrial = computed(() => accountType.value === 'TRIAL')
   const isFree = computed(() => accountType.value === 'FREE')
-  const isPaid = computed(() =>
-    accountType.value === 'PLUS' || accountType.value === 'PRO' || accountType.value === 'PARTNER'
-  )
   const showUpgrade = computed(() => isTrial.value || isFree.value)
 
   // Feature comparison table
@@ -474,21 +471,18 @@
                       :class="{ 'plan-table__plan-col--active': activeColumn === 'free' }"
                     >
                       <Text size="xs" weight="semibold">Gratis</Text>
-                      <Text size="xs" color="muted">$0</Text>
                     </div>
                     <div
                       class="plan-table__plan-col"
                       :class="{ 'plan-table__plan-col--active': activeColumn === 'plus' }"
                     >
                       <Text size="xs" weight="semibold">Plus</Text>
-                      <Text size="xs" color="muted">$19.900</Text>
                     </div>
                     <div
                       class="plan-table__plan-col"
                       :class="{ 'plan-table__plan-col--active': activeColumn === 'pro' }"
                     >
                       <Text size="xs" weight="semibold">Pro</Text>
-                      <Text size="xs" color="muted">$34.900</Text>
                     </div>
                   </div>
 
@@ -550,47 +544,16 @@
                 </div>
               </div>
 
-              <!-- Upgrade CTAs -->
-              <template v-if="showUpgrade">
-                <div class="plan-upgrade">
-                  <Text size="sm" weight="semibold">
-                    {{ trialIsUrgent ? 'Tu trial está por vencer — elige un plan' : 'Elige tu plan' }}
-                  </Text>
-
-                  <div class="plan-cards">
-                    <!-- Plus -->
-                    <div class="plan-card">
-                      <div class="plan-card__header">
-                        <Heading level="h3" size="sm" weight="bold">Plus</Heading>
-                        <Text size="xs" color="muted">Para uso personal avanzado</Text>
-                      </div>
-                      <div class="plan-card__price">
-                        <Text size="xl" weight="bold" color="primary">$19.900</Text>
-                        <Text size="xs" color="muted">COP/mes</Text>
-                      </div>
-                      <Button variant="secondary" size="sm" class="plan-card__cta">
-                        Elegir Plus
-                      </Button>
-                    </div>
-
-                    <!-- Pro -->
-                    <div class="plan-card plan-card--featured">
-                      <div class="plan-card__badge">Recomendado</div>
-                      <div class="plan-card__header">
-                        <Heading level="h3" size="sm" weight="bold">Pro</Heading>
-                        <Text size="xs" color="muted">Control total de tus finanzas</Text>
-                      </div>
-                      <div class="plan-card__price">
-                        <Text size="xl" weight="bold" color="primary">$34.900</Text>
-                        <Text size="xs" color="muted">COP/mes</Text>
-                      </div>
-                      <Button variant="primary" size="sm" class="plan-card__cta">
-                        Elegir Pro
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </template>
+              <!-- Manage subscription -->
+              <div v-if="accountType !== 'PARTNER'" class="settings-card__actions settings-card__actions--start">
+                <Button
+                  :variant="showUpgrade ? 'primary' : 'secondary'"
+                  size="sm"
+                  icon="workspace_premium"
+                >
+                  Gestionar suscripción
+                </Button>
+              </div>
 
             </div>
           </Card>
@@ -980,36 +943,4 @@
     @apply text-neutral-300;
   }
 
-  /* Upgrade CTA section */
-  .plan-upgrade {
-    @apply space-y-3;
-  }
-
-  .plan-cards {
-    @apply grid grid-cols-2 gap-3;
-  }
-
-  .plan-card {
-    @apply relative flex flex-col gap-3 rounded-xl border border-neutral-200 p-4 dark:border-neutral-700;
-  }
-
-  .plan-card--featured {
-    @apply border-primary-300 bg-primary-50/50 dark:border-primary-700 dark:bg-primary-900/10;
-  }
-
-  .plan-card__badge {
-    @apply absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary-600 px-3 py-0.5 text-xs font-semibold text-white;
-  }
-
-  .plan-card__header {
-    @apply space-y-0.5;
-  }
-
-  .plan-card__price {
-    @apply flex items-baseline gap-1;
-  }
-
-  .plan-card__cta {
-    @apply w-full justify-center;
-  }
 </style>
