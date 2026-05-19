@@ -198,6 +198,7 @@
     { label: 'Compartido con',        free: false,           plus: '2 personas',      pro: '6 personas'       },
     { label: 'Histórico',             free: '6 meses',       plus: '18 meses',        pro: 'Ilimitado'        },
     { label: 'Exportar datos',        free: false,           plus: 'CSV',             pro: 'CSV · PDF · Excel'},
+    { label: 'Mi Despensa',           free: false,           plus: false,             pro: true               },
   ]
 
   const activeColumn = computed(() => {
@@ -911,7 +912,7 @@
 
   .plan-table__row {
     @apply grid items-center border-b border-neutral-100 last:border-0 dark:border-neutral-700;
-    grid-template-columns: 1fr repeat(3, 80px);
+    grid-template-columns: 1fr repeat(3, minmax(90px, 120px));
   }
 
   .plan-table__row--head {
@@ -919,11 +920,11 @@
   }
 
   .plan-table__feature-col {
-    @apply px-3 py-2.5;
+    @apply px-4 py-3;
   }
 
   .plan-table__plan-col {
-    @apply flex flex-col items-center justify-center px-2 py-2.5 text-center;
+    @apply flex flex-col items-center justify-center px-3 py-3 text-center;
   }
 
   .plan-table__plan-col--active {
