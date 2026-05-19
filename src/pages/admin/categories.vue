@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref } from 'vue'
+  import { computed, onMounted, reactive, ref, watch } from 'vue'
 
   import Button from '@/components/atoms/button/Button.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
@@ -7,6 +7,7 @@
   import Input from '@/components/molecules/input/Input.vue'
   import SearchInput from '@/components/molecules/input/SearchInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
+  import { ModalWizard } from '@/components/organisms'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import type { CategoriesData } from '@/types/api'
@@ -17,7 +18,7 @@
     middleware: ['auth', 'admin']
   })
 
-  const { fetchCategories, createCategory, updateCategory, deleteCategory, categories, isLoading } =
+  const { fetchCategories, createCategory, updateCategory, categories, isLoading } =
     useCategoryApplication()
 
   const { success: successToast, error: errorToast } = useFeedback()
@@ -47,11 +48,9 @@
       const q = searchQuery.value.toLowerCase()
       result = result.filter(c => c.name.toLowerCase().includes(q))
     }
-
     if (filterType.value !== 'all') {
       result = result.filter(c => c.type === filterType.value)
     }
-
     if (filterStatus.value !== 'all') {
       const active = filterStatus.value === 'active'
       result = result.filter(c => c.isSelectable === active)
@@ -60,8 +59,23 @@
     return result
   })
 
-  // ── Panel / form ───────────────────────────────────────────────────────────
-  const showPanel = ref(false)
+  // ── Pagination ─────────────────────────────────────────────────────────────
+  const ITEMS_PER_PAGE = 15
+  const currentPage = ref(1)
+
+  const totalPages = computed(() => Math.max(1, Math.ceil(filteredCategories.value.length / ITEMS_PER_PAGE)))
+
+  const paginatedCategories = computed(() => {
+    const start = (currentPage.value - 1) * ITEMS_PER_PAGE
+    return filteredCategories.value.slice(start, start + ITEMS_PER_PAGE)
+  })
+
+  watch([searchQuery, filterType, filterStatus], () => {
+    currentPage.value = 1
+  })
+
+  // ── Form modal ─────────────────────────────────────────────────────────────
+  const showFormModal = ref(false)
   const isEditing = ref(false)
   const editingId = ref<string | null>(null)
 
@@ -114,7 +128,7 @@
 
   const openCreate = () => {
     resetForm()
-    showPanel.value = true
+    showFormModal.value = true
   }
 
   const openEdit = (category: CategoriesData) => {
@@ -124,11 +138,12 @@
     form.isSelectable = category.isSelectable
     isEditing.value = true
     editingId.value = category.id
-    showPanel.value = true
+    showFormModal.value = true
   }
 
-  const handlePanelClose = (val: boolean) => {
-    if (!val) resetForm()
+  const closeFormModal = () => {
+    showFormModal.value = false
+    resetForm()
   }
 
   const handleSubmit = async () => {
@@ -143,8 +158,7 @@
       const { success } = await updateCategory(editingId.value, payload)
       if (success) {
         successToast('Categoría actualizada', 'Los cambios se guardaron correctamente.')
-        showPanel.value = false
-        resetForm()
+        closeFormModal()
         await fetchCategories()
       } else {
         errorToast('Error al actualizar', 'No se pudo actualizar la categoría.')
@@ -153,8 +167,7 @@
       const { success } = await createCategory(payload)
       if (success) {
         successToast('Categoría creada', 'La categoría fue creada correctamente.')
-        showPanel.value = false
-        resetForm()
+        closeFormModal()
         await fetchCategories()
       } else {
         errorToast('Error al crear', 'No se pudo crear la categoría.')
@@ -165,19 +178,6 @@
   const openDeleteModal = (category: CategoriesData) => {
     categoryToDelete.value = category
     showDeleteModal.value = true
-  }
-
-  const handleDelete = async () => {
-    if (!categoryToDelete.value) return
-    const { success } = await deleteCategory(categoryToDelete.value.id)
-    if (success) {
-      successToast('Categoría eliminada', 'La categoría fue eliminada correctamente.')
-      showDeleteModal.value = false
-      categoryToDelete.value = null
-      await fetchCategories()
-    } else {
-      errorToast('Error al eliminar', 'No se pudo eliminar la categoría.')
-    }
   }
 
   const cancelDelete = () => {
@@ -262,7 +262,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="category in filteredCategories"
+              v-for="category in paginatedCategories"
               :key="category.id"
               class="admin-categories-page__tr"
             >
@@ -279,10 +279,10 @@
                 </UBadge>
               </td>
               <td class="admin-categories-page__td">
-                <Text v-if="category.bucket" size="sm" color="muted">
+                <UBadge v-if="category.bucket" color="neutral" variant="subtle" size="sm">
                   {{ bucketLabelMap[category.bucket] ?? category.bucket }}
-                </Text>
-                <Text v-else size="sm" color="muted">—</Text>
+                </UBadge>
+                <Text v-else size="xs" color="muted">—</Text>
               </td>
               <td class="admin-categories-page__td">
                 <UBadge
@@ -299,36 +299,63 @@
               <td class="admin-categories-page__td">
                 <div class="admin-categories-page__actions">
                   <Button size="sm" variant="ghost" @click="openEdit(category)">Editar</Button>
-                  <Button size="sm" variant="danger" @click="openDeleteModal(category)">
+                  <Button size="sm" variant="danger" disabled @click="openDeleteModal(category)">
                     Eliminar
                   </Button>
                 </div>
               </td>
             </tr>
-            <tr v-if="filteredCategories.length === 0">
+            <tr v-if="paginatedCategories.length === 0">
               <td colspan="6" class="admin-categories-page__td--empty">
                 <Text size="sm" color="muted">
-                  {{ searchQuery || filterType !== 'all' || filterStatus !== 'all' ? 'Sin resultados para los filtros aplicados' : 'No hay categorías registradas' }}
+                  {{
+                    searchQuery || filterType !== 'all' || filterStatus !== 'all'
+                      ? 'Sin resultados para los filtros aplicados'
+                      : 'No hay categorías registradas'
+                  }}
                 </Text>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <div v-if="totalPages > 1" class="admin-categories-page__pagination">
+        <Button
+          size="sm"
+          variant="ghost"
+          icon="chevron_left"
+          :disabled="currentPage <= 1"
+          @click="currentPage--"
+        >
+          Anterior
+        </Button>
+        <Text size="sm" color="muted">Página {{ currentPage }} de {{ totalPages }}</Text>
+        <Button
+          size="sm"
+          variant="ghost"
+          icon="chevron_right"
+          :disabled="currentPage >= totalPages"
+          @click="currentPage++"
+        >
+          Siguiente
+        </Button>
+      </div>
     </section>
 
-    <!-- ── Panel crear/editar ─────────────────────────────────────── -->
-    <USlideover v-model:open="showPanel" side="right" @update:open="handlePanelClose">
-      <template #header>
-        <div class="admin-categories-page__panel-header">
+    <!-- ── Modal crear / editar ───────────────────────────────────────── -->
+    <ModalWizard :show="showFormModal">
+      <div class="cat-modal">
+        <div class="cat-modal__header">
           <Heading level="h3" size="lg" weight="semibold">
             {{ isEditing ? 'Editar categoría' : 'Nueva categoría' }}
           </Heading>
+          <button type="button" class="cat-modal__close" @click="closeFormModal">
+            <span class="material-symbols-outlined">close</span>
+          </button>
         </div>
-      </template>
 
-      <div class="admin-categories-page__panel-body">
-        <form class="cat-form" @submit.prevent="handleSubmit">
+        <form class="cat-modal__form" @submit.prevent="handleSubmit">
           <Input
             name="cat-name"
             label="Nombre"
@@ -356,18 +383,18 @@
             @update:model-value="val => (form.bucket = String(val))"
           />
 
-          <div class="cat-form__toggle-field">
+          <div class="cat-modal__toggle-field">
             <Text size="xs" weight="bold" color="default">Activa</Text>
-            <div class="cat-form__toggle-row">
+            <div class="cat-modal__toggle-row">
               <button
                 type="button"
                 role="switch"
                 :aria-checked="form.isSelectable"
-                class="cat-form__toggle"
-                :class="{ 'cat-form__toggle--on': form.isSelectable }"
+                class="cat-modal__toggle"
+                :class="{ 'cat-modal__toggle--on': form.isSelectable }"
                 @click="form.isSelectable = !form.isSelectable"
               >
-                <span class="cat-form__toggle-thumb" />
+                <span class="cat-modal__toggle-thumb" />
               </button>
               <Text size="xs" color="muted">
                 {{ form.isSelectable ? 'Visible para usuarios' : 'Oculta para usuarios' }}
@@ -375,40 +402,36 @@
             </div>
           </div>
 
-          <div class="cat-form__actions">
+          <div class="cat-modal__actions">
             <Button type="submit" size="sm" variant="primary" :disabled="isLoading">
               {{ isEditing ? 'Guardar cambios' : 'Crear categoría' }}
             </Button>
-            <Button type="button" size="sm" variant="ghost" @click="showPanel = false">
+            <Button type="button" size="sm" variant="ghost" @click="closeFormModal">
               Cancelar
             </Button>
           </div>
         </form>
       </div>
-    </USlideover>
+    </ModalWizard>
 
-    <!-- ── Modal eliminar ─────────────────────────────────────────── -->
-    <UModal v-model:open="showDeleteModal">
-      <template #header>
-        <Heading level="h3" size="lg" weight="semibold">Eliminar categoría</Heading>
-      </template>
-
-      <div class="admin-categories-page__modal-body">
+    <!-- ── Modal eliminar ─────────────────────────────────────────────── -->
+    <ModalWizard :show="showDeleteModal">
+      <div class="cat-modal">
+        <div class="cat-modal__header">
+          <Heading level="h3" size="lg" weight="semibold">Eliminar categoría</Heading>
+          <button type="button" class="cat-modal__close" @click="cancelDelete">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
         <Text size="sm" color="muted">
           ¿Estás seguro de que deseas eliminar
           <strong>{{ categoryToDelete?.name }}</strong>? Esta acción no se puede deshacer.
         </Text>
-      </div>
-
-      <template #footer>
-        <div class="admin-categories-page__modal-footer">
-          <Button size="sm" variant="danger" :disabled="isLoading" @click="handleDelete">
-            Eliminar
-          </Button>
+        <div class="cat-modal__actions">
           <Button size="sm" variant="ghost" @click="cancelDelete">Cancelar</Button>
         </div>
-      </template>
-    </UModal>
+      </div>
+    </ModalWizard>
   </div>
 </template>
 
@@ -434,7 +457,7 @@
   }
 
   .admin-categories-page__search {
-    @apply flex-1 min-w-48;
+    @apply min-w-48 flex-1;
   }
 
   .admin-categories-page__filter-selects {
@@ -473,52 +496,52 @@
     @apply flex items-center gap-2;
   }
 
-  .admin-categories-page__panel-header {
-    @apply p-4;
+  .admin-categories-page__pagination {
+    @apply flex items-center justify-between border-t border-neutral-100 px-5 py-3 dark:border-neutral-700;
   }
 
-  .admin-categories-page__panel-body {
-    @apply p-4;
+  /* ── Modal content ──────────────────────────────────────────────── */
+  .cat-modal {
+    @apply flex flex-col gap-5;
   }
 
-  .admin-categories-page__modal-body {
-    @apply px-4 py-2;
+  .cat-modal__header {
+    @apply flex items-center justify-between;
   }
 
-  .admin-categories-page__modal-footer {
-    @apply flex items-center gap-2 p-4;
+  .cat-modal__close {
+    @apply flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-700 dark:hover:text-white;
   }
 
-  /* ── Form ─────────────────────────────────────────────────────── */
-  .cat-form {
-    @apply space-y-4;
+  .cat-modal__form {
+    @apply flex flex-col gap-4;
   }
 
-  .cat-form__toggle-field {
+  .cat-modal__toggle-field {
     @apply flex flex-col gap-2;
   }
 
-  .cat-form__toggle-row {
+  .cat-modal__toggle-row {
     @apply flex items-center gap-3;
   }
 
-  .cat-form__toggle {
+  .cat-modal__toggle {
     @apply relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent bg-neutral-300 transition-colors duration-200 focus:outline-none dark:bg-neutral-600;
   }
 
-  .cat-form__toggle--on {
+  .cat-modal__toggle--on {
     @apply bg-primary-600 dark:bg-primary-500;
   }
 
-  .cat-form__toggle-thumb {
+  .cat-modal__toggle-thumb {
     @apply pointer-events-none inline-block h-4 w-4 translate-x-0 rounded-full bg-white shadow-md ring-0 transition-transform duration-200;
   }
 
-  .cat-form__toggle--on .cat-form__toggle-thumb {
+  .cat-modal__toggle--on .cat-modal__toggle-thumb {
     @apply translate-x-5;
   }
 
-  .cat-form__actions {
-    @apply flex items-center gap-2 pt-2;
+  .cat-modal__actions {
+    @apply flex items-center gap-2 pt-1;
   }
 </style>
