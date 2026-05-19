@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, watch } from 'vue'
 
+  import Badge from '@/components/atoms/badge/Badge.vue'
   import Button from '@/components/atoms/button/Button.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
@@ -82,9 +83,9 @@
   const showDeleteModal = ref(false)
   const categoryToDelete = ref<CategoriesData | null>(null)
 
-  const typeColorMap: Record<string, string> = {
+  const typeVariantMap: Record<string, string> = {
     income: 'primary',
-    expense: 'red',
+    expense: 'danger',
     savings: 'warning'
   }
 
@@ -270,28 +271,20 @@
                 <Text size="sm" weight="medium">{{ category.name }}</Text>
               </td>
               <td class="admin-categories-page__td">
-                <UBadge
-                  :color="typeColorMap[category.type] ?? 'neutral'"
-                  variant="subtle"
-                  size="sm"
-                >
+                <Badge :variant="typeVariantMap[category.type] ?? 'default'">
                   {{ typeLabelMap[category.type] ?? category.type }}
-                </UBadge>
+                </Badge>
               </td>
               <td class="admin-categories-page__td">
-                <UBadge v-if="category.bucket" color="neutral" variant="subtle" size="sm">
+                <Badge v-if="category.bucket" variant="default">
                   {{ bucketLabelMap[category.bucket] ?? category.bucket }}
-                </UBadge>
+                </Badge>
                 <Text v-else size="xs" color="muted">—</Text>
               </td>
               <td class="admin-categories-page__td">
-                <UBadge
-                  :color="category.isSelectable ? 'green' : 'neutral'"
-                  variant="subtle"
-                  size="sm"
-                >
+                <Badge :variant="category.isSelectable ? 'success' : 'default'">
                   {{ category.isSelectable ? 'Activa' : 'Inactiva' }}
-                </UBadge>
+                </Badge>
               </td>
               <td class="admin-categories-page__td">
                 <Text size="sm" color="muted">{{ formatDate(category.createdAt) }}</Text>
