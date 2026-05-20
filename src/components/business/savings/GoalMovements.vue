@@ -39,10 +39,10 @@
     ajuste: 'Ajuste'
   }
 
-  const TYPE_VARIANTS: Record<MovementKind, 'success' | 'secondary' | 'neutral'> = {
+  const TYPE_VARIANTS: Record<MovementKind, 'success' | 'secondary' | 'default'> = {
     aporte: 'success',
     interes: 'secondary',
-    ajuste: 'neutral'
+    ajuste: 'default'
   }
 
   const getTypeLabel = (kind?: MovementKind) => TYPE_LABELS[kind ?? 'aporte']

@@ -163,6 +163,8 @@
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
 
+  const interestContributions = computed(() => contributions.value.filter(t => t.type === 'interest'))
+
   // Use completed PlannedSavings as primary source: they always carry savingGoalId,
   // whereas transactions from completePlannedSaving historically lacked that field.
   // Fall back to the backend summary only when no PlannedSavings exist yet.
@@ -171,7 +173,12 @@
     return psTotal || goalSummary.value.totalSavings
   })
 
-  const totalRegisteredInterest = computed(() => goalSummary.value.totalInterest)
+  // Sum interest from contributions (those with savingGoalId) as primary;
+  // fall back to backend summary for interest registered via the old flow.
+  const totalRegisteredInterest = computed(() =>
+    interestContributions.value.reduce((sum, t) => sum + t.amount, 0) ||
+    goalSummary.value.totalInterest
+  )
 
   // Total balance: deposits + registered interest (both count toward goal progress)
   const totalSavedForGoal = computed(() => principalSaved.value + totalRegisteredInterest.value)
@@ -340,11 +347,25 @@
       : 'Intereses del mes no registrados'
   })
 
+  // Suppress banner if the goal's lastInterestDate is today: interest was already
+  // registered (possibly by completePlannedSaving, which doesn't set savingGoalId
+  // and therefore won't appear in interestContributions or goalSummary.totalInterest).
+  const interestRegisteredToday = computed(() => {
+    const lid = goal.value?.lastInterestDate
+    if (!lid) return false
+    const d = new Date(lid)
+    const today = new Date()
+    return d.getFullYear() === today.getFullYear() &&
+      d.getMonth() === today.getMonth() &&
+      d.getDate() === today.getDate()
+  })
+
   const shouldShowInterestBanner = computed(
     () =>
       unregisteredInterest.value > 0.01 &&
       (account.value?.interestRate ?? 0) > 0 &&
       principalSaved.value > 0 &&
+      !interestRegisteredToday.value &&
       !isLoading.value
   )
 
@@ -534,7 +555,7 @@
             :progress-percentage="progressPercentage"
             :saved-amount="totalSavedForGoal"
             :total-deposited="totalDeposited"
-            :total-interest="totalRegisteredInterest"
+            :total-interest="presentedInterest"
             :currency="currency"
             :estimated-time-to-goal="estimatedTimeToGoal"
           />
