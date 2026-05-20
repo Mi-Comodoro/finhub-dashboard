@@ -166,11 +166,15 @@
   const savingsContributions = computed(() => contributions.value.filter(t => t.type === 'savings'))
 
   // Backend-sourced totals (authoritative): refreshed on mount and after each transaction
-  const principalSaved = computed(() => goalSummary.value.totalSavings || (() => {
-    // Fallback to PlannedSavings when no savings transactions exist yet
-    const psTotal = completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
-    return psTotal
-  })())
+  const principalSaved = computed(
+    () =>
+      goalSummary.value.totalSavings ||
+      (() => {
+        // Fallback to PlannedSavings when no savings transactions exist yet
+        const psTotal = completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
+        return psTotal
+      })()
+  )
 
   const totalRegisteredInterest = computed(() => goalSummary.value.totalInterest)
 
@@ -199,8 +203,10 @@
     const allocation = savingAllocations.value.find(a => a.goalId === goal.value?.id)
     if (allocation && savingsAmount.value > 0)
       return (savingsAmount.value * allocation.percentage) / 100
-    if (completedSavings.value.length > 0)
-      return totalSavedForGoal.value / completedSavings.value.length
+    if (completedSavings.value.length > 0) {
+      const psTotal = completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
+      return psTotal / completedSavings.value.length
+    }
     return 0
   })
 
@@ -210,19 +216,23 @@
     return 'monthly'
   })
 
+  // Map savings transactions to the format expected by buildProjection.
+  // Using transactions (not planned savings) avoids double-counting when both
+  // a recurring planned saving AND a manual contribution exist for the same period.
+  const savingsForProjection = computed(() =>
+    savingsContributions.value.map(t => ({
+      amount: t.amount ?? 0,
+      status: 'completed' as const,
+      completedAt: String(t.transactionDate),
+      date: String(t.transactionDate)
+    }))
+  )
+
   const projectionPoints = computed<SavingPoint[]>(() => {
     const interestRate = account.value?.interestRate ?? 0
-
-    if (goalSavings.value.length === 0) return []
-
-    // Use new buildProjection with actual and projected savings
+    if (savingsForProjection.value.length === 0) return []
     return buildProjection({
-      savings: goalSavings.value.map(s => ({
-        amount: s.amount ?? 0,
-        status: s.status,
-        completedAt: s.completedAt,
-        date: s.date
-      })),
+      savings: savingsForProjection.value,
       annualRate: interestRate,
       view: selectedHorizon.value,
       referenceDate: new Date()
@@ -231,19 +241,14 @@
 
   const basePoints = computed(() => projectionPoints.value.map(p => p.withoutInterest))
 
-  // Derive total earned interest directly from the projection (same formula + same simulated
-  // contributions as the chart), reading today's daily point so banner == chart hover.
+  // Derive total earned interest directly from the projection (same formula as the chart),
+  // reading today's daily point so banner == chart hover.
   const totalEarnedInterest = computed(() => {
     const annualRate = account.value?.interestRate ?? 0
-    if (!annualRate || !goalSavings.value.length) return 0
+    if (!annualRate || !savingsForProjection.value.length) return 0
 
     const dailyPoints = buildProjection({
-      savings: goalSavings.value.map(s => ({
-        amount: s.amount ?? 0,
-        status: s.status,
-        completedAt: s.completedAt,
-        date: s.date
-      })),
+      savings: savingsForProjection.value,
       annualRate,
       view: '1m',
       referenceDate: new Date()
@@ -298,7 +303,11 @@
         .sort((a, b) => new Date(String(a.date)).getTime() - new Date(String(b.date)).getTime())[0]
       const firstDate = firstSaving ? new Date(String(firstSaving.date)) : null
       if (firstDate && !isNaN(firstDate.getTime())) {
-        const label = firstDate.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+        const label = firstDate.toLocaleDateString('es-CO', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        })
         return `Tienes intereses acumulados sin registrar desde ${label}`
       }
       return 'Tienes intereses acumulados sin registrar'
@@ -307,7 +316,9 @@
       return 'Tienes intereses de períodos anteriores sin registrar'
     }
     const freq = account.value?.compoundingFrequency
-    return freq === 'daily' ? 'Intereses del día no registrados' : 'Intereses del mes no registrados'
+    return freq === 'daily'
+      ? 'Intereses del día no registrados'
+      : 'Intereses del mes no registrados'
   })
 
   const shouldShowInterestBanner = computed(
@@ -345,11 +356,9 @@
 
     // Calculate months to goal (estimate based on current projection rate)
     let monthsToGoal: number | null = null
-    if (goal.value?.targetAmount && diff > 0 && lastBase > 0) {
-      // Extrapolate based on current growth rate
-      const remaining = goal.value.targetAmount - totalSavedForGoal.value - estimatedInterest.value
+    if (goal.value?.targetAmount && lastBase > 0) {
+      const remaining = goal.value.targetAmount - totalSavedForGoal.value
       if (remaining > 0 && monthlyContribution.value > 0) {
-        // Simple estimation: remaining / monthly contribution
         monthsToGoal = Math.ceil(remaining / monthlyContribution.value)
       }
     }
@@ -415,91 +424,91 @@
     </div>
 
     <div v-else-if="goal" class="goal-detail__content">
-    <div class="goal-detail__layout">
-      <ResponsiveContainer class="goal-detail__main">
-        <!-- Insights -->
-        <GoalDetailInsights
-          :total-deposited="totalDeposited"
-          :estimated-interest="presentedInterest"
-          :pending-amount="pendingAmount"
-          :interest-rate-label="interestRateLabel"
-          :currency-code="currency"
-        />
-
-        <!-- Interest registration banner (between cards and chart) -->
-        <div v-if="shouldShowInterestBanner" class="goal-detail__interest-banner">
-          <div class="goal-detail__interest-banner-info">
-            <span class="material-symbols-outlined goal-detail__interest-banner-icon">
-              notifications_active
-            </span>
-            <div>
-              <Text size="sm" weight="medium">{{ interestBannerMessage }}</Text>
-              <Text size="xs" color="muted">
-                Intereses pendientes: {{ formatCurrency(unregisteredInterest, currency) }}
-              </Text>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            variant="primary"
-            :loading="isRegisteringInterest"
-            @click="handleRegisterInterest"
-          >
-            Registrar
-          </Button>
-        </div>
-
-        <!-- Proyección de crecimiento -->
-        <Card class="goal-detail__projection-card">
-          <div class="goal-detail__projection-header">
-            <Heading level="h2" size="lg" weight="bold">Proyección de Crecimiento</Heading>
-            <div class="goal-detail__horizon-toggle">
-              <button
-                v-for="horizon in ['1m', '3m', '12m', '24m', '36m']"
-                :key="horizon"
-                :class="[
-                  'goal-detail__horizon-btn',
-                  { 'goal-detail__horizon-btn--active': selectedHorizon === horizon }
-                ]"
-                @click="selectedHorizon = horizon as '1m' | '3m' | '12m' | '24m' | '36m'"
-              >
-                {{ horizon }}
-              </button>
-            </div>
-          </div>
-
-          <GoalProjectionChart
-            :base-data="basePoints"
-            :interest-data="withInterest"
-            :granularity="granularity"
-            :periods="projectionPoints.length"
-            :start-month="startMonth"
-            :target-amount="goal?.targetAmount ?? undefined"
-            :currency="currency"
-            :current-balance="totalSavedForGoal"
-            :interest-rate="account?.interestRate"
-            :labels="projectionLabels"
+      <div class="goal-detail__layout">
+        <ResponsiveContainer class="goal-detail__main">
+          <!-- Insights -->
+          <GoalDetailInsights
+            :total-deposited="totalDeposited"
+            :estimated-interest="presentedInterest"
+            :pending-amount="pendingAmount"
+            :interest-rate-label="interestRateLabel"
+            :currency-code="currency"
           />
-        </Card>
 
-        <GoalMovements :goal-id="goalId" :movements="goalSavings" />
-      </ResponsiveContainer>
+          <!-- Interest registration banner (between cards and chart) -->
+          <div v-if="shouldShowInterestBanner" class="goal-detail__interest-banner">
+            <div class="goal-detail__interest-banner-info">
+              <span class="material-symbols-outlined goal-detail__interest-banner-icon">
+                notifications_active
+              </span>
+              <div>
+                <Text size="sm" weight="medium">{{ interestBannerMessage }}</Text>
+                <Text size="xs" color="muted">
+                  Intereses pendientes: {{ formatCurrency(unregisteredInterest, currency) }}
+                </Text>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              :loading="isRegisteringInterest"
+              @click="handleRegisterInterest"
+            >
+              Registrar
+            </Button>
+          </div>
 
-      <!-- Sidebar -->
-      <aside class="goal-detail__sidebar">
-        <GoalSidebarPanel
-          :goal="goal"
-          :history="history"
-          :account="account"
-          :progress-percentage="progressPercentage"
-          :saved-amount="totalSavedForGoal"
-          :total-deposited="totalDeposited"
-          :total-interest="totalRegisteredInterest"
-          :currency="currency"
-          :estimated-time-to-goal="estimatedTimeToGoal"
-        />
-      </aside>
-    </div>
+          <!-- Proyección de crecimiento -->
+          <Card class="goal-detail__projection-card">
+            <div class="goal-detail__projection-header">
+              <Heading level="h2" size="lg" weight="bold">Proyección de Crecimiento</Heading>
+              <div class="goal-detail__horizon-toggle">
+                <button
+                  v-for="horizon in ['1m', '3m', '12m', '24m', '36m']"
+                  :key="horizon"
+                  :class="[
+                    'goal-detail__horizon-btn',
+                    { 'goal-detail__horizon-btn--active': selectedHorizon === horizon }
+                  ]"
+                  @click="selectedHorizon = horizon as '1m' | '3m' | '12m' | '24m' | '36m'"
+                >
+                  {{ horizon }}
+                </button>
+              </div>
+            </div>
+
+            <GoalProjectionChart
+              :base-data="basePoints"
+              :interest-data="withInterest"
+              :granularity="granularity"
+              :periods="projectionPoints.length"
+              :start-month="startMonth"
+              :target-amount="goal?.targetAmount ?? undefined"
+              :currency="currency"
+              :current-balance="totalSavedForGoal"
+              :interest-rate="account?.interestRate"
+              :labels="projectionLabels"
+            />
+          </Card>
+
+          <GoalMovements :goal-id="goalId" :movements="goalSavings" />
+        </ResponsiveContainer>
+
+        <!-- Sidebar -->
+        <aside class="goal-detail__sidebar">
+          <GoalSidebarPanel
+            :goal="goal"
+            :history="history"
+            :account="account"
+            :progress-percentage="progressPercentage"
+            :saved-amount="totalSavedForGoal"
+            :total-deposited="totalDeposited"
+            :total-interest="totalRegisteredInterest"
+            :currency="currency"
+            :estimated-time-to-goal="estimatedTimeToGoal"
+          />
+        </aside>
+      </div>
     </div>
 
     <!-- Modals -->
@@ -513,10 +522,7 @@
     </ModalWizard>
 
     <ModalWizard v-model:show="showContributionModal">
-      <ContributionForm
-        :goal-id="goalId"
-        @on-close="handleContributionSuccess"
-      />
+      <ContributionForm :goal-id="goalId" @on-close="handleContributionSuccess" />
     </ModalWizard>
   </div>
 </template>
@@ -549,7 +555,7 @@
 
   /* Interest banner */
   .goal-detail__interest-banner {
-    @apply flex items-center justify-between gap-4 rounded-lg border border-warning-300 bg-warning-50 px-4 py-3;
+    @apply flex items-center justify-between gap-4 rounded-lg border border-secondary-300 bg-secondary-50 px-4 py-3;
   }
 
   .goal-detail__interest-banner-info {
@@ -557,7 +563,7 @@
   }
 
   .goal-detail__interest-banner-icon {
-    @apply text-warning-600;
+    @apply text-secondary-600;
   }
 
   /* Layout Principal */
