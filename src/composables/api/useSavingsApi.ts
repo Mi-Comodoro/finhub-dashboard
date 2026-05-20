@@ -58,7 +58,7 @@ export function useSavingsApi() {
   ) =>
     $fetch<{ success: boolean }>(`/api/savings/goals/${goalId}/contributions`, {
       method: 'POST',
-      body: data
+      body: { amount: data.amount, date: data.date, notes: data.note }
     })
 
   const updateGoalStatus = async (id: string, status: string) =>
