@@ -72,6 +72,12 @@ export function useSavingsApi() {
       method: 'GET'
     })
 
+  const getGoalSummary = async (goalId: string) =>
+    $fetch<{ success: boolean; result: { totalSavings: number; totalInterest: number } }>(
+      `/api/savings/goals/${goalId}/summary`,
+      { method: 'GET' }
+    )
+
   const registerGoalInterest = async (goalId: string, amount: number, date: string) =>
     $fetch<{ success: boolean; result: unknown }>(`/api/savings/goals/${goalId}/interest`, {
       method: 'POST',
@@ -103,6 +109,7 @@ export function useSavingsApi() {
     getGoalHistory,
     createContribution,
     getGoalContributions,
+    getGoalSummary,
     registerGoalInterest,
     createPlannedSaving
   }

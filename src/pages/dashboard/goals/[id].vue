@@ -38,6 +38,7 @@
     fetchGoalDetail,
     fetchGoalHistory,
     fetchGoalContributions,
+    fetchGoalSummary,
     addGoalInterest
   } = useGoalsApplication()
   const { show: showToast } = useToast()
@@ -49,6 +50,10 @@
   const goal = ref<GoalsData | null>(null)
   const history = ref<GoalHistory[]>([])
   const contributions = ref<Transaction[]>([])
+  const goalSummary = ref<{ totalSavings: number; totalInterest: number }>({
+    totalSavings: 0,
+    totalInterest: 0
+  })
   const isLoading = ref(false)
   const selectedHorizon = ref<'1m' | '3m' | '12m' | '24m' | '36m'>('3m')
 
@@ -118,13 +123,21 @@
     }
   }
 
+  const loadSummary = async () => {
+    if (!goalId.value) return
+    const response = await fetchGoalSummary(goalId.value)
+    if (response.success && response.result) {
+      goalSummary.value = response.result
+    }
+  }
+
   const handleContributionSuccess = async () => {
     closeContributionModal()
-    await Promise.all([loadGoalDetail(), loadContributions()])
+    await Promise.all([loadGoalDetail(), loadContributions(), loadSummary()])
   }
 
   onMounted(async () => {
-    await Promise.all([loadGoalDetail(), loadContributions()])
+    await Promise.all([loadGoalDetail(), loadContributions(), loadSummary()])
 
     // Load planned savings for the current budget if not loaded
     const currentBudgetId = currentBudgetPlan.value?.id
@@ -149,21 +162,17 @@
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
 
-  // Split contributions by type
+  // Split contributions by type (kept for projection chart input)
   const savingsContributions = computed(() => contributions.value.filter(t => t.type === 'savings'))
-  const interestContributions = computed(() => contributions.value.filter(t => t.type === 'interest'))
 
-  // Principal saved (deposits only) — fallback to PlannedSavings for historical data
-  const principalSaved = computed(() => {
-    const savingsTxTotal = savingsContributions.value.reduce((acc, t) => acc + (t.amount ?? 0), 0)
+  // Backend-sourced totals (authoritative): refreshed on mount and after each transaction
+  const principalSaved = computed(() => goalSummary.value.totalSavings || (() => {
+    // Fallback to PlannedSavings when no savings transactions exist yet
     const psTotal = completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
-    return Math.max(savingsTxTotal, psTotal)
-  })
+    return psTotal
+  })())
 
-  // Registered interest from explicit interest transactions
-  const totalRegisteredInterest = computed(() =>
-    interestContributions.value.reduce((acc, t) => acc + (t.amount ?? 0), 0)
-  )
+  const totalRegisteredInterest = computed(() => goalSummary.value.totalInterest)
 
   // Total balance: deposits + registered interest (both count toward goal progress)
   const totalSavedForGoal = computed(() => principalSaved.value + totalRegisteredInterest.value)
@@ -318,7 +327,7 @@
     isRegisteringInterest.value = false
     if (success) {
       showToast({ title: 'Interés registrado', type: 'success' })
-      await loadContributions()
+      await Promise.all([loadContributions(), loadSummary()])
     } else {
       showToast({ title: 'Error al registrar el interés', type: 'error' })
     }

@@ -189,6 +189,15 @@ export const useGoalsApplication = () => {
     }
   }
 
+  const fetchGoalSummary = async (goalId: string): Promise<{ success: boolean; result: { totalSavings: number; totalInterest: number } }> => {
+    try {
+      return await savingsApi.getGoalSummary(goalId)
+    } catch (error) {
+      console.error('Error fetching goal summary:', error)
+      return { success: false, result: { totalSavings: 0, totalInterest: 0 } }
+    }
+  }
+
   const addContribution = async (
     goalId: string,
     data: {
@@ -246,6 +255,7 @@ export const useGoalsApplication = () => {
     fetchGoalDetail,
     fetchGoalHistory,
     fetchGoalContributions,
+    fetchGoalSummary,
     addSavingGoal,
     loadGoalsData,
     loadSavingAllocations,
