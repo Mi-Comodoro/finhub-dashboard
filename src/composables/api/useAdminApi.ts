@@ -1,4 +1,4 @@
-import type { AdminStats, AdminUserDetail,AdminUsersResult } from '~/types/domain'
+import type { AdminStats, AdminUserDetail, AdminUsersResult } from '~/types/domain'
 
 export function useAdminApi() {
   const getStats = async () =>
@@ -12,5 +12,16 @@ export function useAdminApi() {
   const getUserById = async (id: string) =>
     $fetch<{ success: boolean; result: AdminUserDetail }>(`/api/admin/users/${id}`)
 
-  return { getStats, getUsers, getUserById }
+  const updateUser = async (id: string, dto: Partial<AdminUserDetail>) =>
+    $fetch<{ success: boolean; result: AdminUserDetail }>(`/api/admin/users/${id}`, {
+      method: 'PATCH',
+      body: dto
+    })
+
+  const deleteUser = async (id: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/admin/users/${id}`, {
+      method: 'DELETE'
+    })
+
+  return { getStats, getUsers, getUserById, updateUser, deleteUser }
 }

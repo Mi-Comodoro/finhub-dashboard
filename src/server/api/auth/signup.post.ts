@@ -4,11 +4,14 @@ export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
-  const response = await $fetch(`${config.public.apiBase}/auth/signup`, {
-    method: 'POST',
-    body,
-    onResponseError: ({ response }) => validateError(event, response.status)
-  })
+  const { success, data } = await $fetch<{ success: boolean; data: unknown }>(
+    `${config.public.apiBase}/auth/signup`,
+    {
+      method: 'POST',
+      body,
+      onResponseError: ({ response }) => validateError(event, response.status)
+    }
+  )
 
-  return response
+  return { success, result: data }
 })
