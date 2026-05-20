@@ -349,26 +349,38 @@
   const projectionLabels = computed(() => projectionPoints.value.map(p => p.label))
 
   const projectionSummary = computed(() => {
-    // Use last projection points
     const lastWithInterest = withInterest.value[withInterest.value.length - 1] ?? 0
     const lastBase = basePoints.value[basePoints.value.length - 1] ?? 0
     const diff = lastWithInterest - lastBase
 
-    // Calculate months to goal (estimate based on current projection rate)
     let monthsToGoal: number | null = null
-    if (goal.value?.targetAmount && lastBase > 0) {
-      const remaining = goal.value.targetAmount - totalSavedForGoal.value
-      if (remaining > 0 && monthlyContribution.value > 0) {
-        monthsToGoal = Math.ceil(remaining / monthlyContribution.value)
+    const target = goal.value?.targetAmount
+    const C = monthlyContribution.value
+    const B = totalSavedForGoal.value
+
+    if (target && C > 0 && B >= 0) {
+      const remaining = target - B
+      if (remaining <= 0) {
+        monthsToGoal = 0
+      } else {
+        const annualRate = account.value?.interestRate ?? 0
+        if (annualRate > 0) {
+          // Time-to-goal with compound interest:
+          // B*(1+r)^N + C*((1+r)^N - 1)/r = T
+          // → N = ln((T + C/r) / (B + C/r)) / ln(1 + r)
+          const r = Math.pow(1 + annualRate / 100, 1 / 12) - 1
+          const factor = C / r
+          const ratio = (target + factor) / (B + factor)
+          if (ratio > 1) {
+            monthsToGoal = Math.ceil(Math.log(ratio) / Math.log(1 + r))
+          }
+        } else {
+          monthsToGoal = Math.ceil(remaining / C)
+        }
       }
     }
 
-    return {
-      lastWithInterest,
-      lastBase,
-      diff,
-      monthsToGoal
-    }
+    return { lastWithInterest, lastBase, diff, monthsToGoal }
   })
 
   // Use presenter for insights (after all dependencies are defined)
