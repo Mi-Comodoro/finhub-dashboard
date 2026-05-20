@@ -11,6 +11,7 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useGoalDetailPresenter } from '@/composables/presenters/useGoalDetailPresenter'
+  import type { GoalMovementItem } from '@/components/business/savings/GoalMovements.vue'
   import type { GoalHistory, GoalsData, PlannedSaving, Transaction } from '@/types/api'
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
@@ -221,6 +222,30 @@
       date: String(s.date ?? s.completedAt)
     }))
   )
+
+  // Unified movements list: completed deposits (PlannedSavings) + registered interest transactions.
+  // Savings transactions are excluded to avoid duplication with PlannedSavings entries.
+  const allMovements = computed<GoalMovementItem[]>(() => {
+    const deposits = completedSavings.value.map(s => ({
+      id: s.id,
+      date: String(s.completedAt ?? s.date),
+      amount: s.amount ?? 0,
+      kind: (s.type ?? 'aporte') as GoalMovementItem['kind'],
+      note: s.note
+    }))
+
+    const interestTxs = contributions.value
+      .filter(t => t.type === 'interest')
+      .map(t => ({
+        id: t.id,
+        date: String(t.transactionDate),
+        amount: t.amount,
+        kind: 'interes' as const,
+        note: t.source
+      }))
+
+    return [...deposits, ...interestTxs]
+  })
 
   const projectionPoints = computed<SavingPoint[]>(() => {
     const interestRate = account.value?.interestRate ?? 0
@@ -497,7 +522,7 @@
             />
           </Card>
 
-          <GoalMovements :goal-id="goalId" :movements="goalSavings" />
+          <GoalMovements :goal-id="goalId" :movements="allMovements" />
         </ResponsiveContainer>
 
         <!-- Sidebar -->

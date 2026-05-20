@@ -4,12 +4,21 @@
   import { computed } from 'vue'
 
   import { Badge, Card, Heading, Text } from '@/components/atoms'
-  import type { PlannedSaving, PlannedSavingType } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
+
+  export interface GoalMovementItem {
+    id?: string
+    date: string
+    amount: number
+    kind?: 'aporte' | 'interes' | 'ajuste'
+    note?: string
+  }
+
+  type MovementKind = 'aporte' | 'interes' | 'ajuste'
 
   interface GoalMovementsProps {
     goalId?: string
-    movements?: PlannedSaving[]
+    movements?: GoalMovementItem[]
   }
 
   const props = withDefaults(defineProps<GoalMovementsProps>(), {
@@ -18,28 +27,26 @@
   })
 
   const sortedMovements = computed(() =>
-    [...props.movements].sort(
-      (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
-    )
+    [...props.movements].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   )
 
   const formatDate = (dateString: string) =>
     format(new Date(dateString), 'dd/MMM/yyyy', { locale: es })
 
-  const TYPE_LABELS: Record<PlannedSavingType, string> = {
+  const TYPE_LABELS: Record<MovementKind, string> = {
     aporte: 'Aporte',
     interes: 'Interés',
     ajuste: 'Ajuste'
   }
 
-  const TYPE_VARIANTS: Record<PlannedSavingType, 'success' | 'secondary' | 'neutral'> = {
+  const TYPE_VARIANTS: Record<MovementKind, 'success' | 'secondary' | 'neutral'> = {
     aporte: 'success',
     interes: 'secondary',
     ajuste: 'neutral'
   }
 
-  const getTypeLabel = (type?: PlannedSavingType) => TYPE_LABELS[type ?? 'aporte']
-  const getTypeVariant = (type?: PlannedSavingType) => TYPE_VARIANTS[type ?? 'aporte']
+  const getTypeLabel = (kind?: MovementKind) => TYPE_LABELS[kind ?? 'aporte']
+  const getTypeVariant = (kind?: MovementKind) => TYPE_VARIANTS[kind ?? 'aporte']
 </script>
 
 <template>
@@ -65,14 +72,14 @@
           class="goal-movements__row"
         >
           <div class="goal-movements__col--date">
-            <Text size="sm">{{ formatDate(String(movement.completedAt || movement.date)) }}</Text>
+            <Text size="sm">{{ formatDate(movement.date) }}</Text>
           </div>
           <div class="goal-movements__col--amount">
             <Text size="sm" weight="semibold">{{ formatCurrency(movement.amount, 'COP') }}</Text>
           </div>
           <div class="goal-movements__col--type">
-            <Badge :variant="getTypeVariant(movement.type)" size="xs">
-              {{ getTypeLabel(movement.type) }}
+            <Badge :variant="getTypeVariant(movement.kind)" size="xs">
+              {{ getTypeLabel(movement.kind) }}
             </Badge>
           </div>
           <div class="goal-movements__col--note">
