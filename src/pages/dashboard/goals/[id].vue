@@ -162,19 +162,13 @@
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
 
-  // Split contributions by type (kept for projection chart input)
-  const savingsContributions = computed(() => contributions.value.filter(t => t.type === 'savings'))
-
-  // Backend-sourced totals (authoritative): refreshed on mount and after each transaction
-  const principalSaved = computed(
-    () =>
-      goalSummary.value.totalSavings ||
-      (() => {
-        // Fallback to PlannedSavings when no savings transactions exist yet
-        const psTotal = completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
-        return psTotal
-      })()
-  )
+  // Use completed PlannedSavings as primary source: they always carry savingGoalId,
+  // whereas transactions from completePlannedSaving historically lacked that field.
+  // Fall back to the backend summary only when no PlannedSavings exist yet.
+  const principalSaved = computed(() => {
+    const psTotal = completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
+    return psTotal || goalSummary.value.totalSavings
+  })
 
   const totalRegisteredInterest = computed(() => goalSummary.value.totalInterest)
 
@@ -216,15 +210,15 @@
     return 'monthly'
   })
 
-  // Map savings transactions to the format expected by buildProjection.
-  // Using transactions (not planned savings) avoids double-counting when both
-  // a recurring planned saving AND a manual contribution exist for the same period.
+  // Use completed PlannedSavings for the projection: they always have savingGoalId and
+  // cover deposits from both completePlannedSaving and createContribution flows.
+  // Filtering by 'completed' prevents double-counting when a pending entry coexists.
   const savingsForProjection = computed(() =>
-    savingsContributions.value.map(t => ({
-      amount: t.amount ?? 0,
+    completedSavings.value.map(s => ({
+      amount: s.amount ?? 0,
       status: 'completed' as const,
-      completedAt: String(t.transactionDate),
-      date: String(t.transactionDate)
+      completedAt: String(s.completedAt ?? s.date),
+      date: String(s.date ?? s.completedAt)
     }))
   )
 
