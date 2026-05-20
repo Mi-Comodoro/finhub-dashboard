@@ -66,10 +66,7 @@
   const yMin = computed(() => {
     const firstPoint = props.interestData[0] ?? 0
     if (firstPoint === 0) return 0
-    // Iniciar en 95% del saldo para ver el crecimiento con detalle
-    const balance = props.currentBalance ?? 0
-    if (balance === 0) return 0
-    return Math.floor((balance * 0.95) / 100_000) * 100_000
+    return Math.floor((firstPoint * 0.95) / 100_000) * 100_000
   })
 
   const hasData = computed(() => props.interestData.length > 0)
@@ -145,7 +142,10 @@
     xAxis: {
       type: 'category',
       data: xLabels.value,
-      axisTick: { show: false }
+      axisTick: { show: false },
+      axisLabel: {
+        interval: props.granularity === 'daily' ? 6 : 'auto'
+      }
     },
     yAxis: {
       type: 'value',

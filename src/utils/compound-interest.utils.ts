@@ -291,7 +291,7 @@ export function buildProjection(input: ProjectionInput): SavingPoint[] {
 
   for (const s of savings) {
     if (s.status === 'skipped') continue
-    const rawDate = s.completedAt ?? s.date
+    const rawDate = s.date ?? s.completedAt
     if (!rawDate) continue
     const parsed = new Date(rawDate)
     if (isNaN(parsed.getTime())) continue
@@ -467,7 +467,7 @@ export function buildProjection(input: ProjectionInput): SavingPoint[] {
   // =========================
   if (view === '1m') {
     return dailySeries.slice(0, 30).map(point => ({
-      label: `Día ${String(point.date.getDate())}`,
+      label: `${point.date.getDate()} ${monthNames[point.date.getMonth()]}`,
       withInterest: Math.round(point.withInterest),
       withoutInterest: Math.round(point.withoutInterest)
     }))

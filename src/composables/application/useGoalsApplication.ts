@@ -6,7 +6,7 @@ import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useGoalsStore } from '@/stores/goals.store'
 import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
-import type { GoalsData } from '~/types/api'
+import type { GoalsData, PlannedSaving, Transaction } from '~/types/api'
 
 import { usePlannedIncomeApplication } from './usePlannedIncomeApplication'
 
@@ -180,6 +180,15 @@ export const useGoalsApplication = () => {
     }
   }
 
+  const fetchGoalContributions = async (goalId: string): Promise<{ success: boolean; result: Transaction[] }> => {
+    try {
+      return await savingsApi.getGoalContributions(goalId)
+    } catch (error) {
+      console.error('Error fetching goal contributions:', error)
+      return { success: false, result: [] }
+    }
+  }
+
   const addContribution = async (
     goalId: string,
     data: {
@@ -187,10 +196,10 @@ export const useGoalsApplication = () => {
       date: string
       note?: string
     }
-  ): Promise<{ success: boolean }> => {
+  ): Promise<{ success: boolean; contribution?: PlannedSaving }> => {
     try {
       const response = await savingsApi.createContribution(goalId, data)
-      return response
+      return { success: response.success, contribution: response.result }
     } catch (error) {
       console.error('Error adding contribution:', error)
       return { success: false }
@@ -219,6 +228,7 @@ export const useGoalsApplication = () => {
     fetchGoals,
     fetchGoalDetail,
     fetchGoalHistory,
+    fetchGoalContributions,
     addSavingGoal,
     loadGoalsData,
     loadSavingAllocations,

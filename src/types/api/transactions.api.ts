@@ -12,7 +12,8 @@ export interface Transaction {
   billId?: string
   plannedExpenseId?: string
   plannedIncomeId?: string
-  accountId?: string // ← faltaba, lo usás en savings
+  accountId?: string
+  savingGoalId?: string
 
   // tipo
   type: TransactionType

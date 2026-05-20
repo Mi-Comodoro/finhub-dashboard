@@ -12,7 +12,7 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
-  import type { CompoundingFrequency, GoalsData, PlannedSaving } from '@/types/api'
+  import type { CompoundingFrequency, GoalsData, Transaction } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
   import { FINANCIAL_TIPS } from '@/utils/financial-tips'
   import { getProgressPercentage as getProgressPercentageUtil } from '@/utils/goal-formatters'
@@ -30,7 +30,7 @@
   const {
     loadGoalsData,
     loadSavingAllocations,
-    fetchGoalDetail,
+    fetchGoalContributions,
     error: goalsError,
     goals,
     removeGoal
@@ -58,14 +58,14 @@
   const { budgetStatus } = useCommon()
   const { currency } = useFinancesApplication()
 
-  const goalSavingsMap = ref<Record<string, PlannedSaving[]>>({})
+  const goalTransactionsMap = ref<Record<string, Transaction[]>>({})
 
   const getSavedAmountForGoal = (goalId: string): number => {
-    const savings = goalSavingsMap.value[goalId]
-    if (!savings) return 0
-    return savings
-      .filter(item => item.status === 'completed')
-      .reduce((acc, item) => acc + (item.amount ?? 0), 0)
+    const txns = goalTransactionsMap.value[goalId]
+    const txTotal = txns ? txns.reduce((acc, t) => acc + (t.amount ?? 0), 0) : 0
+    const goal = goals.value.find(g => g.id === goalId)
+    const psTotal = goal?.totalSaved ?? 0
+    return Math.max(txTotal, psTotal)
   }
 
   const getProgressPercentage = (goalId: string, targetAmount: number | null): number => {
@@ -165,11 +165,9 @@
       await loadSavingAllocations(currentBudgetId.value)
     }
     if (goals.value.length > 0) {
-      const results = await Promise.all(goals.value.map(g => fetchGoalDetail(g.id)))
-      goalSavingsMap.value = Object.fromEntries(
-        results
-          .filter(r => r.success && r.result != null)
-          .map(r => [r.result!.id, r.result!.plannedSavings ?? []])
+      const results = await Promise.all(goals.value.map(g => fetchGoalContributions(g.id)))
+      goalTransactionsMap.value = Object.fromEntries(
+        goals.value.map((g, i) => [g.id, results[i].result ?? []])
       )
     }
   })

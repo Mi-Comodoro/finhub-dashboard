@@ -10,7 +10,7 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useGoalDetailPresenter } from '@/composables/presenters/useGoalDetailPresenter'
-  import type { GoalHistory, GoalsData, PlannedSaving } from '@/types/api'
+  import type { GoalHistory, GoalsData, PlannedSaving, Transaction } from '@/types/api'
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
 
   const GoalProjectionChart = defineAsyncComponent(
@@ -34,7 +34,8 @@
     fetchAccounts,
     fetchSavingAllocations,
     fetchGoalDetail,
-    fetchGoalHistory
+    fetchGoalHistory,
+    fetchGoalContributions
   } = useGoalsApplication()
   const { items: plannedSavingItems, fetchByBudget: fetchPlannedSavings } =
     usePlannedSavingApplication()
@@ -43,6 +44,7 @@
   // State
   const goal = ref<GoalsData | null>(null)
   const history = ref<GoalHistory[]>([])
+  const contributions = ref<Transaction[]>([])
   const isLoading = ref(false)
   const selectedHorizon = ref<'1m' | '3m' | '12m' | '24m' | '36m'>('3m')
 
@@ -104,13 +106,21 @@
     await loadGoalDetail()
   }
 
+  const loadContributions = async () => {
+    if (!goalId.value) return
+    const response = await fetchGoalContributions(goalId.value)
+    if (response.success) {
+      contributions.value = response.result
+    }
+  }
+
   const handleContributionSuccess = async () => {
     closeContributionModal()
-    await loadGoalDetail()
+    await Promise.all([loadGoalDetail(), loadContributions()])
   }
 
   onMounted(async () => {
-    await loadGoalDetail()
+    await Promise.all([loadGoalDetail(), loadContributions()])
 
     // Load planned savings for the current budget if not loaded
     const currentBudgetId = currentBudgetPlan.value?.id
@@ -130,19 +140,18 @@
     return Math.min(100, Math.round((totalSavedForGoal.value / goal.value.targetAmount) * 100))
   })
 
-  // Planned savings for this goal - use from goal.plannedSavings if available (from backend)
-  const goalSavings = computed<PlannedSaving[]>(() => {
-    if (!goal.value?.plannedSavings) {
-      return []
-    }
-    return goal.value.plannedSavings
-  })
+  // Planned savings for this goal - used for projection chart and movements list
+  const goalSavings = computed<PlannedSaving[]>(() => goal.value?.plannedSavings ?? [])
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
 
-  const totalSavedForGoal = computed(() =>
-    completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
-  )
+  // Total saved: use transaction-based amounts when available (new contributions),
+  // fall back to completed PlannedSavings for historical data
+  const totalSavedForGoal = computed(() => {
+    const txTotal = contributions.value.reduce((acc, t) => acc + (t.amount ?? 0), 0)
+    const psTotal = completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
+    return Math.max(txTotal, psTotal)
+  })
 
   const firstSavingDate = computed(() => {
     const completed = completedSavings.value

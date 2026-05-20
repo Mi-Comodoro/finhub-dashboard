@@ -1,4 +1,4 @@
-import type { GoalHistory, GoalsData, SavingAllocationData } from '@/types/api/'
+import type { GoalHistory, GoalsData, PlannedSaving, SavingAllocationData, Transaction } from '@/types/api'
 import type { PlannedSavingSummary } from '~/types/domain'
 
 export function useSavingsApi() {
@@ -56,7 +56,7 @@ export function useSavingsApi() {
       note?: string
     }
   ) =>
-    $fetch<{ success: boolean }>(`/api/savings/goals/${goalId}/contributions`, {
+    $fetch<{ success: boolean; result: PlannedSaving }>(`/api/savings/goals/${goalId}/contributions`, {
       method: 'POST',
       body: { amount: data.amount, date: data.date, notes: data.note }
     })
@@ -65,6 +65,11 @@ export function useSavingsApi() {
     $fetch<{ success: boolean; result: unknown }>(`/api/savings/goals/${id}/status`, {
       method: 'PATCH',
       body: { status }
+    })
+
+  const getGoalContributions = async (goalId: string) =>
+    $fetch<{ success: boolean; result: Transaction[] }>(`/api/savings/goals/${goalId}/contributions`, {
+      method: 'GET'
     })
 
   const createPlannedSaving = async (data: {
@@ -91,6 +96,7 @@ export function useSavingsApi() {
     getGoal,
     getGoalHistory,
     createContribution,
+    getGoalContributions,
     createPlannedSaving
   }
 }

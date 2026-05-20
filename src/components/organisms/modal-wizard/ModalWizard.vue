@@ -1,7 +1,5 @@
 <!-- ModalWizard: Organism modal wrapper for onboarding wizard -->
 <script setup lang="ts">
-  import { ref } from 'vue'
-
   import type { ModalWizardProps } from './types/modal-wizard.types'
 
   const props = withDefaults(defineProps<ModalWizardProps>(), {
@@ -9,19 +7,10 @@
     title: undefined,
     onClose: undefined
   })
-
-  const visible = ref(props.show)
-
-  watch(
-    () => props.show,
-    val => {
-      visible.value = val
-    }
-  )
 </script>
 
 <template>
-  <div v-if="visible" class="modal-wizard" role="dialog" aria-modal="true">
+  <div v-if="show" class="modal-wizard" role="dialog" aria-modal="true">
     <div class="modal-wizard__overlay" />
     <div class="modal-wizard__container modal-wizard__container--auto">
       <div class="modal-wizard__content">
