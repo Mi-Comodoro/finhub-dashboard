@@ -17,6 +17,8 @@
     account?: AccountData | null
     progressPercentage?: number
     savedAmount?: number
+    totalDeposited?: number
+    totalInterest?: number
     currency?: string
     estimatedTimeToGoal?: string
   }
@@ -27,6 +29,8 @@
     account: null,
     progressPercentage: 0,
     savedAmount: 0,
+    totalDeposited: 0,
+    totalInterest: 0,
     currency: '',
     estimatedTimeToGoal: ''
   })
@@ -118,6 +122,19 @@
           <Text size="xs" class="goal-sidebar-panel__label">Tiempo</Text>
           <Text size="xs">{{ estimatedTimeToGoal }}</Text>
         </div>
+        <div class="goal-sidebar-panel__divider" />
+        <div class="goal-sidebar-panel__row">
+          <Text size="xs" class="goal-sidebar-panel__label">Total Aportes</Text>
+          <Text size="xs" weight="medium">{{ formatCurrency(totalDeposited, currency as Currency) }}</Text>
+        </div>
+        <div class="goal-sidebar-panel__row">
+          <Text size="xs" class="goal-sidebar-panel__label">Total Intereses</Text>
+          <Text size="xs" weight="medium" class="goal-sidebar-panel__interest">{{ formatCurrency(totalInterest, currency as Currency) }}</Text>
+        </div>
+        <div class="goal-sidebar-panel__row goal-sidebar-panel__row--highlight">
+          <Text size="xs" weight="semibold">Total Abonado</Text>
+          <Text size="xs" weight="bold">{{ formatCurrency(totalDeposited + totalInterest, currency as Currency) }}</Text>
+        </div>
       </div>
     </div>
 
@@ -199,6 +216,18 @@
 
   .goal-sidebar-panel__label {
     @apply text-neutral-500;
+  }
+
+  .goal-sidebar-panel__divider {
+    @apply border-t border-neutral-100;
+  }
+
+  .goal-sidebar-panel__interest {
+    @apply text-warning-600;
+  }
+
+  .goal-sidebar-panel__row--highlight {
+    @apply rounded-md bg-primary-50 px-2 py-1;
   }
 
   .goal-sidebar-panel__history-list {

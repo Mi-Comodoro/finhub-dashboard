@@ -406,29 +406,6 @@
     </div>
 
     <div v-else-if="goal" class="goal-detail__content">
-      <!-- Interest registration banner -->
-      <div v-if="shouldShowInterestBanner" class="goal-detail__interest-banner">
-        <div class="goal-detail__interest-banner-info">
-          <span class="material-symbols-outlined goal-detail__interest-banner-icon">
-            notifications_active
-          </span>
-          <div>
-            <Text size="sm" weight="medium">{{ interestBannerMessage }}</Text>
-            <Text size="xs" color="muted">
-              Intereses pendientes: {{ formatCurrency(unregisteredInterest, currency) }}
-            </Text>
-          </div>
-        </div>
-        <Button
-          size="sm"
-          variant="primary"
-          :loading="isRegisteringInterest"
-          @click="handleRegisterInterest"
-        >
-          Registrar
-        </Button>
-      </div>
-
     <div class="goal-detail__layout">
       <ResponsiveContainer class="goal-detail__main">
         <!-- Insights -->
@@ -439,6 +416,29 @@
           :interest-rate-label="interestRateLabel"
           :currency-code="currency"
         />
+
+        <!-- Interest registration banner (between cards and chart) -->
+        <div v-if="shouldShowInterestBanner" class="goal-detail__interest-banner">
+          <div class="goal-detail__interest-banner-info">
+            <span class="material-symbols-outlined goal-detail__interest-banner-icon">
+              notifications_active
+            </span>
+            <div>
+              <Text size="sm" weight="medium">{{ interestBannerMessage }}</Text>
+              <Text size="xs" color="muted">
+                Intereses pendientes: {{ formatCurrency(unregisteredInterest, currency) }}
+              </Text>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="primary"
+            :loading="isRegisteringInterest"
+            @click="handleRegisterInterest"
+          >
+            Registrar
+          </Button>
+        </div>
 
         <!-- Proyección de crecimiento -->
         <Card class="goal-detail__projection-card">
@@ -484,6 +484,8 @@
           :account="account"
           :progress-percentage="progressPercentage"
           :saved-amount="totalSavedForGoal"
+          :total-deposited="totalDeposited"
+          :total-interest="totalRegisteredInterest"
           :currency="currency"
           :estimated-time-to-goal="estimatedTimeToGoal"
         />
