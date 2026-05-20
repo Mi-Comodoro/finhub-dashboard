@@ -224,6 +224,23 @@ export const useGoalsApplication = () => {
     return { success: !savingsAllocationsStore.error }
   }
 
+  const addGoalInterest = async (
+    goalId: string,
+    amount: number
+  ): Promise<{ success: boolean }> => {
+    try {
+      const response = await savingsApi.registerGoalInterest(
+        goalId,
+        amount,
+        new Date().toISOString()
+      )
+      return { success: response.success }
+    } catch (error) {
+      console.error('Error registering goal interest:', error)
+      return { success: false }
+    }
+  }
+
   return {
     fetchGoals,
     fetchGoalDetail,
@@ -238,6 +255,7 @@ export const useGoalsApplication = () => {
     editGoal,
     removeGoal,
     addContribution,
+    addGoalInterest,
     fetchAccounts,
     fetchSavingAllocations,
     goals,

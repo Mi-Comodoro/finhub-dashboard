@@ -6,12 +6,14 @@
   import GoalSidebarPanel from '@/components/business/savings/GoalSidebarPanel.vue'
   import GoalDetailInsights from '@/components/business/savings/insight/GoalDetailInsights.vue'
   import { ModalWizard } from '@/components/organisms'
+  import { useToast } from '@/components/organisms/toast/useToast'
   import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useGoalDetailPresenter } from '@/composables/presenters/useGoalDetailPresenter'
   import type { GoalHistory, GoalsData, PlannedSaving, Transaction } from '@/types/api'
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
+  import { formatCurrency } from '@/utils/currency'
 
   const GoalProjectionChart = defineAsyncComponent(
     () => import('@/components/business/savings/GoalProjectionChart.vue')
@@ -35,8 +37,10 @@
     fetchSavingAllocations,
     fetchGoalDetail,
     fetchGoalHistory,
-    fetchGoalContributions
+    fetchGoalContributions,
+    addGoalInterest
   } = useGoalsApplication()
+  const { show: showToast } = useToast()
   const { items: plannedSavingItems, fetchByBudget: fetchPlannedSavings } =
     usePlannedSavingApplication()
   const { savingsAmount } = useActiveBudgetApplication()
@@ -145,13 +149,24 @@
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
 
-  // Total saved: use transaction-based amounts when available (new contributions),
-  // fall back to completed PlannedSavings for historical data
-  const totalSavedForGoal = computed(() => {
-    const txTotal = contributions.value.reduce((acc, t) => acc + (t.amount ?? 0), 0)
+  // Split contributions by type
+  const savingsContributions = computed(() => contributions.value.filter(t => t.type === 'savings'))
+  const interestContributions = computed(() => contributions.value.filter(t => t.type === 'interest'))
+
+  // Principal saved (deposits only) — fallback to PlannedSavings for historical data
+  const principalSaved = computed(() => {
+    const savingsTxTotal = savingsContributions.value.reduce((acc, t) => acc + (t.amount ?? 0), 0)
     const psTotal = completedSavings.value.reduce((acc, s) => acc + (s.amount ?? 0), 0)
-    return Math.max(txTotal, psTotal)
+    return Math.max(savingsTxTotal, psTotal)
   })
+
+  // Registered interest from explicit interest transactions
+  const totalRegisteredInterest = computed(() =>
+    interestContributions.value.reduce((acc, t) => acc + (t.amount ?? 0), 0)
+  )
+
+  // Total balance: deposits + registered interest (both count toward goal progress)
+  const totalSavedForGoal = computed(() => principalSaved.value + totalRegisteredInterest.value)
 
   const firstSavingDate = computed(() => {
     const completed = completedSavings.value
@@ -207,22 +222,107 @@
 
   const basePoints = computed(() => projectionPoints.value.map(p => p.withoutInterest))
 
-  const estimatedInterest = computed(() => {
+  // Derive total earned interest directly from the projection (same formula + same simulated
+  // contributions as the chart), reading today's daily point so banner == chart hover.
+  const totalEarnedInterest = computed(() => {
     const annualRate = account.value?.interestRate ?? 0
-    if (!annualRate || !completedSavings.value.length) return 0
+    if (!annualRate || !goalSavings.value.length) return 0
 
-    const today = new Date()
-    return completedSavings.value.reduce((acc, saving) => {
-      if (!saving.completedAt) return acc
-      const completedDate = new Date(saving.completedAt)
-      const daysSince = Math.max(
-        0,
-        Math.floor((today.getTime() - completedDate.getTime()) / 86_400_000)
-      )
-      const interest = saving.amount * (Math.pow(1 + annualRate / 100, daysSince / 365) - 1)
-      return acc + interest
-    }, 0)
+    const dailyPoints = buildProjection({
+      savings: goalSavings.value.map(s => ({
+        amount: s.amount ?? 0,
+        status: s.status,
+        completedAt: s.completedAt,
+        date: s.date
+      })),
+      annualRate,
+      view: '1m',
+      referenceDate: new Date()
+    })
+
+    const todayIndex = new Date().getDate() - 1
+    const point = dailyPoints[Math.min(todayIndex, dailyPoints.length - 1)]
+    return point ? Math.max(0, point.withInterest - point.withoutInterest) : 0
   })
+
+  // If interest transactions exist, show the registered total; otherwise show calculated estimate
+  const estimatedInterest = computed(() =>
+    totalRegisteredInterest.value > 0 ? totalRegisteredInterest.value : totalEarnedInterest.value
+  )
+
+  // Interest that hasn't been registered yet
+  const unregisteredInterest = computed(() =>
+    Math.max(0, totalEarnedInterest.value - totalRegisteredInterest.value)
+  )
+
+  // Determine if there are past periods without registered interest
+  const lastInterestDate = computed(() => {
+    if (!interestContributions.value.length) return null
+    return interestContributions.value.reduce((latest, t) => {
+      const d = new Date(t.transactionDate)
+      return d > latest ? d : latest
+    }, new Date(0))
+  })
+
+  const hasMissingPastPeriods = computed(() => {
+    if (totalRegisteredInterest.value === 0) return true
+    const last = lastInterestDate.value
+    if (!last) return true
+    const freq = account.value?.compoundingFrequency
+    const today = new Date()
+    if (freq === 'daily') {
+      const yesterday = new Date(today)
+      yesterday.setDate(today.getDate() - 1)
+      yesterday.setHours(0, 0, 0, 0)
+      const lastDay = new Date(last)
+      lastDay.setHours(0, 0, 0, 0)
+      return lastDay < yesterday
+    }
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    return last < startOfMonth
+  })
+
+  const interestBannerMessage = computed(() => {
+    if (totalRegisteredInterest.value === 0) {
+      const firstSaving = goalSavings.value
+        .filter(s => s.status !== 'skipped')
+        .sort((a, b) => new Date(String(a.date)).getTime() - new Date(String(b.date)).getTime())[0]
+      const firstDate = firstSaving ? new Date(String(firstSaving.date)) : null
+      if (firstDate && !isNaN(firstDate.getTime())) {
+        const label = firstDate.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+        return `Tienes intereses acumulados sin registrar desde ${label}`
+      }
+      return 'Tienes intereses acumulados sin registrar'
+    }
+    if (hasMissingPastPeriods.value) {
+      return 'Tienes intereses de períodos anteriores sin registrar'
+    }
+    const freq = account.value?.compoundingFrequency
+    return freq === 'daily' ? 'Intereses del día no registrados' : 'Intereses del mes no registrados'
+  })
+
+  const shouldShowInterestBanner = computed(
+    () =>
+      unregisteredInterest.value > 0.01 &&
+      (account.value?.interestRate ?? 0) > 0 &&
+      principalSaved.value > 0 &&
+      !isLoading.value
+  )
+
+  const isRegisteringInterest = ref(false)
+
+  const handleRegisterInterest = async () => {
+    if (!goalId.value || unregisteredInterest.value <= 0 || isRegisteringInterest.value) return
+    isRegisteringInterest.value = true
+    const { success } = await addGoalInterest(goalId.value, unregisteredInterest.value)
+    isRegisteringInterest.value = false
+    if (success) {
+      showToast({ title: 'Interés registrado', type: 'success' })
+      await loadContributions()
+    } else {
+      showToast({ title: 'Error al registrar el interés', type: 'error' })
+    }
+  }
 
   const withInterest = computed(() => projectionPoints.value.map(p => p.withInterest))
 
@@ -262,6 +362,7 @@
     interestRateLabel
   } = useGoalDetailPresenter({
     goal,
+    principalSaved,
     totalSavedForGoal,
     estimatedInterest,
     projectionMonthsToGoal: computed(() => projectionSummary.value.monthsToGoal),
@@ -304,7 +405,31 @@
       <Text>Cargando...</Text>
     </div>
 
-    <div v-else-if="goal" class="goal-detail__layout">
+    <div v-else-if="goal" class="goal-detail__content">
+      <!-- Interest registration banner -->
+      <div v-if="shouldShowInterestBanner" class="goal-detail__interest-banner">
+        <div class="goal-detail__interest-banner-info">
+          <span class="material-symbols-outlined goal-detail__interest-banner-icon">
+            notifications_active
+          </span>
+          <div>
+            <Text size="sm" weight="medium">{{ interestBannerMessage }}</Text>
+            <Text size="xs" color="muted">
+              Intereses pendientes: {{ formatCurrency(unregisteredInterest, currency) }}
+            </Text>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="primary"
+          :loading="isRegisteringInterest"
+          @click="handleRegisterInterest"
+        >
+          Registrar
+        </Button>
+      </div>
+
+    <div class="goal-detail__layout">
       <ResponsiveContainer class="goal-detail__main">
         <!-- Insights -->
         <GoalDetailInsights
@@ -364,6 +489,7 @@
         />
       </aside>
     </div>
+    </div>
 
     <!-- Modals -->
     <ModalWizard v-model:show="showEditModal">
@@ -404,6 +530,23 @@
 
   .goal-detail__loading {
     @apply flex items-center justify-center py-20;
+  }
+
+  .goal-detail__content {
+    @apply flex flex-col gap-4;
+  }
+
+  /* Interest banner */
+  .goal-detail__interest-banner {
+    @apply flex items-center justify-between gap-4 rounded-lg border border-warning-300 bg-warning-50 px-4 py-3;
+  }
+
+  .goal-detail__interest-banner-info {
+    @apply flex items-center gap-3;
+  }
+
+  .goal-detail__interest-banner-icon {
+    @apply text-warning-600;
   }
 
   /* Layout Principal */

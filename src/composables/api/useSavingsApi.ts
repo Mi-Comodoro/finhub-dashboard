@@ -72,6 +72,12 @@ export function useSavingsApi() {
       method: 'GET'
     })
 
+  const registerGoalInterest = async (goalId: string, amount: number, date: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/savings/goals/${goalId}/interest`, {
+      method: 'POST',
+      body: { amount, date }
+    })
+
   const createPlannedSaving = async (data: {
     amount: number
     budgetId: string
@@ -97,6 +103,7 @@ export function useSavingsApi() {
     getGoalHistory,
     createContribution,
     getGoalContributions,
+    registerGoalInterest,
     createPlannedSaving
   }
 }

@@ -1,4 +1,4 @@
-export type TransactionType = 'income' | 'expense' | 'savings'
+export type TransactionType = 'income' | 'expense' | 'savings' | 'interest'
 export interface Transaction {
   id?: string
   amount: number
