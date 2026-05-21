@@ -20,6 +20,7 @@
     totalInterest?: number
     currency?: string
     estimatedTimeToGoal?: string
+    loading?: boolean
   }
 
   const props = withDefaults(defineProps<GoalSidebarPanelProps>(), {
@@ -31,7 +32,8 @@
     totalDeposited: 0,
     totalInterest: 0,
     currency: '',
-    estimatedTimeToGoal: ''
+    estimatedTimeToGoal: '',
+    loading: false
   })
 
   const statusLabel = computed(() => {
@@ -90,8 +92,35 @@
 
 <template>
   <SidebarPage>
+    <!-- Skeleton -->
+    <template v-if="loading">
+      <!-- Resumen skeleton -->
+      <div class="goal-sidebar-panel__section">
+        <div class="goal-sidebar-panel__skeleton-header" />
+        <div class="goal-sidebar-panel__skeleton-progress" />
+        <div class="goal-sidebar-panel__skeleton-rows">
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--full" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--wide" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--full" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--medium" />
+          <div class="goal-sidebar-panel__skeleton-divider" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--full" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--wide" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--full" />
+        </div>
+      </div>
+
+      <!-- Historial skeleton -->
+      <div class="goal-sidebar-panel__section">
+        <div class="goal-sidebar-panel__skeleton-header" />
+        <div class="goal-sidebar-panel__skeleton-history">
+          <div v-for="i in 3" :key="i" class="goal-sidebar-panel__skeleton-history-item" />
+        </div>
+      </div>
+    </template>
+
     <!-- Sección 1: Resumen -->
-    <div class="goal-sidebar-panel__section">
+    <div v-if="!loading" class="goal-sidebar-panel__section">
       <CardInfo
         title="Resumen de Meta"
         sub-title="Estado actual"
@@ -148,7 +177,7 @@
     </div>
 
     <!-- Sección 2: Historial -->
-    <div class="goal-sidebar-panel__section">
+    <div v-if="!loading" class="goal-sidebar-panel__section">
       <CardInfo
         title="Historial"
         sub-title="Cambios registrados"
@@ -243,5 +272,46 @@
 
   .goal-sidebar-panel__empty-illustration {
     @apply h-24 w-24 mx-auto;
+  }
+
+  /* Skeleton */
+  .goal-sidebar-panel__skeleton-header {
+    @apply h-10 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-sidebar-panel__skeleton-progress {
+    @apply h-5 w-full animate-pulse rounded-full bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-sidebar-panel__skeleton-rows {
+    @apply flex flex-col gap-2;
+  }
+
+  .goal-sidebar-panel__skeleton-row {
+    @apply h-5 animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-sidebar-panel__skeleton-row--full {
+    @apply w-full;
+  }
+
+  .goal-sidebar-panel__skeleton-row--wide {
+    @apply w-4/5;
+  }
+
+  .goal-sidebar-panel__skeleton-row--medium {
+    @apply w-3/5;
+  }
+
+  .goal-sidebar-panel__skeleton-divider {
+    @apply border-t border-neutral-100 dark:border-neutral-700;
+  }
+
+  .goal-sidebar-panel__skeleton-history {
+    @apply flex flex-col gap-2;
+  }
+
+  .goal-sidebar-panel__skeleton-history-item {
+    @apply h-8 w-full animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
   }
 </style>

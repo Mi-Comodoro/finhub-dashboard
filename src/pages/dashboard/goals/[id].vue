@@ -522,19 +522,9 @@
           </div>
         </div>
 
-        <!-- Sidebar skeleton -->
+        <!-- Sidebar skeleton delegated to component -->
         <aside class="goal-detail__sidebar">
-          <!-- Summary panel -->
-          <div class="goal-detail__skeleton-panel">
-            <div class="goal-detail__skeleton-panel-header" />
-            <div class="goal-detail__skeleton-progress" />
-            <div v-for="i in 6" :key="i" class="goal-detail__skeleton-panel-row" />
-          </div>
-          <!-- History panel -->
-          <div class="goal-detail__skeleton-panel">
-            <div class="goal-detail__skeleton-panel-header" />
-            <div v-for="i in 3" :key="i" class="goal-detail__skeleton-history-item" />
-          </div>
+          <GoalSidebarPanel :loading="true" />
         </aside>
       </div>
     </template>
@@ -827,23 +817,4 @@
     @apply h-10 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
   }
 
-  .goal-detail__skeleton-panel {
-    @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800;
-  }
-
-  .goal-detail__skeleton-panel-header {
-    @apply h-10 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
-  }
-
-  .goal-detail__skeleton-progress {
-    @apply h-6 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
-  }
-
-  .goal-detail__skeleton-panel-row {
-    @apply h-5 w-full animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
-  }
-
-  .goal-detail__skeleton-history-item {
-    @apply h-8 w-full animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
-  }
 </style>
