@@ -2,6 +2,7 @@
   import { Button, Card, Heading, Text } from '@/components/atoms'
   import ContributionForm from '@/components/business/savings/forms/ContributionForm.vue'
   import GoalsForm from '@/components/business/savings/forms/GoalsForm.vue'
+  import GoalInfoCarousel from '@/components/business/savings/GoalInfoCarousel.vue'
   import GoalMovements from '@/components/business/savings/GoalMovements.vue'
   import GoalSidebarPanel from '@/components/business/savings/GoalSidebarPanel.vue'
   import GoalDetailInsights from '@/components/business/savings/insight/GoalDetailInsights.vue'
@@ -499,6 +500,8 @@
             :interest-rate-label="interestRateLabel"
             :currency-code="currency"
           />
+
+          <GoalInfoCarousel />
 
           <!-- Interest registration banner (between cards and chart) -->
           <div v-if="shouldShowInterestBanner" class="goal-detail__interest-banner">
