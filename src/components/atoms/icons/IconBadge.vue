@@ -10,7 +10,7 @@
   })
 
   const paddingClasses: { sm: string; md: string; lg: string } = {
-    sm: 'p-1.5',
+    sm: 'p-2',
     md: 'p-2',
     lg: 'p-2.5'
   }
