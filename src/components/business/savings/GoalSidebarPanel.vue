@@ -2,7 +2,8 @@
   import { format } from 'date-fns'
   import { es } from 'date-fns/locale'
 
-  import { Badge, Text } from '@/components/atoms'
+  import { Badge, Heading, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import GoalProgressBar from '@/components/business/savings/GoalProgressBar.vue'
   import { CardInfo } from '@/components/molecules'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
@@ -138,35 +139,6 @@
       </div>
     </div>
 
-    <!-- Sección 3: Tips -->
-    <div class="goal-sidebar-panel__section">
-      <CardInfo
-        title="Tips"
-        sub-title="Información útil"
-        title-size="xl"
-        weight="extrabold"
-        level="h1"
-        color="black"
-        sub-title-size="xs"
-        sub-title-color="muted"
-        icon="lightbulb"
-        icon-variant="primary"
-        icon-size="md"
-      />
-
-      <div class="goal-sidebar-panel__tips">
-        <Text size="xs" color="muted">
-          El interés se calcula día a día con interés compuesto. Tu capital crece un poco cada día
-          que permanece depositado. En vistas de 3 meses o más, los aportes futuros son estimados
-          basados en tu último aporte registrado.
-        </Text>
-        <Text size="xs" color="muted">
-          Las proyecciones son estimadas y pueden variar según las actualizaciones de tasa de
-          interés por parte de las entidades financieras.
-        </Text>
-      </div>
-    </div>
-
     <!-- Sección 2: Historial -->
     <div class="goal-sidebar-panel__section">
       <CardInfo
@@ -194,9 +166,11 @@
           </span>
         </div>
       </div>
-      <Text v-else size="sm" color="muted" class="goal-sidebar-panel__empty">
-        Sin cambios registrados
-      </Text>
+      <div v-else class="goal-sidebar-panel__empty">
+        <EmptyStateIllustration type="no-transactions" class="goal-sidebar-panel__empty-illustration" />
+        <Heading level="h3" size="sm" weight="semibold">Sin cambios registrados</Heading>
+        <Text size="xs" color="muted">El historial de cambios aparecerá aquí.</Text>
+      </div>
     </div>
   </SidebarPage>
 </template>
@@ -251,10 +225,10 @@
   }
 
   .goal-sidebar-panel__empty {
-    @apply text-center;
+    @apply flex flex-col items-center gap-3 py-6 text-center;
   }
 
-  .goal-sidebar-panel__tips {
-    @apply flex flex-col gap-3;
+  .goal-sidebar-panel__empty-illustration {
+    @apply h-24 w-24 mx-auto;
   }
 </style>
