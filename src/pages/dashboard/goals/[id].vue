@@ -488,8 +488,59 @@
 
 <template>
   <div class="goal-detail">
+    <!-- Skeleton while loading -->
+    <template v-if="isLoading">
+      <!-- Header skeleton -->
+      <div class="goal-detail__skeleton-header">
+        <div class="goal-detail__skeleton-title" />
+        <div class="goal-detail__skeleton-actions">
+          <div class="goal-detail__skeleton-btn" />
+          <div class="goal-detail__skeleton-btn" />
+        </div>
+      </div>
+
+      <!-- Body skeleton -->
+      <div class="goal-detail__layout">
+        <div class="goal-detail__main">
+          <!-- Insight cards -->
+          <div class="goal-detail__skeleton-cards">
+            <div class="goal-detail__skeleton-card" />
+            <div class="goal-detail__skeleton-card" />
+            <div class="goal-detail__skeleton-card" />
+          </div>
+
+          <!-- Carousel -->
+          <div class="goal-detail__skeleton-carousel" />
+
+          <!-- Projection card -->
+          <div class="goal-detail__skeleton-chart" />
+
+          <!-- Movements table -->
+          <div class="goal-detail__skeleton-movements">
+            <div class="goal-detail__skeleton-movements-header" />
+            <div v-for="i in 5" :key="i" class="goal-detail__skeleton-movements-row" />
+          </div>
+        </div>
+
+        <!-- Sidebar skeleton -->
+        <aside class="goal-detail__sidebar">
+          <!-- Summary panel -->
+          <div class="goal-detail__skeleton-panel">
+            <div class="goal-detail__skeleton-panel-header" />
+            <div class="goal-detail__skeleton-progress" />
+            <div v-for="i in 6" :key="i" class="goal-detail__skeleton-panel-row" />
+          </div>
+          <!-- History panel -->
+          <div class="goal-detail__skeleton-panel">
+            <div class="goal-detail__skeleton-panel-header" />
+            <div v-for="i in 3" :key="i" class="goal-detail__skeleton-history-item" />
+          </div>
+        </aside>
+      </div>
+    </template>
+
     <!-- Header -->
-    <div v-if="goal" class="goal-detail__header">
+    <div v-else-if="goal" class="goal-detail__header">
       <Heading level="h1" size="2xl" weight="extrabold" class="goal-detail__header-name">
         {{ goal.name }}
       </Heading>
@@ -503,11 +554,7 @@
       </div>
     </div>
 
-    <div v-if="isLoading" class="goal-detail__loading">
-      <Text>Cargando...</Text>
-    </div>
-
-    <div v-else-if="goal" class="goal-detail__content">
+    <div v-if="!isLoading && goal" class="goal-detail__content">
       <div class="goal-detail__layout">
         <ResponsiveContainer class="goal-detail__main">
           <!-- Insights -->
@@ -733,5 +780,70 @@
 
   .goal-detail__horizon-btn--active {
     @apply bg-primary-500 text-white hover:bg-primary-600;
+  }
+
+  /* Skeleton */
+  .goal-detail__skeleton-header {
+    @apply flex w-full items-center justify-between gap-4 p-4;
+  }
+
+  .goal-detail__skeleton-title {
+    @apply h-9 w-56 animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-actions {
+    @apply flex items-center gap-2;
+  }
+
+  .goal-detail__skeleton-btn {
+    @apply h-8 w-20 animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-cards {
+    @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3;
+  }
+
+  .goal-detail__skeleton-card {
+    @apply h-24 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-carousel {
+    @apply h-20 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-chart {
+    @apply h-80 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-movements {
+    @apply flex flex-col gap-3 rounded-xl border border-neutral-100 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .goal-detail__skeleton-movements-header {
+    @apply h-7 w-40 animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-movements-row {
+    @apply h-10 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-panel {
+    @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .goal-detail__skeleton-panel-header {
+    @apply h-10 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-progress {
+    @apply h-6 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-panel-row {
+    @apply h-5 w-full animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-detail__skeleton-history-item {
+    @apply h-8 w-full animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
   }
 </style>
