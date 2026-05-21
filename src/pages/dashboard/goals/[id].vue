@@ -147,6 +147,8 @@
     if (!plannedSavingItems.value && currentBudgetId) {
       await fetchPlannedSavings(currentBudgetId)
     }
+
+    await tryAutoRegisterInterest()
   })
 
   // Computed
@@ -375,16 +377,29 @@
       d.getDate() === today.getDate()
   })
 
-  const shouldShowInterestBanner = computed(
-    () =>
-      unregisteredInterest.value > 0.01 &&
-      (account.value?.interestRate ?? 0) > 0 &&
-      principalSaved.value > 0 &&
-      !interestRegisteredToday.value &&
-      !isLoading.value
-  )
-
   const isRegisteringInterest = ref(false)
+  const autoRegistrationFailed = ref(false)
+
+  const shouldShowInterestBanner = computed(() => autoRegistrationFailed.value)
+
+  const tryAutoRegisterInterest = async () => {
+    if (
+      !goalId.value ||
+      unregisteredInterest.value <= 0.01 ||
+      (account.value?.interestRate ?? 0) === 0 ||
+      principalSaved.value === 0 ||
+      interestRegisteredToday.value ||
+      isRegisteringInterest.value
+    ) return
+    isRegisteringInterest.value = true
+    const { success } = await addGoalInterest(goalId.value, unregisteredInterest.value)
+    isRegisteringInterest.value = false
+    if (success) {
+      await Promise.all([loadContributions(), loadSummary()])
+    } else {
+      autoRegistrationFailed.value = true
+    }
+  }
 
   const handleRegisterInterest = async () => {
     if (!goalId.value || unregisteredInterest.value <= 0 || isRegisteringInterest.value) return
@@ -393,6 +408,7 @@
     isRegisteringInterest.value = false
     if (success) {
       showToast({ title: 'Interés registrado', type: 'success' })
+      autoRegistrationFailed.value = false
       await Promise.all([loadContributions(), loadSummary()])
     } else {
       showToast({ title: 'Error al registrar el interés', type: 'error' })
