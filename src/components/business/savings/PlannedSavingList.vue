@@ -3,6 +3,7 @@
 
   import { AlertBanner, Badge, Heading, Icon, Text } from '@/components/atoms'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
   import { useFinancesStore } from '@/stores/finances.store'
   import DateUtils from '@/utils/date'
@@ -26,16 +27,29 @@
     markAsCompleted,
     fetchByBudget,
     savingProgress,
-    savingsAmount
+    savingsAmount,
+    assignGoal
   } = useSavingPlannedApplication()
+
+  const { goals, fetchGoals } = useGoalsApplication()
   const { show } = useToast()
+
+  const currency = computed(() => financesStore.defaultCurrency)
+  const assigningItemId = ref<string | null>(null)
+  const openGoalPickerFor = ref<string | null>(null)
+
+  const toggleGoalPicker = (itemId: string) => {
+    openGoalPickerFor.value = openGoalPickerFor.value === itemId ? null : itemId
+  }
+  const closeGoalPicker = () => {
+    openGoalPickerFor.value = null
+  }
 
   // ------------------------------------------------------------------
   // Datos y lógica de agrupación
   // ------------------------------------------------------------------
   const items = computed(() => savingsPending.value ?? [])
 
-  const currency = computed(() => financesStore.defaultCurrency)
   const itemsByGroup = computed(() => {
     const groups: Record<string, PlannedSavingSummary[]> = {}
     for (const item of items.value) {
@@ -122,9 +136,18 @@
       })
     }
   }
+  const assignGoalToItem = async (itemId: string, savingGoalId: string) => {
+    assigningItemId.value = itemId
+    const { success } = await assignGoal(itemId, savingGoalId)
+    assigningItemId.value = null
+    if (success) {
+      show({ type: 'success', title: 'Meta asignada', description: 'El ahorro fue vinculado a la meta correctamente.' })
+    }
+  }
+
   const loadItems = async () => {
     if (!props.budgetId) return
-    await fetchByBudget(props.budgetId)
+    await Promise.all([fetchByBudget(props.budgetId), fetchGoals()])
     initCollapsedState()
   }
 
@@ -220,7 +243,7 @@
                 <!-- Izquierda: ícono + nombre + cuenta -->
                 <div class="planned-saving-list__item-info">
                   <Icon
-                    :name="item.savingGoal?.reason as string"
+                    :name="item.savingGoal?.reason || 'savings'"
                     size="2xl"
                     :class-name="getIconClasses(item.savingGoal?.reason)"
                   />
@@ -231,11 +254,41 @@
                       weight="extrabold"
                       class="planned-saving-list__item-name"
                     >
-                      {{ (item.savingGoal?.name || 'Meta sin nombre').toUpperCase() }}
+                      {{ (item.savingGoal?.name || 'Sin meta asignada').toUpperCase() }}
                     </Heading>
                     <Text size="xs" color="muted" class="planned-saving-list__item-account">
                       {{ item.account?.name ?? 'Cuenta no definida' }}
                     </Text>
+                    <!-- Selector de meta para ahorros sin meta vinculada -->
+                    <div v-if="!item.savingGoalId && goals.length > 0" class="planned-saving-list__goal-picker">
+                      <button
+                        class="planned-saving-list__assign-btn"
+                        @click.stop="toggleGoalPicker(item.id)"
+                      >
+                        <span class="material-symbols-outlined planned-saving-list__assign-icon">add_link</span>
+                        Asignar meta
+                      </button>
+                      <template v-if="openGoalPickerFor === item.id">
+                        <div class="planned-saving-list__goal-overlay" @click.stop="closeGoalPicker" />
+                        <div class="planned-saving-list__goal-panel">
+                          <Text size="xs" color="muted" class="planned-saving-list__goal-panel-title">
+                            Selecciona una meta
+                          </Text>
+                          <button
+                            v-for="goal in goals"
+                            :key="goal.id"
+                            class="planned-saving-list__goal-option"
+                            :disabled="assigningItemId === item.id"
+                            @click.stop="assignGoalToItem(item.id, goal.id); closeGoalPicker()"
+                          >
+                            <span class="material-symbols-outlined planned-saving-list__goal-option-icon">
+                              {{ goal.reason }}
+                            </span>
+                            <span class="planned-saving-list__goal-option-name">{{ goal.name }}</span>
+                          </button>
+                        </div>
+                      </template>
+                    </div>
                   </div>
                 </div>
 
@@ -392,6 +445,42 @@
 
   .planned-saving-list__item-buttons {
     @apply flex gap-2;
+  }
+
+  .planned-saving-list__assign-btn {
+    @apply mt-1 flex items-center gap-1 text-xs font-medium text-primary-600 transition-colors hover:text-primary-800;
+  }
+
+  .planned-saving-list__assign-icon {
+    @apply text-sm;
+  }
+
+  .planned-saving-list__goal-picker {
+    @apply relative;
+  }
+
+  .planned-saving-list__goal-overlay {
+    @apply fixed inset-0 z-10;
+  }
+
+  .planned-saving-list__goal-panel {
+    @apply absolute left-0 top-full z-20 mt-1 w-56 rounded-lg border border-neutral-200 bg-white p-2 shadow-lg;
+  }
+
+  .planned-saving-list__goal-panel-title {
+    @apply block px-2 py-1 text-xs font-semibold uppercase text-neutral-400;
+  }
+
+  .planned-saving-list__goal-option {
+    @apply flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 disabled:cursor-wait disabled:opacity-50;
+  }
+
+  .planned-saving-list__goal-option-icon {
+    @apply text-base text-neutral-500;
+  }
+
+  .planned-saving-list__goal-option-name {
+    @apply truncate;
   }
 
   /* Animación suave para el colapso */

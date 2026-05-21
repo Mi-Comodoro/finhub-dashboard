@@ -39,8 +39,11 @@ export const useDashboardApplication = () => {
   // Datos expuestos del dashboard
   const currency = computed(() => financesStore.defaultCurrency)
   const totalExpenses = computed(() => expensesStore.totalPaid)
+  const totalCommittedExpenses = computed(() => expensesStore.totalCommitted)
   const expenses = computed(() => expensesStore.expenses)
   const totalSavingGenerated = computed(() => plannedSavingStore.totalSavingGenerated)
+  const totalSavingTarget = computed(() => plannedSavingStore.totalSavingTarget)
+  const totalSavingFromPlan = computed(() => plannedSavingStore.totalSavingFromPlan)
   const totalIncomeReceived = computed(() => transactionStore.totalIncomeReceived)
   const totalPlanned = computed(() => expensesStore.totalPlanned + expensesStore.totalPaid)
   const totalExpensesPaid = computed(() => transactionStore.totalExpensesPaid)
@@ -49,8 +52,11 @@ export const useDashboardApplication = () => {
     loadDashboardData,
     currency,
     totalExpenses,
+    totalCommittedExpenses,
     expenses,
     totalSavingGenerated,
+    totalSavingTarget,
+    totalSavingFromPlan,
     totalIncomeReceived,
     totalPlanned,
     totalExpensesPaid

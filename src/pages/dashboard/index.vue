@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { computed, nextTick, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
+  import VChart from 'vue-echarts'
 
   import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
   import Badge from '@/components/atoms/badge/Badge.vue'
@@ -9,11 +10,10 @@
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import ActiveGoalsCard from '@/components/business/dashboard/ActiveGoalsCard.vue'
+  import BudgetPeriodSummary from '@/components/business/dashboard/BudgetPeriodSummary.vue'
   import DashboardActionCard from '@/components/business/dashboard/DashboardActionCard.vue'
   import DashboardSidebarPanel from '@/components/business/dashboard/DashboardSidebarPanel.vue'
-  import FinancialHealthGauge from '@/components/business/dashboard/FinancialHealthGauge.vue'
-  import UpcomingBillsCard from '@/components/business/dashboard/UpcomingBillsCard.vue'
-  import FinancialTipCarousel from '@/components/business/savings/FinancialTipCarousel.vue'
+  import PlanStatusCard from '@/components/business/dashboard/PlanStatusCard.vue'
   import PlannedSavingList from '@/components/business/savings/PlannedSavingList.vue'
   import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
   import FinancialProgressCard from '@/components/molecules/financial-progress-card/FinancialProgressCard.vue'
@@ -25,11 +25,10 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
-  import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
   import { useDashboardPresenter } from '@/composables/presenters/useDashboardPresenter'
   import { useCommon } from '@/composables/useCommon'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
-  import { FINANCIAL_TIPS } from '@/utils/financial-tips'
+  import { CHART_COLORS } from '@/utils/design-tokens'
 
   const DashboardBalanceChart = defineAsyncComponent(
     () => import('@/components/business/dashboard/DashboardBalanceChart.vue')
@@ -41,8 +40,10 @@
     loadDashboardData,
     currency,
     totalExpenses,
+    totalCommittedExpenses,
     expenses,
     totalSavingGenerated,
+    totalSavingTarget,
     totalIncomeReceived,
     totalPlanned,
     totalExpensesPaid
@@ -63,7 +64,7 @@
   const { goals, accounts, loadGoalsData } = useGoalsApplication()
   const { accounts: payableAccounts } = useAccountsPayableApplication()
 
-  const { hasActiveSavingPlans, contextualTip } = useDashboardPresenter()
+  const { hasActiveSavingPlans } = useDashboardPresenter()
 
   const { healthScore } = useAnalyticsApplication()
 
@@ -77,8 +78,6 @@
   const closeQuickModal = () => {
     showQuickModal.value = false
   }
-  const { receivedPlannedIncome, generatedSavings } = useBudgetInsightsPresenter()
-
   const upcomingBills = computed(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -119,11 +118,23 @@
   })
 
   const incomeBase = computed(() =>
-    budgetStatus.value === 'ACTIVE' ? receivedPlannedIncome.value : expectedAmount.value
+    budgetStatus.value === 'ACTIVE' ? totalIncomeReceived.value : expectedAmount.value
   )
 
+  // Same formula used by the KPI: 20% of actual income base
+  const suggestedSavings = computed(() => {
+    if (!currentBudget.value) return buckets.value.savingsAmount
+    return percentOf(incomeBase.value, currentBudget.value.limits.savings, currency.value)
+  })
+
+  // Actual savings commitment: all non-skipped plans (includes spontaneous)
+  const actualSavingsCommitment = computed(() =>
+    totalSavingTarget.value > 0 ? totalSavingTarget.value : buckets.value.savingsAmount
+  )
+
+  // LIBRE uses actual commitment so spontaneous savings are deducted
   const savingsBase = computed(() =>
-    budgetStatus.value === 'ACTIVE' ? generatedSavings.value : buckets.value.savingsAmount
+    budgetStatus.value === 'ACTIVE' ? actualSavingsCommitment.value : buckets.value.savingsAmount
   )
 
   const expense = computed(() =>
@@ -131,19 +142,16 @@
   )
 
   const available = computed(() =>
-    subtractAmounts(expense.value, totalExpenses.value, currency.value)
+    subtractAmounts(expense.value, totalCommittedExpenses.value, currency.value)
   )
 
-  const displayTips = computed(() => {
-    if (!contextualTip.value) return FINANCIAL_TIPS.common
-    return [...FINANCIAL_TIPS.common]
-  })
-
   const categories = computed(() => {
-    if (!currentBudget.value || !expectedAmount.value) return []
+    if (!currentBudget.value || (!incomeBase.value && !expectedAmount.value)) return []
 
+    const base = incomeBase.value || 0
     const currentCurrency = currency.value
     const budgetExpenses = expenses.value ?? []
+    const isActive = budgetStatus.value === 'ACTIVE'
 
     const needsSpent = budgetExpenses
       .filter(expense => expense.status === 'PAID' && expense.bucket === 'needs')
@@ -153,18 +161,14 @@
       .filter(expense => expense.status === 'PAID' && expense.bucket === 'wants')
       .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0)
 
-    const savingsSpent = totalSavingGenerated.value || 0
+    const savingsSpent = isActive ? actualSavingsCommitment.value : (totalSavingGenerated.value || 0)
 
     return [
       {
         id: 'needs',
         name: 'Gastos Fijos',
         type: 'needs' as const,
-        budgeted: percentOf(
-          expectedAmount.value,
-          currentBudget.value.limits.needs,
-          currentCurrency
-        ),
+        budgeted: percentOf(base, currentBudget.value.limits.needs, currentCurrency),
         spent: needsSpent,
         percentage: currentBudget.value.limits.needs
       },
@@ -172,11 +176,7 @@
         id: 'wants',
         name: 'Gastos Variables u Ocasionales',
         type: 'wants' as const,
-        budgeted: percentOf(
-          expectedAmount.value,
-          currentBudget.value.limits.wants,
-          currentCurrency
-        ),
+        budgeted: percentOf(base, currentBudget.value.limits.wants, currentCurrency),
         spent: wantsSpent,
         percentage: currentBudget.value.limits.wants
       },
@@ -184,15 +184,36 @@
         id: 'savings',
         name: 'Ahorro e Inversiones',
         type: 'savings' as const,
-        budgeted: percentOf(
-          expectedAmount.value,
-          currentBudget.value.limits.savings,
-          currentCurrency
-        ),
+        budgeted: percentOf(base, currentBudget.value.limits.savings, currentCurrency),
         spent: savingsSpent,
         percentage: currentBudget.value.limits.savings
       }
     ]
+  })
+
+  const strategyDonutOption = computed(() => {
+    if (!currentBudget.value) return {}
+    const { needs, wants, savings } = currentBudget.value.limits
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: (p: { name: string; value: number; percent: number }) =>
+          `${p.name}: <strong>${p.value}%</strong>`
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: ['45%', '70%'],
+          data: [
+            { value: needs, name: 'Gastos Fijos', itemStyle: { color: '#14b8a6' } },
+            { value: wants, name: 'Gastos Variables', itemStyle: { color: CHART_COLORS.secondary } },
+            { value: savings, name: 'Ahorro', itemStyle: { color: CHART_COLORS.savings } }
+          ],
+          emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.2)' } },
+          label: { fontSize: 11, formatter: '{b}\n{d}%' }
+        }
+      ]
+    }
   })
 
   onMounted(async () => {
@@ -296,7 +317,7 @@
         <div v-else-if="expectedAmount" class="dashboard-page__cards">
           <FinancialProgressCard
             :title="'Ingresos'"
-            :amount="Number(expectedAmount) || 0"
+            :amount="incomeBase || 0"
             title-color="white"
             text-color="white"
             icon-name="account_balance_wallet"
@@ -307,7 +328,7 @@
           />
           <FinancialProgressCard
             :title="'Ahorro Sugerido/Mes'"
-            :amount="Number(buckets.savingsAmount) || 0"
+            :amount="Number(suggestedSavings) || 0"
             title-color="white"
             text-color="white"
             icon-name="savings"
@@ -328,42 +349,29 @@
           />
         </div>
 
-        <FinancialTipCarousel :tips="displayTips" />
+        <BudgetPeriodSummary
+          v-if="!isPageLoading && currentBudget"
+          :month="currentBudget.month"
+          :year="currentBudget.year"
+          :budget-status="budgetStatus"
+          :income-received="totalIncomeReceived || 0"
+          :income-expected="Number(expectedAmount) || 0"
+          :expenses-paid="totalExpensesPaid || 0"
+          :expenses-planned="totalPlanned || 0"
+          :savings-generated="totalSavingGenerated || 0"
+          :savings-target="suggestedSavings || 0"
+        />
 
         <section v-if="!isPageLoading && currentBudget">
-          <div class="dashboard-page__widgets-grid">
-            <FinancialHealthGauge
-              :score="healthScore?.totalScore"
-              :level="healthScore?.level"
-              :cash-flow-score="healthScore?.cashFlowScore"
-              :savings-score="healthScore?.savingsScore"
-              :expense-score="healthScore?.expenseScore"
-              :debt-score="healthScore?.debtScore"
-              :has-debt-module="false"
-            />
-            <DashboardBalanceChart
-              :expected-income="Number(expectedAmount) || 0"
-              :received-income="totalIncomeReceived || 0"
-              :estimated-savings="buckets.savingsAmount || 0"
-              :generated-savings="totalSavingGenerated || 0"
-              :planned-expenses="totalPlanned || 0"
-              :paid-expenses="totalExpensesPaid || 0"
-              :currency="currency"
-            />
-
-            <ActiveGoalsCard
-              :goals="goals"
-              :currency-code="currency"
-              @create-goal="router.push('/dashboard/goals')"
-              @view-all="router.push('/dashboard/goals')"
-            />
-            <UpcomingBillsCard
-              :bills="upcomingBills"
-              :currency-code="currency"
-              @view="item => router.push(item.type === 'accounts_payable' ? '/dashboard/debts' : '/dashboard/budget')"
-              @pay="item => router.push(item.type === 'accounts_payable' ? '/dashboard/debts' : '/dashboard/budget')"
-            />
-          </div>
+          <DashboardBalanceChart
+            :expected-income="Number(expectedAmount) || 0"
+            :received-income="totalIncomeReceived || 0"
+            :estimated-savings="suggestedSavings || 0"
+            :generated-savings="totalSavingGenerated || 0"
+            :planned-expenses="totalPlanned || 0"
+            :paid-expenses="totalExpensesPaid || 0"
+            :currency="currency"
+          />
         </section>
 
         <section v-if="currentBudget">
@@ -373,40 +381,68 @@
             </Heading>
             <Badge
               :variant="currentBudget?.strategy === 'BALANCED' ? 'primary' : 'secondary'"
+              :class-name="currentBudget?.strategy === 'BALANCED' ? '!bg-primary-900 !text-primary-100' : ''"
             >
               {{ currentBudget?.strategy === 'BALANCED' ? '50/30/20' : 'Personalizada' }}
             </Badge>
           </div>
 
-          <div class="dashboard-page__budget-kpis">
-            <div
-              v-for="cat in categories"
-              :key="cat.id"
-              class="dashboard-page__budget-kpi"
-              :class="`dashboard-page__budget-kpi--${cat.type}`"
-            >
-              <Text size="xs" color="muted">{{ cat.name }}</Text>
-              <Heading level="h2" size="xl" weight="extrabold">
-                {{ formatCurrency(cat.budgeted, currency) }}
-              </Heading>
-              <div class="dashboard-page__budget-track">
-                <div
-                  class="dashboard-page__budget-fill"
-                  :class="`dashboard-page__budget-fill--${cat.type}`"
-                  :style="{
-                    width: cat.budgeted > 0
-                      ? `${Math.min((cat.spent / cat.budgeted) * 100, 100)}%`
-                      : '0%'
-                  }"
-                />
+          <div class="dashboard-page__budget-body">
+            <div class="dashboard-page__budget-donut">
+              <div class="dashboard-page__budget-donut-header">
+                <Text size="sm" weight="bold" color="black">Distribución del ingreso</Text>
+                <Text size="xs" color="muted">
+                  {{ budgetStatus === 'PLANNED' ? 'Ingreso planificado' : 'Ingreso recibido' }}:
+                  {{ formatCurrency(incomeBase, currency) }}
+                </Text>
               </div>
-              <div class="dashboard-page__budget-kpi-footer">
-                <Text size="xs" color="muted">{{ cat.percentage }}% del ingreso</Text>
-                <Text size="xs" weight="medium">{{ formatCurrency(cat.spent, currency) }} gastado</Text>
+              <ClientOnly>
+                <VChart :option="strategyDonutOption" style="height: 240px" autoresize />
+              </ClientOnly>
+            </div>
+
+            <div class="dashboard-page__budget-kpis">
+              <div
+                v-for="cat in categories"
+                :key="cat.id"
+                class="dashboard-page__budget-kpi"
+                :class="`dashboard-page__budget-kpi--${cat.type}`"
+              >
+                <Text size="xs" color="muted">{{ cat.name }}</Text>
+                <Heading level="h2" size="lg" weight="extrabold">
+                  {{ formatCurrency(cat.budgeted, currency) }}
+                </Heading>
+                <div class="dashboard-page__budget-track">
+                  <div
+                    class="dashboard-page__budget-fill"
+                    :class="`dashboard-page__budget-fill--${cat.type}`"
+                    :style="{
+                      width: cat.budgeted > 0
+                        ? `${Math.min((cat.spent / cat.budgeted) * 100, 100)}%`
+                        : '0%'
+                    }"
+                  />
+                </div>
+                <div class="dashboard-page__budget-kpi-footer">
+                  <Text size="xs" color="muted">
+                    {{ cat.percentage }}% del {{ budgetStatus === 'PLANNED' ? 'ing. planificado' : 'ing. recibido' }}
+                  </Text>
+                  <Text size="xs" weight="medium">
+                    {{ formatCurrency(cat.spent, currency) }} {{ budgetStatus === 'PLANNED' ? 'estimado' : 'ejecutado' }}
+                  </Text>
+                </div>
               </div>
             </div>
           </div>
         </section>
+
+        <ActiveGoalsCard
+          v-if="!isPageLoading && currentBudget"
+          :goals="goals"
+          :currency-code="currency"
+          @create-goal="router.push('/dashboard/goals')"
+          @view-all="router.push('/dashboard/goals')"
+        />
 
         <section
           v-if="hasActiveSavingPlans && currentBudget && !isPageLoading"
@@ -444,6 +480,7 @@
           @plan-expenses="router.push(`/dashboard/budget/${currentBudget?.id}`)"
           @carry-forward="router.push('/dashboard/budget')"
         />
+        <PlanStatusCard />
         <DashboardSidebarPanel
           :health-score="healthScore"
           :goals="goals"
@@ -458,7 +495,13 @@
     </ModalWizard>
 
     <ModalWizard v-model:show="showQuickModal">
-      <QuickTransactionForm :goals="goals" :accounts="accounts" @on-close="closeQuickModal" />
+      <QuickTransactionForm
+        :goals="goals"
+        :accounts="accounts"
+        :budget-savings-percentage="currentBudget?.limits?.savings ?? 20"
+        :currency="currency"
+        @on-close="closeQuickModal"
+      />
     </ModalWizard>
   </div>
 </template>
@@ -477,7 +520,7 @@
   }
 
   .dashboard-page__sidebar {
-    @apply flex flex-col gap-4 xl:sticky xl:top-4;
+    @apply flex flex-col gap-4;
   }
 
   .dashboard-page__header {
@@ -521,20 +564,28 @@
     @apply !bg-primary-50;
   }
 
-  .dashboard-page__widgets-grid {
-    @apply grid grid-cols-1 gap-4 md:grid-cols-2;
-  }
-
   .dashboard-page__budget-header {
     @apply flex items-center justify-between;
   }
 
+  .dashboard-page__budget-body {
+    @apply mt-3 grid grid-cols-1 gap-4 md:grid-cols-[2fr_3fr];
+  }
+
+  .dashboard-page__budget-donut {
+    @apply flex flex-col gap-2 rounded-xl border border-neutral-200 bg-white p-4;
+  }
+
+  .dashboard-page__budget-donut-header {
+    @apply flex flex-col gap-0.5;
+  }
+
   .dashboard-page__budget-kpis {
-    @apply mt-3 grid grid-cols-1 gap-4 md:grid-cols-3;
+    @apply flex flex-col gap-3;
   }
 
   .dashboard-page__budget-kpi {
-    @apply flex flex-col gap-2 rounded-xl border p-4;
+    @apply flex flex-col gap-1.5 rounded-xl border p-4;
   }
 
   .dashboard-page__budget-kpi--needs {

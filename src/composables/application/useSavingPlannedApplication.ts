@@ -9,7 +9,8 @@ export const useSavingPlannedApplication = () => {
     pendingItems,
     completedItems,
     fetchByBudget: appFetchByBudget,
-    markAsCompleted: appMarkAsCompleted
+    markAsCompleted: appMarkAsCompleted,
+    assignGoal: appAssignGoal
   } = usePlannedSavingApplication()
 
   const markAsCompleted = async (itemId: string) => {
@@ -19,6 +20,10 @@ export const useSavingPlannedApplication = () => {
 
   const fetchByBudget = async (budgetId: string) => {
     await appFetchByBudget(budgetId)
+  }
+
+  const assignGoal = async (itemId: string, savingGoalId: string) => {
+    return await appAssignGoal(itemId, savingGoalId)
   }
 
   const savingsPending = computed(() => pendingItems.value)
@@ -40,6 +45,7 @@ export const useSavingPlannedApplication = () => {
     savingProgress,
     savingsAmount,
     markAsCompleted,
-    fetchByBudget
+    fetchByBudget,
+    assignGoal
   }
 }

@@ -87,13 +87,22 @@ export function useSavingsApi() {
   const createPlannedSaving = async (data: {
     amount: number
     budgetId: string
-    plannedIncomeId: string
-    savingGoalId: string
+    plannedIncomeId?: string
+    savingGoalId?: string
   }) =>
     $fetch<{ success: boolean; result: PlannedSavingSummary }>('/api/savings/planned', {
       method: 'POST',
       body: data
     })
+
+  const assignGoalToPlannedSaving = async (id: string, savingGoalId: string) =>
+    $fetch<{ success: boolean; result: PlannedSavingSummary }>(
+      `/api/savings/planned/${id}/goal`,
+      {
+        method: 'PATCH',
+        body: { savingGoalId }
+      }
+    )
 
   return {
     getPlannedSavingsByBudget,
@@ -111,6 +120,7 @@ export function useSavingsApi() {
     getGoalContributions,
     getGoalSummary,
     registerGoalInterest,
-    createPlannedSaving
+    createPlannedSaving,
+    assignGoalToPlannedSaving
   }
 }

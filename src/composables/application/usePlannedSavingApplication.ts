@@ -22,6 +22,10 @@ export function usePlannedSavingApplication() {
     return { success }
   }
 
+  const assignGoal = async (itemId: string, savingGoalId: string) => {
+    return await plannedSavingStore.assignGoal(itemId, savingGoalId)
+  }
+
   const isLoading = computed(() => plannedSavingStore.isLoading)
   const items = computed(() => plannedSavingStore.items)
   const pendingItems = computed(() => plannedSavingStore.pendingItems)
@@ -33,6 +37,7 @@ export function usePlannedSavingApplication() {
   return {
     fetchByBudget,
     markAsCompleted,
+    assignGoal,
     isLoading,
     items,
     pendingItems,

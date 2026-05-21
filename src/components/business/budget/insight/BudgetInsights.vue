@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
+  import { useExpensesStore } from '@/stores/expense.store'
 
   import type { BudgetInsightsData } from './types'
 
@@ -16,7 +16,7 @@
   const { currency, plan, receivedIncome, generatedSavings, pendingSavings } =
     useBudgetInsightsPresenter()
 
-  const { expenses } = useExpenseApplication()
+  const expensesStore = useExpensesStore()
 
   // --- PLANNED (base estática del mes) ---
   const { expectedAmount, savingsAmount, needsAmount, wantsAmount } = usePlannedIncomeApplication()
@@ -27,7 +27,8 @@
     subtractAmounts(receivedIncome.value, generatedSavings.value, currency.value)
   )
 
-  const committedExpenses = computed(() => expenses.value)
+  // PAID + PLANNED: same definition used on the dashboard
+  const committedExpenses = computed(() => expensesStore.totalCommitted)
 
   const freeUncommitted = computed(() =>
     subtractAmounts(actualAvailableBase.value, committedExpenses.value, currency.value)

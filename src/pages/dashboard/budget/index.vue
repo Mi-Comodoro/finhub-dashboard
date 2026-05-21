@@ -176,12 +176,12 @@
     const labels = {
       income: {
         PLANNED: 'Ingreso Esperado',
-        ACTIVE: 'Ingreso Recibido',
+        ACTIVE: 'Ingreso Esperado',
         CLOSED: 'Ingreso Total'
       },
       savings: {
         PLANNED: 'Ahorro Estimado',
-        ACTIVE: 'Ahorro Generado',
+        ACTIVE: 'Ahorro Estimado',
         CLOSED: 'Ahorro Finalizado'
       }
     }

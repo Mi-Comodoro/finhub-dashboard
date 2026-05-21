@@ -68,6 +68,12 @@ export const useExpensesStore = defineStore('expenses', {
     totalPlanned: state =>
       state.expenses
         .filter(e => e.status === 'PLANNED')
+        .reduce((sum, e) => sum + Number(e.expectedAmount ?? 0), 0),
+
+    // PAID + PLANNED: all active commitments for LIBRE SIN COMPROMETER
+    totalCommitted: state =>
+      state.expenses
+        .filter(e => e.status === 'PAID' || e.status === 'PLANNED')
         .reduce((sum, e) => sum + Number(e.expectedAmount ?? 0), 0)
   },
 

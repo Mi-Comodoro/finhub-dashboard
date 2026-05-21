@@ -17,7 +17,7 @@ export function useBudgetInsightsPresenter() {
   const currency = computed(() => financesStore.defaultCurrency)
   const plan = computed(() => budgetStore.budgetSelected)
   const receivedIncome = computed(() => transactionStore.totalIncomeReceived)
-  const generatedSavings = computed(() => plannedSavingStore.totalSavingGenerated)
+  const generatedSavings = computed(() => plannedSavingStore.totalSavingTarget)
   const pendingSavings = computed(() => plannedSavingStore.totalSavingPending)
 
   return {
