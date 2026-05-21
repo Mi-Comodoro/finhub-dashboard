@@ -221,12 +221,14 @@
   // Use completed PlannedSavings for the projection: they always have savingGoalId and
   // cover deposits from both completePlannedSaving and createContribution flows.
   // Filtering by 'completed' prevents double-counting when a pending entry coexists.
+  // Use completedAt as primary date so interest is calculated from the actual deposit
+  // date, not the scheduled planned date (which may be earlier and inflate interest).
   const savingsForProjection = computed(() =>
     completedSavings.value.map(s => ({
       amount: s.amount ?? 0,
       status: 'completed' as const,
       completedAt: String(s.completedAt ?? s.date),
-      date: String(s.date ?? s.completedAt)
+      date: String(s.completedAt ?? s.date)
     }))
   )
 
@@ -257,12 +259,23 @@
   const projectionPoints = computed<SavingPoint[]>(() => {
     const interestRate = account.value?.interestRate ?? 0
     if (savingsForProjection.value.length === 0) return []
-    return buildProjection({
+    const points = buildProjection({
       savings: savingsForProjection.value,
       annualRate: interestRate,
       view: selectedHorizon.value,
       referenceDate: new Date()
     })
+
+    // The projection algorithm may underestimate interest vs what was actually
+    // registered (different calculation methods). Apply the gap as a uniform
+    // offset so the chart's today-point matches the registered amount and
+    // future projections compound from the correct baseline.
+    const registered = totalRegisteredInterest.value
+    const projected = totalEarnedInterest.value
+    const adjustment = registered > projected ? registered - projected : 0
+    if (adjustment <= 0) return points
+
+    return points.map(p => ({ ...p, withInterest: p.withInterest + adjustment }))
   })
 
   const basePoints = computed(() => projectionPoints.value.map(p => p.withoutInterest))

@@ -30,8 +30,10 @@
     [...props.movements].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   )
 
-  const formatDate = (dateString: string) =>
-    format(new Date(dateString), 'dd/MMM/yyyy', { locale: es })
+  const formatDate = (dateString: string) => {
+    const datePart = dateString.substring(0, 10)
+    return format(new Date(`${datePart}T12:00:00`), 'dd/MMM/yyyy', { locale: es })
+  }
 
   const TYPE_LABELS: Record<MovementKind, string> = {
     aporte: 'Aporte',
