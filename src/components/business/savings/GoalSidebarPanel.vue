@@ -132,7 +132,7 @@
         sub-title-color="muted"
         icon="info"
         icon-variant="primary"
-        icon-size="sm"
+        icon-size="md"
       />
 
       <GoalProgressBar
@@ -189,7 +189,7 @@
         sub-title-color="muted"
         icon="history"
         icon-variant="primary"
-        icon-size="sm"
+        icon-size="md"
       />
 
       <div v-if="history.length > 0" class="goal-sidebar-panel__history-list">
