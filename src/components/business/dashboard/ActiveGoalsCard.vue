@@ -24,16 +24,8 @@
 
   const totalGoals = computed(() => (props.goals ?? []).filter(g => g.isActive).length)
 
-  function getSavedAmount(goal: GoalsData): number {
-    if (!goal.plannedSavings || goal.plannedSavings.length === 0) return 0
-    return goal.plannedSavings
-      .filter(ps => ps.status === 'completed')
-      .reduce((sum, ps) => sum + (ps.amount ?? 0), 0)
-  }
-
   function getProgress(goal: GoalsData): number {
-    const saved = getSavedAmount(goal)
-    return getProgressPercentage(saved, goal.targetAmount ?? null)
+    return getProgressPercentage(goal.totalSaved ?? 0, goal.targetAmount ?? null)
   }
 </script>
 

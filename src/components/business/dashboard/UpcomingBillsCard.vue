@@ -2,6 +2,7 @@
   import { computed } from 'vue'
 
   import { Badge, Heading, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { formatCurrency } from '@/utils/currency'
 
   interface Bill {
@@ -16,19 +17,11 @@
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    bills: undefined,
+    bills: () => [],
     currencyCode: 'COP'
   })
 
-  const mockBills: Bill[] = [
-    { name: 'Tarjeta Bancolombia', daysUntilDue: 2, amount: 450000 },
-    { name: 'Préstamo vehículo', daysUntilDue: 8, amount: 1200000 },
-    { name: 'Netflix + Spotify', daysUntilDue: 18, amount: 85000 }
-  ]
-
-  const displayBills = computed(() =>
-    props.bills && props.bills.length > 0 ? props.bills : mockBills
-  )
+  const displayBills = computed(() => props.bills ?? [])
 
   const totalCommitted = computed(() => displayBills.value.reduce((sum, b) => sum + b.amount, 0))
 
@@ -51,10 +44,9 @@
   <div class="bills-card">
     <div class="bills-card__header">
       <Heading level="h3" size="sm" weight="semibold">Próximos vencimientos</Heading>
-      <Badge variant="warning" size="xs">Próximamente</Badge>
     </div>
 
-    <div class="bills-card__list">
+    <div v-if="displayBills.length > 0" class="bills-card__list">
       <div v-for="bill in displayBills" :key="bill.name" class="bills-card__item">
         <span class="bills-card__dot" :class="getUrgency(bill.daysUntilDue).dotClass" />
         <div class="bills-card__item-info">
@@ -72,15 +64,16 @@
       </div>
     </div>
 
-    <div class="bills-card__footer">
+    <div v-else class="bills-card__empty">
+      <EmptyStateIllustration type="no-transactions" class="bills-card__empty-illustration" />
+      <Text size="sm" color="muted">Sin gastos pendientes este mes</Text>
+    </div>
+
+    <div v-if="displayBills.length > 0" class="bills-card__footer">
       <div class="bills-card__footer-row">
         <Text size="xs" color="muted">Total comprometido este mes</Text>
         <Text size="sm" weight="bold">{{ formatCurrency(totalCommitted, currencyCode) }}</Text>
       </div>
-    </div>
-
-    <div class="bills-card__action">
-      <Text size="xs" color="muted">Módulo de deudas y facturas en desarrollo</Text>
     </div>
   </div>
 </template>
@@ -142,7 +135,11 @@
     @apply flex items-center justify-between;
   }
 
-  .bills-card__action {
-    @apply pt-1;
+  .bills-card__empty {
+    @apply flex flex-col items-center gap-2 py-4 text-center;
+  }
+
+  .bills-card__empty-illustration {
+    @apply mx-auto h-16 w-16;
   }
 </style>

@@ -79,6 +79,24 @@
   }
   const { receivedPlannedIncome, generatedSavings } = useBudgetInsightsPresenter()
 
+  const upcomingBills = computed(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return (expenses.value ?? [])
+      .filter(e => e.status === 'PLANNED')
+      .map(e => {
+        const due = new Date(e.dueDate)
+        due.setHours(0, 0, 0, 0)
+        return {
+          name: e.name,
+          amount: Number(e.expectedAmount),
+          daysUntilDue: Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+        }
+      })
+      .sort((a, b) => a.daysUntilDue - b.daysUntilDue)
+      .slice(0, 5)
+  })
+
   const incomeBase = computed(() =>
     budgetStatus.value === 'ACTIVE' ? receivedPlannedIncome.value : expectedAmount.value
   )
@@ -324,7 +342,7 @@
           @create-goal="router.push('/dashboard/goals')"
           @view-all="router.push('/dashboard/goals')"
         />
-        <UpcomingBillsCard :currency-code="currency" />
+        <UpcomingBillsCard :bills="upcomingBills" :currency-code="currency" />
       </div>
     </section>
 
