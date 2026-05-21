@@ -124,15 +124,15 @@
       <CardInfo
         title="Resumen de Meta"
         sub-title="Estado actual"
-        title-size="xl"
-        weight="extrabold"
-        level="h1"
+        title-size="sm"
+        weight="semibold"
+        level="h3"
         color="black"
         sub-title-size="xs"
         sub-title-color="muted"
         icon="info"
         icon-variant="primary"
-        icon-size="md"
+        icon-size="sm"
       />
 
       <GoalProgressBar
@@ -181,15 +181,15 @@
       <CardInfo
         title="Historial"
         sub-title="Cambios registrados"
-        title-size="xl"
-        weight="extrabold"
-        level="h1"
+        title-size="sm"
+        weight="semibold"
+        level="h3"
         color="black"
         sub-title-size="xs"
         sub-title-color="muted"
         icon="history"
         icon-variant="primary"
-        icon-size="md"
+        icon-size="sm"
       />
 
       <div v-if="history.length > 0" class="goal-sidebar-panel__history-list">
