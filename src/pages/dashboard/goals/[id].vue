@@ -16,6 +16,7 @@
   import type { GoalHistory, GoalsData, PlannedSaving, Transaction } from '@/types/api'
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
+  import DateUtils from '@/utils/date'
 
   const GoalProjectionChart = defineAsyncComponent(
     () => import('@/components/business/savings/GoalProjectionChart.vue')
@@ -455,6 +456,23 @@
 
   const currency = 'COP' as const
 
+  const isDeadlineAtRisk = computed(() => {
+    const months = projectionSummary.value.monthsToGoal
+    if (!goal.value?.targetDate || months === null || months <= 0) return false
+    const estimated = new Date()
+    estimated.setMonth(estimated.getMonth() + months)
+    const target = new Date(String(goal.value.targetDate))
+    return estimated > target
+  })
+
+  const estimatedCompletionLabel = computed(() => {
+    const months = projectionSummary.value.monthsToGoal
+    if (months === null) return ''
+    const date = new Date()
+    date.setMonth(date.getMonth() + months)
+    return DateUtils.formatDate(date, 'short')
+  })
+
   // Set initial horizon based on compounding frequency
   watch(
     account,
@@ -502,6 +520,31 @@
           />
 
           <GoalInfoCarousel />
+
+          <!-- Deadline at risk banner -->
+          <div v-if="isDeadlineAtRisk" class="goal-detail__deadline-banner">
+            <div class="goal-detail__deadline-banner-left">
+              <span class="material-symbols-outlined goal-detail__deadline-banner-icon">schedule</span>
+              <div>
+                <Text size="sm" weight="semibold" class="goal-detail__deadline-banner-title">
+                  La fecha objetivo puede no alcanzarse
+                </Text>
+                <Text size="xs" color="muted">
+                  Al ritmo actual, llegarías a tu meta aproximadamente el
+                  <strong>{{ estimatedCompletionLabel }}</strong>.
+                  Considera aumentar tu aporte mensual o ajustar la fecha.
+                </Text>
+              </div>
+            </div>
+            <div class="goal-detail__deadline-banner-actions">
+              <Button size="sm" variant="primary" icon="add" @click="openContributionModal">
+                Hacer aporte
+              </Button>
+              <Button size="sm" variant="ghost" icon="edit" @click="openEditModal">
+                Ajustar fecha
+              </Button>
+            </div>
+          </div>
 
           <!-- Interest registration banner (between cards and chart) -->
           <div v-if="shouldShowInterestBanner" class="goal-detail__interest-banner">
@@ -619,6 +662,28 @@
 
   .goal-detail__content {
     @apply flex flex-col gap-4;
+  }
+
+  /* Deadline at risk banner */
+  .goal-detail__deadline-banner {
+    @apply flex flex-wrap items-start justify-between gap-4 rounded-lg border border-warning-300 bg-warning-50 px-4 py-3;
+    @apply dark:border-warning-700 dark:bg-warning-900;
+  }
+
+  .goal-detail__deadline-banner-left {
+    @apply flex items-start gap-3;
+  }
+
+  .goal-detail__deadline-banner-icon {
+    @apply mt-0.5 shrink-0 text-warning-600 dark:text-warning-400;
+  }
+
+  .goal-detail__deadline-banner-title {
+    @apply text-warning-800 dark:text-warning-300;
+  }
+
+  .goal-detail__deadline-banner-actions {
+    @apply flex shrink-0 gap-2;
   }
 
   /* Interest banner */
