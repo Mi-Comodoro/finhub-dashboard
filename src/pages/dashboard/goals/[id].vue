@@ -636,7 +636,7 @@
 
   /* Layout Principal */
   .goal-detail__layout {
-    @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start;
+    @apply flex flex-col gap-6 px-4 lg:px-0 lg:flex-row lg:items-start;
   }
 
   .goal-detail__main {

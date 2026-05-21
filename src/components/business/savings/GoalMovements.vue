@@ -1,9 +1,9 @@
 <script setup lang="ts">
-  import { format } from 'date-fns'
-  import { es } from 'date-fns/locale'
   import { computed } from 'vue'
 
   import { Badge, Card, Heading, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import type { Column } from '@/components/organisms'
   import { formatCurrency } from '@/utils/currency'
 
   export interface GoalMovementItem {
@@ -26,14 +26,24 @@
     movements: () => []
   })
 
-  const sortedMovements = computed(() =>
-    [...props.movements].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  )
+  const columns: Column[] = [
+    { key: 'date', label: 'Fecha', type: 'date', bold: true },
+    { key: 'amount', label: 'Monto', type: 'currency' },
+    { key: 'kind', label: 'Tipo' },
+    { key: 'note', label: 'Nota' }
+  ]
 
-  const formatDate = (dateString: string) => {
-    const datePart = dateString.substring(0, 10)
-    return format(new Date(`${datePart}T12:00:00`), 'dd/MMM/yyyy', { locale: es })
-  }
+  const tableData = computed(() =>
+    [...props.movements]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .map((m) => ({
+        id: m.id ?? m.date,
+        date: m.date,
+        amount: m.amount,
+        kind: m.kind ?? 'aporte',
+        note: m.note ?? '—'
+      }))
+  )
 
   const TYPE_LABELS: Record<MovementKind, string> = {
     aporte: 'Aporte',
@@ -46,50 +56,35 @@
     interes: 'secondary',
     ajuste: 'default'
   }
-
-  const getTypeLabel = (kind?: MovementKind) => TYPE_LABELS[kind ?? 'aporte']
-  const getTypeVariant = (kind?: MovementKind) => TYPE_VARIANTS[kind ?? 'aporte']
 </script>
 
 <template>
   <Card class="goal-movements">
     <Heading level="h3" size="lg" weight="bold">Movimientos</Heading>
 
-    <div v-if="sortedMovements.length === 0" class="goal-movements__empty">
-      <Text size="sm" color="muted">Aún no hay movimientos registrados para esta meta</Text>
-    </div>
+    <DataTable :columns="columns" :data="tableData">
+      <template #cell-amount="{ value }">
+        <Text size="xs" weight="semibold">{{ formatCurrency(value as number, 'COP') }}</Text>
+      </template>
 
-    <div v-else class="goal-movements__table">
-      <div class="goal-movements__header">
-        <div class="goal-movements__col--date">Fecha</div>
-        <div class="goal-movements__col--amount">Monto</div>
-        <div class="goal-movements__col--type">Tipo</div>
-        <div class="goal-movements__col--note">Nota</div>
-      </div>
+      <template #cell-kind="{ value }">
+        <Badge :variant="TYPE_VARIANTS[value as MovementKind]" size="xs">
+          {{ TYPE_LABELS[value as MovementKind] }}
+        </Badge>
+      </template>
 
-      <div class="goal-movements__body">
-        <div
-          v-for="movement in sortedMovements"
-          :key="movement.id"
-          class="goal-movements__row"
-        >
-          <div class="goal-movements__col--date">
-            <Text size="sm">{{ formatDate(movement.date) }}</Text>
-          </div>
-          <div class="goal-movements__col--amount">
-            <Text size="sm" weight="semibold">{{ formatCurrency(movement.amount, 'COP') }}</Text>
-          </div>
-          <div class="goal-movements__col--type">
-            <Badge :variant="getTypeVariant(movement.kind)" size="xs">
-              {{ getTypeLabel(movement.kind) }}
-            </Badge>
-          </div>
-          <div class="goal-movements__col--note">
-            <Text size="sm" color="muted">{{ movement.note ?? '—' }}</Text>
-          </div>
+      <template #cell-note="{ value }">
+        <Text size="xs" color="muted">{{ value }}</Text>
+      </template>
+
+      <template #empty>
+        <div class="goal-movements__empty">
+          <EmptyStateIllustration type="no-transactions" class="goal-movements__empty-illustration" />
+          <Heading level="h3" size="sm" weight="semibold">Sin movimientos</Heading>
+          <Text size="xs" color="muted">Aún no hay movimientos registrados para esta meta.</Text>
         </div>
-      </div>
-    </div>
+      </template>
+    </DataTable>
   </Card>
 </template>
 
@@ -99,38 +94,10 @@
   }
 
   .goal-movements__empty {
-    @apply py-8 text-center;
+    @apply flex flex-col items-center gap-3 py-10 text-center;
   }
 
-  .goal-movements__table {
-    @apply w-full;
-  }
-
-  .goal-movements__header {
-    @apply grid grid-cols-12 gap-4 border-b border-neutral-200 pb-2 text-sm font-medium text-neutral-600 dark:border-neutral-700 dark:text-neutral-400;
-  }
-
-  .goal-movements__body {
-    @apply space-y-2;
-  }
-
-  .goal-movements__row {
-    @apply grid grid-cols-12 gap-4 rounded-lg border border-neutral-200 p-3 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800;
-  }
-
-  .goal-movements__col--date {
-    @apply col-span-3 flex items-center;
-  }
-
-  .goal-movements__col--amount {
-    @apply col-span-3 flex items-center;
-  }
-
-  .goal-movements__col--type {
-    @apply col-span-2 flex items-center;
-  }
-
-  .goal-movements__col--note {
-    @apply col-span-4 flex items-center;
+  .goal-movements__empty-illustration {
+    @apply mx-auto h-28 w-28;
   }
 </style>

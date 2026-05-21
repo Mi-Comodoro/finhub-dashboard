@@ -1,7 +1,4 @@
 <script setup lang="ts">
-  import { format } from 'date-fns'
-  import { es } from 'date-fns/locale'
-
   import { Badge, Heading, Text } from '@/components/atoms'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import GoalProgressBar from '@/components/business/savings/GoalProgressBar.vue'
@@ -9,6 +6,7 @@
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import type { AccountData, GoalHistory, GoalsData } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
+  import DateUtils from '@/utils/date'
   import { GOAL_STATUS_LABELS, type GoalStatus } from '@/utils/goals.utils'
   import type { Currency } from '~/components/organisms/forms/types'
 
@@ -48,15 +46,22 @@
 
   const deadlineLabel = computed(() => {
     if (!props.goal.targetDate) return 'Sin plazo'
-    return format(new Date(props.goal.targetDate), 'dd MMM yyyy', { locale: es })
+    return DateUtils.formatDate(String(props.goal.targetDate), 'numeric')
   })
 
   const targetAmountLabel = computed(() => {
     return formatCurrency(props.goal.targetAmount ?? 0, props.currency as Currency)
   })
 
-  const formatDate = (date: string) => {
-    return format(new Date(date), 'dd MMM yyyy, HH:mm', { locale: es })
+  const formatTimestamp = (date: string) => DateUtils.formatDate(date, 'numeric')
+
+  const formatDateOnly = (dateString: string): string => {
+    try {
+      const result = DateUtils.formatDate(dateString, 'numeric')
+      return result === '---' || result === 'Fecha inválida' ? '—' : result
+    } catch {
+      return '—'
+    }
   }
 
   const FIELD_LABELS: Record<string, string> = {
@@ -74,7 +79,10 @@
     const percentFields = ['interestRate', 'percentage']
     if (moneyFields.includes(field))
       return formatCurrency(Number(value) || 0, props.currency as Currency)
-    if (dateFields.includes(field)) return formatDate(value as string)
+    if (dateFields.includes(field)) {
+      if (!value || value === 'null' || value === 'undefined') return '—'
+      return formatDateOnly(String(value))
+    }
     if (percentFields.includes(field)) return `${value}%`
     return String(value ?? '—')
   }
@@ -158,12 +166,13 @@
       <div v-if="history.length > 0" class="goal-sidebar-panel__history-list">
         <div v-for="item in history" :key="item.id" class="goal-sidebar-panel__history-item">
           <span class="goal-sidebar-panel__history-bullet">●</span>
-          <span class="goal-sidebar-panel__history-date">{{ formatDate(item.changedAt) }}</span>
-          <span class="goal-sidebar-panel__history-text">
-            <strong>{{ FIELD_LABELS[item.field] ?? item.field }}:</strong>
-            {{ formatHistoryValue(item.field, item.oldValue) }} →
-            {{ formatHistoryValue(item.field, item.newValue) }}
-          </span>
+          <div class="goal-sidebar-panel__history-content">
+            <span class="goal-sidebar-panel__history-date">{{ formatTimestamp(item.changedAt) }}</span>
+            <span class="goal-sidebar-panel__history-text">
+              <strong>{{ FIELD_LABELS[item.field] ?? item.field }}:</strong>
+              {{ formatHistoryValue(item.field, item.oldValue) }} → {{ formatHistoryValue(item.field, item.newValue) }}
+            </span>
+          </div>
         </div>
       </div>
       <div v-else class="goal-sidebar-panel__empty">
@@ -205,23 +214,27 @@
   }
 
   .goal-sidebar-panel__history-list {
-    @apply flex flex-col gap-3;
+    @apply flex flex-col gap-2;
   }
 
   .goal-sidebar-panel__history-item {
-    @apply flex items-start gap-2 text-sm;
+    @apply flex items-start gap-1.5 text-xs;
   }
 
   .goal-sidebar-panel__history-bullet {
-    @apply text-primary-500;
+    @apply mt-0.5 shrink-0 text-[8px] text-primary-400;
+  }
+
+  .goal-sidebar-panel__history-content {
+    @apply flex flex-col gap-0.5;
   }
 
   .goal-sidebar-panel__history-date {
-    @apply text-neutral-500 dark:text-neutral-400;
+    @apply text-[10px] text-neutral-400 dark:text-neutral-500;
   }
 
   .goal-sidebar-panel__history-text {
-    @apply flex-1 text-neutral-700 dark:text-neutral-200;
+    @apply leading-snug text-neutral-600 dark:text-neutral-300;
   }
 
   .goal-sidebar-panel__empty {

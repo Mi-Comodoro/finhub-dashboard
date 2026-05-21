@@ -109,9 +109,15 @@
         success = result.success
       }
 
-      emit('onClose', success)
+      if (success) {
+        emit('onSuccess')
+      } else {
+        emit('onError')
+      }
+      emit('onClose')
     } catch (error) {
-      emit('onClose', false)
+      emit('onError')
+      emit('onClose')
       console.error('Error in handleSubmit:', error)
     } finally {
       isSubmitting.value = false
