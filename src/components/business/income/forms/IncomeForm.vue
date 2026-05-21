@@ -205,7 +205,7 @@
   }
 
   .income-form__toggle-btn--active {
-    @apply bg-primary-500 text-white;
+    @apply bg-primary-900 text-white hover:bg-primary-900 focus:ring-primary-500;
   }
 
   .income-form__savings-preview {

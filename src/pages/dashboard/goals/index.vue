@@ -766,7 +766,7 @@
   }
 
   .goals-page__view-btn--active {
-    @apply !bg-primary-500 !text-white;
+    @apply !bg-primary-900 !text-white !hover:bg-primary-900;
   }
 
   .goals-page__title {

@@ -785,7 +785,7 @@
   }
 
   .goal-detail__horizon-btn--active {
-    @apply bg-primary-500 text-white hover:bg-primary-600;
+    @apply bg-primary-900 text-white hover:bg-primary-900 focus:ring-primary-500;
   }
 
   /* Skeleton */
