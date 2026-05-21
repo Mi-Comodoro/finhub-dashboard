@@ -2,6 +2,7 @@
   import { computed, onMounted, ref, watch } from 'vue'
 
   import { AlertBanner, Badge, Heading, Icon, Text } from '@/components/atoms'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
   import { useFinancesStore } from '@/stores/finances.store'
   import DateUtils from '@/utils/date'
@@ -174,8 +175,8 @@
 
     <!-- Sin datos -->
     <div v-else-if="items.length === 0" class="planned-saving-list__empty">
-      <Icon name="savings" size="2xl" class="planned-saving-list__empty-icon" />
-      <Heading level="h3" size="lg" color="muted">No hay ahorros planeados</Heading>
+      <EmptyStateIllustration type="no-transactions" class="planned-saving-list__empty-illustration" />
+      <Heading level="h3" size="lg" weight="semibold">No hay ahorros planeados</Heading>
       <Text size="sm" color="muted">
         Cuando existan programaciones de ahorro para este presupuesto, aparecerán aquí.
       </Text>
@@ -302,11 +303,11 @@
   }
 
   .planned-saving-list__empty {
-    @apply flex flex-col items-center gap-3 py-10 text-center;
+    @apply flex flex-col items-center gap-3 py-12 text-center;
   }
 
-  .planned-saving-list__empty-icon {
-    @apply text-slate-300;
+  .planned-saving-list__empty-illustration {
+    @apply mx-auto h-32 w-32;
   }
 
   .planned-saving-list__groups {

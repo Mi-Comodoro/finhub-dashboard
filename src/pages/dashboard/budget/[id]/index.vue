@@ -162,6 +162,11 @@
   }
 
   const handleFormSuccess = () => {
+    const isEdit = formMode.value === 'edit'
+    successToast(
+      isEdit ? 'Gasto actualizado' : 'Gasto registrado',
+      isEdit ? 'El gasto planificado fue actualizado correctamente.' : 'El gasto fue agregado al presupuesto.'
+    )
     closeForm()
   }
 

@@ -1,10 +1,11 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Button, Heading, Text } from '@/components/atoms'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import type { GoalsData } from '@/types/api'
-  import { formatCurrency } from '@/utils/currency'
   import { getProgressPercentage } from '@/utils/goal-formatters'
+
+  const MAX_VISIBLE = 8
 
   interface Props {
     goals?: GoalsData[]
@@ -20,49 +21,53 @@
     (e: 'create-goal' | 'view-all'): void
   }>()
 
-  const activeGoals = computed(() => (props.goals ?? []).filter(g => g.isActive).slice(0, 3))
-
-  const totalGoals = computed(() => (props.goals ?? []).filter(g => g.isActive).length)
+  const allActive = computed(() => (props.goals ?? []).filter(g => g.isActive))
+  const visibleGoals = computed(() => allActive.value.slice(0, MAX_VISIBLE))
+  const totalGoals = computed(() => allActive.value.length)
+  const hasMore = computed(() => totalGoals.value > MAX_VISIBLE)
 
   function getProgress(goal: GoalsData): number {
     return getProgressPercentage(goal.totalSaved ?? 0, goal.targetAmount ?? null)
   }
+
+  function getProgressColor(pct: number): string {
+    if (pct >= 80) return 'goals-card__goal-pct--done'
+    if (pct >= 40) return 'goals-card__goal-pct--mid'
+    return 'goals-card__goal-pct--start'
+  }
 </script>
 
 <template>
-  <div class="goals-card">
+  <div v-if="totalGoals > 0" class="goals-card">
     <div class="goals-card__header">
-      <Heading level="h3" size="sm" weight="semibold">Metas activas</Heading>
-      <Button v-if="totalGoals > 3" size="sm" variant="ghost" @click="emit('view-all')">
-        Ver todas ({{ totalGoals }})
-      </Button>
+      <CardInfo
+        :sub-title="`${totalGoals} meta${totalGoals !== 1 ? 's' : ''} en progreso`"
+        title="Metas activas"
+        icon="savings"
+        icon-variant="warning"
+        icon-size="md"
+        title-size="sm"
+        weight="semibold"
+        level="h3"
+        sub-title-size="xs"
+        sub-title-color="muted"
+      />
     </div>
 
-    <div v-if="activeGoals.length > 0" class="goals-card__list">
-      <div v-for="goal in activeGoals" :key="goal.id" class="goals-card__goal">
-        <div class="goals-card__goal-header">
-          <span class="goals-card__goal-name">{{ goal.name }}</span>
-          <span class="goals-card__goal-pct">{{ getProgress(goal) }}%</span>
-        </div>
-        <div class="goals-card__progress-track">
-          <div class="goals-card__progress-fill" :style="{ width: `${getProgress(goal)}%` }" />
-        </div>
-        <p class="goals-card__goal-amounts">
-          <span v-if="goal.targetAmount">
-            Meta: {{ formatCurrency(goal.targetAmount, currencyCode) }}
-          </span>
-          <span v-else>Sin monto objetivo definido</span>
-        </p>
+    <div class="goals-card__grid">
+      <div v-for="goal in visibleGoals" :key="goal.id" class="goals-card__goal-card">
+        <span class="goals-card__goal-pct" :class="getProgressColor(getProgress(goal))">
+          {{ getProgress(goal) }}%
+        </span>
+        <p class="goals-card__goal-name">{{ goal.name }}</p>
       </div>
-    </div>
 
-    <div v-else class="goals-card__empty">
-      <Text size="sm" color="muted">No tienes metas activas aún</Text>
-      <Button size="sm" variant="primary" @click="emit('create-goal')">Crear primera meta</Button>
-    </div>
-
-    <div v-if="activeGoals.length > 0" class="goals-card__footer">
-      <Button size="sm" variant="ghost" @click="emit('view-all')">Ver detalle de metas</Button>
+      <button class="goals-card__view-all" @click="emit('view-all')">
+        <span class="material-symbols-outlined goals-card__view-all-icon">arrow_forward</span>
+        <span class="goals-card__view-all-label">
+          {{ hasMore ? `Ver todas (${totalGoals})` : 'Ver detalle' }}
+        </span>
+      </button>
     </div>
   </div>
 </template>
@@ -76,43 +81,45 @@
     @apply flex items-center justify-between;
   }
 
-  .goals-card__list {
-    @apply flex flex-col gap-3;
+  .goals-card__grid {
+    @apply grid gap-1.5;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }
 
-  .goals-card__goal {
-    @apply flex flex-col gap-1.5;
-  }
-
-  .goals-card__goal-header {
-    @apply flex items-center justify-between gap-2;
-  }
-
-  .goals-card__goal-name {
-    @apply min-w-0 flex-1 truncate text-sm font-medium text-neutral-700;
+  .goals-card__goal-card {
+    @apply flex flex-col gap-0.5 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-2;
   }
 
   .goals-card__goal-pct {
-    @apply shrink-0 text-sm font-semibold text-primary-600;
+    @apply text-base font-extrabold leading-tight;
   }
 
-  .goals-card__progress-track {
-    @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
+  .goals-card__goal-pct--start {
+    @apply text-warning-400;
   }
 
-  .goals-card__progress-fill {
-    @apply h-full rounded-full bg-primary-500 transition-all duration-700;
+  .goals-card__goal-pct--mid {
+    @apply text-warning-600;
   }
 
-  .goals-card__goal-amounts {
-    @apply text-xs text-slate-500;
+  .goals-card__goal-pct--done {
+    @apply text-success-600;
   }
 
-  .goals-card__empty {
-    @apply flex flex-col items-center gap-3 py-4 text-center;
+  .goals-card__goal-name {
+    @apply truncate text-xs text-slate-400;
   }
 
-  .goals-card__footer {
-    @apply pt-1;
+  .goals-card__view-all {
+    @apply flex flex-col gap-0.5 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-2 text-left transition-colors hover:border-primary-200 hover:bg-primary-50;
   }
+
+  .goals-card__view-all-icon {
+    @apply text-base font-extrabold leading-tight text-slate-400 transition-colors group-hover:text-primary-500;
+  }
+
+  .goals-card__view-all-label {
+    @apply truncate text-xs text-slate-400;
+  }
+
 </style>
