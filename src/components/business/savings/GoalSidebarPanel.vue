@@ -124,7 +124,7 @@
       <CardInfo
         title="Resumen de Meta"
         sub-title="Estado actual"
-        title-size="sm"
+        title-size="base"
         weight="extrabold"
         level="h3"
         color="black"
@@ -181,7 +181,7 @@
       <CardInfo
         title="Historial"
         sub-title="Cambios registrados"
-        title-size="sm"
+        title-size="base"
         weight="extrabold"
         level="h3"
         color="black"
