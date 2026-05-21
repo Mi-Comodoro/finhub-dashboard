@@ -475,7 +475,7 @@
               <td>{{ goal.name }}</td>
               <td>{{ goal.accountName }}</td>
               <td>
-                <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="sm">
+                <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="xs">
                   {{ GOAL_STATUS_LABELS[(goal.status as GoalStatus) ?? 'SCHEDULED'] }}
                 </Badge>
               </td>
