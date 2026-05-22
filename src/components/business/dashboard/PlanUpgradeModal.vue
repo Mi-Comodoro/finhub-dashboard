@@ -41,9 +41,12 @@
   const activePlanName = computed(() => {
     switch (accountType.value) {
       case 'TRIAL':
-      case 'PRO': return 'pro'
-      case 'PLUS': return 'plus'
-      default: return 'free'
+      case 'PRO':
+        return 'pro'
+      case 'PLUS':
+        return 'plus'
+      default:
+        return 'free'
     }
   })
 
@@ -54,16 +57,19 @@
 
   const badgeVariant = (plan: PlanData): string => {
     switch (plan.name.toLowerCase()) {
-      case 'plus': return 'secondary'
-      case 'pro': return 'primary'
-      default: return 'default'
+      case 'plus':
+        return 'secondary'
+      case 'pro':
+        return 'primary'
+      default:
+        return 'default'
     }
   }
 
   const selectedPlanId = ref<string | null>(null)
 
-  const selectedPlan = computed(() =>
-    sortedPlans.value.find(p => p.id === selectedPlanId.value) ?? null
+  const selectedPlan = computed(
+    () => sortedPlans.value.find(p => p.id === selectedPlanId.value) ?? null
   )
 
   const selectPlan = (plan: PlanData) => {
@@ -100,10 +106,14 @@
       <span class="material-symbols-outlined plan-modal__trial-icon">schedule</span>
       <Text size="xs">
         <template v-if="trialIsUrgent">
-          Tu prueba vence en <strong>{{ daysRemaining }} días</strong>. Actualiza para no perder el acceso.
+          Tu prueba vence en
+          <strong>{{ daysRemaining }} días</strong>
+          . Actualiza para no perder el acceso.
         </template>
         <template v-else>
-          Estás en período de prueba — te quedan <strong>{{ daysRemaining }} días</strong>.
+          Estás en período de prueba — te quedan
+          <strong>{{ daysRemaining }} días</strong>
+          .
         </template>
       </Text>
     </div>
@@ -153,12 +163,7 @@
 
     <!-- Footer -->
     <div class="plan-modal__footer">
-      <Button
-        variant="primary"
-        size="sm"
-        icon="workspace_premium"
-        :disabled="!selectedPlan"
-      >
+      <Button variant="primary" size="sm" icon="workspace_premium" :disabled="!selectedPlan">
         {{ selectedPlan ? `Cambiar a ${selectedPlan.name}` : 'Selecciona un plan' }}
       </Button>
       <Button variant="ghost" size="sm" @click="emit('close')">Cancelar</Button>

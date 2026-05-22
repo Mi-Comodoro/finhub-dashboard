@@ -117,7 +117,7 @@
   }
 
   .groups-page__skeleton {
-    @apply animate-pulse rounded-xl bg-slate-100 h-28 w-full;
+    @apply h-28 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .groups-page__empty {

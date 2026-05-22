@@ -2,7 +2,7 @@
 <script setup lang="ts">
   import type { ModalWizardProps } from './types/modal-wizard.types'
 
-  const props = withDefaults(defineProps<ModalWizardProps>(), {
+  withDefaults(defineProps<ModalWizardProps>(), {
     show: false,
     title: undefined,
     onClose: undefined

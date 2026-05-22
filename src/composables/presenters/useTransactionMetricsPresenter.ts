@@ -1,33 +1,20 @@
-// composables/presenters/useTransactionMetricsPresenter.ts
-import type { TransactionSummary } from '~/types/domain'
+import type { TransactionTotals } from '~/types/domain'
 
 export function useTransactionMetricsPresenter(
-  transactions: Ref<TransactionSummary[] | null>,
+  totals: Ref<TransactionTotals | null>,
   pagination: Ref<{ total: number; totalPages: number; page: number; limit: number } | null>,
   currentPage: Ref<number>,
   pageSize: Ref<number>
 ) {
-  const totalIncome = computed(
-    () =>
-      transactions.value
-        ?.filter(t => t.type === 'income')
-        .reduce((a, t) => a + (t.amount ?? 0), 0) ?? 0
-  )
-  const totalExpense = computed(
-    () =>
-      transactions.value
-        ?.filter(t => t.type === 'expense')
-        .reduce((a, t) => a + (t.amount ?? 0), 0) ?? 0
-  )
-  const totalSavings = computed(
-    () =>
-      transactions.value
-        ?.filter(t => t.type === 'savings')
-        .reduce((a, t) => a + (t.amount ?? 0), 0) ?? 0
-  )
+  const totalIncome = computed(() => totals.value?.income ?? 0)
+  const totalExpense = computed(() => totals.value?.expense ?? 0)
+  const totalSavings = computed(() => totals.value?.savings ?? 0)
 
-  const countByType = (type: TransactionSummary['type']) =>
-    transactions.value?.filter(t => t.type === type).length ?? 0
+  const countByType = (type: 'income' | 'expense' | 'savings') => {
+    if (type === 'income') return totals.value?.countIncome ?? 0
+    if (type === 'expense') return totals.value?.countExpense ?? 0
+    return totals.value?.countSavings ?? 0
+  }
 
   const totalItems = computed(() => pagination.value?.total ?? 0)
   const totalPages = computed(() => pagination.value?.totalPages ?? 0)

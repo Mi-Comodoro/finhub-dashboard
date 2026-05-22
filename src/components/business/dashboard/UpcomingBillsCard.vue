@@ -26,8 +26,7 @@
   })
 
   const emit = defineEmits<{
-    (e: 'view', item: Reminder): void
-    (e: 'pay', item: Reminder): void
+    (e: 'view' | 'pay', item: Reminder): void
   }>()
 
   const displayBills = computed(() => props.bills ?? [])
@@ -74,10 +73,14 @@
 
   type BadgeVariant = 'danger' | 'warning' | 'secondary'
 
-  function getPriorityBadge(isEssential: boolean, days: number): { label: string; variant: BadgeVariant } {
+  function getPriorityBadge(
+    isEssential: boolean,
+    days: number
+  ): { label: string; variant: BadgeVariant } {
     if (!isEssential) return { label: 'Opcional', variant: 'secondary' }
     const level = getUrgencyLevel(days, isEssential)
-    if (level === 'overdue' || level === 'critical') return { label: 'Obligatorio', variant: 'danger' }
+    if (level === 'overdue' || level === 'critical')
+      return { label: 'Obligatorio', variant: 'danger' }
     return { label: 'Obligatorio', variant: 'warning' }
   }
 

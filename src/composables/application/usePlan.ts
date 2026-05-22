@@ -23,14 +23,12 @@ export const usePlan = () => {
   const authStore = useAuthStore()
   const userStore = useUserStore()
 
-  const accountType = computed<AccountType>(
-    () => (authStore.accountType as AccountType) ?? 'FREE'
-  )
+  const accountType = computed<AccountType>(() => (authStore.accountType as AccountType) ?? 'FREE')
 
-  const isTrial   = computed(() => accountType.value === 'TRIAL')
-  const isFree    = computed(() => accountType.value === 'FREE')
-  const isPlus    = computed(() => accountType.value === 'PLUS')
-  const isPro     = computed(() => accountType.value === 'PRO')
+  const isTrial = computed(() => accountType.value === 'TRIAL')
+  const isFree = computed(() => accountType.value === 'FREE')
+  const isPlus = computed(() => accountType.value === 'PLUS')
+  const isPro = computed(() => accountType.value === 'PRO')
   const isPartner = computed(() => accountType.value === 'PARTNER')
   const hasFullAccess = computed(() =>
     (['TRIAL', 'PRO', 'PARTNER'] as AccountType[]).includes(accountType.value)
@@ -42,12 +40,9 @@ export const usePlan = () => {
     return Math.max(0, Math.ceil((trialEndsAt.value.getTime() - Date.now()) / 86_400_000))
   })
 
-  const capabilities = computed<PlanCapabilities>(
-    () => PLAN_CAPABILITIES[accountType.value]
-  )
+  const capabilities = computed<PlanCapabilities>(() => PLAN_CAPABILITIES[accountType.value])
 
-  const can = (feature: keyof PlanCapabilities): boolean =>
-    capabilities.value[feature] as boolean
+  const can = (feature: keyof PlanCapabilities): boolean => capabilities.value[feature] as boolean
 
   return {
     accountType,
@@ -60,6 +55,6 @@ export const usePlan = () => {
     trialEndsAt,
     trialDaysRemaining,
     capabilities,
-    can,
+    can
   }
 }

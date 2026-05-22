@@ -104,9 +104,7 @@
     <section class="admin-page__users">
       <div class="admin-page__users-header">
         <Heading level="h3" size="lg" weight="semibold">Usuarios</Heading>
-        <Text size="xs" color="muted">
-          {{ pagination.total }} usuarios en total
-        </Text>
+        <Text size="xs" color="muted">{{ pagination.total }} usuarios en total</Text>
       </div>
 
       <div v-if="isLoading" class="admin-page__table-skeleton" />
@@ -143,9 +141,7 @@
                 <Text size="sm" color="muted">{{ formatDate(user.createdAt) }}</Text>
               </td>
               <td class="admin-page__td">
-                <Button size="sm" variant="ghost" @click="openUserDetail(user)">
-                  Ver detalle
-                </Button>
+                <Button size="sm" variant="ghost" @click="openUserDetail(user)">Ver detalle</Button>
               </td>
             </tr>
             <tr v-if="users.length === 0">
@@ -182,7 +178,11 @@
       </div>
     </section>
 
-    <USlideover v-model:open="showUserPanel" side="right" @update:open="val => !val && closeUserPanel()">
+    <USlideover
+      v-model:open="showUserPanel"
+      side="right"
+      @update:open="val => !val && closeUserPanel()"
+    >
       <template #header>
         <div class="admin-page__panel-header">
           <Heading level="h3" size="lg" weight="semibold">Detalle del usuario</Heading>
@@ -225,11 +225,7 @@
           </div>
           <div class="admin-page__panel-row">
             <Text size="xs" color="muted">Estado</Text>
-            <UBadge
-              :color="selectedUser.isActive ? 'green' : 'neutral'"
-              variant="subtle"
-              size="sm"
-            >
+            <UBadge :color="selectedUser.isActive ? 'green' : 'neutral'" variant="subtle" size="sm">
               {{ selectedUser.isActive ? 'Activo' : 'Inactivo' }}
             </UBadge>
           </div>

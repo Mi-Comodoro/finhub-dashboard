@@ -28,7 +28,7 @@
     debtProjection,
     loadingProjection,
     netPositionColor,
-    debtRatioStatus,
+    debtRatioStatus
   } = useAnalyticsNetPositionApplication()
 
   const isLoading = computed(() => loadingPosition.value || loadingProjection.value)
@@ -42,7 +42,11 @@
     tooltip: {
       trigger: 'axis',
       formatter: (params: Array<{ seriesName: string; value: number }>) =>
-        params.map(p => `${p.seriesName}: <strong>${formatCurrency(Number(p.value ?? 0), 'COP')}</strong>`).join('<br/>')
+        params
+          .map(
+            p => `${p.seriesName}: <strong>${formatCurrency(Number(p.value ?? 0), 'COP')}</strong>`
+          )
+          .join('<br/>')
     },
     xAxis: {
       type: 'category',
@@ -107,7 +111,9 @@
         <!-- Activos libres -->
         <div class="net-position-view__kpi-card net-position-view__kpi-card--primary">
           <div class="net-position-view__kpi-icon net-position-view__kpi-icon--primary">
-            <span class="material-symbols-outlined net-position-view__kpi-icon-svg">account_balance_wallet</span>
+            <span class="material-symbols-outlined net-position-view__kpi-icon-svg">
+              account_balance_wallet
+            </span>
           </div>
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Activos libres</Text>
@@ -120,7 +126,9 @@
         <!-- Deudas totales -->
         <div class="net-position-view__kpi-card net-position-view__kpi-card--danger">
           <div class="net-position-view__kpi-icon net-position-view__kpi-icon--danger">
-            <span class="material-symbols-outlined net-position-view__kpi-icon-svg">credit_card</span>
+            <span class="material-symbols-outlined net-position-view__kpi-icon-svg">
+              credit_card
+            </span>
           </div>
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Deudas totales</Text>
@@ -145,10 +153,16 @@
 
         <!-- Posición neta (dynamic color) -->
         <div
-          :class="['net-position-view__kpi-card', `net-position-view__kpi-card--${netPositionColor}`]"
+          :class="[
+            'net-position-view__kpi-card',
+            `net-position-view__kpi-card--${netPositionColor}`
+          ]"
         >
           <div
-            :class="['net-position-view__kpi-icon', `net-position-view__kpi-icon--${netPositionColor}`]"
+            :class="[
+              'net-position-view__kpi-icon',
+              `net-position-view__kpi-icon--${netPositionColor}`
+            ]"
           >
             <span class="material-symbols-outlined net-position-view__kpi-icon-svg">balance</span>
           </div>
@@ -166,7 +180,10 @@
         <div class="net-position-view__ratio-header">
           <Heading level="h3" size="lg" weight="semibold">Ratio deuda / ingreso</Heading>
           <span
-            :class="['net-position-view__ratio-badge', `net-position-view__ratio-badge--${debtRatioStatus.color}`]"
+            :class="[
+              'net-position-view__ratio-badge',
+              `net-position-view__ratio-badge--${debtRatioStatus.color}`
+            ]"
           >
             {{ debtRatioStatus.label }}
           </span>
@@ -174,15 +191,19 @@
 
         <div class="net-position-view__ratio-track">
           <div
-            :class="['net-position-view__ratio-bar', `net-position-view__ratio-bar--${debtRatioStatus.color}`]"
+            :class="[
+              'net-position-view__ratio-bar',
+              `net-position-view__ratio-bar--${debtRatioStatus.color}`
+            ]"
             :style="{ width: `${ratioPercent}%` }"
           />
         </div>
 
         <div class="net-position-view__ratio-meta">
           <Text size="sm" color="muted">
-            Por cada $1 de ingreso anual, debes
-            ${{ formatNumber(netPosition.debtToIncomeRatio, 'COP', 2) }}
+            Por cada $1 de ingreso anual, debes ${{
+              formatNumber(netPosition.debtToIncomeRatio, 'COP', 2)
+            }}
           </Text>
           <Text size="sm" weight="semibold">
             {{ (netPosition.debtToIncomeRatio * 100).toFixed(1) }}%
@@ -196,10 +217,7 @@
           <Heading level="h3" size="lg" weight="semibold">Proyección de deuda</Heading>
           <Text size="xs" color="muted">Balance proyectado y pagos mínimos mensuales</Text>
         </div>
-        <div
-          v-if="debtProjection?.simplified"
-          class="net-position-view__simplified-note"
-        >
+        <div v-if="debtProjection?.simplified" class="net-position-view__simplified-note">
           <span class="material-symbols-outlined net-position-view__simplified-icon">info</span>
           <Text size="xs" color="muted">
             Proyección lineal simplificada. No incluye interés compuesto.
@@ -260,7 +278,7 @@
   }
 
   .analytics-view__empty-illustration {
-    @apply h-32 w-32 mx-auto;
+    @apply mx-auto h-32 w-32;
   }
 
   .analytics-view__empty-title {
@@ -268,7 +286,7 @@
   }
 
   .analytics-view__empty-description {
-    @apply text-sm text-neutral-500 max-w-xs;
+    @apply max-w-xs text-sm text-neutral-500;
   }
 
   /* Content */

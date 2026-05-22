@@ -12,12 +12,8 @@
   <div class="public-layout">
     <header class="public-layout__header">
       <div class="public-layout__header-inner">
-        <NuxtLink to="/" class="public-layout__logo">
-          Mi Comodoro
-        </NuxtLink>
-        <NuxtLink to="/" class="public-layout__login-link">
-          Iniciar sesión
-        </NuxtLink>
+        <NuxtLink to="/" class="public-layout__logo">Mi Comodoro</NuxtLink>
+        <NuxtLink to="/" class="public-layout__login-link">Iniciar sesión</NuxtLink>
       </div>
     </header>
 

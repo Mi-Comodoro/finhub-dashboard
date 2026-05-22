@@ -3,6 +3,7 @@
   import ContributionForm from '@/components/business/savings/forms/ContributionForm.vue'
   import GoalsForm from '@/components/business/savings/forms/GoalsForm.vue'
   import GoalInfoCarousel from '@/components/business/savings/GoalInfoCarousel.vue'
+  import type { GoalMovementItem } from '@/components/business/savings/GoalMovements.vue'
   import GoalMovements from '@/components/business/savings/GoalMovements.vue'
   import GoalSidebarPanel from '@/components/business/savings/GoalSidebarPanel.vue'
   import GoalDetailInsights from '@/components/business/savings/insight/GoalDetailInsights.vue'
@@ -12,7 +13,6 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useGoalDetailPresenter } from '@/composables/presenters/useGoalDetailPresenter'
-  import type { GoalMovementItem } from '@/components/business/savings/GoalMovements.vue'
   import type { GoalHistory, GoalsData, PlannedSaving, Transaction } from '@/types/api'
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
@@ -167,7 +167,9 @@
 
   const completedSavings = computed(() => goalSavings.value.filter(s => s.status === 'completed'))
 
-  const interestContributions = computed(() => contributions.value.filter(t => t.type === 'interest'))
+  const interestContributions = computed(() =>
+    contributions.value.filter(t => t.type === 'interest')
+  )
 
   // Use completed PlannedSavings as primary source: they always carry savingGoalId,
   // whereas transactions from completePlannedSaving historically lacked that field.
@@ -179,9 +181,10 @@
 
   // Sum interest from contributions (those with savingGoalId) as primary;
   // fall back to backend summary for interest registered via the old flow.
-  const totalRegisteredInterest = computed(() =>
-    interestContributions.value.reduce((sum, t) => sum + t.amount, 0) ||
-    goalSummary.value.totalInterest
+  const totalRegisteredInterest = computed(
+    () =>
+      interestContributions.value.reduce((sum, t) => sum + t.amount, 0) ||
+      goalSummary.value.totalInterest
   )
 
   // Total balance: deposits + registered interest (both count toward goal progress)
@@ -372,9 +375,11 @@
     if (!lid) return false
     const d = new Date(lid)
     const today = new Date()
-    return d.getFullYear() === today.getFullYear() &&
+    return (
+      d.getFullYear() === today.getFullYear() &&
       d.getMonth() === today.getMonth() &&
       d.getDate() === today.getDate()
+    )
   })
 
   const isRegisteringInterest = ref(false)
@@ -390,7 +395,8 @@
       principalSaved.value === 0 ||
       interestRegisteredToday.value ||
       isRegisteringInterest.value
-    ) return
+    )
+      return
     isRegisteringInterest.value = true
     const { success } = await addGoalInterest(goalId.value, unregisteredInterest.value)
     isRegisteringInterest.value = false
@@ -577,15 +583,17 @@
           <!-- Deadline at risk banner -->
           <div v-if="isDeadlineAtRisk" class="goal-detail__deadline-banner">
             <div class="goal-detail__deadline-banner-left">
-              <span class="material-symbols-outlined goal-detail__deadline-banner-icon">schedule</span>
+              <span class="material-symbols-outlined goal-detail__deadline-banner-icon">
+                schedule
+              </span>
               <div>
                 <Text size="sm" weight="semibold" class="goal-detail__deadline-banner-title">
                   La fecha objetivo puede no alcanzarse
                 </Text>
                 <Text size="xs" color="muted">
                   Al ritmo actual, llegarías a tu meta aproximadamente el
-                  <strong>{{ estimatedCompletionLabel }}</strong>.
-                  Considera aumentar tu aporte mensual o ajustar la fecha.
+                  <strong>{{ estimatedCompletionLabel }}</strong>
+                  . Considera aumentar tu aporte mensual o ajustar la fecha.
                 </Text>
               </div>
             </div>
@@ -754,7 +762,7 @@
 
   /* Layout Principal */
   .goal-detail__layout {
-    @apply flex flex-col gap-6 px-4 lg:px-0 lg:flex-row lg:items-start;
+    @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start lg:px-0;
   }
 
   .goal-detail__main {
@@ -832,5 +840,4 @@
   .goal-detail__skeleton-movements-row {
     @apply h-10 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
   }
-
 </style>

@@ -113,17 +113,12 @@
     </div>
 
     <div v-if="!isLoading && totalSaved === 0" class="analytics-view__empty">
-      <EmptyStateIllustration
-        type="no-transactions"
-        class="analytics-view__empty-illustration"
-      />
+      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
       <p class="analytics-view__empty-title">Sin datos de ahorro</p>
       <p class="analytics-view__empty-description">
         Completa un aporte a tus metas para ver tu tendencia
       </p>
-      <NuxtLink to="/dashboard/goals" class="analytics-view__empty-cta">
-        Ver metas
-      </NuxtLink>
+      <NuxtLink to="/dashboard/goals" class="analytics-view__empty-cta">Ver metas</NuxtLink>
     </div>
 
     <div v-else class="ahorro-view__chart-card">
@@ -207,7 +202,7 @@
   }
 
   .analytics-view__empty-illustration {
-    @apply h-32 w-32 mx-auto;
+    @apply mx-auto h-32 w-32;
   }
 
   .analytics-view__empty-title {
@@ -215,7 +210,7 @@
   }
 
   .analytics-view__empty-description {
-    @apply text-sm text-neutral-500 max-w-xs;
+    @apply max-w-xs text-sm text-neutral-500;
   }
 
   .analytics-view__empty-cta {

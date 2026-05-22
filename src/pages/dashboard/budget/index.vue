@@ -132,7 +132,8 @@
     closingBudget.value = budget
     // Estimate libre sin comprometer from available plan data
     const raw =
-      Number(getExpected(budget.id)) - Number(getEstimatedSavings(budget.id, budget.limits?.savings ?? 0))
+      Number(getExpected(budget.id)) -
+      Number(getEstimatedSavings(budget.id, budget.limits?.savings ?? 0))
     const libresincomprometer = isNaN(raw) ? 0 : raw
     await initiateClosure(budget, libresincomprometer)
   }
@@ -397,8 +398,8 @@
           </Heading>
           <Text size="xs" color="muted">
             El saldo al cierre es de
-            <strong>{{ formatCurrency(surplus, currency) }}</strong>. ¿Deseas cerrarlo de todas
-            formas?
+            <strong>{{ formatCurrency(surplus, currency) }}</strong>
+            . ¿Deseas cerrarlo de todas formas?
           </Text>
         </div>
         <div class="deficit-modal__actions">

@@ -141,7 +141,11 @@
     const { success } = await assignGoal(itemId, savingGoalId)
     assigningItemId.value = null
     if (success) {
-      show({ type: 'success', title: 'Meta asignada', description: 'El ahorro fue vinculado a la meta correctamente.' })
+      show({
+        type: 'success',
+        title: 'Meta asignada',
+        description: 'El ahorro fue vinculado a la meta correctamente.'
+      })
     }
   }
 
@@ -198,7 +202,10 @@
 
     <!-- Sin datos -->
     <div v-else-if="items.length === 0" class="planned-saving-list__empty">
-      <EmptyStateIllustration type="no-transactions" class="planned-saving-list__empty-illustration" />
+      <EmptyStateIllustration
+        type="no-transactions"
+        class="planned-saving-list__empty-illustration"
+      />
       <Heading level="h3" size="lg" weight="semibold">No hay ahorros planeados</Heading>
       <Text size="sm" color="muted">
         Cuando existan programaciones de ahorro para este presupuesto, aparecerán aquí.
@@ -260,18 +267,30 @@
                       {{ item.account?.name ?? 'Cuenta no definida' }}
                     </Text>
                     <!-- Selector de meta para ahorros sin meta vinculada -->
-                    <div v-if="!item.savingGoalId && goals.length > 0" class="planned-saving-list__goal-picker">
+                    <div
+                      v-if="!item.savingGoalId && goals.length > 0"
+                      class="planned-saving-list__goal-picker"
+                    >
                       <button
                         class="planned-saving-list__assign-btn"
                         @click.stop="toggleGoalPicker(item.id)"
                       >
-                        <span class="material-symbols-outlined planned-saving-list__assign-icon">add_link</span>
+                        <span class="material-symbols-outlined planned-saving-list__assign-icon">
+                          add_link
+                        </span>
                         Asignar meta
                       </button>
                       <template v-if="openGoalPickerFor === item.id">
-                        <div class="planned-saving-list__goal-overlay" @click.stop="closeGoalPicker" />
+                        <div
+                          class="planned-saving-list__goal-overlay"
+                          @click.stop="closeGoalPicker"
+                        />
                         <div class="planned-saving-list__goal-panel">
-                          <Text size="xs" color="muted" class="planned-saving-list__goal-panel-title">
+                          <Text
+                            size="xs"
+                            color="muted"
+                            class="planned-saving-list__goal-panel-title"
+                          >
                             Selecciona una meta
                           </Text>
                           <button
@@ -279,12 +298,19 @@
                             :key="goal.id"
                             class="planned-saving-list__goal-option"
                             :disabled="assigningItemId === item.id"
-                            @click.stop="assignGoalToItem(item.id, goal.id); closeGoalPicker()"
+                            @click.stop="
+                              assignGoalToItem(item.id, goal.id)
+                              closeGoalPicker()
+                            "
                           >
-                            <span class="material-symbols-outlined planned-saving-list__goal-option-icon">
+                            <span
+                              class="material-symbols-outlined planned-saving-list__goal-option-icon"
+                            >
                               {{ goal.reason }}
                             </span>
-                            <span class="planned-saving-list__goal-option-name">{{ goal.name }}</span>
+                            <span class="planned-saving-list__goal-option-name">
+                              {{ goal.name }}
+                            </span>
                           </button>
                         </div>
                       </template>

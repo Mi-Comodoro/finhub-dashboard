@@ -121,5 +121,4 @@
   .goals-card__view-all-label {
     @apply truncate text-xs text-slate-400;
   }
-
 </style>

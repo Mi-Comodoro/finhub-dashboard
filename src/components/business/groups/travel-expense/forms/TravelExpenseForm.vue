@@ -56,9 +56,7 @@
     return `Cada miembro paga ${format(share)}`
   })
 
-  const customSum = computed(() =>
-    memberSplits.value.reduce((acc, m) => acc + (m.amount ?? 0), 0)
-  )
+  const customSum = computed(() => memberSplits.value.reduce((acc, m) => acc + (m.amount ?? 0), 0))
 
   const percentageSum = computed(() =>
     memberSplits.value.reduce((acc, m) => acc + (m.percentage ?? 0), 0)
@@ -120,9 +118,10 @@
     if (isSubmitting.value || !validate()) return
     isSubmitting.value = true
     try {
-      const dateStr = expenseDate.value instanceof Date
-        ? (expenseDate.value.toISOString().split('T')[0] ?? expenseDate.value.toISOString())
-        : String(expenseDate.value)
+      const dateStr =
+        expenseDate.value instanceof Date
+          ? (expenseDate.value.toISOString().split('T')[0] ?? expenseDate.value.toISOString())
+          : String(expenseDate.value)
 
       const assignments =
         splitType.value === 'CUSTOM'
@@ -177,12 +176,7 @@
 
       <!-- Amount + PaidBy -->
       <div class="travel-expense-form__row">
-        <MoneyInput
-          v-model="amount"
-          label="Monto total"
-          prefix="COP"
-          :required="true"
-        />
+        <MoneyInput v-model="amount" label="Monto total" prefix="COP" :required="true" />
         <Select
           v-model="paidBy"
           name="paidBy"
@@ -238,7 +232,11 @@
           <Text size="xs" color="muted">Suma:</Text>
           <Text
             size="xs"
-            :class="Math.abs(customSum - amount) < 0.01 ? 'travel-expense-form__sum--ok' : 'travel-expense-form__sum--error'"
+            :class="
+              Math.abs(customSum - amount) < 0.01
+                ? 'travel-expense-form__sum--ok'
+                : 'travel-expense-form__sum--error'
+            "
           >
             {{ format(customSum) }} / {{ format(amount) }}
           </Text>
@@ -254,20 +252,18 @@
         >
           <Text size="sm" class="travel-expense-form__member-name">{{ member.name }}</Text>
           <div class="travel-expense-form__member-input">
-            <Input
-              v-model="member.percentage"
-              type="number"
-              label=""
-              placeholder="0"
-              prefix="%"
-            />
+            <Input v-model="member.percentage" type="number" label="" placeholder="0" prefix="%" />
           </div>
         </div>
         <div class="travel-expense-form__sum-row">
           <Text size="xs" color="muted">Total %:</Text>
           <Text
             size="xs"
-            :class="Math.abs(percentageSum - 100) < 0.01 ? 'travel-expense-form__sum--ok' : 'travel-expense-form__sum--error'"
+            :class="
+              Math.abs(percentageSum - 100) < 0.01
+                ? 'travel-expense-form__sum--ok'
+                : 'travel-expense-form__sum--error'
+            "
           >
             {{ percentageSum.toFixed(1) }}%
           </Text>

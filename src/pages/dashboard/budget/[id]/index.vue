@@ -165,7 +165,9 @@
     const isEdit = formMode.value === 'edit'
     successToast(
       isEdit ? 'Gasto actualizado' : 'Gasto registrado',
-      isEdit ? 'El gasto planificado fue actualizado correctamente.' : 'El gasto fue agregado al presupuesto.'
+      isEdit
+        ? 'El gasto planificado fue actualizado correctamente.'
+        : 'El gasto fue agregado al presupuesto.'
     )
     closeForm()
   }
@@ -382,6 +384,7 @@
       <IncomeForm
         :budget-id="budgetId"
         :show-savings-plan-step="true"
+        :savings-plan-required="true"
         :budget-savings-percentage="plan?.limits?.savings ?? 20"
         :currency="defaultCurrency"
         @on-close="showIncomeModal = false"

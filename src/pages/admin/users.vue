@@ -58,9 +58,7 @@
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.toLowerCase()
       result = result.filter(
-        u =>
-          u.displayName.toLowerCase().includes(q) ||
-          u.email.toLowerCase().includes(q)
+        u => u.displayName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
       )
     }
     if (filterRole.value !== 'all') {
@@ -123,7 +121,10 @@
     if (!selectedUser.value || !pendingRole.value) return
     const { success } = await changeRole(selectedUser.value.id, pendingRole.value)
     if (success) {
-      successToast('Rol actualizado', `El usuario ahora es ${pendingRole.value === 'admin' ? 'administrador' : 'usuario'}.`)
+      successToast(
+        'Rol actualizado',
+        `El usuario ahora es ${pendingRole.value === 'admin' ? 'administrador' : 'usuario'}.`
+      )
       cancelRoleChange()
       await fetchUsers()
     } else {
@@ -205,11 +206,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="user in paginatedUsers"
-              :key="user.id"
-              class="admin-users-page__tr"
-            >
+            <tr v-for="user in paginatedUsers" :key="user.id" class="admin-users-page__tr">
               <td class="admin-users-page__td">
                 <Text size="sm" weight="medium">{{ user.displayName }}</Text>
               </td>
@@ -230,9 +227,7 @@
                 <Text size="sm" color="muted">{{ formatDate(user.createdAt) }}</Text>
               </td>
               <td class="admin-users-page__td">
-                <Button size="sm" variant="ghost" @click="openDetail(user)">
-                  Ver detalle
-                </Button>
+                <Button size="sm" variant="ghost" @click="openDetail(user)">Ver detalle</Button>
               </td>
             </tr>
 
@@ -364,7 +359,9 @@
         <Text size="sm" color="muted">
           ¿Confirmas que deseas asignar el rol
           <strong>{{ pendingRole === 'admin' ? 'Administrador' : 'Usuario' }}</strong>
-          a <strong>{{ selectedUser?.displayName }}</strong>?
+          a
+          <strong>{{ selectedUser?.displayName }}</strong>
+          ?
         </Text>
         <div class="users-modal__actions">
           <Button

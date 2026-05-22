@@ -31,12 +31,13 @@
       </p>
       <ul class="privacy__list">
         <li class="privacy__list-item">
-          <strong>Nombre y correo electrónico</strong> — requeridos para identificar tu cuenta y
-          personalizar la experiencia.
+          <strong>Nombre y correo electrónico</strong>
+          — requeridos para identificar tu cuenta y personalizar la experiencia.
         </li>
         <li class="privacy__list-item">
-          <strong>Imagen de perfil</strong> — opcional; el usuario puede rechazar su uso sin que
-          esto afecte el acceso a la aplicación.
+          <strong>Imagen de perfil</strong>
+          — opcional; el usuario puede rechazar su uso sin que esto afecte el acceso a la
+          aplicación.
         </li>
       </ul>
     </section>
@@ -44,15 +45,11 @@
     <section class="privacy__section">
       <h2 class="privacy__section-title">3. Finalidad del tratamiento</h2>
       <ul class="privacy__list">
+        <li class="privacy__list-item">Personalizar la experiencia dentro de la aplicación.</li>
+        <li class="privacy__list-item">Identificar de forma segura tu sesión y cuenta.</li>
         <li class="privacy__list-item">
-          Personalizar la experiencia dentro de la aplicación.
-        </li>
-        <li class="privacy__list-item">
-          Identificar de forma segura tu sesión y cuenta.
-        </li>
-        <li class="privacy__list-item">
-          <strong>Los datos NO se comparten, venden ni transfieren a terceros</strong> bajo ninguna
-          circunstancia.
+          <strong>Los datos NO se comparten, venden ni transfieren a terceros</strong>
+          bajo ninguna circunstancia.
         </li>
       </ul>
     </section>
@@ -61,31 +58,32 @@
       <h2 class="privacy__section-title">4. Base legal</h2>
       <p class="privacy__text">
         El tratamiento de datos se realiza con base en el
-        <strong>consentimiento libre, previo, expreso e informado</strong> del titular, en
-        cumplimiento de la <strong>Ley 1581 de 2012</strong> (Habeas Data) y el Decreto 1377 de
-        2013 de la República de Colombia.
+        <strong>consentimiento libre, previo, expreso e informado</strong>
+        del titular, en cumplimiento de la
+        <strong>Ley 1581 de 2012</strong>
+        (Habeas Data) y el Decreto 1377 de 2013 de la República de Colombia.
       </p>
     </section>
 
     <section class="privacy__section">
       <h2 class="privacy__section-title">5. Derechos del titular (ARCO)</h2>
-      <p class="privacy__text">
-        Como titular de los datos, tienes derecho a:
-      </p>
+      <p class="privacy__text">Como titular de los datos, tienes derecho a:</p>
       <ul class="privacy__list">
         <li class="privacy__list-item">
-          <strong>Acceso:</strong> conocer qué datos tuyos están siendo tratados.
+          <strong>Acceso:</strong>
+          conocer qué datos tuyos están siendo tratados.
         </li>
         <li class="privacy__list-item">
-          <strong>Rectificación:</strong> solicitar la corrección de datos inexactos o incompletos.
+          <strong>Rectificación:</strong>
+          solicitar la corrección de datos inexactos o incompletos.
         </li>
         <li class="privacy__list-item">
-          <strong>Cancelación:</strong> solicitar la supresión de tus datos cuando no sean
-          necesarios para la finalidad declarada.
+          <strong>Cancelación:</strong>
+          solicitar la supresión de tus datos cuando no sean necesarios para la finalidad declarada.
         </li>
         <li class="privacy__list-item">
-          <strong>Oposición:</strong> oponerte al tratamiento de tus datos en los casos previstos
-          por la ley.
+          <strong>Oposición:</strong>
+          oponerte al tratamiento de tus datos en los casos previstos por la ley.
         </li>
       </ul>
       <p class="privacy__text">
@@ -99,18 +97,20 @@
     <section class="privacy__section">
       <h2 class="privacy__section-title">6. Imagen de perfil</h2>
       <p class="privacy__text">
-        El uso de tu foto de perfil de Google es completamente <strong>opcional</strong>. No estás
-        obligado a autorizar su uso para acceder a Mi Comodoro. Puedes iniciar sesión y utilizar
-        todas las funciones de la aplicación sin que tu imagen sea procesada ni almacenada.
+        El uso de tu foto de perfil de Google es completamente
+        <strong>opcional</strong>
+        . No estás obligado a autorizar su uso para acceder a Mi Comodoro. Puedes iniciar sesión y
+        utilizar todas las funciones de la aplicación sin que tu imagen sea procesada ni almacenada.
       </p>
     </section>
 
     <section class="privacy__section">
       <h2 class="privacy__section-title">7. Vigencia de la política</h2>
       <p class="privacy__text">
-        Esta política de privacidad rige a partir del <strong>15 de mayo de 2025</strong> y puede
-        ser actualizada para reflejar cambios en la legislación o en las prácticas de tratamiento de
-        datos. Cualquier modificación será notificada dentro de la aplicación.
+        Esta política de privacidad rige a partir del
+        <strong>15 de mayo de 2025</strong>
+        y puede ser actualizada para reflejar cambios en la legislación o en las prácticas de
+        tratamiento de datos. Cualquier modificación será notificada dentro de la aplicación.
       </p>
     </section>
   </article>

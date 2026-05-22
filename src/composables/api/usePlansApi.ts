@@ -1,8 +1,7 @@
 import type { PlanData } from '~/types/api'
 
 export const usePlansApi = () => {
-  const getPublicPlans = async () =>
-    $fetch<{ success: boolean; result: PlanData[] }>('/api/plans')
+  const getPublicPlans = async () => $fetch<{ success: boolean; result: PlanData[] }>('/api/plans')
 
   const getAdminPlans = async () =>
     $fetch<{ success: boolean; result: PlanData[] }>('/api/admin/plans')

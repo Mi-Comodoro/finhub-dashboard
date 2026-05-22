@@ -37,9 +37,7 @@
     try {
       const normalized = {
         ...data,
-        ...(data.dueDate
-          ? { dueDate: new Date(data.dueDate as string | Date).toISOString() }
-          : {})
+        ...(data.dueDate ? { dueDate: new Date(data.dueDate as string | Date).toISOString() } : {})
       }
       const dto = buildDto(normalized)
 

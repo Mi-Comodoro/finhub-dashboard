@@ -26,7 +26,7 @@
       at_risk: 'En riesgo',
       regular: 'Regular',
       healthy: 'Saludable',
-      optimal: 'Óptimo',
+      optimal: 'Óptimo'
     }
     return labels[healthScore.value?.level ?? 'regular'] ?? 'Regular'
   })
@@ -46,7 +46,7 @@
       score: healthScore.value?.cashFlowScore ?? 0,
       max: 25,
       tip: 'Mide si tus ingresos cubren tus gastos con margen libre.',
-      isNeutral: false,
+      isNeutral: false
     },
     {
       label: 'Ahorro y Metas',
@@ -54,7 +54,7 @@
       score: healthScore.value?.savingsScore ?? 0,
       max: 35,
       tip: 'Evalúa qué tanto estás ejecutando tu plan de ahorro.',
-      isNeutral: false,
+      isNeutral: false
     },
     {
       label: 'Control de Gastos',
@@ -62,7 +62,7 @@
       score: healthScore.value?.expenseScore ?? 0,
       max: 20,
       tip: 'Compara tus gastos reales vs lo que planificaste.',
-      isNeutral: false,
+      isNeutral: false
     },
     {
       label: 'Deudas',
@@ -70,8 +70,8 @@
       score: healthScore.value?.debtScore ?? 0,
       max: 20,
       tip: 'Analiza el impacto de tus deudas en tu salud financiera.',
-      isNeutral: healthScore.value?.debtScore === 10,
-    },
+      isNeutral: healthScore.value?.debtScore === 10
+    }
   ])
 
   function pillarBarClass(score: number, max: number): string {
@@ -96,9 +96,7 @@
     <div v-else-if="healthScoreError" class="analytics-view__empty">
       <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
       <p class="analytics-view__empty-title">No se pudo cargar la salud financiera</p>
-      <p class="analytics-view__empty-description">
-        Verifica tu conexión e intenta de nuevo
-      </p>
+      <p class="analytics-view__empty-description">Verifica tu conexión e intenta de nuevo</p>
     </div>
 
     <!-- Empty state -->
@@ -144,9 +142,7 @@
                 {{ healthScore.totalScore }}
               </text>
               <!-- /100 label -->
-              <text x="60" y="72" text-anchor="middle" font-size="11" fill="#94A3B8">
-                / 100
-              </text>
+              <text x="60" y="72" text-anchor="middle" font-size="11" fill="#94A3B8">/ 100</text>
             </svg>
             <div class="salud-view__level-label">
               <span class="salud-score__level" :class="scoreLevelClass">{{ levelLabel }}</span>
@@ -170,12 +166,14 @@
               <span class="material-symbols-outlined pillar-card__icon">{{ pillar.icon }}</span>
             </div>
             <span class="pillar-card__label">{{ pillar.label }}</span>
-            <span :title="pillar.tip" class="material-symbols-outlined pillar-card__info-icon">info</span>
+            <span :title="pillar.tip" class="material-symbols-outlined pillar-card__info-icon">
+              info
+            </span>
           </div>
 
           <template v-if="pillar.isNeutral">
             <div class="pillar-card__neutral">
-              <span class="pillar-card__neutral-badge">en planificación</span>
+              <Badge size="xs">en planificación</Badge>
               <Text size="xs" color="muted">
                 Registra tus deudas en Cuentas por Pagar para ver este indicador.
               </Text>
@@ -232,7 +230,7 @@
   }
 
   .analytics-view__empty-illustration {
-    @apply h-32 w-32 mx-auto;
+    @apply mx-auto h-32 w-32;
   }
 
   .analytics-view__empty-title {
@@ -240,7 +238,7 @@
   }
 
   .analytics-view__empty-description {
-    @apply text-sm text-neutral-500 max-w-xs;
+    @apply max-w-xs text-sm text-neutral-500;
   }
 
   /* Content */
@@ -321,10 +319,6 @@
 
   .pillar-card__info-icon {
     @apply cursor-help text-base leading-none text-neutral-400;
-  }
-
-  .pillar-card__neutral-badge {
-    @apply inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600;
   }
 
   .pillar-card__score-row {

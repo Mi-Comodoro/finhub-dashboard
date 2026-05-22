@@ -1,9 +1,6 @@
 import { useUserApi } from '@/composables/api/useUserApi'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useUserStore } from '@/stores/user.store'
-import type { Currency } from '@/utils/currency'
-
-
 interface UserUpdate {
   displayName?: string
   email?: string

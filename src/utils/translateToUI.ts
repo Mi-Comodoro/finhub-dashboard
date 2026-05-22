@@ -4,8 +4,10 @@ export const translate: Record<string, string> = {
   salary: 'Salario',
   freelance: 'Freelance',
   received: 'Recibido',
+  manual: 'Manual',
   expense: 'Gasto',
   income: 'Ingreso',
   savings: 'Ahorro',
+  interest: 'Interés',
   paid: 'Pagado'
 }

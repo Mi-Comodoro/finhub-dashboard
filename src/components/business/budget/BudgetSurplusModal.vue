@@ -3,7 +3,7 @@
 
   import { Button, Heading, Text } from '@/components/atoms'
   import type { GoalsData } from '@/types/api'
-  import { type Currency,formatCurrency } from '@/utils/currency'
+  import { type Currency, formatCurrency } from '@/utils/currency'
 
   import type { SurplusAction } from './types/budget-surplus.types'
 
@@ -49,9 +49,7 @@
 <template>
   <div class="surplus-modal">
     <div class="surplus-modal__header">
-      <Heading level="h1" size="xl" weight="extrabold" color="black">
-        Excedente disponible
-      </Heading>
+      <Heading level="h1" size="xl" weight="extrabold" color="black">Excedente disponible</Heading>
       <Text size="xs" color="muted">¿Qué deseas hacer con este saldo?</Text>
     </div>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
-  import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
+  import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
   import { getPercentage, percentOf } from '@/utils/currency'
 
   const {
@@ -10,30 +10,33 @@
     needsSpent,
     wantsSpent
   } = useBudgetDetailApplication()
-  const { savingAmountCompleted } = useSavingPlannedApplication()
+  const { receivedIncome, generatedSavings } = useBudgetInsightsPresenter()
 
   const isBalanced = computed(() => plan.value?.strategy === 'BALANCED')
+  const isActive = computed(() => plan.value?.status === 'ACTIVE')
 
-  // Amounts derived from the selected budget limits — NOT from currentBudgetPlan,
-  // which is only set for the active budget and would be null on detail navigation.
+  // When ACTIVE use actual received income as base (same as dashboard); otherwise use planned
+  const incomeBase = computed(() =>
+    isActive.value ? receivedIncome.value : (expectedIncome.value ?? 0)
+  )
+
   const needsAmount = computed(() => {
     if (!plan.value) return 0
-    return percentOf(expectedIncome.value ?? 0, plan.value.limits.needs, currency.value)
+    return percentOf(incomeBase.value, plan.value.limits.needs, currency.value)
   })
   const wantsAmount = computed(() => {
     if (!plan.value) return 0
-    return percentOf(expectedIncome.value ?? 0, plan.value.limits.wants, currency.value)
+    return percentOf(incomeBase.value, plan.value.limits.wants, currency.value)
   })
   const savingsAmount = computed(() => {
     if (!plan.value) return 0
-    return percentOf(expectedIncome.value ?? 0, plan.value.limits.savings, currency.value)
+    return percentOf(incomeBase.value, plan.value.limits.savings, currency.value)
   })
 
   const needsProgress = computed(() => getPercentage(needsAmount.value, needsSpent.value))
   const wantsProgress = computed(() => getPercentage(wantsAmount.value, wantsSpent.value))
-  const savingProgress = computed(() =>
-    getPercentage(savingsAmount.value, savingAmountCompleted.value ?? 0)
-  )
+  // Use totalSavingTarget (pending + completed, non-skipped) to match dashboard logic
+  const savingProgress = computed(() => getPercentage(savingsAmount.value, generatedSavings.value))
 
   const options = computed(() => {
     if (!plan.value) return []

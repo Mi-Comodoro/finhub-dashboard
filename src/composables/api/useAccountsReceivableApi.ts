@@ -6,8 +6,7 @@ import type {
 } from '~/types/accounts-receivable.types'
 
 export function useAccountsReceivableApi() {
-  const getAll = () =>
-    $fetch<{ success: boolean; result: AccountReceivable[] }>('/api/receivables')
+  const getAll = () => $fetch<{ success: boolean; result: AccountReceivable[] }>('/api/receivables')
 
   const getSummary = () =>
     $fetch<{ success: boolean; result: AccountReceivableSummary }>('/api/receivables/summary')

@@ -46,8 +46,7 @@
 
   const dayOfMonth = computed(() => {
     const d = periodDate.value
-    const isSameMonth =
-      today.getMonth() === d.getMonth() && today.getFullYear() === d.getFullYear()
+    const isSameMonth = today.getMonth() === d.getMonth() && today.getFullYear() === d.getFullYear()
     if (!isSameMonth) return daysInMonth.value
     return today.getDate()
   })

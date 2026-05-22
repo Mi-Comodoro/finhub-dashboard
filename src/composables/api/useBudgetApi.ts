@@ -47,7 +47,10 @@ export function useBudgetApi() {
     })
   const closeBudget = async (
     budgetId: string,
-    body?: { surplusAction?: 'transfer_to_goal' | 'carry_forward' | 'ignore'; targetGoalId?: string }
+    body?: {
+      surplusAction?: 'transfer_to_goal' | 'carry_forward' | 'ignore'
+      targetGoalId?: string
+    }
   ) =>
     $fetch<{ success: boolean; result: unknown }>(`/api/budgets/${budgetId}/close`, {
       method: 'PATCH',

@@ -44,6 +44,7 @@ export const useDashboardApplication = () => {
   const totalSavingGenerated = computed(() => plannedSavingStore.totalSavingGenerated)
   const totalSavingTarget = computed(() => plannedSavingStore.totalSavingTarget)
   const totalSavingFromPlan = computed(() => plannedSavingStore.totalSavingFromPlan)
+  const totalTransactionSavings = computed(() => transactionStore.totalSavings)
   const totalIncomeReceived = computed(() => transactionStore.totalIncomeReceived)
   const totalPlanned = computed(() => expensesStore.totalPlanned + expensesStore.totalPaid)
   const totalExpensesPaid = computed(() => transactionStore.totalExpensesPaid)
@@ -57,6 +58,7 @@ export const useDashboardApplication = () => {
     totalSavingGenerated,
     totalSavingTarget,
     totalSavingFromPlan,
+    totalTransactionSavings,
     totalIncomeReceived,
     totalPlanned,
     totalExpensesPaid

@@ -255,21 +255,23 @@
     shopping_cart: 'bg-purple-100'
   }
 
-  const getFrequencyClass = (frequency: CompoundingFrequency) => {
-    const classes: Record<CompoundingFrequency, string> = {
-      daily: ' !text-green-600', // Diario (Alta actividad)
-      monthly: '!text-secondary-600', // Mensual (Estándar)
-      annually: '!bg-ghost-100 !text-ghost-600' // Anual (Largo plazo)
+  function frequencyVariant(frequency: CompoundingFrequency): string {
+    const map: Record<CompoundingFrequency, string> = {
+      daily: 'success',
+      monthly: 'secondary',
+      annually: 'default'
     }
-    return classes[frequency] || 'bg-gray-100 text-gray-600'
+    return map[frequency] ?? 'default'
   }
-  const getLevelRateClass = (level: string) => {
-    if (level === 'Alta') return '!bg-green-200 !text-green-700'
-    if (level === 'Media') return '!bg-secondary-700 !text-secondary-200'
-    if (level === 'Baja') return '!bg-yellow-500 !text-neutral-900'
-    if (level === 'Muy Baja') return '!bg-red-700 !text-red-200'
 
-    return 'bg-gray-200 text-gray-500'
+  function rateVariant(level: string): string {
+    const map: Record<string, string> = {
+      Alta: 'success',
+      Media: 'secondary',
+      Baja: 'warning',
+      'Muy Baja': 'danger'
+    }
+    return map[level] ?? 'default'
   }
   const isAccountExits = computed(() => accounts.value?.length >= 1)
   const isGoalsExists = computed(() => goalsProgress.value >= 1)
@@ -615,9 +617,7 @@
                         <Badge
                           :rounded="false"
                           class="goals-page__account-badge"
-                          :class-name="
-                            getLevelRateClass(getRateCategory(account.interestRate).level)
-                          "
+                          :variant="rateVariant(getRateCategory(account.interestRate).level)"
                         >
                           {{ getInitials(account.name) }}
                         </Badge>
@@ -646,12 +646,9 @@
                     </div>
 
                     <div class="goals-page__account-stats">
-                      <span
-                        class="goals-page__account-frequency"
-                        :class="getFrequencyClass(account.compoundingFrequency)"
-                      >
+                      <Badge :variant="frequencyVariant(account.compoundingFrequency)" size="xs">
                         {{ frequencyMap(account.compoundingFrequency) }}
-                      </span>
+                      </Badge>
                       <Text size="xs">{{ account.interestRate.toFixed(2) }}%EA</Text>
                     </div>
                   </div>
@@ -944,10 +941,6 @@
 
   .goals-page__account-stats {
     @apply ml-auto flex items-center gap-2;
-  }
-
-  .goals-page__account-frequency {
-    @apply rounded-md px-2 py-0.5 text-xs font-semibold;
   }
 
   .goals-page__accounts-empty {

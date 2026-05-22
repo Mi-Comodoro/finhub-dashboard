@@ -1,7 +1,10 @@
 import type { SettingsData } from '@/stores/settings.store'
 
 export type UpdateSettingsDto = Pick<SettingsData, 'currency' | 'language' | 'notificationsEnabled'>
-export type UpdateBudgetDefaultsDto = Pick<SettingsData, 'budgetAlertThreshold' | 'savingsPercentage'>
+export type UpdateBudgetDefaultsDto = Pick<
+  SettingsData,
+  'budgetAlertThreshold' | 'savingsPercentage'
+>
 
 export function useSettingsApi() {
   const getSettings = async () =>

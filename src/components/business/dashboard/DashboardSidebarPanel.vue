@@ -69,7 +69,12 @@
   })
 
   const pillars = computed(() => [
-    { label: 'Flujo de caja', value: props.healthScore?.cashFlowScore ?? 0, max: 30, color: 'primary' },
+    {
+      label: 'Flujo de caja',
+      value: props.healthScore?.cashFlowScore ?? 0,
+      max: 30,
+      color: 'primary'
+    },
     { label: 'Ahorro', value: props.healthScore?.savingsScore ?? 0, max: 35, color: 'warning' },
     { label: 'Gastos', value: props.healthScore?.expenseScore ?? 0, max: 30, color: 'danger' },
     { label: 'Deudas', value: props.healthScore?.debtScore ?? 0, max: 5, color: 'secondary' }
@@ -151,7 +156,9 @@
             {{ score }}
           </span>
           <div class="dashboard-sidebar__score-meta">
-            <span class="dashboard-sidebar__score-label" :class="scoreClass">{{ scoreLevelLabel }}</span>
+            <span class="dashboard-sidebar__score-label" :class="scoreClass">
+              {{ scoreLevelLabel }}
+            </span>
             <Text size="xs" color="muted">de 100 pts</Text>
           </div>
         </div>
@@ -179,7 +186,10 @@
       </div>
 
       <!-- Sección 2: Ahorro -->
-      <div v-if="plannedSavings || suggestedSavings || realSavings" class="dashboard-sidebar__section">
+      <div
+        v-if="plannedSavings || suggestedSavings || realSavings"
+        class="dashboard-sidebar__section"
+      >
         <CardInfo
           title="Ahorro"
           sub-title="Planificado · Sugerido · Real"
@@ -202,7 +212,9 @@
           <div class="dashboard-sidebar__savings-divider" />
           <div class="dashboard-sidebar__savings-row">
             <Text size="xs" color="muted">Sugerido</Text>
-            <Text size="xs" weight="semibold">{{ formatCurrency(suggestedSavings, currency) }}</Text>
+            <Text size="xs" weight="semibold">
+              {{ formatCurrency(suggestedSavings, currency) }}
+            </Text>
           </div>
           <div class="dashboard-sidebar__savings-divider" />
           <div class="dashboard-sidebar__savings-row">
@@ -265,10 +277,20 @@
         />
 
         <div class="dashboard-sidebar__bills">
-          <div v-for="bill in urgentBills" :key="`${bill.type}-${bill.id ?? bill.name}`" class="dashboard-sidebar__bill-row">
-            <span class="dashboard-sidebar__dot" :class="getDotClass(bill.daysUntilDue, bill.isEssential ?? false)" />
+          <div
+            v-for="bill in urgentBills"
+            :key="`${bill.type}-${bill.id ?? bill.name}`"
+            class="dashboard-sidebar__bill-row"
+          >
+            <span
+              class="dashboard-sidebar__dot"
+              :class="getDotClass(bill.daysUntilDue, bill.isEssential ?? false)"
+            />
             <p class="dashboard-sidebar__bill-name">{{ bill.name }}</p>
-            <span class="dashboard-sidebar__bill-days" :class="getDaysClass(bill.daysUntilDue, bill.isEssential ?? false)">
+            <span
+              class="dashboard-sidebar__bill-days"
+              :class="getDaysClass(bill.daysUntilDue, bill.isEssential ?? false)"
+            >
               {{ getDaysLabel(bill.daysUntilDue) }}
             </span>
           </div>

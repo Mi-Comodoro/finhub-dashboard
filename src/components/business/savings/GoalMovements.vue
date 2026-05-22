@@ -36,7 +36,7 @@
   const tableData = computed(() =>
     [...props.movements]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .map((m) => ({
+      .map(m => ({
         id: m.id ?? m.date,
         date: m.date,
         amount: m.amount,
@@ -79,7 +79,10 @@
 
       <template #empty>
         <div class="goal-movements__empty">
-          <EmptyStateIllustration type="no-transactions" class="goal-movements__empty-illustration" />
+          <EmptyStateIllustration
+            type="no-transactions"
+            class="goal-movements__empty-illustration"
+          />
           <Heading level="h3" size="sm" weight="semibold">Sin movimientos</Heading>
           <Text size="xs" color="muted">Aún no hay movimientos registrados para esta meta.</Text>
         </div>

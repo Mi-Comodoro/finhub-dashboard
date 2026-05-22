@@ -6,8 +6,18 @@ import { useFinancesStore } from '@/stores/finances.store'
 import type { Currency } from '@/utils/currency'
 
 const MONTH_LABELS = [
-  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+  'Ene',
+  'Feb',
+  'Mar',
+  'Abr',
+  'May',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dic'
 ]
 
 export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
@@ -56,9 +66,7 @@ export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
     return months
   })
 
-  const totalSaved = computed(() =>
-    savingsByMonth.value.reduce((acc, m) => acc + m.actual, 0)
-  )
+  const totalSaved = computed(() => savingsByMonth.value.reduce((acc, m) => acc + m.actual, 0))
 
   const bestMonth = computed(() =>
     savingsByMonth.value.reduce(

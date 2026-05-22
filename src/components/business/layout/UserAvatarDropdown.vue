@@ -10,7 +10,7 @@
   withDefaults(defineProps<UserAvatarDropdownProps>(), {
     userName: '',
     userEmail: '',
-    avatarUrl: '',
+    avatarUrl: ''
   })
 
   const userStore = useUserStore()
@@ -72,16 +72,17 @@
 
       <div class="user-avatar-dropdown__divider" />
 
-      <NuxtLink
-        to="/dashboard/profile"
-        class="user-avatar-dropdown__item"
-        @click="isOpen = false"
-      >
-        <span class="material-symbols-outlined user-avatar-dropdown__item-icon">person_outline</span>
+      <NuxtLink to="/dashboard/profile" class="user-avatar-dropdown__item" @click="isOpen = false">
+        <span class="material-symbols-outlined user-avatar-dropdown__item-icon">
+          person_outline
+        </span>
         Mi Perfil
       </NuxtLink>
 
-      <button class="user-avatar-dropdown__item user-avatar-dropdown__item--danger" @click="handleLogout">
+      <button
+        class="user-avatar-dropdown__item user-avatar-dropdown__item--danger"
+        @click="handleLogout"
+      >
         <span class="material-symbols-outlined user-avatar-dropdown__item-icon">logout</span>
         Cerrar Sesión
       </button>

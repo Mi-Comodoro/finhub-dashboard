@@ -1,4 +1,4 @@
-import type { TransactionPagination, TransactionSummary } from '~/types/domain'
+import type { TransactionPagination, TransactionSummary, TransactionTotals } from '~/types/domain'
 
 export interface TransactionData {
   budgetId: string
@@ -68,10 +68,17 @@ export function useTransactionApi() {
       method: 'DELETE'
     })
 
+  const getTransactionTotals = async (budgetId: string, query: string) =>
+    $fetch<{
+      success: boolean
+      result: TransactionTotals
+    }>(`/api/transactions/by-budget/${budgetId}/totals?${query}`)
+
   return {
     getTransactionsByBudget,
     createTransaction,
     updateTransaction,
-    deleteTransaction
+    deleteTransaction,
+    getTransactionTotals
   }
 }

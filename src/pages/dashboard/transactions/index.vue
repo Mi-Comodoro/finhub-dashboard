@@ -33,6 +33,7 @@
   const {
     transactions,
     pagination,
+    totals,
     currency,
     financeId,
     budgetSelected,
@@ -40,6 +41,7 @@
     budgetOptions,
     categoryOptions,
     fetchTransaction,
+    fetchTotals,
     loadInitialData,
     deleteTransaction
   } = useTransactionApplication()
@@ -119,13 +121,18 @@
   const loadTransactions = async (resetPage = false) => {
     if (!budgetSelect.value) return
     if (resetPage) filters.resetPage()
-    await fetchTransaction(budgetSelect.value, filters.activeFilters.value)
+    const fetchPage = fetchTransaction(budgetSelect.value, filters.activeFilters.value)
+    if (resetPage) {
+      await Promise.all([fetchPage, fetchTotals(budgetSelect.value, filters.filterParams.value)])
+    } else {
+      await fetchPage
+    }
   }
 
   // --- Composables ---
   const filters = useTransactionFiltersPresenter(loadTransactions)
   const metrics = useTransactionMetricsPresenter(
-    transactions,
+    totals,
     pagination,
     filters.currentPage,
     filters.pageSize
@@ -241,7 +248,7 @@
     const queryBudgetId = route.query.budgetId as string | undefined
     budgetSelect.value = queryBudgetId || budgetSelected.value?.id || budgetPlans.value[0]?.id || ''
 
-    await loadTransactions()
+    await loadTransactions(true)
   })
 
   watch(budgetSelect, () => {
@@ -367,7 +374,10 @@
 
       <template #empty>
         <div class="transactions-page__empty">
-          <EmptyStateIllustration type="no-transactions" class="transactions-page__empty-illustration" />
+          <EmptyStateIllustration
+            type="no-transactions"
+            class="transactions-page__empty-illustration"
+          />
           <Text size="sm" color="muted">No hay transacciones para estos filtros</Text>
           <Button variant="ghost" size="sm" @click="filters.clearFilters">Limpiar filtros</Button>
         </div>
@@ -424,12 +434,9 @@
         <Text size="sm" color="muted">
           ¿Estás seguro de eliminar esta transacción de
           <strong>
-            {{
-              transactionToDelete
-                ? formatCurrency(transactionToDelete.amount, currency)
-                : ''
-            }}
-          </strong>? Esta acción no se puede deshacer.
+            {{ transactionToDelete ? formatCurrency(transactionToDelete.amount, currency) : '' }}
+          </strong>
+          ? Esta acción no se puede deshacer.
         </Text>
         <div class="delete-confirmation__actions">
           <Button variant="ghost" size="sm" @click="showDeleteModal = false">Cancelar</Button>

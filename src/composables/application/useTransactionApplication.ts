@@ -1,11 +1,13 @@
 import type { FetchError } from 'ofetch'
 
+import { useSavingsApi } from '@/composables/api/useSavingsApi'
 import type { TransactionData } from '@/composables/api/useTransactionApi'
 import { useTransactionApi } from '@/composables/api/useTransactionApi'
 import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
 import { useBudgetStore } from '@/stores/budget.store'
 import { useCategoryStore } from '@/stores/categories.store'
 import { useFinancesStore } from '@/stores/finances.store'
+import { usePlannedSavingStore } from '@/stores/planned-saving.store'
 import type { TransactionFilters } from '~/types/domain'
 
 // Business logic: construir query params
@@ -44,11 +46,14 @@ export const useTransactionApplication = () => {
   const budgetStore = useBudgetStore()
   const categoryStore = useCategoryStore()
   const financesStore = useFinancesStore()
+  const plannedSavingStore = usePlannedSavingStore()
   const categoryApplication = useCategoryApplication()
   const transactionApi = useTransactionApi()
+  const savingsApi = useSavingsApi()
 
   const transactions = computed(() => transactionStore.items)
   const pagination = computed(() => transactionStore.pagination)
+  const totals = computed(() => transactionStore.totals)
   const isLoading = computed(() => transactionStore.isLoading)
 
   // Orchestration: fetch transactions by budget
@@ -89,6 +94,16 @@ export const useTransactionApplication = () => {
 
   const fetchTransaction = async (budgetId: string, filters?: Partial<TransactionFilters>) => {
     await fetchByBudget(budgetId, filters ?? {})
+  }
+
+  const fetchTotals = async (budgetId: string, filters?: Partial<TransactionFilters>) => {
+    try {
+      const query = buildQueryParams(budgetId, { ...filters, page: undefined, limit: undefined })
+      const { success, result } = await transactionApi.getTransactionTotals(budgetId, query)
+      if (success && result) transactionStore.setTotals(result)
+    } catch {
+      // totals are non-critical; silently fail
+    }
   }
 
   const setBudgetId = (budgetId: string) => {
@@ -140,13 +155,51 @@ export const useTransactionApplication = () => {
           message: 'No se pudo crear la transacción'
         })
       } else {
-        // Reload transactions for current budget
-        if (transactionStore.budgetId) {
-          await fetchByBudget(transactionStore.budgetId)
-        }
+        const budgetId = String(data['budgetId'] ?? '') || transactionStore.budgetId
+        if (budgetId) await fetchByBudget(budgetId)
       }
 
       return { success }
+    } catch (err) {
+      transactionStore.setError(createErrorMessage(err as FetchError))
+      return { success: false }
+    } finally {
+      transactionStore.setLoading(false)
+    }
+  }
+
+  // Orchestration: create income transaction + optional planned saving
+  const createTransactionWithSavingsPlan = async (
+    data: Record<string, unknown>,
+    savingsPercentage: number
+  ) => {
+    try {
+      transactionStore.setLoading(true)
+
+      const { success } = await transactionApi.createTransaction(data as unknown as TransactionData)
+
+      if (!success) {
+        transactionStore.setError({
+          title: 'Error al crear ingreso',
+          message: 'No se pudo registrar el ingreso'
+        })
+        return { success: false }
+      }
+
+      const budgetId = String(data['budgetId'] ?? '')
+      const amount = Number(data['amount'] ?? 0)
+      const savingsAmount = Math.round(amount * (savingsPercentage / 100))
+
+      if (budgetId && savingsAmount > 0) {
+        await savingsApi.createPlannedSaving({ amount: savingsAmount, budgetId })
+        await plannedSavingStore.fetchByBudget(budgetId)
+      }
+
+      if (transactionStore.budgetId) {
+        await fetchByBudget(transactionStore.budgetId)
+      }
+
+      return { success: true }
     } catch (err) {
       transactionStore.setError(createErrorMessage(err as FetchError))
       return { success: false }
@@ -159,7 +212,10 @@ export const useTransactionApplication = () => {
   const updateTransaction = async (id: string, data: Record<string, unknown>) => {
     try {
       transactionStore.setLoading(true)
-      const { success } = await transactionApi.updateTransaction(id, data as unknown as Partial<TransactionData>)
+      const { success } = await transactionApi.updateTransaction(
+        id,
+        data as unknown as Partial<TransactionData>
+      )
 
       if (!success) {
         transactionStore.setError({
@@ -212,6 +268,7 @@ export const useTransactionApplication = () => {
   return {
     transactions,
     pagination,
+    totals,
     isLoading,
     currency,
     financeId,
@@ -220,10 +277,12 @@ export const useTransactionApplication = () => {
     budgetOptions,
     categoryOptions,
     fetchTransaction,
+    fetchTotals,
     loadInitialData,
     setBudgetId,
     fetchByBudget,
     createTransaction,
+    createTransactionWithSavingsPlan,
     updateTransaction,
     deleteTransaction
   }

@@ -180,7 +180,9 @@ export const useGoalsApplication = () => {
     }
   }
 
-  const fetchGoalContributions = async (goalId: string): Promise<{ success: boolean; result: Transaction[] }> => {
+  const fetchGoalContributions = async (
+    goalId: string
+  ): Promise<{ success: boolean; result: Transaction[] }> => {
     try {
       return await savingsApi.getGoalContributions(goalId)
     } catch (error) {
@@ -189,7 +191,9 @@ export const useGoalsApplication = () => {
     }
   }
 
-  const fetchGoalSummary = async (goalId: string): Promise<{ success: boolean; result: { totalSavings: number; totalInterest: number } }> => {
+  const fetchGoalSummary = async (
+    goalId: string
+  ): Promise<{ success: boolean; result: { totalSavings: number; totalInterest: number } }> => {
     try {
       return await savingsApi.getGoalSummary(goalId)
     } catch (error) {
@@ -233,10 +237,7 @@ export const useGoalsApplication = () => {
     return { success: !savingsAllocationsStore.error }
   }
 
-  const addGoalInterest = async (
-    goalId: string,
-    amount: number
-  ): Promise<{ success: boolean }> => {
+  const addGoalInterest = async (goalId: string, amount: number): Promise<{ success: boolean }> => {
     try {
       const response = await savingsApi.registerGoalInterest(
         goalId,

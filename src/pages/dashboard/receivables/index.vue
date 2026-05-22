@@ -4,7 +4,9 @@
   import { AccountReceivableCollectionForm, AccountReceivableForm } from '@/components/business'
   import { ModalWizard } from '@/components/organisms'
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
+  import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useFeedback } from '@/composables/useFeedback'
+  import { useFinancesStore } from '@/stores/finances.store'
   import type { AccountReceivable } from '@/types/accounts-receivable.types'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
@@ -15,18 +17,12 @@
     breadcrumb: 'Cuentas por Cobrar'
   })
 
-  const {
-    accounts,
-    summary,
-    isLoading,
-    currency,
-    agingData,
-    flowData,
-    loadAll,
-    deleteAccount
-  } = useAccountsReceivableApplication()
+  const { accounts, summary, isLoading, currency, agingData, flowData, loadAll, deleteAccount } =
+    useAccountsReceivableApplication()
 
   const { success: successToast, error: errorToast } = useFeedback()
+  const { fetchCurrentBudget } = useBudgetActions()
+  const financesStore = useFinancesStore()
 
   const showForm = ref(false)
   const showCollectionForm = ref(false)
@@ -165,7 +161,7 @@
   }))
 
   onMounted(async () => {
-    await loadAll()
+    await Promise.all([loadAll(), fetchCurrentBudget(financesStore.profile?.id ?? '')])
   })
 </script>
 
@@ -238,7 +234,7 @@
     <!-- Charts -->
     <div class="receivables-page__charts">
       <Card class="receivables-page__chart-card">
-        <Heading level="h3" size="lg" weight="semibold">Aging Report</Heading>
+        <Heading level="h3" size="lg" weight="semibold">Antigüedad de cobros</Heading>
         <Text size="xs" color="muted">Distribución por antigüedad de vencimiento</Text>
         <ClientOnly>
           <VChart :option="agingChartOption" autoresize class="receivables-page__chart" />
@@ -261,15 +257,12 @@
 
     <!-- Account list -->
     <div v-else class="receivables-page__list">
-      <div
-        v-for="account in accounts"
-        :key="account.id"
-        class="receivables-page__account-card"
-      >
+      <div v-for="account in accounts" :key="account.id" class="receivables-page__account-card">
         <div class="receivables-page__account-header">
           <div class="receivables-page__account-info">
             <Heading level="h3" size="base" weight="semibold">{{ account.name }}</Heading>
             <Text v-if="account.debtor" size="xs" color="muted">{{ account.debtor }}</Text>
+            <Text v-if="account.notes" size="xs" color="muted">{{ account.notes }}</Text>
           </div>
           <Badge :variant="statusVariant(account.status)">
             {{ statusLabel(account.status) }}
@@ -278,16 +271,41 @@
 
         <div class="receivables-page__account-amounts">
           <div>
+            <Text size="xs" color="muted">Monto original</Text>
+            <Text size="xs" color="muted">
+              {{ formatCurrency(account.originalAmount, currency) }}
+            </Text>
+          </div>
+          <div class="receivables-page__account-due">
             <Text size="xs" color="muted">Saldo pendiente</Text>
             <Heading level="h3" size="xl" weight="bold">
               {{ formatCurrency(account.currentBalance, currency) }}
             </Heading>
           </div>
-          <div v-if="account.dueDate" class="receivables-page__account-due">
+        </div>
+
+        <div class="receivables-page__account-progress">
+          <div class="receivables-page__account-progress-info">
             <Text size="xs" color="muted">
-              Esperado: {{ DateUtils.formatDate(account.dueDate, 'short') }}
+              Cobrado:
+              {{ formatCurrency(account.originalAmount - account.currentBalance, currency) }} /
+              {{ formatCurrency(account.originalAmount, currency) }}
             </Text>
           </div>
+          <div class="receivables-page__progress-bar">
+            <div
+              class="receivables-page__progress-fill"
+              :style="{
+                width: `${Math.min(100, Math.max(0, ((account.originalAmount - account.currentBalance) / account.originalAmount) * 100))}%`
+              }"
+            />
+          </div>
+        </div>
+
+        <div v-if="account.dueDate" class="receivables-page__account-due-row">
+          <Text size="xs" color="muted">
+            Esperado: {{ DateUtils.formatDate(account.dueDate, 'short') }}
+          </Text>
         </div>
 
         <div v-if="account.status === 'overdue'" class="receivables-page__overdue-alert">
@@ -302,7 +320,7 @@
             variant="primary"
             @click="openCollection(account)"
           >
-            Registrar cobro
+            Recibir cobro
           </Button>
           <Button size="sm" variant="ghost" @click="openEdit(account)">Editar</Button>
           <Button size="sm" variant="danger-ghost" @click="handleDelete(account.id)">
@@ -313,11 +331,12 @@
 
       <!-- Empty state -->
       <div v-if="!isLoading && accounts.length === 0" class="receivables-page__empty">
-        <EmptyStateIllustration type="no-transactions" class="receivables-page__empty-illustration" />
+        <EmptyStateIllustration
+          type="no-transactions"
+          class="receivables-page__empty-illustration"
+        />
         <Heading level="h3" size="lg" weight="semibold">Sin cobros registrados</Heading>
-        <Text size="sm" color="muted">
-          Registra el dinero que te deben para hacer seguimiento.
-        </Text>
+        <Text size="sm" color="muted">Registra el dinero que te deben para hacer seguimiento.</Text>
       </div>
     </div>
 
@@ -431,11 +450,31 @@
   }
 
   .receivables-page__account-amounts {
-    @apply mb-3 flex items-end justify-between;
+    @apply mb-2 grid grid-cols-2 items-end gap-4;
   }
 
   .receivables-page__account-due {
     @apply text-right;
+  }
+
+  .receivables-page__account-progress {
+    @apply mb-3 flex flex-col gap-1;
+  }
+
+  .receivables-page__account-progress-info {
+    @apply flex justify-between;
+  }
+
+  .receivables-page__progress-bar {
+    @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
+  }
+
+  .receivables-page__progress-fill {
+    @apply h-full rounded-full bg-primary-500 transition-all;
+  }
+
+  .receivables-page__account-due-row {
+    @apply mb-3;
   }
 
   .receivables-page__overdue-alert {

@@ -1,4 +1,10 @@
-import type { GoalHistory, GoalsData, PlannedSaving, SavingAllocationData, Transaction } from '@/types/api'
+import type {
+  GoalHistory,
+  GoalsData,
+  PlannedSaving,
+  SavingAllocationData,
+  Transaction
+} from '@/types/api'
 import type { PlannedSavingSummary } from '~/types/domain'
 
 export function useSavingsApi() {
@@ -56,10 +62,13 @@ export function useSavingsApi() {
       note?: string
     }
   ) =>
-    $fetch<{ success: boolean; result: PlannedSaving }>(`/api/savings/goals/${goalId}/contributions`, {
-      method: 'POST',
-      body: { amount: data.amount, date: data.date, notes: data.note }
-    })
+    $fetch<{ success: boolean; result: PlannedSaving }>(
+      `/api/savings/goals/${goalId}/contributions`,
+      {
+        method: 'POST',
+        body: { amount: data.amount, date: data.date, notes: data.note }
+      }
+    )
 
   const updateGoalStatus = async (id: string, status: string) =>
     $fetch<{ success: boolean; result: unknown }>(`/api/savings/goals/${id}/status`, {
@@ -68,9 +77,12 @@ export function useSavingsApi() {
     })
 
   const getGoalContributions = async (goalId: string) =>
-    $fetch<{ success: boolean; result: Transaction[] }>(`/api/savings/goals/${goalId}/contributions`, {
-      method: 'GET'
-    })
+    $fetch<{ success: boolean; result: Transaction[] }>(
+      `/api/savings/goals/${goalId}/contributions`,
+      {
+        method: 'GET'
+      }
+    )
 
   const getGoalSummary = async (goalId: string) =>
     $fetch<{ success: boolean; result: { totalSavings: number; totalInterest: number } }>(
@@ -96,13 +108,10 @@ export function useSavingsApi() {
     })
 
   const assignGoalToPlannedSaving = async (id: string, savingGoalId: string) =>
-    $fetch<{ success: boolean; result: PlannedSavingSummary }>(
-      `/api/savings/planned/${id}/goal`,
-      {
-        method: 'PATCH',
-        body: { savingGoalId }
-      }
-    )
+    $fetch<{ success: boolean; result: PlannedSavingSummary }>(`/api/savings/planned/${id}/goal`, {
+      method: 'PATCH',
+      body: { savingGoalId }
+    })
 
   return {
     getPlannedSavingsByBudget,

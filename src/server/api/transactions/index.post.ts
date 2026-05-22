@@ -15,7 +15,16 @@ export default defineEventHandler(async event => {
       method: 'POST',
       headers: { authorization: `Bearer ${token}` },
       body,
-      onResponseError: ({ response }) => validateError(event, response.status)
+      onResponseError: ({ response }) => {
+        if (response.status === 400 || response.status === 422) {
+          const raw = response._data
+          const msg = Array.isArray(raw?.message)
+            ? raw.message.join(', ')
+            : (raw?.message ?? 'Datos inválidos')
+          throw createError({ statusCode: response.status, message: msg })
+        }
+        validateError(event, response.status)
+      }
     }
   )
 

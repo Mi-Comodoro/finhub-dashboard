@@ -11,12 +11,8 @@
   const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
   const { selectedYear, selectedMonth } = period
 
-  const {
-    fetchTransactionsByPeriod,
-    groupTransactionsByWeek,
-    currency,
-    fetchForecast,
-  } = useAnalyticsCashFlowApplication()
+  const { fetchTransactionsByPeriod, groupTransactionsByWeek, currency, fetchForecast } =
+    useAnalyticsCashFlowApplication()
 
   const { data: transactions, pending } = await useAsyncData(
     'analytics-cashflow',
@@ -52,7 +48,9 @@
 
   const netFlow = computed(() => totalIncome.value - totalExpense.value)
 
-  const netFlowVariant = computed(() => (!netFlow.value || netFlow.value >= 0 ? 'income' : 'expense'))
+  const netFlowVariant = computed(() =>
+    !netFlow.value || netFlow.value >= 0 ? 'income' : 'expense'
+  )
 
   const hasData = computed(() => (transactions.value ?? []).length > 0)
 
@@ -62,13 +60,13 @@
     grid: { left: '3%', right: '4%', bottom: '3%', top: '15%', containLabel: true },
     xAxis: {
       type: 'category',
-      data: forecast.value?.months.map(m => m.month) ?? [],
+      data: forecast.value?.months.map(m => m.month) ?? []
     },
     yAxis: {
       type: 'value',
       axisLabel: {
-        formatter: (value: number) => formatCompactCurrency(value, currency.value),
-      },
+        formatter: (value: number) => formatCompactCurrency(value, currency.value)
+      }
     },
     series: [
       {
@@ -76,22 +74,22 @@
         type: 'line',
         data: forecast.value?.months.map(m => m.projectedIncome ?? 0) ?? [],
         lineStyle: { type: 'dashed' },
-        itemStyle: { color: CHART_COLORS.income },
+        itemStyle: { color: CHART_COLORS.income }
       },
       {
         name: 'Gastos proy.',
         type: 'line',
         data: forecast.value?.months.map(m => m.projectedExpenses ?? 0) ?? [],
         lineStyle: { type: 'dashed' },
-        itemStyle: { color: CHART_COLORS.expense },
+        itemStyle: { color: CHART_COLORS.expense }
       },
       {
         name: 'Neto proy.',
         type: 'bar',
         data: forecast.value?.months.map(m => m.projectedNet ?? 0) ?? [],
-        itemStyle: { color: CHART_COLORS.savings },
-      },
-    ],
+        itemStyle: { color: CHART_COLORS.savings }
+      }
+    ]
   }))
 
   const chartOption = computed(() => ({
@@ -214,9 +212,7 @@
       </div>
 
       <div v-if="forecastWarning" class="cashflow-view__forecast-banner">
-        <span class="material-symbols-outlined cashflow-view__forecast-banner-icon">
-          warning
-        </span>
+        <span class="material-symbols-outlined cashflow-view__forecast-banner-icon">warning</span>
         <Text size="sm" color="warning">{{ forecastWarning }}</Text>
       </div>
 
@@ -251,7 +247,9 @@
 
         <Card class="cashflow-view__chart-card">
           <div class="cashflow-view__chart-header">
-            <Heading level="h3" size="lg" weight="semibold">Pronóstico — Líneas Proyectadas</Heading>
+            <Heading level="h3" size="lg" weight="semibold">
+              Pronóstico — Líneas Proyectadas
+            </Heading>
           </div>
           <ClientOnly>
             <VChart :option="forecastChartOption" style="height: 320px" autoresize />
@@ -293,7 +291,7 @@
   }
 
   .analytics-view__empty-illustration {
-    @apply h-32 w-32 mx-auto;
+    @apply mx-auto h-32 w-32;
   }
 
   .analytics-view__empty-title {
@@ -301,7 +299,7 @@
   }
 
   .analytics-view__empty-description {
-    @apply text-sm text-neutral-500 max-w-xs;
+    @apply max-w-xs text-sm text-neutral-500;
   }
 
   .analytics-view__empty-cta {

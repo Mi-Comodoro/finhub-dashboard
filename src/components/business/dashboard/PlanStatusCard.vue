@@ -32,21 +32,31 @@
 
   const planLabel = computed(() => {
     switch (accountType.value) {
-      case 'TRIAL': return 'Pro Trial'
-      case 'PLUS': return 'Plus'
-      case 'PRO': return 'Pro'
-      case 'PARTNER': return 'Partner'
-      default: return 'Gratis'
+      case 'TRIAL':
+        return 'Pro Trial'
+      case 'PLUS':
+        return 'Plus'
+      case 'PRO':
+        return 'Pro'
+      case 'PARTNER':
+        return 'Partner'
+      default:
+        return 'Gratis'
     }
   })
 
   const planVariant = computed(() => {
     switch (accountType.value) {
-      case 'TRIAL': return trialIsUrgent.value ? 'danger' : 'warning'
-      case 'PLUS': return 'secondary'
-      case 'PRO': return 'primary'
-      case 'PARTNER': return 'success'
-      default: return 'default'
+      case 'TRIAL':
+        return trialIsUrgent.value ? 'danger' : 'warning'
+      case 'PLUS':
+        return 'secondary'
+      case 'PRO':
+        return 'primary'
+      case 'PARTNER':
+        return 'success'
+      default:
+        return 'default'
     }
   })
 
@@ -107,9 +117,7 @@
 
     <!-- Free: mensaje de upgrade -->
     <template v-else-if="isFree">
-      <Text size="xs" color="muted">
-        Desbloquea todas las funcionalidades con un plan de pago.
-      </Text>
+      <Text size="xs" color="muted">Desbloquea todas las funcionalidades con un plan de pago.</Text>
     </template>
 
     <button class="plan-status-card__link" @click="showModal = true">

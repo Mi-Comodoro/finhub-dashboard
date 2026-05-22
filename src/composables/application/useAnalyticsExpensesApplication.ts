@@ -11,8 +11,18 @@ export interface ExpenseItem extends TransactionSummary {
 }
 
 const MONTH_NAMES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre'
 ]
 
 export function useAnalyticsExpensesApplication() {
@@ -57,7 +67,7 @@ export function useAnalyticsExpensesApplication() {
 
     return result.transactions.map(t => ({
       ...t,
-      categoryType: t.category?.id ? categoryTypeMap.get(t.category.id) : undefined,
+      categoryType: t.category?.id ? categoryTypeMap.get(t.category.id) : undefined
     }))
   }
 

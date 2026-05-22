@@ -33,37 +33,45 @@
 <template>
   <div
     class="user-avatar"
-    :class="[sizeClasses[size], showPhoto ? 'user-avatar--photo' : 'user-avatar--initials', className]"
+    :class="[
+      sizeClasses[size],
+      showPhoto ? 'user-avatar--photo' : 'user-avatar--initials',
+      className
+    ]"
   >
     <NuxtImg
       v-if="showPhoto"
       :src="userStore.photo!"
       :alt="userStore.name ?? 'Avatar'"
       class="user-avatar__image"
-      @error="() => { if (!userStore.rejectPhoto) console.warn('[UserAvatar] Error loading image') }"
+      @error="
+        () => {
+          if (!userStore.rejectPhoto) console.warn('[UserAvatar] Error loading image')
+        }
+      "
     />
     <span v-else class="user-avatar__initials">{{ initials }}</span>
   </div>
 </template>
 
 <style scoped lang="postcss">
-.user-avatar {
-  @apply flex items-center justify-center rounded-full overflow-hidden;
-}
+  .user-avatar {
+    @apply flex items-center justify-center overflow-hidden rounded-full;
+  }
 
-.user-avatar--photo {
-  @apply bg-transparent;
-}
+  .user-avatar--photo {
+    @apply bg-transparent;
+  }
 
-.user-avatar--initials {
-  @apply bg-primary-500 font-medium text-white;
-}
+  .user-avatar--initials {
+    @apply bg-primary-500 font-medium text-white;
+  }
 
-.user-avatar__image {
-  @apply h-full w-full object-cover;
-}
+  .user-avatar__image {
+    @apply h-full w-full object-cover;
+  }
 
-.user-avatar__initials {
-  @apply flex items-center justify-center h-full w-full;
-}
+  .user-avatar__initials {
+    @apply flex h-full w-full items-center justify-center;
+  }
 </style>

@@ -163,15 +163,21 @@
         <div class="goal-sidebar-panel__divider" />
         <div class="goal-sidebar-panel__row">
           <Text size="xs" class="goal-sidebar-panel__label">Total Aportes</Text>
-          <Text size="xs" weight="medium">{{ formatCurrency(totalDeposited, currency as Currency) }}</Text>
+          <Text size="xs" weight="medium">
+            {{ formatCurrency(totalDeposited, currency as Currency) }}
+          </Text>
         </div>
         <div class="goal-sidebar-panel__row">
           <Text size="xs" class="goal-sidebar-panel__label">Total Intereses</Text>
-          <Text size="xs" weight="medium" class="goal-sidebar-panel__interest">{{ formatCurrency(totalInterest, currency as Currency) }}</Text>
+          <Text size="xs" weight="medium" class="goal-sidebar-panel__interest">
+            {{ formatCurrency(totalInterest, currency as Currency) }}
+          </Text>
         </div>
         <div class="goal-sidebar-panel__row goal-sidebar-panel__row--highlight">
           <Text size="xs" weight="semibold">Total Abonado</Text>
-          <Text size="xs" weight="bold">{{ formatCurrency(totalDeposited + totalInterest, currency as Currency) }}</Text>
+          <Text size="xs" weight="bold">
+            {{ formatCurrency(totalDeposited + totalInterest, currency as Currency) }}
+          </Text>
         </div>
       </div>
     </div>
@@ -196,16 +202,22 @@
         <div v-for="item in history" :key="item.id" class="goal-sidebar-panel__history-item">
           <span class="goal-sidebar-panel__history-bullet">●</span>
           <div class="goal-sidebar-panel__history-content">
-            <span class="goal-sidebar-panel__history-date">{{ formatTimestamp(item.changedAt) }}</span>
+            <span class="goal-sidebar-panel__history-date">
+              {{ formatTimestamp(item.changedAt) }}
+            </span>
             <span class="goal-sidebar-panel__history-text">
               <strong>{{ FIELD_LABELS[item.field] ?? item.field }}:</strong>
-              {{ formatHistoryValue(item.field, item.oldValue) }} → {{ formatHistoryValue(item.field, item.newValue) }}
+              {{ formatHistoryValue(item.field, item.oldValue) }} →
+              {{ formatHistoryValue(item.field, item.newValue) }}
             </span>
           </div>
         </div>
       </div>
       <div v-else class="goal-sidebar-panel__empty">
-        <EmptyStateIllustration type="no-transactions" class="goal-sidebar-panel__empty-illustration" />
+        <EmptyStateIllustration
+          type="no-transactions"
+          class="goal-sidebar-panel__empty-illustration"
+        />
         <Heading level="h3" size="sm" weight="semibold">Sin cambios registrados</Heading>
         <Text size="xs" color="muted">El historial de cambios aparecerá aquí.</Text>
       </div>
@@ -271,7 +283,7 @@
   }
 
   .goal-sidebar-panel__empty-illustration {
-    @apply h-24 w-24 mx-auto;
+    @apply mx-auto h-24 w-24;
   }
 
   /* Skeleton */

@@ -52,11 +52,11 @@
           itemStyle: {
             shadowBlur: 10,
             shadowOffsetX: 0,
-            shadowColor: 'rgba(0,0,0,0.25)',
-          },
-        },
-      },
-    ],
+            shadowColor: 'rgba(0,0,0,0.25)'
+          }
+        }
+      }
+    ]
   }))
 </script>
 
@@ -68,9 +68,7 @@
       <div v-if="!hasData" class="analytics-view__empty">
         <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
         <p class="analytics-view__empty-title">Sin gastos este período</p>
-        <p class="analytics-view__empty-description">
-          Tus gastos por categoría aparecerán aquí
-        </p>
+        <p class="analytics-view__empty-description">Tus gastos por categoría aparecerán aquí</p>
         <NuxtLink to="/dashboard/budget" class="analytics-view__empty-cta">
           Ver presupuesto
         </NuxtLink>
@@ -83,13 +81,19 @@
 
             <div class="gastos-view__toggle">
               <button
-                :class="['gastos-toggle__btn', { 'gastos-toggle__btn--active': currentLevel === 'bucket' }]"
+                :class="[
+                  'gastos-toggle__btn',
+                  { 'gastos-toggle__btn--active': currentLevel === 'bucket' }
+                ]"
                 @click="currentLevel = 'bucket'"
               >
                 Por tipo
               </button>
               <button
-                :class="['gastos-toggle__btn', { 'gastos-toggle__btn--active': currentLevel === 'category' }]"
+                :class="[
+                  'gastos-toggle__btn',
+                  { 'gastos-toggle__btn--active': currentLevel === 'category' }
+                ]"
                 @click="currentLevel = 'category'"
               >
                 Por categoría
@@ -112,17 +116,20 @@
             <div class="gastos-view__table">
               <div class="gastos-table__header">
                 <Text size="xs" weight="semibold" color="muted">Nombre</Text>
-                <Text size="xs" weight="semibold" color="muted" class="gastos-table__cell--right">Monto</Text>
-                <Text size="xs" weight="semibold" color="muted" class="gastos-table__cell--right">%</Text>
+                <Text size="xs" weight="semibold" color="muted" class="gastos-table__cell--right">
+                  Monto
+                </Text>
+                <Text size="xs" weight="semibold" color="muted" class="gastos-table__cell--right">
+                  %
+                </Text>
               </div>
 
-              <div
-                v-for="item in chartData"
-                :key="item.name"
-                class="gastos-table__row"
-              >
+              <div v-for="item in chartData" :key="item.name" class="gastos-table__row">
                 <div class="gastos-table__name">
-                  <span class="gastos-table__dot" :style="{ backgroundColor: item.itemStyle.color }" />
+                  <span
+                    class="gastos-table__dot"
+                    :style="{ backgroundColor: item.itemStyle.color }"
+                  />
                   <Text size="sm">{{ item.name }}</Text>
                 </div>
                 <Text size="sm" weight="medium" class="gastos-table__cell--right">
@@ -162,7 +169,7 @@
   }
 
   .analytics-view__empty-illustration {
-    @apply h-32 w-32 mx-auto;
+    @apply mx-auto h-32 w-32;
   }
 
   .analytics-view__empty-title {
@@ -170,7 +177,7 @@
   }
 
   .analytics-view__empty-description {
-    @apply text-sm text-neutral-500 max-w-xs;
+    @apply max-w-xs text-sm text-neutral-500;
   }
 
   .analytics-view__empty-cta {

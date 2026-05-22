@@ -17,7 +17,9 @@ export const usePlannedSavingStore = defineStore('plannedSaving', {
     completedItems: state => state.items?.filter(item => item.status === 'completed') ?? [],
     totalSavingGenerated(state): number {
       if (!state.items) return 0
-      return state.items.reduce((acc, i) => acc + Number(i.amount ?? 0), 0)
+      return state.items
+        .filter(i => i.status === 'completed')
+        .reduce((acc, i) => acc + Number(i.amount ?? 0), 0)
     },
 
     totalSavingPending(state): number {

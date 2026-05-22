@@ -8,7 +8,8 @@ export interface SelectOption {
 
 export const quickTransactionFieldsSchema = (
   goalOptions: SelectOption[],
-  accountOptions: SelectOption[]
+  accountOptions: SelectOption[],
+  categoryOptions: SelectOption[]
 ): FormSchema => ({
   fields: {
     type: {
@@ -31,6 +32,14 @@ export const quickTransactionFieldsSchema = (
       type: 'date',
       label: 'Fecha',
       required: true
+    },
+    categoryId: {
+      type: 'select',
+      label: 'Categoría',
+      placeholder: 'Selecciona una categoría',
+      options: categoryOptions,
+      required: form => form['type'] === 'income' || form['type'] === 'expense',
+      visibleWhen: form => form['type'] === 'income' || form['type'] === 'expense'
     },
     description: {
       type: 'textarea',
@@ -76,30 +85,12 @@ export const quickTransactionFieldsSchema = (
     }
   },
   layout: [
-    {
-      type: 'row',
-      fields: ['type']
-    },
-    {
-      type: 'grid',
-      columns: 2,
-      fields: ['amount', 'date']
-    },
-    {
-      type: 'row',
-      fields: ['description']
-    },
-    {
-      type: 'row',
-      fields: ['goalId']
-    },
-    {
-      type: 'row',
-      fields: ['contributionType']
-    },
-    {
-      type: 'row',
-      fields: ['accountId']
-    }
+    { type: 'row', fields: ['type'] },
+    { type: 'grid', columns: 2, fields: ['amount', 'date'] },
+    { type: 'row', fields: ['categoryId'] },
+    { type: 'row', fields: ['description'] },
+    { type: 'row', fields: ['goalId'] },
+    { type: 'row', fields: ['contributionType'] },
+    { type: 'row', fields: ['accountId'] }
   ]
 })

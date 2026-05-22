@@ -139,7 +139,8 @@
             />
           </div>
           <Text size="xs" color="muted">
-            {{ selectedGroup.members?.length ?? 0 }} miembros · {{ selectedGroup.maxMembers }} máximo
+            {{ selectedGroup.members?.length ?? 0 }} miembros ·
+            {{ selectedGroup.maxMembers }} máximo
           </Text>
         </div>
 
@@ -153,13 +154,7 @@
           >
             Invitar miembro
           </Button>
-          <Button
-            v-if="!isOwner"
-            variant="ghost"
-            size="sm"
-            icon="logout"
-            @click="handleLeave"
-          >
+          <Button v-if="!isOwner" variant="ghost" size="sm" icon="logout" @click="handleLeave">
             Salir del grupo
           </Button>
           <Button
@@ -257,7 +252,10 @@
             type="button"
             variant="ghost"
             size="sm"
-            @click="showInviteModal = false; inviteUserId = ''"
+            @click="
+              showInviteModal = false
+              inviteUserId = ''
+            "
           >
             Cancelar
           </Button>
@@ -292,7 +290,8 @@
         />
         <Text size="sm" color="muted">
           ¿Estás seguro de que quieres eliminar el grupo
-          <strong>{{ selectedGroup?.name }}</strong>? Todos los miembros perderán acceso.
+          <strong>{{ selectedGroup?.name }}</strong>
+          ? Todos los miembros perderán acceso.
         </Text>
         <div class="group-detail__delete-actions">
           <Button type="button" variant="ghost" size="sm" @click="showDeleteModal = false">
@@ -313,7 +312,7 @@
   }
 
   .group-detail__skeleton-block {
-    @apply animate-pulse rounded-xl bg-slate-100 h-48 w-full;
+    @apply h-48 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .group-detail__header {

@@ -35,7 +35,6 @@
   const {
     loadDashboardData,
     currency,
-    totalExpenses,
     totalCommittedExpenses,
     expenses,
     totalSavingGenerated,
@@ -60,7 +59,6 @@
 
   const { goals, accounts, loadGoalsData } = useGoalsApplication()
   const { accounts: payableAccounts } = useAccountsPayableApplication()
-
 
   const { healthScore } = useAnalyticsApplication()
 
@@ -133,7 +131,6 @@
     budgetStatus.value === 'PLANNED' ? totalSavingGenerated.value : totalTransactionSavings.value
   )
 
-
   // LIBRE uses actual commitment so spontaneous savings are deducted
   const savingsBase = computed(() =>
     budgetStatus.value === 'ACTIVE' ? actualSavingsCommitment.value : buckets.value.savingsAmount
@@ -163,7 +160,7 @@
       .filter(expense => expense.status === 'PAID' && expense.bucket === 'wants')
       .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0)
 
-    const savingsSpent = isActive ? actualSavingsCommitment.value : (realSavings.value || 0)
+    const savingsSpent = isActive ? actualSavingsCommitment.value : realSavings.value || 0
 
     return [
       {
@@ -208,7 +205,11 @@
           radius: ['45%', '70%'],
           data: [
             { value: needs, name: 'Gastos Fijos', itemStyle: { color: '#14b8a6' } },
-            { value: wants, name: 'Gastos Variables', itemStyle: { color: CHART_COLORS.secondary } },
+            {
+              value: wants,
+              name: 'Gastos Variables',
+              itemStyle: { color: CHART_COLORS.secondary }
+            },
             { value: savings, name: 'Ahorro', itemStyle: { color: CHART_COLORS.savings } }
           ],
           emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.2)' } },
@@ -265,14 +266,7 @@
         </Text>
       </div>
       <div class="dashboard-page__header-actions">
-        <Button
-          variant="ghost"
-          size="sm"
-          icon="download"
-          disabled
-        >
-          Reporte
-        </Button>
+        <Button variant="ghost" size="sm" icon="download" disabled>Reporte</Button>
 
         <Button
           v-if="budgetStatus !== 'PLANNED'"
@@ -369,11 +363,17 @@
         <section v-if="currentBudget">
           <div class="dashboard-page__budget-header">
             <Heading level="h3" size="lg" weight="semibold">
-              {{ budgetStatus === 'PLANNED' ? 'Planificación del Presupuesto' : 'Estado del Presupuesto' }}
+              {{
+                budgetStatus === 'PLANNED'
+                  ? 'Planificación del Presupuesto'
+                  : 'Estado del Presupuesto'
+              }}
             </Heading>
             <Badge
               :variant="currentBudget?.strategy === 'BALANCED' ? 'primary' : 'secondary'"
-              :class-name="currentBudget?.strategy === 'BALANCED' ? '!bg-primary-900 !text-primary-100' : ''"
+              :class-name="
+                currentBudget?.strategy === 'BALANCED' ? '!bg-primary-900 !text-primary-100' : ''
+              "
             >
               {{ currentBudget?.strategy === 'BALANCED' ? '50/30/20' : 'Personalizada' }}
             </Badge>
@@ -409,25 +409,27 @@
                     class="dashboard-page__budget-fill"
                     :class="`dashboard-page__budget-fill--${cat.type}`"
                     :style="{
-                      width: cat.budgeted > 0
-                        ? `${Math.min((cat.spent / cat.budgeted) * 100, 100)}%`
-                        : '0%'
+                      width:
+                        cat.budgeted > 0
+                          ? `${Math.min((cat.spent / cat.budgeted) * 100, 100)}%`
+                          : '0%'
                     }"
                   />
                 </div>
                 <div class="dashboard-page__budget-kpi-footer">
                   <Text size="xs" color="muted">
-                    {{ cat.percentage }}% del {{ budgetStatus === 'PLANNED' ? 'ing. planificado' : 'ing. recibido' }}
+                    {{ cat.percentage }}% del
+                    {{ budgetStatus === 'PLANNED' ? 'ing. planificado' : 'ing. recibido' }}
                   </Text>
                   <Text size="xs" weight="medium">
-                    {{ formatCurrency(cat.spent, currency) }} {{ budgetStatus === 'PLANNED' ? 'estimado' : 'ejecutado' }}
+                    {{ formatCurrency(cat.spent, currency) }}
+                    {{ budgetStatus === 'PLANNED' ? 'estimado' : 'ejecutado' }}
                   </Text>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
 
         <div v-if="!isPageLoading && !currentBudget" class="dashboard-page__no-budget">
           <EmptyStateIllustration type="no-budget" class="dashboard-page__no-budget-illustration" />

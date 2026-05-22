@@ -28,10 +28,10 @@ export const useUserApi = () => {
   }
 
   const updateUserProfile = async (data: UserProfileUpdate) => {
-    return await $fetch<{ success: boolean; result: UserProfileUpdate }>(
-      '/api/users/me',
-      { method: 'PATCH', body: data }
-    )
+    return await $fetch<{ success: boolean; result: UserProfileUpdate }>('/api/users/me', {
+      method: 'PATCH',
+      body: data
+    })
   }
 
   const updateFinancialProfile = async (financeId: string, data: { profile: string }) => {

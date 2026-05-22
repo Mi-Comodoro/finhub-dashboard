@@ -28,7 +28,9 @@
     }
   )
 
-  const isEditMode = computed(() => props.mode === 'edit' || (props.mode === 'create' && !!props.expenseId))
+  const isEditMode = computed(
+    () => props.mode === 'edit' || (props.mode === 'create' && !!props.expenseId)
+  )
   const isViewMode = computed(() => props.mode === 'view')
 
   onMounted(async () => {
@@ -131,13 +133,21 @@
         <div class="expense-planned-form__view-row">
           <span class="expense-planned-form__view-label">Monto</span>
           <span class="expense-planned-form__view-value">
-            {{ initialData?.expectedAmount != null ? formatCurrency(initialData.expectedAmount, props.currency) : '—' }}
+            {{
+              initialData?.expectedAmount != null
+                ? formatCurrency(initialData.expectedAmount, props.currency)
+                : '—'
+            }}
           </span>
         </div>
         <div class="expense-planned-form__view-row">
           <span class="expense-planned-form__view-label">Fecha</span>
           <span class="expense-planned-form__view-value">
-            {{ initialData?.dueDate ? new Date(initialData.dueDate as string).toLocaleDateString('es-CO') : '—' }}
+            {{
+              initialData?.dueDate
+                ? new Date(initialData.dueDate as string).toLocaleDateString('es-CO')
+                : '—'
+            }}
           </span>
         </div>
         <div v-if="initialData?.category" class="expense-planned-form__view-row">
@@ -158,7 +168,9 @@
         </div>
         <div v-if="initialData?.isEssential != null" class="expense-planned-form__view-row">
           <span class="expense-planned-form__view-label">Es esencial</span>
-          <span class="expense-planned-form__view-value">{{ initialData.isEssential ? 'Sí' : 'No' }}</span>
+          <span class="expense-planned-form__view-value">
+            {{ initialData.isEssential ? 'Sí' : 'No' }}
+          </span>
         </div>
         <div v-if="initialData?.notes" class="expense-planned-form__view-row">
           <span class="expense-planned-form__view-label">Notas</span>

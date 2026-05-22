@@ -6,13 +6,11 @@
   import AccountPayablePaymentForm from '@/components/business/debts/forms/AccountPayablePaymentForm.vue'
   import { ModalWizard } from '@/components/organisms'
   import { useAccountsPayableApplication } from '@/composables/application/useAccountsPayableApplication'
+  import { useBudgetActions } from '@/composables/application/useBudgetActions'
+  import { useFinancesStore } from '@/stores/finances.store'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
-  import type {
-    AccountPayable,
-    CreateAccountPayableDto,
-    RegisterPaymentDto
-  } from '~/types/accounts-payable.types'
+  import type { AccountPayable, CreateAccountPayableDto } from '~/types/accounts-payable.types'
 
   definePageMeta({
     layout: 'dashboard',
@@ -30,8 +28,7 @@
     byTypeChartData,
     createAccount,
     updateAccount,
-    deleteAccount,
-    registerPayment
+    deleteAccount
   } = useAccountsPayableApplication()
 
   const showForm = ref(false)
@@ -68,12 +65,6 @@
     } finally {
       isFormLoading.value = false
     }
-  }
-
-  const handlePaymentSuccess = async (dto: RegisterPaymentDto) => {
-    if (!paymentTarget.value) return
-    await registerPayment(paymentTarget.value.id, dto)
-    showPaymentModal.value = false
   }
 
   const handleDelete = async (id: string) => {
@@ -119,6 +110,13 @@
       }
     ]
   }))
+
+  const { fetchCurrentBudget } = useBudgetActions()
+  const financesStore = useFinancesStore()
+
+  onMounted(async () => {
+    await fetchCurrentBudget(financesStore.profile?.id ?? '')
+  })
 </script>
 
 <template>
@@ -255,11 +253,7 @@
     </ModalWizard>
 
     <ModalWizard :show="showPaymentModal">
-      <AccountPayablePaymentForm
-        :account="paymentTarget"
-        @success="handlePaymentSuccess"
-        @close="showPaymentModal = false"
-      />
+      <AccountPayablePaymentForm :account="paymentTarget" @close="showPaymentModal = false" />
     </ModalWizard>
   </div>
 </template>

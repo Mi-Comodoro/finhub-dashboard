@@ -9,7 +9,7 @@
       icon?: string
       size?: 'sm' | 'md'
     }>(),
-    { size: 'md' }
+    { size: 'md', icon: undefined }
   )
 
   defineEmits<{ 'update:modelValue': [value: string] }>()
@@ -19,30 +19,28 @@
   <button
     type="button"
     class="card-radio"
-    :class="[size === 'sm' ? 'card-radio--sm' : 'card-radio--md', modelValue === value && 'card-radio--selected']"
+    :class="[
+      size === 'sm' ? 'card-radio--sm' : 'card-radio--md',
+      modelValue === value && 'card-radio--selected'
+    ]"
     @click="$emit('update:modelValue', value)"
   >
-    <Icon
-      v-if="icon"
-      :name="icon"
-      :size="size === 'sm' ? 'sm' : 'md'"
-      class="card-radio__icon"
-    />
+    <Icon v-if="icon" :name="icon" :size="size === 'sm' ? 'sm' : 'md'" class="card-radio__icon" />
     <span class="card-radio__label">{{ label }}</span>
   </button>
 </template>
 
 <style scoped lang="postcss">
   .card-radio {
-    @apply flex flex-col items-center rounded-lg border border-neutral-200 cursor-pointer transition-all;
+    @apply flex cursor-pointer flex-col items-center rounded-lg border border-neutral-200 transition-all;
   }
 
   .card-radio--md {
-    @apply p-4 gap-2 min-w-[80px];
+    @apply min-w-[80px] gap-2 p-4;
   }
 
   .card-radio--sm {
-    @apply p-2 gap-1 min-w-[64px];
+    @apply min-w-[64px] gap-1 p-2;
   }
 
   .card-radio--selected {

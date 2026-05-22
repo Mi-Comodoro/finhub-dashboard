@@ -12,9 +12,7 @@ export function useTravelExpenseApi() {
     })
 
   const getByGroup = async (groupId: string) =>
-    $fetch<{ success: boolean; result: TravelExpense[] }>(
-      `/api/travel-expenses/group/${groupId}`
-    )
+    $fetch<{ success: boolean; result: TravelExpense[] }>(`/api/travel-expenses/group/${groupId}`)
 
   const getExpense = async (id: string) =>
     $fetch<{ success: boolean; result: TravelExpense }>(`/api/travel-expenses/${id}`)

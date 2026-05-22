@@ -2,8 +2,8 @@
   import { Button } from '@/components/atoms'
   import { CardInfo } from '@/components/molecules'
   import { Form } from '@/components/organisms'
-  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useToast } from '@/components/organisms/toast/useToast'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
 
   import { contributionFieldsSchema } from './schema/contribution.fields.schema'
 

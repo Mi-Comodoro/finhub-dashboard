@@ -23,9 +23,7 @@
   const calendar = new Calendar(viewDate.value.getFullYear(), viewDate.value.getMonth())
   const date = new Date()
   const currentMonth = ref(viewDate.value)
-  const dynamicMonth = ref<Date | null>(
-    props.modelValue instanceof Date ? props.modelValue : null
-  )
+  const dynamicMonth = ref<Date | null>(props.modelValue instanceof Date ? props.modelValue : null)
   const viewMode = ref<ViewMode>('calendar')
   const yearPageStart = ref(Math.floor(date.getFullYear() / 12) * 12)
 

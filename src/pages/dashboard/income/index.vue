@@ -3,6 +3,7 @@
   import { ModalWizard } from '@/components/organisms'
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useIncomeApplication } from '@/composables/application/useIncomeApplication'
+  import { useCommon } from '@/composables/useCommon'
   import { useFeedback } from '@/composables/useFeedback'
   import { formatCurrency } from '@/utils/currency'
 
@@ -19,6 +20,7 @@
 
   const { currency } = useFinancesApplication()
   const { success: successToast } = useFeedback()
+  const { currentBudget } = useCommon()
   const budgetId = computed(() => (route.query.budgetId as string) || '')
 
   // Modal state
@@ -156,6 +158,9 @@
         :budget-id="budgetId"
         :income-id="editingIncome?.id"
         :initial-data="editingIncome?.data"
+        :show-savings-plan-step="!editingIncome"
+        :budget-savings-percentage="currentBudget?.limits?.savings ?? 20"
+        :currency="currency"
         @on-close="closeForm"
       />
     </ModalWizard>

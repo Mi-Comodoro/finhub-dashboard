@@ -83,9 +83,7 @@
             <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" size="sm">
-              Guardar cambios
-            </Button>
+            <Button type="submit" variant="primary" size="sm">Guardar cambios</Button>
           </div>
         </template>
       </Form>

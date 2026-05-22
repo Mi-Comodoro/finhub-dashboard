@@ -1,8 +1,7 @@
 import type { AddMemberDto, CreateGroupDto, Group, UpdateGroupDto } from '@/types/groups.types'
 
 export function useGroupsApi() {
-  const getGroups = async () =>
-    $fetch<{ success: boolean; result: Group[] }>('/api/groups')
+  const getGroups = async () => $fetch<{ success: boolean; result: Group[] }>('/api/groups')
 
   const getGroup = async (id: string) =>
     $fetch<{ success: boolean; result: Group }>(`/api/groups/${id}`)
