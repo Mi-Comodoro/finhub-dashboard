@@ -9,10 +9,10 @@ export default defineNuxtRouteMiddleware(async to => {
   }
 
   const isLoggedIn = authStore.isAuthenticated
-  const isDashboard = to.path.startsWith('/dashboard')
+  const isProtected = to.path.startsWith('/dashboard') || to.path.startsWith('/admin')
   const isHome = to.path === '/'
 
-  if (!isLoggedIn && isDashboard) {
+  if (!isLoggedIn && isProtected) {
     // On SSR: if the access-token cookie is present, initSession() likely failed due to
     // a transient refresh race (new cookie set in response but not readable in same request).
     // Return without redirecting — session.client.ts will recover the session client-side

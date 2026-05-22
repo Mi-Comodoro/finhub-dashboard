@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, nextTick, onMounted, ref } from 'vue'
-  import { useRouter } from 'vue-router'
   import VChart from 'vue-echarts'
+  import { useRouter } from 'vue-router'
 
   import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
   import Badge from '@/components/atoms/badge/Badge.vue'
@@ -9,12 +9,9 @@
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
-  import ActiveGoalsCard from '@/components/business/dashboard/ActiveGoalsCard.vue'
-  import BudgetPeriodSummary from '@/components/business/dashboard/BudgetPeriodSummary.vue'
   import DashboardActionCard from '@/components/business/dashboard/DashboardActionCard.vue'
   import DashboardSidebarPanel from '@/components/business/dashboard/DashboardSidebarPanel.vue'
   import PlanStatusCard from '@/components/business/dashboard/PlanStatusCard.vue'
-  import PlannedSavingList from '@/components/business/savings/PlannedSavingList.vue'
   import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
   import FinancialProgressCard from '@/components/molecules/financial-progress-card/FinancialProgressCard.vue'
   import { ModalWizard } from '@/components/organisms/modal-wizard'
@@ -25,7 +22,6 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
-  import { useDashboardPresenter } from '@/composables/presenters/useDashboardPresenter'
   import { useCommon } from '@/composables/useCommon'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
@@ -44,6 +40,7 @@
     expenses,
     totalSavingGenerated,
     totalSavingTarget,
+    totalTransactionSavings,
     totalIncomeReceived,
     totalPlanned,
     totalExpensesPaid
@@ -64,7 +61,6 @@
   const { goals, accounts, loadGoalsData } = useGoalsApplication()
   const { accounts: payableAccounts } = useAccountsPayableApplication()
 
-  const { hasActiveSavingPlans } = useDashboardPresenter()
 
   const { healthScore } = useAnalyticsApplication()
 
@@ -132,6 +128,12 @@
     totalSavingTarget.value > 0 ? totalSavingTarget.value : buckets.value.savingsAmount
   )
 
+  // PLANNED → planned savings completed, ACTIVE/CLOSED → actual savings transactions
+  const realSavings = computed(() =>
+    budgetStatus.value === 'PLANNED' ? totalSavingGenerated.value : totalTransactionSavings.value
+  )
+
+
   // LIBRE uses actual commitment so spontaneous savings are deducted
   const savingsBase = computed(() =>
     budgetStatus.value === 'ACTIVE' ? actualSavingsCommitment.value : buckets.value.savingsAmount
@@ -161,7 +163,7 @@
       .filter(expense => expense.status === 'PAID' && expense.bucket === 'wants')
       .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0)
 
-    const savingsSpent = isActive ? actualSavingsCommitment.value : (totalSavingGenerated.value || 0)
+    const savingsSpent = isActive ? actualSavingsCommitment.value : (realSavings.value || 0)
 
     return [
       {
@@ -264,11 +266,10 @@
       </div>
       <div class="dashboard-page__header-actions">
         <Button
-          v-if="budgetStatus !== 'PLANNED'"
           variant="ghost"
           size="sm"
           icon="download"
-          @click="router.push('/dashboard/reports')"
+          disabled
         >
           Reporte
         </Button>
@@ -311,7 +312,11 @@
       <!-- Contenido principal -->
       <div class="dashboard-page__main">
         <div v-if="isPageLoading" class="dashboard-page__loading">
-          <div v-for="item in 3" :key="item" class="dashboard-page__skeleton" />
+          <div class="dashboard-page__skeleton-cards">
+            <div v-for="item in 3" :key="item" class="dashboard-page__skeleton" />
+          </div>
+          <div class="dashboard-page__skeleton dashboard-page__skeleton--chart" />
+          <div class="dashboard-page__skeleton dashboard-page__skeleton--section" />
         </div>
 
         <div v-else-if="expectedAmount" class="dashboard-page__cards">
@@ -349,25 +354,12 @@
           />
         </div>
 
-        <BudgetPeriodSummary
-          v-if="!isPageLoading && currentBudget"
-          :month="currentBudget.month"
-          :year="currentBudget.year"
-          :budget-status="budgetStatus"
-          :income-received="totalIncomeReceived || 0"
-          :income-expected="Number(expectedAmount) || 0"
-          :expenses-paid="totalExpensesPaid || 0"
-          :expenses-planned="totalPlanned || 0"
-          :savings-generated="totalSavingGenerated || 0"
-          :savings-target="suggestedSavings || 0"
-        />
-
         <section v-if="!isPageLoading && currentBudget">
           <DashboardBalanceChart
             :expected-income="Number(expectedAmount) || 0"
             :received-income="totalIncomeReceived || 0"
-            :estimated-savings="suggestedSavings || 0"
-            :generated-savings="totalSavingGenerated || 0"
+            :estimated-savings="buckets.savingsAmount || 0"
+            :generated-savings="realSavings || 0"
             :planned-expenses="totalPlanned || 0"
             :paid-expenses="totalExpensesPaid || 0"
             :currency="currency"
@@ -436,20 +428,6 @@
           </div>
         </section>
 
-        <ActiveGoalsCard
-          v-if="!isPageLoading && currentBudget"
-          :goals="goals"
-          :currency-code="currency"
-          @create-goal="router.push('/dashboard/goals')"
-          @view-all="router.push('/dashboard/goals')"
-        />
-
-        <section
-          v-if="hasActiveSavingPlans && currentBudget && !isPageLoading"
-          class="dashboard-page__saving-plan"
-        >
-          <PlannedSavingList :budget-id="currentBudget.id" />
-        </section>
 
         <div v-if="!isPageLoading && !currentBudget" class="dashboard-page__no-budget">
           <EmptyStateIllustration type="no-budget" class="dashboard-page__no-budget-illustration" />
@@ -480,13 +458,17 @@
           @plan-expenses="router.push(`/dashboard/budget/${currentBudget?.id}`)"
           @carry-forward="router.push('/dashboard/budget')"
         />
-        <PlanStatusCard />
         <DashboardSidebarPanel
           :health-score="healthScore"
           :goals="goals"
           :bills="upcomingBills"
           :loading="isPageLoading"
+          :planned-savings="buckets.savingsAmount || 0"
+          :suggested-savings="suggestedSavings || 0"
+          :real-savings="realSavings || 0"
+          :currency="currency"
         />
+        <PlanStatusCard v-if="!isPageLoading" />
       </div>
     </div>
 
@@ -544,11 +526,23 @@
   }
 
   .dashboard-page__loading {
-    @apply grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3;
+    @apply flex w-full flex-col gap-4;
+  }
+
+  .dashboard-page__skeleton-cards {
+    @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3;
   }
 
   .dashboard-page__skeleton {
     @apply h-36 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800;
+  }
+
+  .dashboard-page__skeleton--chart {
+    @apply h-[300px];
+  }
+
+  .dashboard-page__skeleton--section {
+    @apply h-48;
   }
 
   .dashboard-page__cards {

@@ -17,7 +17,10 @@
   definePageMeta({
     layout: 'dashboard',
     ssr: false,
-    middleware: ['auth', 'admin']
+    middleware: ['auth', 'admin'],
+    title: 'Planes',
+    breadcrumb: 'Planes',
+    parents: ['Admin']
   })
 
   const { fetchPlans, createPlan, updatePlan, deletePlan, plans, isLoading } =

@@ -6,6 +6,8 @@
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import type { GoalsData } from '@/types/api'
+  import type { Currency } from '@/utils/currency'
+  import { formatCurrency } from '@/utils/currency'
   import { getProgressPercentage } from '@/utils/goal-formatters'
 
   interface HealthScore {
@@ -30,13 +32,21 @@
     goals?: GoalsData[]
     bills?: Bill[]
     loading?: boolean
+    plannedSavings?: number
+    suggestedSavings?: number
+    realSavings?: number
+    currency?: Currency
   }
 
   const props = withDefaults(defineProps<Props>(), {
     healthScore: null,
     goals: () => [],
     bills: () => [],
-    loading: false
+    loading: false,
+    plannedSavings: 0,
+    suggestedSavings: 0,
+    realSavings: 0,
+    currency: 'COP'
   })
 
   const router = useRouter()
@@ -111,7 +121,7 @@
   <SidebarPage>
     <!-- Skeleton -->
     <template v-if="loading">
-      <div v-for="i in 3" :key="i" class="dashboard-sidebar__skeleton-section">
+      <div v-for="i in 4" :key="i" class="dashboard-sidebar__skeleton-section">
         <div class="dashboard-sidebar__skeleton-header" />
         <div class="dashboard-sidebar__skeleton-rows">
           <div v-for="j in 4" :key="j" class="dashboard-sidebar__skeleton-row" />
@@ -168,7 +178,43 @@
         </button>
       </div>
 
-      <!-- Sección 2: Metas activas -->
+      <!-- Sección 2: Ahorro -->
+      <div v-if="plannedSavings || suggestedSavings || realSavings" class="dashboard-sidebar__section">
+        <CardInfo
+          title="Ahorro"
+          sub-title="Planificado · Sugerido · Real"
+          title-size="base"
+          weight="extrabold"
+          level="h3"
+          color="black"
+          sub-title-size="xs"
+          sub-title-color="muted"
+          icon="savings"
+          icon-variant="warning"
+          icon-size="md"
+        />
+
+        <div class="dashboard-sidebar__savings">
+          <div class="dashboard-sidebar__savings-row">
+            <Text size="xs" color="muted">Planificado</Text>
+            <Text size="xs" weight="semibold">{{ formatCurrency(plannedSavings, currency) }}</Text>
+          </div>
+          <div class="dashboard-sidebar__savings-divider" />
+          <div class="dashboard-sidebar__savings-row">
+            <Text size="xs" color="muted">Sugerido</Text>
+            <Text size="xs" weight="semibold">{{ formatCurrency(suggestedSavings, currency) }}</Text>
+          </div>
+          <div class="dashboard-sidebar__savings-divider" />
+          <div class="dashboard-sidebar__savings-row">
+            <Text size="xs" color="muted">Real</Text>
+            <Text size="xs" weight="semibold" class="dashboard-sidebar__savings-real">
+              {{ formatCurrency(realSavings, currency) }}
+            </Text>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 3: Metas activas -->
       <div v-if="activeGoals.length > 0" class="dashboard-sidebar__section">
         <CardInfo
           title="Metas activas"
@@ -179,8 +225,8 @@
           color="black"
           sub-title-size="xs"
           sub-title-color="muted"
-          icon="savings"
-          icon-variant="warning"
+          icon="flag"
+          icon-variant="success"
           icon-size="md"
         />
 
@@ -202,7 +248,7 @@
         </button>
       </div>
 
-      <!-- Sección 3: Vencimientos próximos -->
+      <!-- Sección 4: Vencimientos próximos -->
       <div v-if="urgentBills.length > 0" class="dashboard-sidebar__section">
         <CardInfo
           title="Vencimientos"
@@ -397,6 +443,23 @@
 
   .dashboard-sidebar__link-icon {
     @apply text-sm;
+  }
+
+  /* Savings */
+  .dashboard-sidebar__savings {
+    @apply flex flex-col gap-2;
+  }
+
+  .dashboard-sidebar__savings-row {
+    @apply flex items-center justify-between;
+  }
+
+  .dashboard-sidebar__savings-divider {
+    @apply border-t border-neutral-100;
+  }
+
+  .dashboard-sidebar__savings-real {
+    @apply text-warning-600;
   }
 
   /* Skeleton */

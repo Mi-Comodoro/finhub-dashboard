@@ -19,9 +19,26 @@
     navigate: []
   }>()
 
+  // Sync cookie with the current route so that navigating directly to /admin
+  // (or refreshing there) always shows the admin nav, not the user nav.
+  watch(
+    () => route.path,
+    path => {
+      const shouldBeAdmin = path.startsWith('/admin')
+      if (shouldBeAdmin !== isAdminMode.value) toggle()
+    },
+    { immediate: true }
+  )
+
   const handleNavigate = () => {
     close()
     emit('navigate')
+  }
+
+  const handleToggle = () => {
+    const target = isAdminMode.value ? '/dashboard' : '/admin'
+    toggle()
+    navigateTo(target)
   }
 
   const userMenuItems: Omit<MenuItem, 'isActive'>[] = [
@@ -72,14 +89,12 @@
   const isActiveRoute = (itemPath: string, currentPath: string): boolean => {
     if (currentPath === itemPath) return true
 
-    if (
-      itemPath === '/dashboard' &&
-      (currentPath === '/dashboard/' || currentPath === '/dashboard')
-    ) {
-      return true
+    // Root paths only match themselves (with or without trailing slash)
+    if (itemPath === '/dashboard' || itemPath === '/admin') {
+      return currentPath === itemPath + '/'
     }
 
-    if (itemPath !== '/dashboard' && currentPath.startsWith(itemPath)) {
+    if (currentPath.startsWith(itemPath)) {
       const remainder = currentPath.slice(itemPath.length)
       return remainder === '' || remainder.startsWith('/')
     }
@@ -130,7 +145,7 @@
           :aria-checked="isAdminMode"
           class="mode-switch"
           :class="{ 'mode-switch--on': isAdminMode }"
-          @click="toggle"
+          @click="handleToggle"
         >
           <span class="mode-switch__thumb" />
         </button>

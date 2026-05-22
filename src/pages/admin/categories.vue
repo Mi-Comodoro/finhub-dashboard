@@ -16,7 +16,10 @@
   definePageMeta({
     layout: 'dashboard',
     ssr: false,
-    middleware: ['auth', 'admin']
+    middleware: ['auth', 'admin'],
+    title: 'Categorías',
+    breadcrumb: 'Categorías',
+    parents: ['Admin']
   })
 
   const { fetchCategories, createCategory, updateCategory, categories, isLoading } =

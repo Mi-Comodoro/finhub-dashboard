@@ -11,7 +11,9 @@
   definePageMeta({
     layout: 'dashboard',
     ssr: false,
-    middleware: ['auth', 'admin']
+    middleware: ['auth', 'admin'],
+    title: 'Panel Admin',
+    breadcrumb: 'Panel Admin'
   })
 
   const {

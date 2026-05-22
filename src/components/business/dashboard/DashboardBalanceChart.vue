@@ -78,7 +78,7 @@
           type: 'bar',
           data: [props.expectedIncome, props.estimatedSavings, props.plannedExpenses],
           itemStyle: {
-            color: CHART_COLORS.needs
+            color: CHART_COLORS.planned
           }
         },
         {
@@ -86,7 +86,7 @@
           type: 'bar',
           data: [props.receivedIncome, props.generatedSavings, props.paidExpenses],
           itemStyle: {
-            color: CHART_COLORS.savings
+            color: '#14b8a6'
           }
         }
       ]

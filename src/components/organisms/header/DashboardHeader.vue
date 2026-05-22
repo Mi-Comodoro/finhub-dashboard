@@ -38,7 +38,7 @@
         </div>
 
         <Icon
-          v-if="route.path !== '/dashboard'"
+          v-if="route.path !== '/dashboard' && route.path !== '/admin'"
           name="arrow_back"
           class="cursor-pointer text-neutral-500 transition-colors hover:text-primary-500"
           size="sm"
