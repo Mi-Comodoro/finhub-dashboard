@@ -4,10 +4,14 @@
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useBudgetClose } from '@/composables/application/useBudgetClose'
   import { useBudgetListApplication } from '@/composables/application/useBudgetListApplication'
+  import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
+  import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useBudgetListPresenter } from '@/composables/presenters/useBudgetListPresenter'
   import { useFeedback } from '@/composables/useFeedback'
+  import { useExpensesStore } from '@/stores/expense.store'
   import { useGoalsStore } from '@/stores/goals.store'
+  import { useTransactionStore } from '@/stores/transaction.store'
   import DateUtils from '@/utils/date'
   import type { CurrentBudgetPlan, PlannedIncomeSummary } from '~/types/domain'
 
@@ -30,9 +34,13 @@
     currency
   } = useBudgetListApplication()
 
-  const { handleDelete } = useBudgetActions()
+  const { handleDelete, enableBudget } = useBudgetActions()
   const { fetchGoals } = useGoalsApplication()
   const goalsStore = useGoalsStore()
+  const { fetchTotals } = useTransactionApplication()
+  const transactionStore = useTransactionStore()
+  const { fetchExpenses } = useExpenseApplication()
+  const expensesStore = useExpensesStore()
 
   const {
     showSurplusModal,
@@ -58,6 +66,14 @@
   const selectedBudget = ref<CurrentBudgetPlan | null>(null)
   const closingBudget = ref<CurrentBudgetPlan | null>(null)
 
+  const showNextBudgetModal = ref(false)
+  const nextBudgetSource = ref<CurrentBudgetPlan | null>(null)
+
+  const STATUS_ORDER: Record<string, number> = { ACTIVE: 0, PLANNED: 1, CLOSED: 2 }
+  const sortedBudgets = computed(() =>
+    [...budgets.value].sort((a, b) => (STATUS_ORDER[a.status] ?? 3) - (STATUS_ORDER[b.status] ?? 3))
+  )
+
   const yearOptions = computed(() => getYearOptions())
   const activeGoals = computed(() => goalsStore.goals.filter(g => g.isActive))
 
@@ -79,7 +95,6 @@
   const getEstimatedSavings = (budgetId: string, savingsLimit: number) =>
     Math.round(getExpected(budgetId) * (Number(savingsLimit) / 100))
 
-  // Función personalizada para el borde de las tarjetas
   const getCardBorderClass = (budget: CurrentBudgetPlan): string => {
     const today = new Date()
     const currentYear = today.getFullYear()
@@ -128,25 +143,71 @@
     showCloneModal.value = true
   }
 
+  const getNextPeriod = (budget: CurrentBudgetPlan) => {
+    const monthNum =
+      typeof budget.month === 'number'
+        ? budget.month
+        : DateUtils.getMonthNumber(String(budget.month))
+    const nextMonth = monthNum === 12 ? 1 : monthNum + 1
+    const nextYear = monthNum === 12 ? budget.year + 1 : budget.year
+    return { nextMonth, nextYear }
+  }
+
+  const hasNextPeriodBudget = (budget: CurrentBudgetPlan): boolean => {
+    const { nextMonth, nextYear } = getNextPeriod(budget)
+    return budgets.value.some(b => {
+      const bMonth =
+        typeof b.month === 'number' ? b.month : DateUtils.getMonthNumber(String(b.month))
+      return bMonth === nextMonth && b.year === nextYear
+    })
+  }
+
   const close = async (budget: CurrentBudgetPlan) => {
     closingBudget.value = budget
-    // Estimate libre sin comprometer from available plan data
-    const raw =
-      Number(getExpected(budget.id)) -
-      Number(getEstimatedSavings(budget.id, budget.limits?.savings ?? 0))
-    const libresincomprometer = isNaN(raw) ? 0 : raw
-    await initiateClosure(budget, libresincomprometer)
+    expensesStore.setBudget(budget.id)
+    await Promise.all([fetchTotals(budget.id), fetchExpenses()])
+    const totals = transactionStore.totals
+    const income = totals?.income ?? 0
+    const savings = totals?.savings ?? 0
+    const committed = expensesStore.totalCommitted
+    const excedente = income - savings - committed
+    const normalizedExcedente = isNaN(excedente) ? 0 : excedente
+    await initiateClosure(budget, normalizedExcedente)
+    // excedente === 0 closes the budget directly (no modal). Handle cleanup here.
+    if (normalizedExcedente === 0) {
+      closingBudget.value = null
+      await loadBudgets(selectedYear.value)
+      if (!hasNextPeriodBudget(budget)) {
+        nextBudgetSource.value = budget
+        showNextBudgetModal.value = true
+      }
+    }
+  }
+
+  const handleEnable = async (budget: CurrentBudgetPlan) => {
+    const { success } = await enableBudget(budget.id)
+    if (success) {
+      successToast('Reactivado', `El presupuesto ${budget.name} fue reactivado.`)
+      await loadBudgets(selectedYear.value)
+    } else {
+      errorToast('Error', 'No se pudo reactivar el presupuesto.')
+    }
   }
 
   const handleSurplusConfirm = async (action: string, goalId?: string) => {
     if (!closingBudget.value) return
-    await executeClosure(
-      closingBudget.value.id,
+    const budget = closingBudget.value
+    const ok = await executeClosure(
+      budget.id,
       action as 'transfer_to_goal' | 'carry_forward' | 'ignore',
       goalId
     )
     closingBudget.value = null
     await loadBudgets(selectedYear.value)
+    if (ok && !hasNextPeriodBudget(budget)) {
+      nextBudgetSource.value = budget
+      showNextBudgetModal.value = true
+    }
   }
 
   const handleSurplusCancel = () => {
@@ -191,7 +252,6 @@
 </script>
 
 <template>
-  <!-- Template idéntico al que ya tienes, no se modifica nada -->
   <div class="budget-index">
     <div class="budget-index__header">
       <div>
@@ -224,7 +284,7 @@
       </Text>
     </div>
 
-    <div v-else-if="budgets.length === 0" class="budget-index__empty">
+    <div v-else-if="sortedBudgets.length === 0" class="budget-index__empty">
       <Icon name="account_balance_wallet" size="2xl" class="budget-index__empty-icon" />
       <Heading level="h3" size="lg" color="muted" class="budget-index__empty-title">
         No hay presupuestos para {{ selectedYear }}
@@ -237,7 +297,7 @@
 
     <div v-else class="budget-index__grid">
       <div
-        v-for="budget in budgets"
+        v-for="budget in sortedBudgets"
         :key="budget.id"
         class="budget-index__card"
         :class="getCardBorderClass(budget)"
@@ -286,7 +346,7 @@
         </div>
 
         <div class="budget-index__card-actions">
-          <template v-if="budget.status === 'ACTIVE' || budget.status === 'CLOSED'">
+          <template v-if="budget.status === 'ACTIVE'">
             <Button
               variant="ghost"
               size="sm"
@@ -296,22 +356,28 @@
             >
               Ver
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon="not_interested"
-              :disabled="budget.status === 'CLOSED'"
-              @click="close(budget)"
-            >
+            <Button variant="secondary" size="sm" icon="not_interested" @click="close(budget)">
               Cerrar
             </Button>
+            <Button variant="primary" size="sm" icon="content_copy" @click="openClone(budget)">
+              Duplicar
+            </Button>
+          </template>
+
+          <template v-else-if="budget.status === 'CLOSED'">
             <Button
-              variant="primary"
+              variant="ghost"
               size="sm"
-              icon="content_copy"
-              :disabled="budget.status === 'CLOSED'"
-              @click="openClone(budget)"
+              icon="visibility"
+              class="budget-index__action--primary"
+              @click="goToDetail(budget.id)"
             >
+              Ver
+            </Button>
+            <Button variant="secondary" size="sm" icon="restart_alt" @click="handleEnable(budget)">
+              Reactivar
+            </Button>
+            <Button variant="primary" size="sm" icon="content_copy" @click="openClone(budget)">
               Duplicar
             </Button>
           </template>
@@ -388,6 +454,52 @@
       />
     </ModalWizard>
 
+    <!-- Modal post-cierre: crear o duplicar para el siguiente período -->
+    <ModalWizard v-model:show="showNextBudgetModal">
+      <div v-if="nextBudgetSource" class="next-budget-modal">
+        <div class="next-budget-modal__header">
+          <span class="material-symbols-outlined next-budget-modal__icon">calendar_month</span>
+          <Heading level="h1" size="xl" weight="extrabold" color="black">
+            ¿Y el próximo mes?
+          </Heading>
+          <Text size="xs" color="muted">
+            No tenés un presupuesto para
+            {{ getMonthName(getNextPeriod(nextBudgetSource).nextMonth) }}
+            {{ getNextPeriod(nextBudgetSource).nextYear }}. ¿Querés crear uno?
+          </Text>
+        </div>
+        <div class="next-budget-modal__actions">
+          <Button variant="ghost" size="sm" @click="showNextBudgetModal = false">Ahora no</Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon="content_copy"
+            @click="
+              () => {
+                showNextBudgetModal = false
+                openClone(nextBudgetSource!)
+              }
+            "
+          >
+            Duplicar este
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            icon="add"
+            @click="
+              () => {
+                showNextBudgetModal = false
+                showCreateModal = true
+              }
+            "
+          >
+            Crear nuevo
+          </Button>
+        </div>
+      </div>
+    </ModalWizard>
+
     <!-- Modal de déficit: confirmación cuando el presupuesto cierra en negativo -->
     <ModalWizard v-model:show="showDeficitModal">
       <div class="deficit-modal">
@@ -421,7 +533,6 @@
 </template>
 
 <style scoped lang="postcss">
-  /* Estilos exactamente iguales a los que ya tenías, no se modifican */
   .budget-index {
     @apply space-y-4 px-4 py-2;
   }
@@ -478,7 +589,6 @@
     @apply flex flex-col rounded-xl bg-white p-4 transition-shadow;
   }
 
-  /* Nuevas clases de borde */
   .budget-index__card--active-current {
     @apply border-2 border-primary-500;
   }
@@ -549,6 +659,22 @@
 
   .budget-index__action--primary {
     @apply flex-1;
+  }
+
+  .next-budget-modal {
+    @apply flex flex-col gap-6 p-6;
+  }
+
+  .next-budget-modal__header {
+    @apply flex flex-col items-center gap-2 text-center;
+  }
+
+  .next-budget-modal__icon {
+    @apply text-4xl text-primary-500;
+  }
+
+  .next-budget-modal__actions {
+    @apply flex justify-end gap-3;
   }
 
   .deficit-modal {

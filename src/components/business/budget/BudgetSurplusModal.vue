@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
+  import { computed, ref, watch } from 'vue'
 
   import { Button, Heading, Text } from '@/components/atoms'
   import type { GoalsData } from '@/types/api'
@@ -33,6 +33,14 @@
 
   const activeGoals = computed(() =>
     props.availableGoals.filter(g => g.isActive && g.status !== 'COMPLETED')
+  )
+
+  watch(
+    () => props.surplus,
+    () => {
+      selectedAction.value = null
+      selectedGoalId.value = null
+    }
   )
 
   const handleConfirm = () => {
@@ -96,20 +104,6 @@
         <div class="surplus-modal__option-content">
           <Text size="sm" weight="bold">Llevar al siguiente presupuesto</Text>
           <Text size="xs" color="muted">El saldo quedará disponible para el próximo período</Text>
-        </div>
-      </button>
-
-      <!-- Opción: Ignorar -->
-      <button
-        class="surplus-modal__option"
-        :class="{ 'surplus-modal__option--selected': selectedAction === 'ignore' }"
-        type="button"
-        @click="selectAction('ignore')"
-      >
-        <span class="material-symbols-outlined surplus-modal__option-icon">not_interested</span>
-        <div class="surplus-modal__option-content">
-          <Text size="sm" weight="bold">Ignorar</Text>
-          <Text size="xs" color="muted">Cerrar el presupuesto sin acción adicional</Text>
         </div>
       </button>
     </div>
