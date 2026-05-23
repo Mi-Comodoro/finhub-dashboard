@@ -30,7 +30,16 @@
       titleColor?: HeadingColor
       textColor?: HeadingColor
       subTitleColor?: TextColor
-      variant?: 'primary' | 'secondary' | 'warning' | 'danger' | 'gold' | 'accent' | undefined
+      variant?:
+        | 'primary'
+        | 'secondary'
+        | 'success'
+        | 'warning'
+        | 'danger'
+        | 'neutral'
+        | 'gold'
+        | 'accent'
+        | 'custom'
     }>(),
     {
       title: '',
@@ -53,7 +62,7 @@
       titleColor: 'black',
       subTitleColor: 'muted',
       textColor: 'black',
-      variant: undefined
+      variant: 'neutral'
     }
   )
 
@@ -128,6 +137,13 @@
       bgAccent: 'text-secondary-200',
       background: '!bg-white'
     },
+    success: {
+      icon: 'bg-green-100 text-green-600',
+      currency: 'text-green-600',
+      alert: 'text-green-600',
+      bgAccent: 'text-green-200',
+      background: '!bg-white'
+    },
     warning: {
       icon: 'bg-amber-100 text-amber-600',
       currency: 'text-amber-600',
@@ -160,23 +176,28 @@
   }
 
   const styles = computed(() => {
-    const baseStyles = props.variant
-      ? variantStyles[props.variant]
+    // 1. Buscamos el estilo base usando la prop 'variant' original
+    const variantKey = props.variant as keyof typeof variantStyles
+    const hasVariant = variantKey && variantStyles[variantKey]
+
+    const baseStyles = hasVariant
+      ? variantStyles[variantKey]
       : {
-          icon: `${props.iconBgClass} ${props.iconTextClass}`,
+          icon: '',
           currency: 'text-neutral-400',
-          alert: props.iconTextClass,
-          bgAccent: props.iconTextClass,
+          alert: props.iconTextClass || 'text-neutral-400',
+          bgAccent: props.iconTextClass || 'text-neutral-200',
           background: ''
         }
 
-    // Override currency class if prop is provided
+    // 2. Combinamos las clases manuales del icono para ver si deben dominar
+    const customIconClasses = `${props.iconBgClass} ${props.iconTextClass}`.trim()
+
     return {
       ...baseStyles,
-      icon:
-        props.iconBgClass || props.iconTextClass
-          ? `${props.iconBgClass} ${props.iconTextClass}`
-          : baseStyles.icon,
+      // Si el usuario pasó clases de fondo o texto, las usa. Si no, usa el icono de la variante
+      icon: customIconClasses ? customIconClasses : baseStyles.icon,
+      // Conserva el comportamiento original para la moneda
       currency: props.currencyTextClass || baseStyles.currency
     }
   })
@@ -190,8 +211,6 @@
       <!-- Header Section -->
       <div class="flex items-center gap-2">
         <div class="flex items-center gap-2">
-          <!-- Icon -->
-          <Icon :name="iconName" size="2xl" :class-name="`rounded-md p-2 ${styles.icon}`" />
           <!-- Card Info -->
           <CardInfo
             level="h3"
@@ -202,6 +221,11 @@
             :sub-title="subtitle"
             sub-title-size="xs"
             :sub-title-color="subTitleColor"
+            :icon="iconName"
+            :icon-variant="variant"
+            :icon-bg-class="iconBgClass"
+            :icon-text-class="iconTextClass"
+            icon-size="md"
           />
         </div>
       </div>

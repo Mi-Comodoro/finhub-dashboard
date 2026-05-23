@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import type { BadgeVariant } from '@/components/atoms'
   import { Badge, Button, Text } from '@/components/atoms'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import { AccountSavingForm, GoalsForm } from '@/components/business'
@@ -167,7 +168,7 @@
     if (goals.value.length > 0) {
       const results = await Promise.all(goals.value.map(g => fetchGoalContributions(g.id)))
       goalTransactionsMap.value = Object.fromEntries(
-        goals.value.map((g, i) => [g.id, results[i].result ?? []])
+        goals.value.map((g, i) => [g.id, results[i]?.result ?? []])
       )
     }
   })
@@ -255,8 +256,8 @@
     shopping_cart: 'bg-purple-100'
   }
 
-  function frequencyVariant(frequency: CompoundingFrequency): string {
-    const map: Record<CompoundingFrequency, string> = {
+  function frequencyVariant(frequency: CompoundingFrequency): BadgeVariant {
+    const map: Record<CompoundingFrequency, BadgeVariant> = {
       daily: 'success',
       monthly: 'secondary',
       annually: 'default'
@@ -264,8 +265,8 @@
     return map[frequency] ?? 'default'
   }
 
-  function rateVariant(level: string): string {
-    const map: Record<string, string> = {
+  function rateVariant(level: string): BadgeVariant {
+    const map: Record<string, BadgeVariant> = {
       Alta: 'success',
       Media: 'secondary',
       Baja: 'warning',
@@ -348,6 +349,7 @@
         iconName: goal.reason,
         iconTextClass: reasonTextMap[goal.reason],
         iconBgClass: reasonBgMap[goal.reason],
+        variant: 'custom' as const,
         amount: savedAmount > 0 ? savedAmount : null,
         targetAmount: goal.targetAmount ?? undefined,
         targetDate: goal.targetDate ? String(goal.targetDate) : '',

@@ -22,7 +22,19 @@ export type CardInfoProps = {
   subTitleSize?: TextSize | LabelSize
   subTitleWeight?: TextWeight
   icon?: string
-  iconVariant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'neutral'
+  iconVariant?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'neutral'
+    | 'gold'
+    | 'accent'
+    | 'custom'
   iconSize?: 'sm' | 'md' | 'lg'
   verticalSpace?: boolean
+  iconTextClass?: string
+  iconBgClass?: string
+  currencyTextClass?: string
 }

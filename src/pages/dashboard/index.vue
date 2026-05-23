@@ -261,7 +261,7 @@
               budgetStatus === 'PLANNED'
                 ? 'warning'
                 : budgetStatus === 'CLOSED'
-                  ? 'neutral'
+                  ? 'default'
                   : 'secondary'
             "
             class-name="uppercase"
@@ -367,6 +367,7 @@
             title-color="black"
             text-color="black"
             icon-name="payments"
+            variant="custom"
             icon-text-class="text-primary-600"
             icon-bg-class="bg-primary-100"
             class="dashboard-page__card--free"
