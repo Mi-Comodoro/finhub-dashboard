@@ -22,9 +22,10 @@ export const useDashboardApplication = () => {
       const { useTransactionApplication } = await import('./useTransactionApplication')
       // Cargar datos en paralelo
       const { fetchExpenses } = useExpenseApplication()
-      const { fetchByBudget } = useTransactionApplication()
+      const { fetchByBudget, fetchTotals } = useTransactionApplication()
       await Promise.all([
         fetchByBudget(budgetId, { limit: 100 }),
+        fetchTotals(budgetId),
         fetchExpenses(),
         plannedSavingStore.fetchByBudget(budgetId)
       ])
@@ -44,10 +45,16 @@ export const useDashboardApplication = () => {
   const totalSavingGenerated = computed(() => plannedSavingStore.totalSavingGenerated)
   const totalSavingTarget = computed(() => plannedSavingStore.totalSavingTarget)
   const totalSavingFromPlan = computed(() => plannedSavingStore.totalSavingFromPlan)
-  const totalTransactionSavings = computed(() => transactionStore.totalSavings)
-  const totalIncomeReceived = computed(() => transactionStore.totalIncomeReceived)
+  const totalTransactionSavings = computed(
+    () => transactionStore.totals?.savings ?? transactionStore.totalSavings
+  )
+  const totalIncomeReceived = computed(
+    () => transactionStore.totals?.income ?? transactionStore.totalIncomeReceived
+  )
   const totalPlanned = computed(() => expensesStore.totalPlanned + expensesStore.totalPaid)
-  const totalExpensesPaid = computed(() => transactionStore.totalExpensesPaid)
+  const totalExpensesPaid = computed(
+    () => transactionStore.totals?.expense ?? transactionStore.totalExpensesPaid
+  )
 
   return {
     loadDashboardData,

@@ -50,7 +50,7 @@
   const { loadBudgetDetail, budgetSelected, expectedIncome, defaultCurrency } =
     useBudgetDetailApplication()
   const { deleteExpense } = useExpenseApplication()
-  const { fetchByBudget: fetchTransactions } = useTransactionApplication()
+  const { fetchByBudget: fetchTransactions, fetchTotals } = useTransactionApplication()
   const { fetchByBudget: fetchPlannedSavings } = usePlannedSavingApplication()
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
@@ -65,7 +65,12 @@
     if (!success && error) handleError(error)
 
     if (budgetId) {
-      await Promise.all([fetchTransactions(budgetId), fetchPlannedSavings(budgetId), fetchGoals()])
+      await Promise.all([
+        fetchTransactions(budgetId),
+        fetchTotals(budgetId),
+        fetchPlannedSavings(budgetId),
+        fetchGoals()
+      ])
     }
   })
 
