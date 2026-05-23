@@ -48,7 +48,9 @@
   const {
     budgetMissingMessage,
     budgetWarningMessage,
+    budgetNextMessage,
     isUsingPreviousBudget,
+    isUsingNextBudget,
     load,
     handleCompleteSetup,
     openOnboarding
@@ -255,10 +257,22 @@
           <Badge
             bold
             :rounded="false"
-            :variant="budgetStatus === 'PLANNED' ? 'warning' : 'secondary'"
+            :variant="
+              budgetStatus === 'PLANNED'
+                ? 'warning'
+                : budgetStatus === 'CLOSED'
+                  ? 'neutral'
+                  : 'secondary'
+            "
             class-name="uppercase"
           >
-            {{ budgetStatus === 'PLANNED' ? 'Planificado' : 'En Ejecucion' }}
+            {{
+              budgetStatus === 'PLANNED'
+                ? 'Planificado'
+                : budgetStatus === 'CLOSED'
+                  ? 'Cerrado'
+                  : 'En Ejecucion'
+            }}
           </Badge>
         </div>
         <Text size="xs" color="muted">
@@ -269,7 +283,7 @@
         <Button variant="ghost" size="sm" icon="download" disabled>Reporte</Button>
 
         <Button
-          v-if="budgetStatus !== 'PLANNED'"
+          v-if="budgetStatus === 'ACTIVE'"
           variant="primary"
           size="sm"
           icon="add"
@@ -299,6 +313,17 @@
     >
       <Text size="sm" color="warning">
         {{ budgetMissingMessage }}
+      </Text>
+    </AlertBanner>
+
+    <AlertBanner
+      v-else-if="isUsingNextBudget"
+      title="Mes actual cerrado"
+      variant="info"
+      icon="info"
+    >
+      <Text size="sm">
+        {{ budgetNextMessage }}
       </Text>
     </AlertBanner>
 

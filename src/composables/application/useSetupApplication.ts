@@ -19,12 +19,16 @@ export const useSetupApplication = () => {
   const openOnboarding = ref(false)
   const currentBudgetId = computed(() => budgetStore.currentBudgetPlan?.id ?? null)
   const isUsingPreviousBudget = ref(false)
+  const isUsingNextBudget = ref(false)
   const budgetWarningMessage = ref('')
+  const budgetNextMessage = ref('')
   const budgetMissingMessage = ref('')
 
   const resetBudgetFallback = () => {
     isUsingPreviousBudget.value = false
+    isUsingNextBudget.value = false
     budgetWarningMessage.value = ''
+    budgetNextMessage.value = ''
     budgetMissingMessage.value = ''
   }
 
@@ -45,6 +49,30 @@ export const useSetupApplication = () => {
       month: now.getMonth() + 1,
       year: now.getFullYear()
     }
+  }
+
+  const getNextPeriod = () => {
+    const now = new Date()
+    const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+
+    return {
+      month: nextMonthDate.getMonth() + 1,
+      year: nextMonthDate.getFullYear()
+    }
+  }
+
+  const findNextBudget = async (financeId: string) => {
+    const nextPeriod = getNextPeriod()
+    await fetchCurrentBudget(financeId, nextPeriod.month, nextPeriod.year)
+    const nextBudget = budgetStore.currentBudgetPlan
+
+    if (!nextBudget) return null
+
+    isUsingNextBudget.value = true
+    budgetNextMessage.value =
+      'Tu presupuesto del mes actual está cerrado. Te mostramos el siguiente periodo planificado.'
+
+    return nextBudget.id
   }
 
   const findPreviousBudget = async (financeId: string) => {
@@ -104,6 +132,10 @@ export const useSetupApplication = () => {
         return budgetStore.currentBudgetPlan.id
       }
 
+      // Current month returned null (e.g. it is CLOSED) — check next month first
+      const nextBudgetId = await findNextBudget(financeId)
+      if (nextBudgetId) return nextBudgetId
+
       const previousBudgetId = await findPreviousBudget(financeId)
 
       if (!previousBudgetId) {
@@ -131,8 +163,10 @@ export const useSetupApplication = () => {
   return {
     budgetMissingMessage,
     budgetWarningMessage,
+    budgetNextMessage,
     currentBudgetId,
     isUsingPreviousBudget,
+    isUsingNextBudget,
     load,
     loadBudgetPlan,
     handleCompleteSetup,
