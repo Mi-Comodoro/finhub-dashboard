@@ -100,6 +100,11 @@
     }
   }
 
+  const handleCancelInvite = () => {
+    showInviteModal.value = false
+    inviteUserId.value = ''
+  }
+
   const handleDeleteGroup = async () => {
     isDeleting.value = true
     try {
@@ -248,15 +253,7 @@
           :required="true"
         />
         <div class="group-detail__invite-actions">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            @click="
-              showInviteModal = false
-              inviteUserId = ''
-            "
-          >
+          <Button type="button" variant="ghost" size="sm" @click="handleCancelInvite">
             Cancelar
           </Button>
           <Button

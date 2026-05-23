@@ -298,10 +298,7 @@
                             :key="goal.id"
                             class="planned-saving-list__goal-option"
                             :disabled="assigningItemId === item.id"
-                            @click.stop="
-                              assignGoalToItem(item.id, goal.id)
-                              closeGoalPicker()
-                            "
+                            @click.stop="assignGoalToItem(item.id, goal.id).then(closeGoalPicker)"
                           >
                             <span
                               class="material-symbols-outlined planned-saving-list__goal-option-icon"
