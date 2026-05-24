@@ -151,14 +151,14 @@ export function useBudgetActions() {
   }
 
   // Orchestration: enable budget
-  const enableBudget = async (budgetId: string) => {
+  const enableBudget = async (budgetId: string): Promise<{ success: boolean }> => {
     budgetStore.setLoading(true)
     budgetStore.setError(null)
-
+    let success
     try {
       const response = (await budgetApi.enableBudget(budgetId)) as CurrentBudget
 
-      if (!response.success || !response.result) return
+      if (!response.success || !response.result) return { success: false }
 
       budgetStore.setCurrentBudget(response.result)
       const mappedBudget = mapSingleBudgetToBudget(response.result)
@@ -167,22 +167,25 @@ export function useBudgetActions() {
       if (budgetStore.activeBudget?.id === budgetId) {
         budgetStore.setActiveBudget(mappedBudget)
       }
+      success = true
     } catch (err) {
+      success = false
       console.error('❌ Error enabling budget:', err)
       budgetStore.setError(createErrorMessage(err as FetchError))
     } finally {
       budgetStore.setLoading(false)
     }
+    return { success }
   }
 
-  const closeBudget = async (budgetId: string) => {
+  const closeBudget = async (budgetId: string): Promise<{ success: boolean }> => {
     budgetStore.setLoading(true)
     budgetStore.setError(null)
 
     try {
       const response = (await budgetApi.closeBudget(budgetId)) as CurrentBudget
 
-      if (!response.success || !response.result) return
+      if (!response.success || !response.result) return { success: false }
 
       budgetStore.setCurrentBudget(response.result)
       const mappedBudget = mapSingleBudgetToBudget(response.result)
@@ -197,6 +200,7 @@ export function useBudgetActions() {
     } finally {
       budgetStore.setLoading(false)
     }
+    return { success: true }
   }
 
   const handleCreate = async (data: CreateBudgetPayload) => {

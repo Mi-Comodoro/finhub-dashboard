@@ -99,7 +99,7 @@
       collected: 'success',
       overdue: 'danger'
     }
-    return variants[status]
+    return variants[status] as BadgeVariant
   }
 
   const agingChartOption = computed(() => ({
@@ -310,7 +310,7 @@
 
         <div v-if="account.status === 'overdue'" class="receivables-page__overdue-alert">
           <span class="material-symbols-outlined receivables-page__overdue-icon">warning</span>
-          <Text size="xs" color="danger">Este cobro está vencido</Text>
+          <Text size="xs" class="text-danger-500">Este cobro está vencido</Text>
         </div>
 
         <div class="receivables-page__account-actions">
@@ -323,9 +323,7 @@
             Recibir cobro
           </Button>
           <Button size="sm" variant="ghost" @click="openEdit(account)">Editar</Button>
-          <Button size="sm" variant="danger-ghost" @click="handleDelete(account.id)">
-            Eliminar
-          </Button>
+          <Button size="sm" variant="danger" @click="handleDelete(account.id)">Eliminar</Button>
         </div>
       </div>
 
@@ -385,7 +383,7 @@
 
 <style scoped lang="postcss">
   .receivables-page {
-    @apply space-y-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   .receivables-page__header {
