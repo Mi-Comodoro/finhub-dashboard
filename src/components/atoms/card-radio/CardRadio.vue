@@ -40,7 +40,7 @@
   }
 
   .card-radio--sm {
-    @apply min-w-[64px] gap-1 p-2;
+    @apply min-w-[64px] flex-row gap-1 p-2;
   }
 
   .card-radio--selected {

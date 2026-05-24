@@ -16,14 +16,20 @@
 
 <template>
   <div :class="['flex items-center gap-3', className]">
-    <span
+    <NuxtImg
+      v-if="showText"
+      src="/brand.webp"
+      alt="Mi Comodoro Logo"
+      :class="['flex items-center justify-center rounded-lg', logoSizes[size]]"
+    />
+    <!-- <span
       :class="[
         'flex items-center justify-center rounded-lg bg-teal-900 font-bold text-white',
         logoSizes[size]
       ]"
     >
       MC
-    </span>
+    </span> -->
     <CardInfo
       v-if="showText"
       title="Mi Comodoro"
