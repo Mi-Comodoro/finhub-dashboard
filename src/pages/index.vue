@@ -47,6 +47,7 @@
               sub-title-color="white"
               sub-title-size="sm"
               sub-title-weight="light"
+              class="max-w-lg"
             />
 
             <div class="login-page__features">
@@ -84,37 +85,63 @@
 
 <style scoped lang="postcss">
   .login-page {
-    @apply flex min-h-screen items-center justify-center bg-gradient-to-br from-neutral-50 to-teal-50 p-4 font-sans transition-colors duration-200;
+    @apply flex min-h-screen items-center justify-center overflow-hidden;
+    @apply bg-gradient-to-br from-neutral-50 to-teal-50;
+    @apply p-4 font-sans transition-colors duration-200;
+
     @apply dark:from-neutral-900 dark:to-neutral-800;
   }
 
   .login-page__card {
-    @apply flex min-h-[700px] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl transition-colors duration-200;
+    @apply flex w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl;
+    @apply transition-colors duration-200;
+
+    /* Altura responsive */
+    @apply min-h-[620px] lg:min-h-[650px] xl:min-h-[700px];
+
     @apply dark:bg-neutral-800 dark:shadow-neutral-900/50;
   }
 
+  /* =========================
+     PANEL IZQUIERDO
+     ========================= */
+
   .login-page__left {
-    @apply relative flex-1 overflow-hidden;
+    /* Oculto en tablets pequeñas */
+    @apply relative hidden overflow-hidden lg:flex;
+
+    /* Un poco más ancho que el form */
+    @apply lg:flex-[1.1];
   }
 
   .login-page__bg-image {
     @apply absolute inset-0 z-0 bg-cover bg-center bg-no-repeat;
+    transform: scale(1.02);
   }
 
   .login-page__bg-overlay {
-    @apply absolute inset-0 z-0 bg-gradient-to-br from-primary-900/70 via-primary-800/60 to-primary-900/50;
+    @apply absolute inset-0 z-0 bg-gradient-to-br;
+
+    /* Overlay más elegante */
+    @apply from-primary-900/60 via-primary-800/50 to-primary-900/40;
   }
 
   .login-page__content {
-    @apply relative z-10 flex h-full w-full flex-col p-8 lg:p-12;
+    @apply relative z-10 flex h-full w-full flex-col;
+
+    /* Padding responsive */
+    @apply p-6 md:p-8 xl:p-12;
   }
 
   .login-page__logo {
-    @apply mb-6 w-full lg:mb-8;
+    @apply mb-4 w-full xl:mb-8;
   }
 
   .login-page__main {
-    @apply mt-auto flex flex-col justify-between gap-6;
+    @apply mt-auto flex flex-col justify-between;
+
+    /* Menos separación vertical */
+    @apply gap-4 xl:gap-6;
   }
 
   .login-page__features {
@@ -126,24 +153,79 @@
   }
 
   .login-page__check {
-    @apply flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold text-white;
+    @apply flex h-6 w-6 flex-shrink-0 items-center justify-center;
+    @apply rounded-full bg-white/20 text-sm font-bold text-white;
   }
 
+  /* =========================
+     PANEL DERECHO
+     ========================= */
+
   .login-page__right {
-    @apply flex flex-1 flex-col justify-between bg-white p-8 transition-colors duration-200;
-    @apply dark:bg-neutral-800 lg:p-12;
+    @apply flex w-full flex-1 flex-col justify-between;
+    @apply bg-white transition-colors duration-200;
+
+    /* Evita que el formulario se estire demasiado */
+    @apply lg:max-w-[540px];
+
+    /* Padding responsive */
+    @apply p-6 md:p-8 xl:p-12;
+
+    @apply dark:bg-neutral-800;
   }
 
   .login-page__footer {
-    @apply mt-12 border-t border-neutral-200 pt-6 text-center transition-colors duration-200;
+    @apply mt-6 border-t border-neutral-200;
+    @apply pt-4 text-center transition-colors duration-200;
+
+    @apply xl:mt-12 xl:pt-6;
+
     @apply dark:border-neutral-600;
   }
 
   .login-page__footer-text {
-    @apply flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400;
+    @apply flex items-center justify-center;
+    @apply text-sm text-neutral-500;
+
+    @apply dark:text-neutral-400;
   }
 
   .login-page__footer-logo {
-    @apply h-6 w-auto opacity-80 dark:opacity-60;
+    @apply h-6 w-auto opacity-80;
+    @apply dark:opacity-60;
+  }
+
+  /* =========================
+     AJUSTES PARA LAPTOPS
+     ========================= */
+
+  @media (max-height: 820px) {
+    .login-page {
+      @apply py-4;
+    }
+
+    .login-page__card {
+      min-height: auto;
+    }
+
+    .login-page__content {
+      @apply p-6;
+    }
+
+    .login-page__right {
+      @apply p-6;
+    }
+
+    .login-page__logo {
+      @apply mb-4;
+    }
+
+    .login-page__main {
+      @apply gap-4;
+    }
+
+    .login-page__footer {
+      @apply mt-4 pt-4;
+    }
   }
 </style>
