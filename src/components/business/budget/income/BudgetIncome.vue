@@ -76,7 +76,7 @@
             </div>
             <Button
               v-else
-              size="xs"
+              size="sm"
               :loading="processingIncomeId === item.id"
               @click="markPlannedIncomeAsReceived(item.id)"
             >

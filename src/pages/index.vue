@@ -85,19 +85,18 @@
 
 <style scoped lang="postcss">
   .login-page {
-    @apply flex min-h-screen items-center justify-center overflow-hidden;
+    @apply flex h-screen items-center justify-center overflow-hidden;
     @apply bg-gradient-to-br from-neutral-50 to-teal-50;
-    @apply p-4 font-sans transition-colors duration-200;
-
+    @apply font-sans transition-colors duration-200 2xl:p-4;
     @apply dark:from-neutral-900 dark:to-neutral-800;
   }
 
   .login-page__card {
-    @apply flex w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl;
+    @apply flex w-full overflow-hidden bg-white xl:rounded-none 2xl:max-w-6xl 2xl:rounded-2xl 2xl:shadow-lg;
     @apply transition-colors duration-200;
 
     /* Altura responsive */
-    @apply min-h-[620px] lg:min-h-[650px] xl:min-h-[700px];
+    @apply min-h-[620px] lg:min-h-[650px] xl:min-h-screen 2xl:min-h-[750px];
 
     @apply dark:bg-neutral-800 dark:shadow-neutral-900/50;
   }
@@ -200,22 +199,30 @@
      ========================= */
 
   @media (max-height: 820px) {
-    .login-page {
-      @apply py-4;
-    }
-
-    .login-page__card {
-      min-height: auto;
-    }
-
     .login-page__content {
       @apply p-6;
     }
 
-    .login-page__right {
-      @apply p-6;
+    .login-page__left {
+      @apply relative hidden overflow-hidden lg:flex;
+      @apply lg:flex-1 lg:p-4;
+      @apply 2xl:flex-[1.1];
     }
 
+    .login-page__right {
+      @apply flex w-full flex-1 flex-col justify-between;
+      @apply bg-white transition-colors duration-200;
+
+      /* Laptop */
+      @apply lg:max-w-[620px];
+
+      /* Pantallas grandes */
+      @apply 2xl:max-w-[540px];
+
+      @apply p-6 md:p-8 xl:p-12;
+
+      @apply dark:bg-neutral-800;
+    }
     .login-page__logo {
       @apply mb-4;
     }

@@ -36,7 +36,7 @@
   }
 
   .card-radio--md {
-    @apply min-w-[80px] gap-2 p-4;
+    @apply min-w-[80px] flex-row gap-2 p-4;
   }
 
   .card-radio--sm {

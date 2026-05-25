@@ -144,7 +144,7 @@
           name="password"
           placeholder="Ingresa tu contrasena"
           required
-          label="Contrasena"
+          label="Contraseña"
           error-message="La contrasena debe tener al menos 6 caracteres"
         />
 
