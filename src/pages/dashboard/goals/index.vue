@@ -460,70 +460,74 @@
         </div>
 
         <!-- Vista tabla -->
-        <table v-else class="goals-page__table">
-          <thead>
-            <tr>
-              <th>Meta</th>
-              <th>Cuenta</th>
-              <th>Estado</th>
-              <th>Plazo</th>
-              <th>Progreso</th>
-              <th>Objetivo</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="goal in filteredGoals"
-              :key="goal.id"
-              class="goals-page__table-row"
-              @click="goToDetail(goal.id)"
-            >
-              <td>{{ goal.name }}</td>
-              <td>{{ goal.accountName }}</td>
-              <td>
-                <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="xs">
-                  {{ GOAL_STATUS_LABELS[(goal.status as GoalStatus) ?? 'SCHEDULED'] }}
-                </Badge>
-              </td>
-              <td>{{ GOAL_TERM_LABELS[getGoalTerm(goal.targetDate)] }}</td>
-              <td>
-                <div class="goals-page__progress-cell">
-                  <div class="goals-page__progress-bar">
-                    <div
-                      class="goals-page__progress-fill"
-                      :style="{
-                        width: `${getProgressPercentage(goal.id, goal.targetAmount ?? 0)}%`
-                      }"
-                    ></div>
+        <div v-else class="goals-page__table-wrapper">
+          <table class="goals-page__table">
+            <thead>
+              <tr>
+                <th class="goals-page__table-col--name">Meta</th>
+                <th class="goals-page__table-col--secondary">Cuenta</th>
+                <th>Estado</th>
+                <th class="goals-page__table-col--secondary">Plazo</th>
+                <th>Progreso</th>
+                <th>Objetivo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="goal in filteredGoals"
+                :key="goal.id"
+                class="goals-page__table-row"
+                @click="goToDetail(goal.id)"
+              >
+                <td class="goals-page__table-col--name">{{ goal.name }}</td>
+                <td class="goals-page__table-col--secondary">{{ goal.accountName }}</td>
+                <td>
+                  <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="xs">
+                    {{ GOAL_STATUS_LABELS[(goal.status as GoalStatus) ?? 'SCHEDULED'] }}
+                  </Badge>
+                </td>
+                <td class="goals-page__table-col--secondary">
+                  {{ GOAL_TERM_LABELS[getGoalTerm(goal.targetDate)] }}
+                </td>
+                <td>
+                  <div class="goals-page__progress-cell">
+                    <div class="goals-page__progress-bar">
+                      <div
+                        class="goals-page__progress-fill"
+                        :style="{
+                          width: `${getProgressPercentage(goal.id, goal.targetAmount ?? 0)}%`
+                        }"
+                      ></div>
+                    </div>
+                    <span class="goals-page__progress-text">
+                      {{ getProgressPercentage(goal.id, goal.targetAmount ?? 0) }}%
+                    </span>
                   </div>
-                  <span class="goals-page__progress-text">
-                    {{ getProgressPercentage(goal.id, goal.targetAmount ?? 0) }}%
-                  </span>
-                </div>
-              </td>
-              <td>{{ goal.targetAmount ? formatCurrency(goal.targetAmount, currency) : '—' }}</td>
-              <td>
-                <div class="goals-page__table-actions">
-                  <Button
-                    variant="ghost"
-                    icon="edit"
-                    icon-only
-                    size="sm"
-                    @click.stop="editGoal(goal as ExistingGoal)"
-                  />
-                  <Button
-                    variant="ghost"
-                    icon="delete"
-                    icon-only
-                    size="sm"
-                    @click.stop="openDeleteModal(goal.id)"
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td>{{ goal.targetAmount ? formatCurrency(goal.targetAmount, currency) : '—' }}</td>
+                <td>
+                  <div class="goals-page__table-actions">
+                    <Button
+                      variant="ghost"
+                      icon="edit"
+                      icon-only
+                      size="sm"
+                      @click.stop="editGoal(goal as ExistingGoal)"
+                    />
+                    <Button
+                      variant="ghost"
+                      icon="delete"
+                      icon-only
+                      size="sm"
+                      @click.stop="openDeleteModal(goal.id)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       <div v-else class="goals-page__empty-section">
         <div class="goals-page__empty-content">
@@ -796,8 +800,12 @@
   }
 
   /* Tabla */
+  .goals-page__table-wrapper {
+    @apply overflow-x-auto rounded-lg shadow-sm;
+  }
+
   .goals-page__table {
-    @apply w-full border-collapse overflow-hidden rounded-lg bg-white shadow-sm;
+    @apply w-full min-w-[570px] table-fixed border-collapse bg-white;
   }
 
   .goals-page__table thead {
@@ -824,12 +832,20 @@
     @apply flex gap-1;
   }
 
+  .goals-page__table-col--secondary {
+    @apply hidden 2xl:table-cell;
+  }
+
+  .goals-page__table-col--name {
+    @apply w-[160px] truncate;
+  }
+
   .goals-page__progress-cell {
     @apply flex items-center gap-2;
   }
 
   .goals-page__progress-bar {
-    @apply h-2 w-24 overflow-hidden rounded-full bg-neutral-200;
+    @apply h-2 w-16 overflow-hidden rounded-full bg-neutral-200 xl:w-24;
   }
 
   .goals-page__progress-fill {
@@ -977,7 +993,7 @@
     @apply flex justify-end gap-2;
   }
 
-  goals-page__account-edit {
+  .goals-page__account-edit {
     @apply place-items-end;
   }
 </style>
