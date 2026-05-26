@@ -2,7 +2,8 @@ name: Deploy Nuxt SSR
 
 on:
   push:
-    branches: [develop]
+    branches:
+      - develop
 
 jobs:
   build-and-deploy:
@@ -16,10 +17,18 @@ jobs:
         run: |
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+          nvm install 22
           nvm use 22
+
+          node -v
+          npm -v
 
       - name: Instalar pnpm
         run: npm install -g pnpm
+
+      - name: Permitir build scripts pnpm
+        run: pnpm config set onlyBuiltDependencies false
 
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
@@ -27,20 +36,27 @@ jobs:
       - name: Compilar Nuxt SSR
         run: pnpm build
 
-      - name: Crear carpeta destino
-        run: mkdir -p /var/www/intranet/micomodoro-app
+      - name: Crear directorio destino
+        run: |
+          mkdir -p /var/www/intranet/micomodoro-app
 
-      - name: Limpiar build anterior
+      - name: Limpiar deploy anterior
         run: |
           rm -rf /var/www/intranet/micomodoro-app/.output
 
-      - name: Copiar archivos compilados
+      - name: Copiar build compilado
         run: |
           cp -r .output /var/www/intranet/micomodoro-app/
+
+      - name: Copiar configuracion PM2
+        run: |
           cp ecosystem.config.cjs /var/www/intranet/micomodoro-app/
 
-      - name: Reiniciar aplicacion
+      - name: Reiniciar aplicacion con PM2
         run: |
           cd /var/www/intranet/micomodoro-app
+
           pm2 reload ecosystem.config.cjs --update-env || \
           pm2 start ecosystem.config.cjs
+
+          pm2 save
