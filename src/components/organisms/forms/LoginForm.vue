@@ -72,7 +72,7 @@
           color="black"
           weight="extrabold"
           sub-title="Inicia sesion en tu panel de Mi Comodoro"
-          sub-title-size="base"
+          sub-title-size="sm"
           sub-title-color="muted"
         />
       </div>
@@ -90,12 +90,13 @@
 
       <Button
         variant="outline"
-        class="w-full transition-colors duration-200"
+        class="flex w-full items-center justify-center transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"
+        size="sm"
         :loading="isLoading"
         :disabled="isLoading"
         @click="handleGoogleLogin"
       >
-        <GoogleIcon class="mr-2" :size="20" />
+        <GoogleIcon class="mr-2" :size="18" />
         <span>
           {{ isLoading ? 'Conectando...' : 'Iniciar sesion con Google' }}
         </span>
@@ -109,7 +110,7 @@
         .
       </p>
 
-      <div class="relative my-4">
+      <div class="relative">
         <div class="absolute inset-0 flex items-center">
           <div
             class="w-full border-t border-neutral-200 transition-colors duration-200 dark:border-neutral-600"
@@ -126,7 +127,7 @@
         </div>
       </div>
 
-      <form class="w-full space-y-6" @submit.prevent="handleSubmit">
+      <form class="w-full space-y-2" @submit.prevent="handleSubmit">
         <Input
           id="email"
           v-model="email"
@@ -143,7 +144,7 @@
           name="password"
           placeholder="Ingresa tu contrasena"
           required
-          label="Contrasena"
+          label="Contraseña"
           error-message="La contrasena debe tener al menos 6 caracteres"
         />
 
@@ -151,6 +152,7 @@
           type="submit"
           class="w-full"
           variant="primary"
+          size="sm"
           :loading="isLoading"
           :disabled="isLoading"
         >

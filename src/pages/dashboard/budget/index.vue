@@ -392,14 +392,12 @@
             >
               Ver
             </Button>
-            <Button variant="secondary" size="sm" icon="edit" icon-only @click="openEdit(budget)" />
-            <Button
-              variant="danger"
-              size="sm"
-              icon="delete"
-              icon-only
-              @click="confirmDelete(budget.id)"
-            />
+            <Button variant="secondary" size="sm" icon="edit" @click="openEdit(budget)">
+              Editar
+            </Button>
+            <Button variant="danger" size="sm" icon="delete" @click="confirmDelete(budget.id)">
+              Eliminar
+            </Button>
           </template>
 
           <template v-else>

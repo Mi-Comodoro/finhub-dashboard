@@ -15,6 +15,7 @@ export const quickTransactionFieldsSchema = (
     type: {
       type: 'radio-card',
       label: 'Tipo de Registro',
+      size: 'sm',
       required: true,
       options: [
         { label: 'Ingreso', value: 'income', description: 'Dinero recibido', icon: 'payments' },
@@ -59,10 +60,12 @@ export const quickTransactionFieldsSchema = (
       type: 'radio-card',
       label: 'Tipo de aporte',
       required: false,
+      size: 'sm',
       options: [
         {
           label: 'Depósito externo',
           value: 'external',
+
           description: 'Desde fuera',
           icon: 'account_balance'
         },

@@ -32,15 +32,19 @@ table {
 .dashboard-layout {
   @apply flex h-screen w-screen flex-row overflow-hidden bg-neutral-100 dark:bg-slate-950;
 }
+
 .dashboard-layout__sidebar {
   @apply hidden h-screen shrink-0 flex-col border-r border-slate-200 transition-all duration-200 dark:border-slate-800 lg:flex;
 }
+
 .dashboard-layout__right {
   @apply flex h-screen min-w-0 flex-1 flex-col overflow-hidden;
 }
+
 .dashboard-layout__header {
   @apply z-30 h-16 shrink-0 border-b bg-white/80 backdrop-blur-md dark:bg-slate-950/80;
 }
+
 .dashboard-layout__main {
   @apply flex-1 overflow-y-auto;
 }

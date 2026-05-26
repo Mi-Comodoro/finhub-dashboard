@@ -98,6 +98,7 @@ export const useTransactionApplication = () => {
 
   const fetchTotals = async (budgetId: string, filters?: Partial<TransactionFilters>) => {
     try {
+      transactionStore.setTotals(null)
       const query = buildQueryParams(budgetId, { ...filters, page: undefined, limit: undefined })
       const { success, result } = await transactionApi.getTransactionTotals(budgetId, query)
       if (success && result) transactionStore.setTotals(result)

@@ -238,8 +238,8 @@
           sub-title-size="xs"
           sub-title-color="muted"
           icon="flag"
-          icon-variant="success"
           icon-size="md"
+          icon-variant="secondary"
         />
 
         <div class="dashboard-sidebar__goals">
@@ -390,19 +390,7 @@
   }
 
   .dashboard-sidebar__goal-pct {
-    @apply shrink-0 text-xs font-bold;
-  }
-
-  .dashboard-sidebar__goal-pct--start {
-    @apply text-warning-400;
-  }
-
-  .dashboard-sidebar__goal-pct--mid {
-    @apply text-warning-600;
-  }
-
-  .dashboard-sidebar__goal-pct--done {
-    @apply text-success-600;
+    @apply shrink-0 text-xs font-bold text-black;
   }
 
   /* Bills */

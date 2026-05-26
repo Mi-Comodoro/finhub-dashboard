@@ -237,7 +237,7 @@
     const amount = formatCurrency(item.amount, currency.value)
     if (item.type === 'income') return { text: `+${amount}`, colorClass: 'text-success-700' }
     if (item.type === 'expense') return { text: `-${amount}`, colorClass: 'text-danger-700' }
-    return { text: `-${amount}`, colorClass: 'text-warning-700' }
+    return { text: `~${amount}`, colorClass: 'text-warning-700' }
   }
 
   // --- Init ---

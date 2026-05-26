@@ -122,5 +122,6 @@ export function getCurrencyLabel(currency: Currency): string {
 }
 
 export function getPercentage(total: number, current: number) {
+  if (total === 0) return 0
   return Math.round((current / total) * 100)
 }

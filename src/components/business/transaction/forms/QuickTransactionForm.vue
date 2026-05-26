@@ -8,6 +8,7 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useCommon } from '@/composables/useCommon'
+  import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
   import type { AccountData, GoalsData } from '~/types/api'
 
@@ -17,14 +18,14 @@
     goals?: GoalsData[]
     accounts?: AccountData[]
     budgetSavingsPercentage?: number
-    currency?: string
+    currency?: Currency
   }
 
   const props = withDefaults(defineProps<QuickTransactionFormProps>(), {
     goals: () => [],
     accounts: () => [],
     budgetSavingsPercentage: 20,
-    currency: 'COP'
+    currency: 'COP' as Currency
   })
 
   const emit = defineEmits(['onClose'])

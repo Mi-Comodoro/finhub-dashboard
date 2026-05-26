@@ -36,11 +36,11 @@
   }
 
   .card-radio--md {
-    @apply min-w-[80px] gap-2 p-4;
+    @apply min-w-[80px] flex-row gap-2 p-4;
   }
 
   .card-radio--sm {
-    @apply min-w-[64px] gap-1 p-2;
+    @apply min-w-[64px] flex-row gap-1 p-2;
   }
 
   .card-radio--selected {
