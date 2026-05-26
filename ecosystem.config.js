@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'micomodoro',
 
-      script: '.output/server/index.mjs',
+      script: '/var/www/intranet/micomodoro-app/.output/server/index.mjs',
 
       cwd: '/var/www/intranet/micomodoro-app',
 
