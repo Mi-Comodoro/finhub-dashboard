@@ -27,9 +27,6 @@ jobs:
       - name: Instalar pnpm
         run: npm install -g pnpm
 
-      - name: Permitir build scripts pnpm
-        run: pnpm config set onlyBuiltDependencies false
-
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
 
