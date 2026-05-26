@@ -37,15 +37,24 @@ jobs:
           FB_APP_ID: ${{ secrets.FB_APP_ID }}
           FB_MEASUREMENT_ID: ${{ secrets.FB_MEASUREMENT_ID }}
           NUXT_TELEMETRY_DISABLED: 1
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_OPTIONS: '--max-old-space-size=4096'
+          # FORZAR el preset de servidor independiente de Node para garantizar index.mjs
+          NITRO_PRESET: node-server
         run: |
           pnpm build
-          
-          # Validar dinámicamente si se creó index.mjs o index.js
+
+          echo "=== Contenido dentro de .output/server ==="
+          if [ -d "./.output/server" ]; then
+            ls -la ./.output/server
+          else
+            echo "La carpeta .output/server no existe"
+          fi
+
+          # Validar el archivo ejecutable final
           if [ -f "./.output/server/index.mjs" ]; then
-            echo "✅ Archivo index.mjs detectado."
+            echo "✅ Archivo index.mjs de producción verificado con éxito."
           elif [ -f "./.output/server/index.js" ]; then
-            echo "✅ Archivo index.js detectado."
+            echo "✅ Archivo index.js de producción verificado con éxito."
           else
             echo "❌ ERROR: No se encontró el archivo ejecutable principal en .output/server/"
             exit 1
@@ -67,13 +76,13 @@ jobs:
         run: |
           cd /var/www/intranet/micomodoro-app
           export PM2_HOME=/home/jarvis/.pm2
-          
+
           # Verificar qué extensión quedó en la carpeta productiva final para corregir PM2 si es necesario
           if [ -f "./.output/server/index.js" ] && [ -f "ecosystem.config.js" ]; then
             echo "Ajustando script en ecosystem.config.js a index.js..."
             sed -i 's/index.mjs/index.js/g' ecosystem.config.js
           fi
-          
+
           if pm2 show micomodoro > /dev/null 2>&1; then
             echo "🔄 La aplicación ya existe en PM2. Reiniciando..."
             pm2 restart ecosystem.config.js --update-env
