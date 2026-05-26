@@ -28,7 +28,7 @@
     @apply absolute inset-0 top-[-51px] bg-black bg-opacity-40;
   }
   .modal-wizard__container {
-    @apply relative flex flex-col overflow-hidden rounded-xl bg-white p-8 shadow-lg dark:bg-slate-800;
+    @apply relative flex flex-col rounded-xl bg-white shadow-lg dark:bg-slate-800;
   }
   .modal-wizard__header {
     @apply mb-4 flex items-center justify-between;
@@ -39,13 +39,10 @@
   .modal-wizard__close {
     @apply cursor-pointer border-none bg-transparent text-2xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200;
   }
-  .modal-wizard__container {
-    @apply relative flex flex-col rounded-xl bg-white p-8 shadow-lg dark:bg-slate-800;
-  }
   .modal-wizard__container--auto {
-    @apply h-min w-[650px] overflow-hidden p-8;
+    @apply h-auto max-h-[90vh] w-[650px] overflow-y-auto overflow-x-hidden p-8;
   }
   .modal-wizard__content {
-    @apply flex h-full w-full flex-auto flex-col gap-6;
+    @apply flex w-full flex-auto flex-col gap-6;
   }
 </style>
