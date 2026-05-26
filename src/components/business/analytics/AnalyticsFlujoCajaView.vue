@@ -153,7 +153,7 @@
     <div v-if="pending" class="cashflow-view__skeleton" />
 
     <template v-else>
-      <div class="cashflow-view__kpis">
+      <div v-if="hasData" class="cashflow-view__kpis">
         <MetricCard
           title="Total Ingresos"
           :value="totalIncome"

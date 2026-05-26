@@ -163,7 +163,7 @@
           </div>
         </div>
 
-        <div class="dashboard-sidebar__pillars">
+        <div v-if="score > 0" class="dashboard-sidebar__pillars">
           <div v-for="pillar in pillars" :key="pillar.label" class="dashboard-sidebar__pillar">
             <div class="dashboard-sidebar__pillar-header">
               <Text size="xs" color="muted">{{ pillar.label }}</Text>
@@ -178,6 +178,9 @@
             </div>
           </div>
         </div>
+        <Text v-else size="xs" color="muted">
+          Registra tu primer ingreso o gasto para ver los indicadores.
+        </Text>
 
         <button class="dashboard-sidebar__link" @click="router.push('/dashboard/analytics')">
           <span>Ver análisis completo</span>
