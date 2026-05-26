@@ -37,26 +37,28 @@ jobs:
           FB_APP_ID: ${{ secrets.FB_APP_ID }}
           FB_MEASUREMENT_ID: ${{ secrets.FB_MEASUREMENT_ID }}
           NUXT_TELEMETRY_DISABLED: 1
-          NODE_OPTIONS: '--max-old-space-size=4096'
-          # FORZAR el preset de servidor independiente de Node para garantizar index.mjs
           NITRO_PRESET: node-server
+          # Ajustes críticos para evitar falta de memoria (OOM)
+          NODE_OPTIONS: '--max-old-space-size=1536' # Limita la RAM de Node para que no sature la máquina
+          DISABLE_VITE_SOURCEMAPS: 'true' # Evita generar mapas de código pesados en RAM
+          GENERATE_SOURCEMAP: 'false'
         run: |
+          # Limpiar cachés previos locales para liberar espacio antes del build
+          pnpm exec nuxi cleanup || true
+
+          # Ejecutar el build de Nuxt
           pnpm build
 
           echo "=== Contenido dentro de .output/server ==="
           if [ -d "./.output/server" ]; then
             ls -la ./.output/server
-          else
-            echo "La carpeta .output/server no existe"
           fi
 
           # Validar el archivo ejecutable final
-          if [ -f "./.output/server/index.mjs" ]; then
-            echo "✅ Archivo index.mjs de producción verificado con éxito."
-          elif [ -f "./.output/server/index.js" ]; then
-            echo "✅ Archivo index.js de producción verificado con éxito."
+          if [ -f "./.output/server/index.mjs" ] || [ -f "./.output/server/index.js" ]; then
+            echo "✅ Compilación completada con éxito. Archivos generados."
           else
-            echo "❌ ERROR: No se encontró el archivo ejecutable principal en .output/server/"
+            echo "❌ ERROR: El proceso OOM de Linux canceló la escritura del servidor."
             exit 1
           fi
 
