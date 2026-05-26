@@ -98,4 +98,10 @@
     @apply dark:text-slate-300 dark:hover:bg-primary-900/20 dark:hover:text-primary-300;
     @apply dark:active:bg-primary-900/30;
   }
+  .nav-item--disabled {
+    @apply pointer-events-none cursor-not-allowed opacity-50;
+  }
+  .nav-item--sub {
+    @apply ml-3 border-l-2 border-slate-200 pl-3 dark:border-slate-700;
+  }
 </style>

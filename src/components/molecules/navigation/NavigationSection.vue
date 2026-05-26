@@ -35,6 +35,7 @@
           :is-active="item.isActive"
           :on-click="item.onClick"
           :collapsed="collapsed"
+          :class-name="item.className"
           @navigate="emit('navigate')"
         />
       </li>

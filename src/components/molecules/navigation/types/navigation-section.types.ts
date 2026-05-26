@@ -4,6 +4,7 @@ export interface MenuItem {
   path?: string
   isActive?: boolean
   onClick?: () => void | Promise<void>
+  className?: string
 }
 
 export interface NavigationSectionProps {
