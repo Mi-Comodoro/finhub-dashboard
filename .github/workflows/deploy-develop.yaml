@@ -12,17 +12,20 @@ jobs:
       - name: Descargar codigo
         uses: actions/checkout@v4
 
-      - name: Configurar Node
+      - name: Configurar Node.js
         run: |
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           nvm use 22
 
-      - name: Instalar dependencias
-        run: npm ci
+      - name: Instalar pnpm
+        run: npm install -g pnpm
 
-      - name: Build Nuxt SSR
-        run: npm run build
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Compilar Nuxt SSR
+        run: pnpm build
 
       - name: Crear carpeta destino
         run: mkdir -p /var/www/intranet/micomodoro-app
@@ -31,11 +34,13 @@ jobs:
         run: |
           rm -rf /var/www/intranet/micomodoro-app/.output
 
-      - name: Copiar archivos
+      - name: Copiar archivos compilados
         run: |
           cp -r .output /var/www/intranet/micomodoro-app/
           cp ecosystem.config.cjs /var/www/intranet/micomodoro-app/
-      - name: Reiniciar aplicación con PM2
+
+      - name: Reiniciar aplicacion
         run: |
           cd /var/www/intranet/micomodoro-app
-          pm2 reload ecosystem.config.cjs --env production
+          pm2 reload ecosystem.config.cjs --update-env || \
+          pm2 start ecosystem.config.cjs
