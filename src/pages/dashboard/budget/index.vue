@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import EmptyState from '@/components/atoms/empty-state/EmptyState.vue'
   import BudgetSurplusModal from '@/components/business/budget/BudgetSurplusModal.vue'
   import BudgetCloneForm from '@/components/business/budget/forms/BudgetCloneForm.vue'
   import BudgetForm from '@/components/business/budget/forms/BudgetForm.vue'
@@ -286,16 +287,15 @@
       </Text>
     </div>
 
-    <div v-else-if="sortedBudgets.length === 0" class="budget-index__empty">
-      <Icon name="account_balance_wallet" size="2xl" class="budget-index__empty-icon" />
-      <Heading level="h3" size="lg" color="muted" class="budget-index__empty-title">
-        No hay presupuestos para {{ selectedYear }}
-      </Heading>
-      <Text size="sm" color="muted" class="budget-index__empty-text">
-        Creá tu primer presupuesto para empezar a planificar.
-      </Text>
+    <EmptyState
+      v-else-if="sortedBudgets.length === 0"
+      :title="`No hay presupuestos para ${selectedYear}`"
+      description="Creá tu primer presupuesto para empezar a planificar."
+      illustration="no-budget"
+      class="budget-index__empty"
+    >
       <Button variant="primary" size="sm" @click="showCreateModal = true">Crear presupuesto</Button>
-    </div>
+    </EmptyState>
 
     <div v-else class="budget-index__grid">
       <div
@@ -566,19 +566,7 @@
   }
 
   .budget-index__empty {
-    @apply rounded-xl border border-neutral-200 bg-white p-12 text-center;
-  }
-
-  .budget-index__empty-icon {
-    @apply mb-3 text-neutral-300;
-  }
-
-  .budget-index__empty-title {
-    @apply mb-2;
-  }
-
-  .budget-index__empty-text {
-    @apply mb-4;
+    @apply rounded-xl border border-neutral-200 bg-white;
   }
 
   .budget-index__grid {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import EmptyState from '@/components/atoms/empty-state/EmptyState.vue'
   import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
   import TransactionForm from '@/components/business/transaction/forms/TransactionForm.vue'
   import type { Column } from '@/components/organisms/datatable/types'
@@ -374,14 +374,14 @@
       </template>
 
       <template #empty>
-        <div class="transactions-page__empty">
-          <EmptyStateIllustration
-            type="no-transactions"
-            class="transactions-page__empty-illustration"
-          />
-          <Text size="sm" color="muted">No hay transacciones para estos filtros</Text>
+        <EmptyState
+          title="No hay transacciones"
+          description="No hay transacciones para estos filtros"
+          illustration="no-transactions"
+          size="sm"
+        >
           <Button variant="ghost" size="sm" @click="filters.clearFilters">Limpiar filtros</Button>
-        </div>
+        </EmptyState>
       </template>
 
       <template #footer>
@@ -588,13 +588,6 @@
     @apply text-base text-slate-400;
   }
 
-  .transactions-page__empty {
-    @apply flex flex-col items-center gap-2 py-10 text-center;
-  }
-
-  .transactions-page__empty-illustration {
-    @apply max-w-[140px];
-  }
 
   .transactions-page__footer {
     @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5;

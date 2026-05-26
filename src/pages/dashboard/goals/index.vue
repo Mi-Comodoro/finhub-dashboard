@@ -2,7 +2,7 @@
   import Badge from '@/components/atoms/badge/Badge.vue'
   import type { BadgeVariant } from '@/components/atoms/badge/types/badge.types'
   import Button from '@/components/atoms/button/Button.vue'
-  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import EmptyState from '@/components/atoms/empty-state/EmptyState.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import AccountSavingForm from '@/components/business/account/forms/AccountSavingForm.vue'
   import FinancialTipCarousel from '@/components/business/savings/FinancialTipCarousel.vue'
@@ -529,16 +529,13 @@
           </table>
         </div>
       </div>
-      <div v-else class="goals-page__empty-section">
-        <div class="goals-page__empty-content">
-          <EmptyStateIllustration type="no-goals" class="goals-page__empty-icon" />
-          <Heading level="h3" color="muted">Aún no tienes metas</Heading>
-          <Text size="sm" color="muted" class="goals-page__empty-text">
-            Primero crea tus cuentas para poder definir tus metas financieras y comenzar a organizar
-            tus finanzas de manera efectiva.
-          </Text>
-        </div>
-      </div>
+      <EmptyState
+        v-else
+        title="Aún no tienes metas"
+        description="Primero crea tus cuentas para poder definir tus metas financieras y comenzar a organizar tus finanzas de manera efectiva."
+        illustration="no-goals"
+        class="goals-page__empty-section"
+      />
 
       <div class="goals-page__sidebar">
         <!--  -->
@@ -893,19 +890,7 @@
   }
 
   .goals-page__empty-section {
-    @apply col-span-8 flex flex-col items-center gap-4 rounded-md bg-slate-200;
-  }
-
-  .goals-page__empty-content {
-    @apply flex h-full flex-col items-center gap-4 py-52;
-  }
-
-  .goals-page__empty-icon {
-    @apply w-32;
-  }
-
-  .goals-page__empty-text {
-    @apply w-96 text-center;
+    @apply col-span-8 rounded-md bg-slate-200;
   }
 
   .goals-page__sidebar {
