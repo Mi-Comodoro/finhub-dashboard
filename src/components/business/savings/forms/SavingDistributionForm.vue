@@ -65,8 +65,9 @@
   })
 
   watch(formData, value => {
-    if (value?.percentage && value?.percentage > 0) {
-      percentage.value = value?.percentage
+    const pct = Number(value?.percentage ?? 0)
+    if (pct > 0) {
+      percentage.value = pct
     }
   })
   const handleSubmit = async () => {
@@ -84,9 +85,12 @@
     }
   }
 
-  const savingDiscount = computed(
-    () => newAmount.value - percentOf(savingsAmount.value, percentage.value, currency.value)
-  )
+  const savingDiscount = computed(() => {
+    const base = newAmount.value
+    const discount = percentOf(savingsAmount.value, percentage.value, currency.value)
+    if (!isFinite(base) || !isFinite(discount)) return 0
+    return base - discount
+  })
 </script>
 
 <template>
@@ -162,20 +166,23 @@
     <AlertBanner v-if="availablePercentage <= 0" icon="check_circle" variant="success">
       <Text size="sm" color="success">
         <strong>¡Distribución completa!</strong>
-        Has asignado el 100% de tus ahorros a tus metas. Puedes cerrar este formulario.
+        Has asignado el 100% de tus ahorros a tus metas.
       </Text>
     </AlertBanner>
 
     <Form v-if="availablePercentage > 0" :key="formKey" v-model="formData" :schema="formSchema">
       <template #actions>
         <div class="saving-distribution-form__actions">
-          <Button type="button" variant="ghost" size="sm" @click.stop="emit('onClose')">
-            Cancelar
-          </Button>
-          <Button type="submit" variant="primary" size="sm" @click="handleSubmit">Guardar</Button>
+          <Button type="button" variant="primary" size="sm" @click="handleSubmit">Guardar</Button>
         </div>
       </template>
     </Form>
+
+    <div class="saving-distribution-form__footer">
+      <Button type="button" variant="ghost" size="sm" @click.stop="emit('onClose')">
+        Cancelar
+      </Button>
+    </div>
   </div>
 </template>
 
@@ -242,5 +249,9 @@
 
   .saving-distribution-form__actions {
     @apply flex justify-end gap-2;
+  }
+
+  .saving-distribution-form__footer {
+    @apply flex justify-start;
   }
 </style>

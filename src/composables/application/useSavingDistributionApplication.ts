@@ -87,7 +87,7 @@ export function useSavingDistributionApplication() {
     return computed(() =>
       savingsAllocationsStore.savingAllocations
         .filter(a => a.budgetId === budgetId)
-        .reduce((acc, sa) => acc + (sa.percentage ?? 0), 0)
+        .reduce((acc, sa) => acc + Number(sa.percentage ?? 0), 0)
     )
   }
 
