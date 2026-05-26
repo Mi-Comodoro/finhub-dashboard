@@ -36,9 +36,17 @@ jobs:
           FB_MESSAGING_SENDER_ID: ${{ secrets.FB_MESSAGING_SENDER_ID }}
           FB_APP_ID: ${{ secrets.FB_APP_ID }}
           FB_MEASUREMENT_ID: ${{ secrets.FB_MEASUREMENT_ID }}
+          # Forzar a Nuxt/TypeScript a no detener el build por advertencias menores
+          NUXT_TELEMETRY_DISABLED: 1
+          NODE_OPTIONS: '--max-old-space-size=4096' # Evita caídas por falta de memoria RAM
         run: |
+          # Ejecutar la compilación mostrando errores detallados
           pnpm build
-          # Validar rigurosamente que la compilación funcionó localmente
+
+          # Listar qué carpetas se crearon en el espacio de trabajo para diagnosticar
+          echo "=== Contenido del directorio actual ==="
+          ls -la
+
           if [ ! -f "./.output/server/index.mjs" ]; then
             echo "❌ ERROR: Nuxt no generó el archivo index.mjs de producción."
             exit 1
