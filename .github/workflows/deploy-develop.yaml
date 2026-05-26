@@ -1,0 +1,41 @@
+name: Deploy Nuxt SSR
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  build-and-deploy:
+    runs-on: [self-hosted, Linux, X64]
+
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm use 22
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Build Nuxt SSR
+        run: npm run build
+
+      - name: Crear carpeta destino
+        run: mkdir -p /var/www/intranet/micomodoro-app
+
+      - name: Limpiar build anterior
+        run: |
+          rm -rf /var/www/intranet/micomodoro-app/.output
+
+      - name: Copiar archivos
+        run: |
+          cp -r .output /var/www/intranet/micomodoro-app/
+          cp ecosystem.config.cjs /var/www/intranet/micomodoro-app/
+      - name: Reiniciar aplicación con PM2
+        run: |
+          cd /var/www/intranet/micomodoro-app
+          pm2 reload ecosystem.config.cjs --env production
