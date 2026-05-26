@@ -80,6 +80,10 @@ export const useProfileApplication = () => {
     return userStore.photo
   })
 
+  const onAvatarError = () => {
+    userStore.rejectPhoto = true
+  }
+
   const avatarInitials = computed<string>(() => {
     const name = userStore.name ?? ''
     return name
@@ -115,6 +119,7 @@ export const useProfileApplication = () => {
     user,
     finances,
     avatarUrl,
-    avatarInitials
+    avatarInitials,
+    onAvatarError
   }
 }

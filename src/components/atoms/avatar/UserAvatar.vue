@@ -46,7 +46,7 @@
       class="user-avatar__image"
       @error="
         () => {
-          if (!userStore.rejectPhoto) console.warn('[UserAvatar] Error loading image')
+          userStore.rejectPhoto = true
         }
       "
     />

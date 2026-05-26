@@ -18,8 +18,15 @@
 
   const { settings, isLoading, fetchSettings, updateSettings, updateBudgetDefaults } =
     useSettingsApplication()
-  const { user, finances, avatarUrl, avatarInitials, updatePersonalInfo, updateFinancialInfo } =
-    useProfileApplication()
+  const {
+    user,
+    finances,
+    avatarUrl,
+    avatarInitials,
+    updatePersonalInfo,
+    updateFinancialInfo,
+    onAvatarError
+  } = useProfileApplication()
   const { fetchPublicPlans, publicPlans } = usePlansApplication()
   const { logout } = useAuth()
   const { success: successToast, error: errorToast } = useFeedback()
@@ -404,6 +411,7 @@
                     :src="avatarUrl"
                     class="settings-card__avatar-img"
                     alt="avatar"
+                    @error="onAvatarError"
                   />
                   <span v-else class="settings-card__avatar-initials">{{ avatarInitials }}</span>
                 </div>
