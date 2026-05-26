@@ -8,6 +8,10 @@ export interface FinancialHealthScoreResponse {
   debtScore: number
   level: 'critical' | 'at_risk' | 'regular' | 'healthy' | 'optimal'
   calculatedAt: string
+  // TODO: [BE] incluir este campo en el servicio analytics/financial-health-score.
+  // Con 0 transacciones el backend devuelve scores en 0 que son engañosos en la UI.
+  // Agregar count de transacciones del presupuesto activo al calcular el score.
+  totalTransactions?: number
 }
 
 export interface SavingsTrendItem {

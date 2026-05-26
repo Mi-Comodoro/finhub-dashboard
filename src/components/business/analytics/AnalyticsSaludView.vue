@@ -101,12 +101,21 @@
       <p class="analytics-view__empty-description">Verifica tu conexión e intenta de nuevo</p>
     </div>
 
-    <!-- Empty state -->
+    <!-- Empty state: no active budget -->
     <div v-else-if="!healthScore" class="analytics-view__empty">
       <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
       <p class="analytics-view__empty-title">Información insuficiente</p>
       <p class="analytics-view__empty-description">
         Necesitas al menos un presupuesto activo para calcular tu salud financiera
+      </p>
+    </div>
+
+    <!-- Empty state: budget active but no transactions recorded yet -->
+    <div v-else-if="healthScore.totalTransactions === 0" class="analytics-view__empty">
+      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
+      <p class="analytics-view__empty-title">Sin datos aún</p>
+      <p class="analytics-view__empty-description">
+        Registra tu primer ingreso o gasto para ver tu salud financiera.
       </p>
     </div>
 
