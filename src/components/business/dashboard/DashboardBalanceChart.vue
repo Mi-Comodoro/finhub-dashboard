@@ -2,7 +2,8 @@
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
 
-  import { Card, Heading } from '@/components/atoms'
+  import Card from '@/components/atoms/card/Card.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
   import type { Currency } from '@/utils/currency'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'

@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { AppLogo, AppVersion, Button } from '@/components/atoms'
-  import { NavigationSection } from '@/components/molecules'
+  import AppLogo from '@/components/atoms/brand/AppLogo.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import AppVersion from '@/components/atoms/version/AppVersion.vue'
+  import NavigationSection from '@/components/molecules/navigation/NavigationSection.vue'
   import { useSidebarMode } from '@/composables/ui/useSidebarMode'
   import { useSidebar } from '@/composables/useSidebar'
   import { useAuthStore } from '@/stores/auth.store'

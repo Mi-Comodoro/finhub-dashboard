@@ -15,7 +15,7 @@
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
 
-  import { Text } from '@/components/atoms'
+  import Text from '@/components/atoms/typography/Text.vue'
   import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'

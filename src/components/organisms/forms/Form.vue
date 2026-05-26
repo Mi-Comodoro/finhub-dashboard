@@ -2,14 +2,12 @@
   import { parsePhoneNumberFromString } from 'libphonenumber-js'
   import { reactive, watch } from 'vue'
 
-  import {
-    DatePickerInput,
-    Input,
-    MoneyInput,
-    PhoneInput,
-    Select,
-    TextArea
-  } from '@/components/molecules'
+  import DatePickerInput from '@/components/molecules/date-picker/DatePickerInput.vue'
+  import Input from '@/components/molecules/input/Input.vue'
+  import MoneyInput from '@/components/molecules/input/MoneyInput.vue'
+  import PhoneInput from '@/components/molecules/input/PhoneInput.vue'
+  import Select from '@/components/molecules/select/Select.vue'
+  import TextArea from '@/components/molecules/textarea/TextArea.vue'
 
   interface FormRow {
     type: 'row' | 'grid'
@@ -32,7 +30,7 @@
     icon?: string
   }
   type commonField = string | number | boolean | Date | null
-  interface FieldSchema {
+  export interface FieldSchema {
     type:
       | 'text'
       | 'number'

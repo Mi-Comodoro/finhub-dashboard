@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue'
 
-  import { CalendarGrid } from '@/components/atoms'
+  import CalendarGrid from '@/components/atoms/calendar-grid/CalendarGrid.vue'
   import { Calendar } from '@/components/atoms/datepicker/utils/Calendar'
   import type { CalendarDay, DatePickerProps, DateRange } from '@/types/ui/date-picker.types'
 

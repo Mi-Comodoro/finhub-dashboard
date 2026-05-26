@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import type { Column, DataCell, RowData } from '@/components/organisms'
+  import type DataCell from '@/components/organisms/datatable/DataCell.vue'
+  import type { Column, RowData } from '@/components/organisms/datatable/types'
 
   defineProps<{
     columns: Column[]

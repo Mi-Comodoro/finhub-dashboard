@@ -1,5 +1,7 @@
 <script setup lang="ts">
-  import { Icon, Link, Text } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Link from '@/components/atoms/typography/Link.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
 
   import type { NavigationItemProps } from './types/navigation-item.types'
 

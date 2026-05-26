@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue'
 
-  import { Icon, Label } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   import type { InputSize, SearchInputProps } from './types/input.types'
 

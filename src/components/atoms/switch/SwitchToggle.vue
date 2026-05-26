@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { Icon, Label } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   const props = defineProps<{
     modelValue: boolean

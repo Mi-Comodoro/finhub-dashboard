@@ -11,7 +11,8 @@
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
 
-  import { Heading, Text } from '@/components/atoms'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { CHART_COLORS } from '@/utils/design-tokens'
   import type { BudgetHistoricalSummaryItem } from '~/types/domain'
 

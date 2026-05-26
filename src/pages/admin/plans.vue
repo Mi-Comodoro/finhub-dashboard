@@ -9,7 +9,7 @@
   import MoneyInput from '@/components/molecules/input/MoneyInput.vue'
   import SearchInput from '@/components/molecules/input/SearchInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { usePlansApplication } from '@/composables/application/usePlansApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import type { PlanData } from '@/types/api'

@@ -8,7 +8,7 @@
   import Input from '@/components/molecules/input/Input.vue'
   import SearchInput from '@/components/molecules/input/SearchInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import type { CategoriesData } from '@/types/api'

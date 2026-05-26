@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
-  import { QuickTransactionForm, TransactionForm } from '@/components/business'
-  import type { Column } from '@/components/organisms'
-  import { ModalWizard } from '@/components/organisms'
+  import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
+  import TransactionForm from '@/components/business/transaction/forms/TransactionForm.vue'
+  import type { Column } from '@/components/organisms/datatable/types'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'

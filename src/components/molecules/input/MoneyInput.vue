@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from 'vue'
 
-  import { Label } from '@/components/atoms'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   import type { InputSize } from './types/input.types'
 

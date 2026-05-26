@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Button } from '@/components/atoms'
+  import Button from '@/components/atoms/button/Button.vue'
   import { formatCompactCurrency } from '@/utils/currency'
 
   import type {

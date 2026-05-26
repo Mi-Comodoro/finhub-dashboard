@@ -1,14 +1,14 @@
-name: Deploy Nuxt SSR
+name: Deploy Nuxt SSR — Production
 
 on:
   push:
     branches:
-      - develop
+      - master
 
 jobs:
   build-and-deploy:
     runs-on: [self-hosted, Linux, X64]
-    environment: develop
+    environment: production
 
     steps:
       - name: Descargar codigo

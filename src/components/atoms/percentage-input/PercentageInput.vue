@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Label } from '@/components/atoms'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   defineOptions({ inheritAttrs: false })
 

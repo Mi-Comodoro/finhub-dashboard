@@ -9,8 +9,8 @@
    * Collects user basic information during onboarding
    */
 
-  import { Label } from '@/components/atoms'
-  import { Select } from '@/components/molecules'
+  import Label from '@/components/atoms/typography/Label.vue'
+  import Select from '@/components/molecules/select/Select.vue'
   import { DIAL_CODE_OPTIONS, GENDER_OPTIONS, ON_BOARDING_CONFIG } from '~/common/constants'
   import { useUserStore } from '~/stores/user.store'
 

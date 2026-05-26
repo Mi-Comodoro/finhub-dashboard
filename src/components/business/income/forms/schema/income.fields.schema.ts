@@ -1,4 +1,4 @@
-import type { FieldSchema } from '@/components/organisms'
+import type { FieldSchema } from '@/components/organisms/forms/Form.vue'
 
 export const incomeFieldsSchema = (): FieldSchema[] => [
   {

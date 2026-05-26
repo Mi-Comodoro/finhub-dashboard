@@ -1,8 +1,12 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Card, type HeadingColor, Icon, Text, type TextColor } from '@/components/atoms/'
-  import { CardInfo } from '@/components/molecules'
+  import Card from '@/components/atoms/card/Card.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import type { HeadingColor } from '@/components/atoms/typography/types/heading.types'
+  import type { TextColor } from '@/components/atoms/typography/types/text.types'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { useFinancesStore } from '@/stores/finances.store'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'

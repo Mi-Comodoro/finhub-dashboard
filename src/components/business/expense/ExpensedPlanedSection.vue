@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useDebounceFn } from '@vueuse/core'
 
-  import type { Column, RowData } from '@/components/organisms'
+  import type { Column, RowData } from '@/components/organisms/datatable/types'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { useExpenseSectionApplication } from '@/composables/application/useExpenseSectionApplication'
 

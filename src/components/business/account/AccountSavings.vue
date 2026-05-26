@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import { CardInfo } from '@/components/molecules'
+  import IconBadge from '@/components/atoms/icons/IconBadge.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
-  import { IconBadge } from '~/components/atoms'
   import type { CompoundingFrequency } from '~/types/api'
 
   const emit = defineEmits(['open-form'])

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Label } from '@/components/atoms'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   import type { SelectProps } from './types'
 

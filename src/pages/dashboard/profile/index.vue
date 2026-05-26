@@ -6,14 +6,12 @@
 
   import { computed, ref, watch } from 'vue'
 
-  import { Badge } from '@/components/atoms'
-  import {
-    EditableInfoCard,
-    EditSectionActions,
-    Input,
-    ProfileInfoItem,
-    Select
-  } from '@/components/molecules'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import EditSectionActions from '@/components/molecules/edit-section-actions/EditSectionActions.vue'
+  import EditableInfoCard from '@/components/molecules/editable-info-card/EditableInfoCard.vue'
+  import Input from '@/components/molecules/input/Input.vue'
+  import ProfileInfoItem from '@/components/molecules/profile-info-item/ProfileInfoItem.vue'
+  import Select from '@/components/molecules/select/Select.vue'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import DateUtils from '@/utils/date'

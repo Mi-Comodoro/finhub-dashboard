@@ -1,8 +1,12 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from 'vue'
 
-  import { AlertBanner, Badge, Heading, Icon, Text } from '@/components/atoms'
+  import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
+  import Badge from '@/components/atoms/badge/Badge.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
   import { useFinancesStore } from '@/stores/finances.store'

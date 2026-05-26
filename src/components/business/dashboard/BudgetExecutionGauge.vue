@@ -2,7 +2,9 @@
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
 
-  import { Card, Heading, Text } from '@/components/atoms'
+  import Card from '@/components/atoms/card/Card.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
 
   interface Props {
     incomeReceived?: number

@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Badge, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
 
   interface Props {
     month?: string

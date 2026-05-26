@@ -3,7 +3,7 @@
   import { computed } from 'vue'
   import { useRoute } from 'vue-router'
 
-  import { Icon } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
   import { useBreadcrumbs } from '@/components/molecules/breadcrumbs/useBreadcrumbs'
 
   import type { BreadcrumbItem } from './types'

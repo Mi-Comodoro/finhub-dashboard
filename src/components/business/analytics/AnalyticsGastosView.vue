@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import VChart from 'vue-echarts'
 
-  import { Card, Heading, Text } from '@/components/atoms'
+  import Card from '@/components/atoms/card/Card.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { useAnalyticsExpensesApplication } from '@/composables/application/useAnalyticsExpensesApplication'
   import { useExpensesPresenter } from '@/composables/presenters/useExpensesPresenter'
   import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'

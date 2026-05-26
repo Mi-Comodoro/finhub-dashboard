@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { Heading, Text } from '@/components/atoms'
-  import { ComingSoonCard } from '@/components/molecules'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import ComingSoonCard from '@/components/molecules/coming-soon-card/ComingSoonCard.vue'
 
   import type { DashboardPlaceholderProps } from './types/dashboard-placeholder.types'
 

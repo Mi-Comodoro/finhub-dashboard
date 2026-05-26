@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue'
 
-  import { Text } from '@/components/atoms'
+  import Text from '@/components/atoms/typography/Text.vue'
 
   import type { BudgetTableProps } from './types/budget-table.types'
 

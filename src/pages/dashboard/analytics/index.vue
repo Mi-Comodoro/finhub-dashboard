@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Select } from '@/components/molecules'
+  import Select from '@/components/molecules/select/Select.vue'
   import { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
 
   const AnalyticsSaludView = defineAsyncComponent(

@@ -1,7 +1,9 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue'
 
-  import { Button, Heading, Text } from '@/components/atoms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import type { GoalsData } from '@/types/api'
   import { type Currency, formatCurrency } from '@/utils/currency'
 

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { Form } from '@/components/organisms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import type { GoalsData } from '~/types/api'

@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4
   },
-  compatibilityDate: '2026-02-09', // fecha actualizada
+  compatibilityDate: '2026-05-26',
 
   app: {
     head: {
@@ -121,18 +121,14 @@ export default defineNuxtConfig({
         'firebase/auth',
         'vue',
         '@vue/runtime-core',
-        'country-flag-icons/string/3x2', // ← mantenlo
-        '@heroicons/vue/20/solid', // ← mantenlo
-        'libphonenumber-js' // ← mantenlo
-      ],
-      force: true
+        'country-flag-icons/string/3x2',
+        '@heroicons/vue/20/solid',
+        'libphonenumber-js'
+      ]
     },
 
     css: {
-      devSourcemap: process.env.NODE_ENV !== 'production',
-      preprocessorOptions: {
-        scss: { additionalData: '' }
-      }
+      devSourcemap: process.env.NODE_ENV !== 'production'
     },
 
     build: {
@@ -156,5 +152,13 @@ export default defineNuxtConfig({
     },
 
     plugins: []
+  },
+
+  hooks: {
+    'build:done'() {
+      if (process.env.NODE_ENV === 'production') {
+        setTimeout(() => process.exit(0), 1000)
+      }
+    }
   }
 })

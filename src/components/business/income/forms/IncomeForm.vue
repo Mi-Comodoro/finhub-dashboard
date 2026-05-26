@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue'
 
-  import { Badge, Icon } from '@/components/atoms'
-  import { Form } from '@/components/organisms/forms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useIncomeApplication } from '@/composables/application/useIncomeApplication'
   import { formatCurrency } from '@/utils/currency'
 

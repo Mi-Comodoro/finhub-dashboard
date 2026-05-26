@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue'
 
-  import { OnboardingStepIntro, ProgressBar } from '@/components/molecules'
-  import { BudgetStrategyForm, FinancialGoalsForm } from '@/components/organisms'
+  import OnboardingStepIntro from '@/components/molecules/onboarding-step-intro/OnboardingStepIntro.vue'
+  import ProgressBar from '@/components/molecules/progress-bar/ProgressBar.vue'
+  import BudgetStrategyForm from '@/components/organisms/forms/BudgetStrategyForm.vue'
+  import FinancialGoalsForm from '@/components/organisms/forms/FinancialGoalsForm.vue'
   import { ON_BOARDING_CONFIG } from '~/common/constants'
   import type { OnboardingFormData } from '~/types/ui'
 

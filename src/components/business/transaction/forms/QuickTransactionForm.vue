@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from 'vue'
 
-  import { Icon } from '@/components/atoms'
-  import { Form } from '@/components/organisms/forms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'

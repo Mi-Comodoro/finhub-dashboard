@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue'
 
-  import { Button } from '@/components/atoms'
-  import { Select } from '@/components/molecules'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Select from '@/components/molecules/select/Select.vue'
   import { useFinancesStore } from '@/stores/finances.store'
   import type { GoalsData } from '@/types/api'
   import type { CurrentBudgetPlan } from '@/types/domain'

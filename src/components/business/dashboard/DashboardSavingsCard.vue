@@ -1,5 +1,7 @@
 <script setup lang="ts">
-  import { Card, Heading, Text } from '@/components/atoms'
+  import Card from '@/components/atoms/card/Card.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
 

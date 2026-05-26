@@ -6,7 +6,7 @@
   import { computed, onMounted, ref } from 'vue'
   import VChart from 'vue-echarts'
 
-  import { Icon } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
   import { useBudgetComparisonApplication } from '@/composables/application/useBudgetComparisonApplication'
   import { useBudgetDonutPresenter } from '@/composables/presenters/useBudgetDonutPresenter'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'

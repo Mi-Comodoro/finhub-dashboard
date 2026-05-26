@@ -1,7 +1,8 @@
 <script lang="ts" setup>
   import { computed } from 'vue'
 
-  import { Icon, type LabelColor, type LabelSize } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import type { LabelColor, LabelSize } from '@/components/atoms/typography/types/label.types'
 
   import type { CardInfoProps } from './types/card-info.types'
 

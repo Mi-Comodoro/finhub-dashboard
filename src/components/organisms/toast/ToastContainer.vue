@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ToastItem } from '@/components/molecules'
+  import ToastItem from '@/components/molecules/toast/ToastItem.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
 
   const { toasts, remove } = useToast()
