@@ -1,7 +1,4 @@
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
-  - '@parcel/watcher'
-  - protobufjs
-  - '@firebase/util'
-  - unrs-resolver
+packages:
+  - .
+
+dangerouslyAllowAllBuilds: true
