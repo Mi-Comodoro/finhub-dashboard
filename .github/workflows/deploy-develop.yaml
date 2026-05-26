@@ -26,7 +26,7 @@ jobs:
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
 
-            - name: Compilar Nuxt SSR
+      - name: Compilar Nuxt SSR
         env:
           NUXT_PUBLIC_API_BASE: ${{ secrets.NUXT_PUBLIC_API_BASE }}
           FB_API_KEY: ${{ secrets.FB_API_KEY }}
