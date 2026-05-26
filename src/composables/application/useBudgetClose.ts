@@ -2,7 +2,7 @@ import type { FetchError } from 'ofetch'
 import { ref } from 'vue'
 
 import { useBudgetApi } from '@/composables/api/useBudgetApi'
-import { useFeedback } from '@/composables/useFeedback'
+import { useFeedback } from '@/composables/useFeedBack'
 
 export type SurplusAction = 'transfer_to_goal' | 'carry_forward' | 'ignore'
 

@@ -2,7 +2,7 @@
   import GroupForm from '@/components/business/groups/forms/GroupForm.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import type { GroupType } from '@/types/groups.types'
 
   definePageMeta({

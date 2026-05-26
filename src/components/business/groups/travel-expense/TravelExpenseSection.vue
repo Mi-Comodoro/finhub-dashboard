@@ -2,7 +2,7 @@
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useTravelExpense } from '@/composables/application/useTravelExpense'
   import { useCurrency } from '@/composables/useCurrency'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import type { GroupMember } from '@/types/groups.types'
 
   import TravelExpenseForm from './forms/TravelExpenseForm.vue'

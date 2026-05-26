@@ -4,7 +4,7 @@
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useAuth } from '@/composables/useAuth'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { useAuthStore } from '@/stores/auth.store'
   import type { PlanData } from '@/types/api'
   import type { Currency } from '@/utils/currency'

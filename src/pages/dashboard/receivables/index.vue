@@ -6,7 +6,7 @@
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { useFinancesStore } from '@/stores/finances.store'
   import type { AccountReceivable } from '@/types/accounts-receivable.types'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'

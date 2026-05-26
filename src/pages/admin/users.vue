@@ -9,7 +9,7 @@
   import Select from '@/components/molecules/select/Select.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAdminApplication } from '@/composables/application/useAdminApplication'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import type { AdminUser } from '@/types/domain'
 
   definePageMeta({

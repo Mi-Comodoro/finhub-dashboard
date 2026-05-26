@@ -5,7 +5,7 @@
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useIncomeApplication } from '@/composables/application/useIncomeApplication'
   import { useCommon } from '@/composables/useCommon'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { formatCurrency } from '@/utils/currency'
 
   definePageMeta({

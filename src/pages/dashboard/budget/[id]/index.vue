@@ -28,7 +28,7 @@
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useApiHandler } from '@/composables/useApiHandler'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
   import { replaceUnderscoresWithSpaces } from '@/utils/strings'

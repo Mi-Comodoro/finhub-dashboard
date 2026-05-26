@@ -8,7 +8,7 @@
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'
   import { useTransactionMetricsPresenter } from '@/composables/presenters/useTransactionMetricsPresenter'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import DateUtils from '@/utils/date'
   import { translate } from '@/utils/translateToUI'
   import type { TransactionSummary } from '~/types/domain'

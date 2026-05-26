@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import Form from '@/components/organisms/forms/Form.vue'
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import type { CreateAccountReceivableDto } from '@/types/accounts-receivable.types'
 
   import { accountReceivableFieldsSchema } from './schema/account-receivable.fields.schema'

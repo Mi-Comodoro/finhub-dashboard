@@ -2,7 +2,7 @@ import type { FetchError } from 'ofetch'
 
 import { useBudgetApi } from '@/composables/api/useBudgetApi'
 import { useBudgetActions } from '@/composables/application/useBudgetActions'
-import { useFeedback } from '@/composables/useFeedback'
+import { useFeedback } from '@/composables/useFeedBack'
 import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 

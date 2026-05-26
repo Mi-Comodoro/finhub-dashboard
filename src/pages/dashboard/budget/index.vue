@@ -10,7 +10,7 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useBudgetListPresenter } from '@/composables/presenters/useBudgetListPresenter'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { useExpensesStore } from '@/stores/expense.store'
   import { useGoalsStore } from '@/stores/goals.store'
   import { useTransactionStore } from '@/stores/transaction.store'

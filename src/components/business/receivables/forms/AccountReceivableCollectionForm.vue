@@ -5,7 +5,7 @@
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useCommon } from '@/composables/useCommon'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { useFinancesStore } from '@/stores/finances.store'
   import type { AccountReceivable } from '@/types/accounts-receivable.types'
   import { formatCurrency } from '@/utils/currency'

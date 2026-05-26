@@ -2,7 +2,7 @@
   import TravelExpenseSection from '@/components/business/groups/travel-expense/TravelExpenseSection.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { useAuthStore } from '@/stores/auth.store'
   import type { GroupRole, GroupType } from '@/types/groups.types'
 
