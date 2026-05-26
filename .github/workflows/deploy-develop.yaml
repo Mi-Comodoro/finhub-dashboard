@@ -36,22 +36,42 @@ jobs:
           FB_MESSAGING_SENDER_ID: ${{ secrets.FB_MESSAGING_SENDER_ID }}
           FB_APP_ID: ${{ secrets.FB_APP_ID }}
           FB_MEASUREMENT_ID: ${{ secrets.FB_MEASUREMENT_ID }}
-        run: pnpm build
+        run: |
+          pnpm build
+          # Validar rigurosamente que la compilación funcionó localmente
+          if [ ! -f "./.output/server/index.mjs" ]; then
+            echo "❌ ERROR: Nuxt no generó el archivo index.mjs de producción."
+            exit 1
+          fi
 
-      - name: Crear directorio destino
+      - name: Crear directorio destino si no existe
         run: mkdir -p /var/www/intranet/micomodoro-app
 
-      - name: Limpiar deploy anterior
-        run: rm -rf /var/www/intranet/micomodoro-app/.output
+      - name: Copiar archivos productivos al servidor
+        run: |
+          # Usamos rsync para asegurar que se incluyan archivos ocultos (.) de forma segura
+          # Si rsync no está instalado, cp -a copia la estructura exacta preservando permisos
+          rsync -av .output/ /var/www/intranet/micomodoro-app/.output/ || cp -a .output /var/www/intranet/micomodoro-app/
 
-      - name: Copiar build compilado
-        run: cp -r .output /var/www/intranet/micomodoro-app/
+          # Copiar la configuración de PM2
+          cp ecosystem.config.js /var/www/intranet/micomodoro-app/
 
-      - name: Copiar configuracion PM2
-        run: cp ecosystem.config.js /var/www/intranet/micomodoro-app/
+          # Validación de existencia real en el destino final
+          if [ ! -f "/var/www/intranet/micomodoro-app/.output/server/index.mjs" ]; then
+            echo "❌ ERROR: Los archivos productivos no se encuentran en la ruta destino."
+            exit 1
+          fi
 
       - name: Reiniciar aplicacion con PM2
         run: |
           cd /var/www/intranet/micomodoro-app
-          pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
+          export PM2_HOME=/home/jarvis/.pm2
+
+          if pm2 show micomodoro > /dev/null 2>&1; then
+            echo "🔄 La aplicación ya está registrada. Reiniciando..."
+            pm2 restart ecosystem.config.js --update-env
+          else
+            echo "🚀 Aplicación nueva. Registrando en PM2..."
+            pm2 start ecosystem.config.js
+          fi
           pm2 save
