@@ -152,13 +152,5 @@ export default defineNuxtConfig({
     },
 
     plugins: []
-  },
-
-  hooks: {
-    'build:done'() {
-      if (process.env.NODE_ENV === 'production') {
-        setTimeout(() => process.exit(0), 1000)
-      }
-    }
   }
 })
