@@ -48,10 +48,10 @@ jobs:
         run: cp -r .output /var/www/intranet/micomodoro-app/
 
       - name: Copiar configuracion PM2
-        run: cp ecosystem.config.cjs /var/www/intranet/micomodoro-app/
+        run: cp ecosystem.config.js /var/www/intranet/micomodoro-app/
 
       - name: Reiniciar aplicacion con PM2
         run: |
           cd /var/www/intranet/micomodoro-app
-          pm2 reload ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs
+          pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
           pm2 save
