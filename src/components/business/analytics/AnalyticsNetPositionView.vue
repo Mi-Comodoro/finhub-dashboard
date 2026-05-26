@@ -10,8 +10,9 @@
   import { CanvasRenderer } from 'echarts/renderers'
   import VChart from 'vue-echarts'
 
-  import { Heading, Text } from '@/components/atoms'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { useAnalyticsNetPositionApplication } from '@/composables/application/useAnalyticsNetPositionApplication'
   import { formatCompactCurrency, formatCurrency, formatNumber } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'

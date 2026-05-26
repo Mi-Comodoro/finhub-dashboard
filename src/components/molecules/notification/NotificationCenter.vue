@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Icon } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
 
   interface Notification {
     id: number

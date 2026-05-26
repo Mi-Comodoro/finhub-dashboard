@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Badge, Button, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { formatCurrency } from '@/utils/currency'
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Form } from '@/components/organisms/forms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { replaceUnderscoresWithSpaces } from '@/utils/strings'
 

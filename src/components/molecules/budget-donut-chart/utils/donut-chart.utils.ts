@@ -1,4 +1,4 @@
-import type { BudgetDonutItemEnhanced, HealthStatus } from '@/components/molecules'
+import type { BudgetDonutItemEnhanced, HealthStatus } from '@/components/molecules/budget-donut-chart/types/budget-donut-chart-enhanced.types'
 import type { Currency } from '@/utils/currency'
 import { CHART_COLORS } from '@/utils/design-tokens'
 export const getSegmentColor = (type: 'needs' | 'wants' | 'savings'): string => {

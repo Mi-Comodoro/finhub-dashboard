@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import TravelExpenseSection from '@/components/business/groups/travel-expense/TravelExpenseSection.vue'
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
   import { useFeedback } from '@/composables/useFeedback'
   import { useAuthStore } from '@/stores/auth.store'

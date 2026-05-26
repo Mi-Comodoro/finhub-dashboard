@@ -14,7 +14,7 @@
   import PlanStatusCard from '@/components/business/dashboard/PlanStatusCard.vue'
   import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
   import FinancialProgressCard from '@/components/molecules/financial-progress-card/FinancialProgressCard.vue'
-  import { ModalWizard } from '@/components/organisms/modal-wizard'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import OnboardingWizard from '@/components/organisms/wizard/OnboardingWizard.vue'
   import { useAccountsPayableApplication } from '@/composables/application/useAccountsPayableApplication'
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'

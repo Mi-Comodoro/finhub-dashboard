@@ -1,8 +1,13 @@
 <script setup lang="ts">
   import { ref } from 'vue'
 
-  import { Button, GoogleIcon, Link, Text } from '@/components/atoms'
-  import { CardInfo, Input, PasswordInput } from '@/components/molecules'
+  import Button from '@/components/atoms/button/Button.vue'
+  import GoogleIcon from '@/components/atoms/icons/GoogleIcon.vue'
+  import Link from '@/components/atoms/typography/Link.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
+  import Input from '@/components/molecules/input/Input.vue'
+  import PasswordInput from '@/components/molecules/input/PasswordInput.vue'
   import { useAuth } from '@/composables/useAuth'
 
   import type { LoginFormState } from './types/login-form.types'

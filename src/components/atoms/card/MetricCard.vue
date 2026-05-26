@@ -1,8 +1,11 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import type { MetricCardProps } from '@/components/atoms'
-  import { Heading, Icon, IconBadge, Text } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import IconBadge from '@/components/atoms/icons/IconBadge.vue'
+  import type { MetricCardProps } from '@/components/atoms/types/atoms.types'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { type Currency, formatCurrency, formatNumber } from '@/utils/currency'
 
   const props = withDefaults(defineProps<MetricCardProps>(), {

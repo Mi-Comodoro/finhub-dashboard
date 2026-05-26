@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Text } from '@/components/atoms'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { formatCurrency } from '@/utils/currency'
 
   import type { BudgetCategoryRowProps } from './types/budget-category-row.types'

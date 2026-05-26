@@ -1,7 +1,9 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from 'vue'
 
-  import { Badge, Button, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { usePlansApplication } from '@/composables/application/usePlansApplication'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'

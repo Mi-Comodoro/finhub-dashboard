@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import { Card, Heading, Text } from '@/components/atoms'
+  import Card from '@/components/atoms/card/Card.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
 
   const { healthScore, healthScorePending, healthScoreError } = useAnalyticsApplication()

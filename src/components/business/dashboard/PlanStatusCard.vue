@@ -1,10 +1,11 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue'
 
-  import { Badge, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import PlanUpgradeModal from '@/components/business/dashboard/PlanUpgradeModal.vue'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
-  import { ModalWizard } from '@/components/organisms/modal-wizard'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import { useAuthStore } from '@/stores/auth.store'
 

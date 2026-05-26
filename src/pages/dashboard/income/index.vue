@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { IncomeForm, IncomeHistory } from '@/components/business'
-  import { ModalWizard } from '@/components/organisms'
+  import IncomeForm from '@/components/business/income/forms/IncomeForm.vue'
+  import IncomeHistory from '@/components/business/income/IncomeHistory.vue'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useIncomeApplication } from '@/composables/application/useIncomeApplication'
   import { useCommon } from '@/composables/useCommon'

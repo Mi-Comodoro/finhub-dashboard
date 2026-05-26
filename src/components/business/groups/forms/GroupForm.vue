@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Form } from '@/components/organisms/forms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
   import type { CreateGroupDto, GroupType } from '@/types/groups.types'
 

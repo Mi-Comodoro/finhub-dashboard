@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import type { IconBadgeProps } from '@/components/atoms'
-  import { Icon } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import type { IconBadgeProps } from '@/components/atoms/types/atoms.types'
 
   const props = withDefaults(defineProps<IconBadgeProps>(), {
     size: 'md' as 'md' | 'sm' | 'lg',

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import type { RadioButtonProps } from '@/components/atoms'
-  import { Badge, Icon, IconBadge } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import IconBadge from '@/components/atoms/icons/IconBadge.vue'
+  import type { RadioButtonProps } from '@/components/atoms/types/atoms.types'
 
   const props = withDefaults(defineProps<RadioButtonProps>(), {
     variant: 'default',

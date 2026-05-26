@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import { Button } from '@/components/atoms'
-  import { CardInfo } from '@/components/molecules'
-  import { Form } from '@/components/organisms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
 

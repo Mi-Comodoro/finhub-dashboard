@@ -1,7 +1,7 @@
 <script lang="ts" setup>
   import { computed, ref, watch } from 'vue'
 
-  import { Label } from '@/components/atoms'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   interface TextareaProps {
     modelValue: string

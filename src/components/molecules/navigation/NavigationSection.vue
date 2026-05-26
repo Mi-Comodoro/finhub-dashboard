@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Text } from '@/components/atoms'
+  import Text from '@/components/atoms/typography/Text.vue'
 
   import NavigationItem from './NavigationItem.vue'
   import type { NavigationSectionProps } from './types/navigation-section.types'

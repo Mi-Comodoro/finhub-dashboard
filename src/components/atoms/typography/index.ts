@@ -1,7 +1,0 @@
-export { default as Heading } from './Heading.vue'
-export { default as Label } from './Label.vue'
-export { default as Link } from './Link.vue'
-export { default as Text } from './Text.vue'
-export type { HeadingColor, HeadingLevel, HeadingSize, HeadingWeight } from './types/heading.types'
-export type { LabelColor, LabelSize, LabelVariant, LegacyLabelVariant } from './types/label.types'
-export type { TextAlign, TextColor, TextSize, TextWeight } from './types/text.types'

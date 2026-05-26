@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { AlertBanner, Text } from '@/components/atoms'
-  import { Form } from '@/components/organisms'
+  import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useSavingDistributionApplication } from '@/composables/application/useSavingDistributionApplication'
   import { useFinancesStore } from '@/stores/finances.store'
   import { useGoalsStore } from '@/stores/goals.store'

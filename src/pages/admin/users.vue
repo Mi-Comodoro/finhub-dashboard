@@ -7,9 +7,9 @@
   import Text from '@/components/atoms/typography/Text.vue'
   import SearchInput from '@/components/molecules/input/SearchInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAdminApplication } from '@/composables/application/useAdminApplication'
-  import { useFeedback } from '@/composables/useFeedBack'
+  import { useFeedback } from '@/composables/useFeedback'
   import type { AdminUser } from '@/types/domain'
 
   definePageMeta({
@@ -323,7 +323,7 @@
           <div class="admin-users-page__panel-divider" />
 
           <div class="admin-users-page__panel-actions">
-            <Text size="xs" weight="bold" color="default">Cambiar rol</Text>
+            <Text size="xs" weight="bold">Cambiar rol</Text>
             <div class="admin-users-page__panel-role-btns">
               <Button
                 size="sm"

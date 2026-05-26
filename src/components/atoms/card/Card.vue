@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { CardProps } from '@/components/atoms'
+  import type { CardProps } from '@/components/atoms/types/atoms.types'
 
   withDefaults(defineProps<CardProps>(), {
     as: 'div',

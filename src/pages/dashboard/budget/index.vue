@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import { BudgetCloneForm, BudgetForm, BudgetSurplusModal } from '@/components/business'
-  import { ModalWizard } from '@/components/organisms'
+  import BudgetSurplusModal from '@/components/business/budget/BudgetSurplusModal.vue'
+  import BudgetCloneForm from '@/components/business/budget/forms/BudgetCloneForm.vue'
+  import BudgetForm from '@/components/business/budget/forms/BudgetForm.vue'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useBudgetClose } from '@/composables/application/useBudgetClose'
   import { useBudgetListApplication } from '@/composables/application/useBudgetListApplication'

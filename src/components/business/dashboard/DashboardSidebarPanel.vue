@@ -2,7 +2,7 @@
   import { computed } from 'vue'
   import { useRouter } from 'vue-router'
 
-  import { Text } from '@/components/atoms'
+  import Text from '@/components/atoms/typography/Text.vue'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import type { GoalsData } from '@/types/api'

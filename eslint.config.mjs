@@ -6,11 +6,9 @@ import vueParser from 'vue-eslint-parser'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import prettierConfig from 'eslint-config-prettier'
 import withNuxt from './.nuxt/eslint.config.mjs'
-import eslintConfig from '@nuxt/eslint-config'
 
 export default withNuxt([
-  eslintConfig, // Reconoce auto-imports Nuxt 3
-  prettierConfig, // Prettier
+  prettierConfig,
   {
     ignores: ['.nuxt/**', '.output/**', 'dist/**', 'node_modules/**']
   },
@@ -31,7 +29,7 @@ export default withNuxt([
       'simple-import-sort': simpleImportSort
     },
     rules: {
-      'no-unused-vars': 'off', // Disable base rule in favor of TypeScript version
+      'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
@@ -67,16 +65,8 @@ export default withNuxt([
             {
               group: ['../types', '../types/*'],
               message:
-                'Evita imports relativos de types de componentes; usa `@/components/atoms` o `@/components/molecules` según la capa.'
+                'Evita imports relativos de types; usa la ruta absoluta directa (ej: `@/components/atoms/badge/types/badge.types`).'
             },
-            {
-              group: ['@/components/atoms/types', '@/components/atoms/types/*'],
-              message: 'Importa los types de atoms desde `@/components/atoms`.'
-            },
-            {
-              group: ['@/components/molecules/types', '@/components/molecules/types/*'],
-              message: 'Importa los types de molecules desde `@/components/molecules`.'
-            }
           ]
         }
       ],
@@ -90,7 +80,7 @@ export default withNuxt([
           registeredComponentsOnly: true
         }
       ],
-      'vue/no-unused-refs': 'warn',
+      'vue/no-unused-refs': 'warn'
       // TODO Sprint 5: habilitar cuando typed linting esté configurado (lint tomó 40s con project:true)
       // '@typescript-eslint/no-floating-promises': 'warn'
     }

@@ -1,9 +1,12 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Badge, Card, Heading, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Card from '@/components/atoms/card/Card.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
-  import type { Column } from '@/components/organisms'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import type { Column } from '@/components/organisms/datatable/types'
   import { formatCurrency } from '@/utils/currency'
 
   export interface GoalMovementItem {

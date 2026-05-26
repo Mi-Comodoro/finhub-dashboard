@@ -1,5 +1,7 @@
 <script setup lang="ts">
-  import { Card, Heading, IconBadge } from '@/components/atoms'
+  import Card from '@/components/atoms/card/Card.vue'
+  import IconBadge from '@/components/atoms/icons/IconBadge.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
 
   import type { EditableInfoCardProps } from './types/editable-info-card.types'
 

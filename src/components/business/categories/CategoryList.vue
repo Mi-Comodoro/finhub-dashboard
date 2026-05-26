@@ -1,5 +1,8 @@
 <script setup lang="ts">
-  import { Badge, Button, Icon, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { useCategoryPresenter } from '@/composables/presenters/useCategoryPresenter'
   import type { CategoriesData } from '~/types/api'
 

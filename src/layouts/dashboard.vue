@@ -2,7 +2,9 @@
 <script setup lang="ts">
   import { computed } from 'vue' // Asegúrate de importar computed
 
-  import { DashboardHeader, DashboardSidebar, ModalNotification } from '@/components/organisms'
+  import DashboardHeader from '@/components/organisms/header/DashboardHeader.vue'
+  import ModalNotification from '@/components/organisms/modal-notification/ModalNotification.vue'
+  import DashboardSidebar from '@/components/organisms/sidebar/DashboardSidebar.vue'
   import { useSidebar } from '@/composables/useSidebar'
   import { useModalStore } from '@/stores/modal.store'
 

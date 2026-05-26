@@ -1,30 +1,25 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from 'vue'
 
-  import {
-    Badge,
-    Button,
-    type ButtonSize,
-    type ButtonVariant,
-    Heading,
-    Icon,
-    Text
-  } from '@/components/atoms'
-  import {
-    BudgetClosedBanner,
-    BudgetDistribution,
-    BudgetEditForm,
-    BudgetIncome,
-    BudgetInsights,
-    ExpensePlannedForm,
-    ExpensePlannedSection,
-    IncomeForm,
-    PlannedSavingList,
-    SavingDistributionForm,
-    Tips,
-    TransactionList
-  } from '@/components/business'
-  import { ModalWizard } from '@/components/organisms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import type { ButtonSize, ButtonVariant } from '@/components/atoms/button/types/button.types'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import BudgetClosedBanner from '@/components/business/budget/BudgetClosedBanner.vue'
+  import BudgetDistribution from '@/components/business/budget/BudgetDistribution.vue'
+  import BudgetEditForm from '@/components/business/budget/forms/BudgetEditForm.vue'
+  import BudgetIncome from '@/components/business/budget/income/BudgetIncome.vue'
+  import BudgetInsights from '@/components/business/budget/insight/BudgetInsights.vue'
+  import ExpensePlannedSection from '@/components/business/expense/ExpensedPlanedSection.vue'
+  import ExpensePlannedForm from '@/components/business/expense/forms/ExpensePlannedForm.vue'
+  import IncomeForm from '@/components/business/income/forms/IncomeForm.vue'
+  import SavingDistributionForm from '@/components/business/savings/forms/SavingDistributionForm.vue'
+  import PlannedSavingList from '@/components/business/savings/PlannedSavingList.vue'
+  import Tips from '@/components/business/tips/Tips.vue'
+  import TransactionList from '@/components/business/transactions/TransactionList.vue'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
   import { useBudgetTransferApplication } from '@/composables/application/useBudgetTransferApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'

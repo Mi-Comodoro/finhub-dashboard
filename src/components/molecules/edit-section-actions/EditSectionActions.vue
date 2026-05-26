@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { Button, Heading } from '@/components/atoms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
 
   import type { EditSectionActionsProps } from './types/edit-section-actions.types'
 

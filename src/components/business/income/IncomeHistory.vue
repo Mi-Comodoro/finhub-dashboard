@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { Column } from '@/components/organisms'
+  import type { Column } from '@/components/organisms/datatable/types'
   import type { PlannedIncomeSummary } from '@/types/domain'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'

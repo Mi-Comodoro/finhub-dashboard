@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useTravelExpense } from '@/composables/application/useTravelExpense'
   import { useCurrency } from '@/composables/useCurrency'
   import { useFeedback } from '@/composables/useFeedback'

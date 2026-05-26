@@ -1,8 +1,10 @@
 <script setup lang="ts">
-  import { Badge, Heading, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import GoalProgressBar from '@/components/business/savings/GoalProgressBar.vue'
-  import { CardInfo } from '@/components/molecules'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import type { AccountData, GoalHistory, GoalsData } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'

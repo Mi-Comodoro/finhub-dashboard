@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Form } from '@/components/organisms/forms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
 
   import { budgetFieldsSchema } from './schema/budget.fields.schema'

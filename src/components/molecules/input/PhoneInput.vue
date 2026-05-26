@@ -3,7 +3,7 @@
   import { parsePhoneNumberFromString } from 'libphonenumber-js'
   import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
-  import { CountryFlag } from '@/components/atoms'
+  import CountryFlag from '@/components/atoms/country-flag/CountryFlag.vue'
 
   interface CountryOption {
     label: string

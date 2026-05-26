@@ -1,6 +1,9 @@
 <script setup lang="ts">
-  import { CardRadio } from '@/components/atoms'
-  import { DatePickerInput, Input, MoneyInput, Select } from '@/components/molecules'
+  import CardRadio from '@/components/atoms/card-radio/CardRadio.vue'
+  import DatePickerInput from '@/components/molecules/date-picker/DatePickerInput.vue'
+  import Input from '@/components/molecules/input/Input.vue'
+  import MoneyInput from '@/components/molecules/input/MoneyInput.vue'
+  import Select from '@/components/molecules/select/Select.vue'
   import { useTravelExpense } from '@/composables/application/useTravelExpense'
   import { useCurrency } from '@/composables/useCurrency'
   import type { GroupMember } from '@/types/groups.types'

@@ -4,8 +4,13 @@
    * Molecule-level component for displaying account information and subscription details
    */
 
-  import { Badge, Button, Card, Heading, IconBadge, Label } from '@/components/atoms'
-  import { ProgressBar } from '@/components/molecules'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Card from '@/components/atoms/card/Card.vue'
+  import IconBadge from '@/components/atoms/icons/IconBadge.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Label from '@/components/atoms/typography/Label.vue'
+  import ProgressBar from '@/components/molecules/progress-bar/ProgressBar.vue'
 
   import type { AccountInfoSectionProps } from './types/account-info-section.types'
 

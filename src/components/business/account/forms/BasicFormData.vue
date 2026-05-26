@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { CardInfo } from '@/components/molecules'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { useUserStore } from '@/stores/user.store'
   import type {
     BasicInformationData,

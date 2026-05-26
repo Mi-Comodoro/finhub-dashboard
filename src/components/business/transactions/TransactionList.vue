@@ -1,7 +1,10 @@
 <script setup lang="ts">
   import { computed, onMounted, watch } from 'vue'
 
-  import { Card, Heading, Icon, Text } from '@/components/atoms'
+  import Card from '@/components/atoms/card/Card.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'

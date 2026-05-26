@@ -1,5 +1,8 @@
 <script setup lang="ts">
-  import { Button, Card, Heading, Text } from '@/components/atoms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Card from '@/components/atoms/card/Card.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import ContributionForm from '@/components/business/savings/forms/ContributionForm.vue'
   import GoalsForm from '@/components/business/savings/forms/GoalsForm.vue'
   import GoalInfoCarousel from '@/components/business/savings/GoalInfoCarousel.vue'
@@ -7,7 +10,7 @@
   import GoalMovements from '@/components/business/savings/GoalMovements.vue'
   import GoalSidebarPanel from '@/components/business/savings/GoalSidebarPanel.vue'
   import GoalDetailInsights from '@/components/business/savings/insight/GoalDetailInsights.vue'
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
   import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'

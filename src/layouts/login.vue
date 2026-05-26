@@ -1,6 +1,6 @@
 <script setup lang="ts">
   // Initialize theme on app mount
-  import { ModalNotification } from '@/components/organisms/modal-notification'
+  import ModalNotification from '@/components/organisms/modal-notification/ModalNotification.vue'
   import { useModalStore } from '@/stores/modal.store'
   import { useTheme } from '~/composables/useTheme'
   const modalStore = useModalStore()

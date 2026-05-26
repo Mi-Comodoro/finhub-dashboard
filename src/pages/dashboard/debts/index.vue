@@ -4,7 +4,7 @@
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import AccountPayableForm from '@/components/business/debts/forms/AccountPayableForm.vue'
   import AccountPayablePaymentForm from '@/components/business/debts/forms/AccountPayablePaymentForm.vue'
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAccountsPayableApplication } from '@/composables/application/useAccountsPayableApplication'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useFinancesStore } from '@/stores/finances.store'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Form } from '@/components/organisms/forms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useAccountsPayableApplication } from '@/composables/application/useAccountsPayableApplication'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'

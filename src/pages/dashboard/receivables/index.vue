@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import VChart from 'vue-echarts'
 
-  import { AccountReceivableCollectionForm, AccountReceivableForm } from '@/components/business'
-  import { ModalWizard } from '@/components/organisms'
+  import AccountReceivableCollectionForm from '@/components/business/receivables/forms/AccountReceivableCollectionForm.vue'
+  import AccountReceivableForm from '@/components/business/receivables/forms/AccountReceivableForm.vue'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useFeedback } from '@/composables/useFeedback'
