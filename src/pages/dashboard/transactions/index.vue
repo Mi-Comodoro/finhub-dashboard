@@ -35,10 +35,12 @@
     transactions,
     pagination,
     totals,
+    isLoading,
     currency,
     financeId,
     budgetSelected,
     budgetPlans,
+    currentMonthBudget,
     budgetOptions,
     categoryOptions,
     fetchTransaction,
@@ -247,7 +249,12 @@
     await loadGoalsData()
 
     const queryBudgetId = route.query.budgetId as string | undefined
-    budgetSelect.value = queryBudgetId || budgetSelected.value?.id || budgetPlans.value[0]?.id || ''
+    budgetSelect.value =
+      queryBudgetId ||
+      currentMonthBudget.value?.id ||
+      budgetSelected.value?.id ||
+      budgetPlans.value[0]?.id ||
+      ''
 
     await loadTransactions(true)
   })
@@ -263,9 +270,17 @@
   <div class="transactions-page">
     <div class="transactions-page__header">
       <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="transactions-page__title">
-          Transacciones
-        </Heading>
+        <div class="transactions-page__title-row">
+          <Heading level="h1" size="2xl" weight="extrabold">Transacciones</Heading>
+          <UBadge
+            v-if="pagination?.total"
+            variant="soft"
+            color="gray"
+            class="transactions-page__count-badge"
+          >
+            {{ pagination.total }}
+          </UBadge>
+        </div>
         <Text size="xs" color="muted">Historial completo de movimientos</Text>
       </div>
       <div class="transactions-page__header-actions">
@@ -277,144 +292,156 @@
       </div>
     </div>
 
-    <TransactionMetricsBar
-      :total-income="metrics.totalIncome.value"
-      :total-expense="metrics.totalExpense.value"
-      :total-savings="metrics.totalSavings.value"
-      :count-income="metrics.countByType('income')"
-      :count-expense="metrics.countByType('expense')"
-      :count-savings="metrics.countByType('savings')"
-      :currency="currency"
-    />
+    <div v-if="!isLoading && budgetPlans.length === 0" class="transactions-page__empty">
+      <EmptyState
+        title="No hay presupuesto activo"
+        description="Crea un presupuesto para este mes para comenzar a registrar tus movimientos"
+        illustration="no-transactions"
+      />
+    </div>
 
-    <TransactionFiltersBar
-      v-model:filter-cat="filters.filterCat.value"
-      v-model:filter-date-from="filters.filterDateFrom.value"
-      v-model:filter-date-to="filters.filterDateTo.value"
-      v-model:page-size="filters.pageSize.value"
-      :category-options="categoryOptions"
-      :type-buttons="filters.typeButtons"
-      :active-type-btn="filters.activeTypeBtn.value"
-      :page-size-options="filters.pageSizeOptions"
-      @set-type="filters.setTypeBtn"
-      @clear-filters="filters.clearFilters"
-    />
+    <template v-else>
+      <TransactionMetricsBar
+        :total-income="metrics.totalIncome.value"
+        :total-expense="metrics.totalExpense.value"
+        :total-savings="metrics.totalSavings.value"
+        :count-income="metrics.countByType('income')"
+        :count-expense="metrics.countByType('expense')"
+        :count-savings="metrics.countByType('savings')"
+        :currency="currency"
+      />
 
-    <DataTable :columns="columns" :data="result ?? []">
-      <template #cell-amount="{ row }">
-        <Text
-          size="xs"
-          weight="bold"
-          class="transactions-page__amount"
-          :class="getFormattedAmount(row).colorClass"
-        >
-          {{ getFormattedAmount(row).text }}
-        </Text>
-      </template>
+      <TransactionFiltersBar
+        v-model:filter-cat="filters.filterCat.value"
+        v-model:filter-date-from="filters.filterDateFrom.value"
+        v-model:filter-date-to="filters.filterDateTo.value"
+        v-model:page-size="filters.pageSize.value"
+        :category-options="categoryOptions"
+        :type-buttons="filters.typeButtons"
+        :active-type-btn="filters.activeTypeBtn.value"
+        :page-size-options="filters.pageSizeOptions"
+        @set-type="filters.setTypeBtn"
+        @clear-filters="filters.clearFilters"
+      />
 
-      <template #cell-flow="{ row }">
-        <div class="transactions-page__flow">
-          <div class="transactions-page__endpoint">
-            <span class="transactions-page__endpoint-label">{{ row.origin.label }}</span>
-            <span v-if="row.origin.detail" class="transactions-page__endpoint-detail">
-              {{ row.origin.detail }}
+      <DataTable :columns="columns" :data="result ?? []">
+        <template #cell-amount="{ row }">
+          <Text
+            size="xs"
+            weight="bold"
+            class="transactions-page__amount"
+            :class="getFormattedAmount(row).colorClass"
+          >
+            {{ getFormattedAmount(row).text }}
+          </Text>
+        </template>
+
+        <template #cell-flow="{ row }">
+          <div class="transactions-page__flow">
+            <div class="transactions-page__endpoint">
+              <span class="transactions-page__endpoint-label">{{ row.origin.label }}</span>
+              <span v-if="row.origin.detail" class="transactions-page__endpoint-detail">
+                {{ row.origin.detail }}
+              </span>
+            </div>
+            <span class="transactions-page__flow-icon material-symbols-outlined">
+              arrow_forward
             </span>
+            <div class="transactions-page__endpoint">
+              <span class="transactions-page__endpoint-label">{{ row.destination.label }}</span>
+              <span v-if="row.destination.detail" class="transactions-page__endpoint-detail">
+                {{ row.destination.detail }}
+              </span>
+            </div>
+            <Badge v-if="!row.plannedIncomeId && row.type === 'income'" size="xs">
+              No planificado
+            </Badge>
           </div>
-          <span class="transactions-page__flow-icon material-symbols-outlined">arrow_forward</span>
-          <div class="transactions-page__endpoint">
-            <span class="transactions-page__endpoint-label">{{ row.destination.label }}</span>
-            <span v-if="row.destination.detail" class="transactions-page__endpoint-detail">
-              {{ row.destination.detail }}
-            </span>
-          </div>
-          <Badge v-if="!row.plannedIncomeId && row.type === 'income'" size="xs">
-            No planificado
+        </template>
+
+        <template #cell-type="{ value }">
+          <Badge
+            :variant="value === 'income' ? 'success' : value === 'expense' ? 'danger' : 'warning'"
+          >
+            {{ translate[value] ?? value }}
           </Badge>
-        </div>
-      </template>
+        </template>
 
-      <template #cell-type="{ value }">
-        <Badge
-          :variant="value === 'income' ? 'success' : value === 'expense' ? 'danger' : 'warning'"
-        >
-          {{ translate[value] ?? value }}
-        </Badge>
-      </template>
+        <template #cell-category="{ row, value }">
+          {{ row.type === 'income' || row.type === 'savings' ? 'N/A' : value?.name }}
+        </template>
 
-      <template #cell-category="{ row, value }">
-        {{ row.type === 'income' || row.type === 'savings' ? 'N/A' : value?.name }}
-      </template>
+        <template #cell-actions="{ row }">
+          <div class="transactions-page__actions">
+            <Button
+              variant="primary"
+              size="sm"
+              icon="visibility"
+              icon-only
+              @click="openDetailsModal(row)"
+            />
 
-      <template #cell-actions="{ row }">
-        <div class="transactions-page__actions">
-          <Button
-            variant="primary"
-            size="sm"
-            icon="visibility"
-            icon-only
-            @click="openDetailsModal(row)"
-          />
+            <Button
+              variant="secondary"
+              size="sm"
+              icon="edit"
+              icon-only
+              @click="handleEditTransaction(row)"
+            />
 
-          <Button
-            variant="secondary"
-            size="sm"
-            icon="edit"
-            icon-only
-            @click="handleEditTransaction(row)"
-          />
-
-          <Button
-            variant="danger"
-            size="sm"
-            icon="delete"
-            icon-only
-            @click="handleDeleteTransaction(row)"
-          />
-        </div>
-      </template>
-
-      <template #empty>
-        <EmptyState
-          title="No hay transacciones"
-          description="No hay transacciones para estos filtros"
-          illustration="no-transactions"
-          size="sm"
-        >
-          <Button variant="ghost" size="sm" @click="filters.clearFilters">Limpiar filtros</Button>
-        </EmptyState>
-      </template>
-
-      <template #footer>
-        <div v-if="metrics.showPagination.value" class="transactions-page__footer">
-          <div class="transactions-page__footer-info">
-            <Text size="xs" color="muted">{{ metrics.countLabel.value }}</Text>
-            <Select
-              v-model="filters.pageSize.value"
-              name="pageSize"
-              :options="filters.pageSizeOptions"
+            <Button
+              variant="danger"
+              size="sm"
+              icon="delete"
+              icon-only
+              @click="handleDeleteTransaction(row)"
             />
           </div>
-          <div class="transactions-page__footer-actions">
-            <Button
-              size="sm"
-              variant="outline"
-              :disabled="filters.currentPage.value === 1"
-              @click="filters.goToPage(filters.currentPage.value - 1)"
-            >
-              Anterior
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              :disabled="filters.currentPage.value >= metrics.totalPages.value"
-              @click="filters.goToPage(filters.currentPage.value + 1)"
-            >
-              Siguiente
-            </Button>
+        </template>
+
+        <template #empty>
+          <EmptyState
+            title="No hay transacciones"
+            description="No hay transacciones para estos filtros"
+            illustration="no-transactions"
+            size="sm"
+          >
+            <Button variant="ghost" size="sm" @click="filters.clearFilters">Limpiar filtros</Button>
+          </EmptyState>
+        </template>
+
+        <template #footer>
+          <div v-if="metrics.showPagination.value" class="transactions-page__footer">
+            <div class="transactions-page__footer-info">
+              <Text size="xs" color="muted">{{ metrics.countLabel.value }}</Text>
+              <Select
+                v-model="filters.pageSize.value"
+                name="pageSize"
+                :options="filters.pageSizeOptions"
+              />
+            </div>
+            <div class="transactions-page__footer-actions">
+              <Button
+                size="sm"
+                variant="outline"
+                :disabled="filters.currentPage.value === 1"
+                @click="filters.goToPage(filters.currentPage.value - 1)"
+              >
+                Anterior
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                :disabled="filters.currentPage.value >= metrics.totalPages.value"
+                @click="filters.goToPage(filters.currentPage.value + 1)"
+              >
+                Siguiente
+              </Button>
+            </div>
           </div>
-        </div>
-      </template>
-    </DataTable>
+        </template>
+      </DataTable>
+    </template>
 
     <ModalWizard v-model:show="showForm">
       <TransactionForm
@@ -548,12 +575,20 @@
     @apply flex items-center justify-between;
   }
 
+  .transactions-page__title-row {
+    @apply mb-1 flex items-center gap-2;
+  }
+
+  .transactions-page__count-badge {
+    @apply self-center;
+  }
+
   .transactions-page__header-actions {
     @apply flex items-center gap-2;
   }
 
-  .transactions-page__title {
-    @apply mb-1;
+  .transactions-page__empty {
+    @apply py-12;
   }
 
   .transactions-page__actions {
@@ -587,7 +622,6 @@
   .transactions-page__flow-icon {
     @apply text-base text-slate-400;
   }
-
 
   .transactions-page__footer {
     @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5;

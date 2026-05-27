@@ -124,10 +124,33 @@ export const useTransactionApplication = () => {
     }
   }
 
+  const MONTH_NAMES = [
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre'
+  ]
+
   const currency = computed(() => financesStore.defaultCurrency)
   const financeId = computed(() => financesStore.profile?.id ?? '')
   const budgetSelected = computed(() => budgetStore.budgetSelected)
   const budgetPlans = computed(() => budgetStore.budgetPlans)
+  const currentMonthBudget = computed(() => {
+    const now = new Date()
+    const month = MONTH_NAMES[now.getMonth()]
+    const year = now.getFullYear()
+    return (
+      budgetStore.budgetPlans.find(p => p.month.toLowerCase() === month && p.year === year) ?? null
+    )
+  })
   const budgetOptions = computed(() =>
     budgetStore.budgetPlans.map(item => ({
       label: replaceUnderscoresWithSpaces(item.name),
@@ -275,6 +298,7 @@ export const useTransactionApplication = () => {
     financeId,
     budgetSelected,
     budgetPlans,
+    currentMonthBudget,
     budgetOptions,
     categoryOptions,
     fetchTransaction,
