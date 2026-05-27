@@ -47,7 +47,7 @@
     { name: 'Dashboard', icon: 'dashboard_2', path: '/dashboard' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
-    { name: 'Grupos', icon: 'group', path: '/dashboard/groups', className: 'nav-item--sub' },
+    { name: 'Grupos', icon: 'group', path: '/dashboard/groups' },
     { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
     { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' },
     { name: 'Cuentas', icon: 'account_balance', path: '/dashboard/accounts' },
@@ -174,7 +174,7 @@
     @apply z-10 max-h-[56px] border-neutral-200 px-4 py-2 dark:border-neutral-700;
   }
   .dashboard-sidebar__nav {
-    @apply flex-1 gap-2 p-4;
+    @apply flex-1 gap-2 px-3 py-2 2xl:px-4 2xl:py-4;
   }
   .dashboard-sidebar__nav-group {
     @apply flex flex-col gap-2;

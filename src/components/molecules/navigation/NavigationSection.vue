@@ -15,7 +15,7 @@
 </script>
 
 <template>
-  <div :class="['mb-2', className]">
+  <div :class="['mb-1 2xl:mb-2', className]">
     <Text
       v-if="!collapsed"
       as="span"

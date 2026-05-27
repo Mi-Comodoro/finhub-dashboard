@@ -65,7 +65,7 @@
       @click="emit('navigate')"
     >
       <Icon :name="icon" size="lg" />
-      <Text size="sm" color="inherit" weight="medium">
+      <Text size="xs" color="inherit" weight="medium" class="nav-item__label">
         {{ name }}
       </Text>
     </Link>
@@ -76,7 +76,7 @@
       @click="handleClick"
     >
       <Icon :name="icon" size="lg" />
-      <Text size="sm" color="inherit" weight="medium">
+      <Text size="xs" color="inherit" weight="medium" class="nav-item__label">
         {{ name }}
       </Text>
     </button>
@@ -85,7 +85,11 @@
 
 <style lang="postcss" scoped>
   .nav-item {
-    @apply flex items-center rounded py-2.5 outline-none transition-all duration-200;
+    @apply flex items-center rounded py-2 2xl:py-2.5 outline-none transition-all duration-200;
+  }
+
+  .nav-item__label {
+    @apply 2xl:text-sm;
   }
   .nav-item--active {
     @apply rounded-md border-y-0 border-l-8 border-r-0 border-primary-900 bg-slate-200 font-bold text-primary-900;
