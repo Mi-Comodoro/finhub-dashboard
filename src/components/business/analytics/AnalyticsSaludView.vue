@@ -82,6 +82,36 @@
     if (pct >= 40) return 'pillar-bar--medium'
     return 'pillar-bar--low'
   }
+
+  const SCORE_LEVELS = [
+    { range: '0–20', label: 'Crítico', color: '#EF4444' },
+    { range: '21–40', label: 'En riesgo', color: '#F97316' },
+    { range: '41–60', label: 'Precario', color: '#F59E0B' },
+    { range: '61–80', label: 'Saludable', color: '#14B8A6' },
+    { range: '81–100', label: 'Óptimo', color: '#22C55E' }
+  ]
+
+  const activePillars = computed(() => pillars.value.filter(p => !p.isNeutral))
+
+  const bestPillar = computed(() => {
+    const sorted = [...activePillars.value].sort((a, b) => b.score / b.max - a.score / a.max)
+    return sorted[0] ?? null
+  })
+
+  const worstPillar = computed(() => {
+    const sorted = [...activePillars.value].sort((a, b) => a.score / a.max - b.score / b.max)
+    return sorted[0] ?? null
+  })
+
+  const insightText = computed(() => {
+    if (!healthScore.value || !bestPillar.value) return null
+    const score = healthScore.value.totalScore
+    let text = `Tu mejor pilar es ${bestPillar.value.label} (${bestPillar.value.score}/${bestPillar.value.max} pts).`
+    if (score < 60 && worstPillar.value && worstPillar.value.label !== bestPillar.value.label) {
+      text += ` Para mejorar, enfócate en ${worstPillar.value.label}.`
+    }
+    return text
+  })
 </script>
 
 <template>
@@ -167,6 +197,14 @@
             </Text>
           </div>
         </div>
+
+        <!-- Color scale legend -->
+        <div class="salud-scale">
+          <div v-for="lvl in SCORE_LEVELS" :key="lvl.label" class="salud-scale__item">
+            <span class="salud-scale__dot" :style="{ background: lvl.color }" />
+            <span class="salud-scale__label">{{ lvl.range }} · {{ lvl.label }}</span>
+          </div>
+        </div>
       </Card>
 
       <!-- Pillars grid -->
@@ -208,6 +246,12 @@
             </div>
           </template>
         </Card>
+      </div>
+
+      <!-- Dynamic insight -->
+      <div v-if="insightText" class="salud-insight">
+        <span class="material-symbols-outlined salud-insight__icon">tips_and_updates</span>
+        <Text size="sm" color="muted">{{ insightText }}</Text>
       </div>
     </div>
   </div>
@@ -371,5 +415,30 @@
   .pillar-card__neutral-link {
     @apply text-xs font-medium text-primary-600 underline underline-offset-2;
     @apply hover:text-primary-700 dark:text-primary-400;
+  }
+
+  .salud-scale {
+    @apply mt-3 flex flex-wrap gap-x-4 gap-y-1;
+  }
+
+  .salud-scale__item {
+    @apply flex items-center gap-1.5;
+  }
+
+  .salud-scale__dot {
+    @apply h-2.5 w-2.5 shrink-0 rounded-full;
+  }
+
+  .salud-scale__label {
+    @apply text-xs text-neutral-500;
+  }
+
+  .salud-insight {
+    @apply flex items-start gap-2 rounded-lg bg-neutral-50 p-3;
+    @apply dark:bg-neutral-800;
+  }
+
+  .salud-insight__icon {
+    @apply shrink-0 text-base leading-none text-neutral-400;
   }
 </style>

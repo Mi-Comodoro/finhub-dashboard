@@ -117,7 +117,7 @@
             </span>
           </div>
           <div class="net-position-view__kpi-body">
-            <Text size="xs" color="muted">Activos libres</Text>
+            <Text size="xs" color="muted">Activos fijos</Text>
             <Heading level="h3" size="xl" weight="bold" color="black">
               {{ formatCurrency(netPosition.totalAssets, 'COP') }}
             </Heading>
@@ -176,72 +176,88 @@
         </div>
       </div>
 
-      <!-- Debt ratio -->
-      <div class="net-position-view__ratio-card">
-        <div class="net-position-view__ratio-header">
-          <Heading level="h3" size="lg" weight="semibold">Ratio deuda / ingreso</Heading>
-          <span
-            :class="[
-              'net-position-view__ratio-badge',
-              `net-position-view__ratio-badge--${debtRatioStatus.color}`
-            ]"
-          >
-            {{ debtRatioStatus.label }}
-          </span>
-        </div>
-
-        <div class="net-position-view__ratio-track">
-          <div
-            :class="[
-              'net-position-view__ratio-bar',
-              `net-position-view__ratio-bar--${debtRatioStatus.color}`
-            ]"
-            :style="{ width: `${ratioPercent}%` }"
-          />
-        </div>
-
-        <div class="net-position-view__ratio-meta">
-          <Text size="sm" color="muted">
-            Por cada $1 de ingreso anual, debes ${{
-              formatNumber(netPosition.debtToIncomeRatio, 'COP', 2)
-            }}
-          </Text>
-          <Text size="sm" weight="semibold">
-            {{ (netPosition.debtToIncomeRatio * 100).toFixed(1) }}%
-          </Text>
-        </div>
+      <!-- Insight formula -->
+      <div class="net-position-view__insight">
+        <span class="material-symbols-outlined net-position-view__insight-icon">info</span>
+        <Text size="xs" color="muted">
+          Posición Neta = Activos Fijos + Por Cobrar − Deudas. Un valor positivo indica que tus
+          activos superan tus obligaciones.
+        </Text>
       </div>
 
-      <!-- Debt projection chart -->
-      <div class="net-position-view__chart-card">
-        <div class="net-position-view__chart-header">
-          <Heading level="h3" size="lg" weight="semibold">Proyección de deuda</Heading>
-          <Text size="xs" color="muted">Balance proyectado y pagos mínimos mensuales</Text>
-        </div>
-        <div v-if="debtProjection?.simplified" class="net-position-view__simplified-note">
-          <span class="material-symbols-outlined net-position-view__simplified-icon">info</span>
-          <Text size="xs" color="muted">
-            Proyección lineal simplificada. No incluye interés compuesto.
-          </Text>
-        </div>
-        <div class="net-position-view__chart-body">
-          <ClientOnly>
-            <VChart
-              v-if="debtProjection && (debtProjection.projection?.length ?? 0) > 0"
-              :option="chartOption"
-              autoresize
-              class="net-position-view__chart"
+      <template v-if="netPosition.totalDebts > 0">
+        <!-- Debt ratio -->
+        <div class="net-position-view__ratio-card">
+          <div class="net-position-view__ratio-header">
+            <Heading level="h3" size="lg" weight="semibold">Ratio deuda / ingreso</Heading>
+            <span
+              :class="[
+                'net-position-view__ratio-badge',
+                `net-position-view__ratio-badge--${debtRatioStatus.color}`
+              ]"
+            >
+              {{ debtRatioStatus.label }}
+            </span>
+          </div>
+
+          <div class="net-position-view__ratio-track">
+            <div
+              :class="[
+                'net-position-view__ratio-bar',
+                `net-position-view__ratio-bar--${debtRatioStatus.color}`
+              ]"
+              :style="{ width: `${ratioPercent}%` }"
             />
-            <div v-else class="net-position-view__chart-empty">
-              <Text size="sm" color="muted">Sin datos de proyección disponibles.</Text>
-            </div>
-            <template #fallback>
-              <div class="net-position-view__chart net-position-view__chart--loading">
-                <div class="net-position-view__chart-inner-skeleton" />
-              </div>
-            </template>
-          </ClientOnly>
+          </div>
+
+          <div class="net-position-view__ratio-meta">
+            <Text size="sm" color="muted">
+              Por cada $1 de ingreso anual, debes ${{
+                formatNumber(netPosition.debtToIncomeRatio, 'COP', 2)
+              }}
+            </Text>
+            <Text size="sm" weight="semibold">
+              {{ (netPosition.debtToIncomeRatio * 100).toFixed(1) }}%
+            </Text>
+          </div>
         </div>
+
+        <!-- Debt projection chart -->
+        <div class="net-position-view__chart-card">
+          <div class="net-position-view__chart-header">
+            <Heading level="h3" size="lg" weight="semibold">Proyección de deuda</Heading>
+            <Text size="xs" color="muted">Balance proyectado y pagos mínimos mensuales</Text>
+          </div>
+          <div v-if="debtProjection?.simplified" class="net-position-view__simplified-note">
+            <span class="material-symbols-outlined net-position-view__simplified-icon">info</span>
+            <Text size="xs" color="muted">
+              Proyección lineal simplificada. No incluye interés compuesto.
+            </Text>
+          </div>
+          <div class="net-position-view__chart-body">
+            <ClientOnly>
+              <VChart
+                v-if="debtProjection && (debtProjection.projection?.length ?? 0) > 0"
+                :option="chartOption"
+                autoresize
+                class="net-position-view__chart"
+              />
+              <div v-else class="net-position-view__chart-empty">
+                <Text size="sm" color="muted">Sin datos de proyección disponibles.</Text>
+              </div>
+              <template #fallback>
+                <div class="net-position-view__chart net-position-view__chart--loading">
+                  <div class="net-position-view__chart-inner-skeleton" />
+                </div>
+              </template>
+            </ClientOnly>
+          </div>
+        </div>
+      </template>
+
+      <div v-else class="net-position-view__no-debts">
+        <span class="material-symbols-outlined net-position-view__no-debts-icon">check_circle</span>
+        <Text size="sm" color="muted">No tienes deudas registradas.</Text>
       </div>
     </div>
   </div>
@@ -436,5 +452,23 @@
 
   .net-position-view__chart-empty {
     @apply flex h-40 items-center justify-center;
+  }
+
+  .net-position-view__insight {
+    @apply flex items-start gap-2 rounded-lg bg-neutral-50 px-3 py-2.5;
+    @apply dark:bg-neutral-800;
+  }
+
+  .net-position-view__insight-icon {
+    @apply shrink-0 text-base leading-none text-neutral-400;
+  }
+
+  .net-position-view__no-debts {
+    @apply flex items-center gap-2 rounded-lg bg-success-50 px-3 py-3;
+    @apply dark:bg-success-900/20;
+  }
+
+  .net-position-view__no-debts-icon {
+    @apply shrink-0 text-base leading-none text-success-600;
   }
 </style>

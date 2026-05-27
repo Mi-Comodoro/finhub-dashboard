@@ -180,6 +180,26 @@
         />
       </div>
 
+      <div v-if="hasData" class="cashflow-view__pill-summary">
+        <span>Ingresos {{ formatCurrency(totalIncome, currency) }}</span>
+        <span class="cashflow-view__pill-sep">·</span>
+        <span>Gastos {{ formatCurrency(totalExpense, currency) }}</span>
+        <span class="cashflow-view__pill-sep">·</span>
+        <span
+          :class="netFlow >= 0 ? 'cashflow-view__pill--positive' : 'cashflow-view__pill--negative'"
+        >
+          Flujo Neto {{ formatCurrency(netFlow, currency) }}
+        </span>
+      </div>
+
+      <div class="cashflow-view__bubble">
+        <span class="material-symbols-outlined cashflow-view__bubble-icon">info</span>
+        <Text size="xs" color="muted">
+          El flujo de caja muestra el movimiento de dinero en el período. Un saldo neto positivo
+          indica que tus ingresos superan tus gastos.
+        </Text>
+      </div>
+
       <Card class="cashflow-view__chart-card">
         <div class="cashflow-view__chart-header">
           <Heading level="h3" size="lg" weight="semibold">Flujo de Caja por Semana</Heading>
@@ -210,6 +230,14 @@
       </Card>
 
       <!-- Forecast section -->
+      <div class="cashflow-view__bubble">
+        <span class="material-symbols-outlined cashflow-view__bubble-icon">query_stats</span>
+        <Text size="xs" color="muted">
+          El pronóstico es una estimación basada en tu presupuesto activo y el comportamiento del
+          período actual.
+        </Text>
+      </div>
+
       <div class="cashflow-view__section-title">
         <span>Pronóstico próximos 3 meses</span>
       </div>
@@ -359,5 +387,30 @@
 
   .cashflow-view__forecast-detail {
     @apply flex gap-3 text-xs text-neutral-500;
+  }
+
+  .cashflow-view__pill-summary {
+    @apply flex flex-wrap items-center gap-2 text-sm text-neutral-600;
+  }
+
+  .cashflow-view__pill-sep {
+    @apply text-neutral-300;
+  }
+
+  .cashflow-view__pill--positive {
+    @apply font-semibold text-primary-700;
+  }
+
+  .cashflow-view__pill--negative {
+    @apply font-semibold text-danger-700;
+  }
+
+  .cashflow-view__bubble {
+    @apply flex items-start gap-2 rounded-lg bg-primary-50 px-3 py-2.5;
+    @apply dark:bg-primary-900/20;
+  }
+
+  .cashflow-view__bubble-icon {
+    @apply shrink-0 text-base leading-none text-primary-600;
   }
 </style>

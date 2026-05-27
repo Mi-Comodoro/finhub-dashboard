@@ -25,10 +25,18 @@
   >
 
   const period = inject<ReturnType<typeof useAnalyticsPeriod>>('analyticsPeriod')!
-  const { selectedYear } = period
+  const { selectedYear, selectedMonth } = period
 
-  const { savingsByMonth, isLoading, totalSaved, bestMonth, monthlyAvg, currency } =
+  const { savingsByMonth, isLoading, totalSaved, monthlyAvg, currency } =
     useAnalyticsSavingsTrendApplication(selectedYear)
+
+  const selectedMonthSaving = computed(
+    () => savingsByMonth.value[selectedMonth.value - 1]?.actual ?? 0
+  )
+
+  const monthsWithData = computed(
+    () => savingsByMonth.value.filter(m => (m.actual ?? 0) > 0).length
+  )
 
   const chartOption = computed<EChartsOption>(() => ({
     grid: { left: '2%', right: '2%', top: 16, bottom: '2%', containLabel: true },
@@ -72,30 +80,26 @@
     <div class="ahorro-view__kpis">
       <div class="ahorro-view__kpi-card">
         <div class="ahorro-view__kpi-icon">
-          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">savings</span>
+          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">account_balance</span>
         </div>
         <div class="ahorro-view__kpi-content">
-          <Text size="xs" color="muted">Total ahorrado en el año</Text>
-          <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
-          <Heading v-else level="h3" size="xl" weight="bold" color="black">
-            {{ formatCurrency(totalSaved, currency.value) }}
+          <Text size="xs" color="muted">Saldo anterior al año</Text>
+          <Heading level="h3" size="xl" weight="bold" color="black">
+            {{ formatCurrency(0, currency.value) }}
           </Heading>
         </div>
       </div>
 
       <div class="ahorro-view__kpi-card">
         <div class="ahorro-view__kpi-icon">
-          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">star</span>
+          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">savings</span>
         </div>
         <div class="ahorro-view__kpi-content">
-          <Text size="xs" color="muted">Mejor mes</Text>
+          <Text size="xs" color="muted">Ahorro del mes</Text>
           <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
-          <template v-else>
-            <Heading level="h3" size="xl" weight="bold" color="black">
-              {{ formatCurrency(bestMonth?.actual ?? 0, currency.value) }}
-            </Heading>
-            <Text size="xs" color="muted">{{ bestMonth?.label }}</Text>
-          </template>
+          <Heading v-else level="h3" size="xl" weight="bold" color="black">
+            {{ formatCurrency(selectedMonthSaving, currency.value) }}
+          </Heading>
         </div>
       </div>
 
@@ -104,13 +108,21 @@
           <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">query_stats</span>
         </div>
         <div class="ahorro-view__kpi-content">
-          <Text size="xs" color="muted">Promedio mensual</Text>
+          <Text size="xs" color="muted">Estimación mensual</Text>
           <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
           <Heading v-else level="h3" size="xl" weight="bold" color="black">
             {{ formatCurrency(monthlyAvg, currency.value) }}
           </Heading>
         </div>
       </div>
+    </div>
+
+    <div class="ahorro-insight">
+      <span class="material-symbols-outlined ahorro-insight__icon">tips_and_updates</span>
+      <Text size="xs" color="muted">
+        El ahorro constante, aunque pequeño, genera más impacto que un gran esfuerzo esporádico.
+        Automatiza tus aportes para mantener el hábito.
+      </Text>
     </div>
 
     <div v-if="!isLoading && totalSaved === 0" class="analytics-view__empty">
@@ -120,6 +132,14 @@
         Completa un aporte a tus metas para ver tu tendencia
       </p>
       <NuxtLink to="/dashboard/goals" class="analytics-view__empty-cta">Ver metas</NuxtLink>
+    </div>
+
+    <div v-else-if="!isLoading && monthsWithData < 2" class="analytics-view__empty">
+      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
+      <p class="analytics-view__empty-title">Datos insuficientes</p>
+      <p class="analytics-view__empty-description">
+        Se necesitan al menos 2 meses con datos para mostrar la tendencia de ahorro.
+      </p>
     </div>
 
     <div v-else class="ahorro-view__chart-card">
@@ -216,5 +236,14 @@
 
   .analytics-view__empty-cta {
     @apply text-sm font-medium text-primary-600 underline;
+  }
+
+  .ahorro-insight {
+    @apply flex items-start gap-2 rounded-lg bg-warning-50 px-3 py-2.5;
+    @apply dark:bg-warning-900/20;
+  }
+
+  .ahorro-insight__icon {
+    @apply shrink-0 text-base leading-none text-warning-600;
   }
 </style>
