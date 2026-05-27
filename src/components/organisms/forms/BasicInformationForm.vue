@@ -11,6 +11,7 @@
 
   import Label from '@/components/atoms/typography/Label.vue'
   import Select from '@/components/molecules/select/Select.vue'
+  import { useUserApi } from '@/composables/api/useUserApi'
   import { DIAL_CODE_OPTIONS, GENDER_OPTIONS, ON_BOARDING_CONFIG } from '~/common/constants'
   import { useUserStore } from '~/stores/user.store'
 
@@ -32,6 +33,7 @@
   const emit = defineEmits<BasicInformationFormEmits>()
 
   const userStore = useUserStore()
+  const { checkPhoneAvailability } = useUserApi()
 
   // Pre-fill from store, falling back to prop
   const prefillDisplayName =
@@ -56,6 +58,9 @@
   // Validation state
   const errors = ref<Record<string, string>>({})
   const isValid = ref(false)
+  const isCheckingPhone = ref(false)
+  const phoneAvailable = ref<boolean | null>(null)
+  let phoneCheckTimer: ReturnType<typeof setTimeout> | null = null
 
   // Validation rules (only for editable fields)
   const validationRules = {
@@ -93,9 +98,46 @@
       formModel.value.email.trim() &&
       formModel.value.phoneNumber.trim().length >= 7
 
-    isValid.value = !hasErrors && !!hasRequiredFields
+    isValid.value =
+      !hasErrors && !!hasRequiredFields && phoneAvailable.value === true && !isCheckingPhone.value
     emit('valid', isValid.value)
   }
+
+  const runPhoneCheck = async () => {
+    try {
+      const result = await checkPhoneAvailability(fullPhone.value)
+      phoneAvailable.value = result?.available ?? null
+      if (phoneAvailable.value === false) {
+        errors.value.phoneNumber = 'Este número ya está registrado'
+      }
+    } catch {
+      phoneAvailable.value = null
+    } finally {
+      isCheckingPhone.value = false
+      updateFormValidity()
+    }
+  }
+
+  watch(
+    () => [formModel.value.phoneNumber, formModel.value.dialCode] as const,
+    () => {
+      if (phoneCheckTimer) clearTimeout(phoneCheckTimer)
+
+      const formatError = validationRules.phoneNumber(formModel.value.phoneNumber)
+      if (formatError) {
+        phoneAvailable.value = null
+        isCheckingPhone.value = false
+        updateFormValidity()
+        return
+      }
+
+      isCheckingPhone.value = true
+      phoneAvailable.value = null
+      errors.value.phoneNumber = ''
+      updateFormValidity()
+      phoneCheckTimer = setTimeout(runPhoneCheck, 600)
+    }
+  )
 
   /**
    * Validate all fields and emit validity state
@@ -161,17 +203,25 @@
             placeholder="+57"
             class="w-32 flex-shrink-0"
           />
-          <Input
-            id="phoneNumber"
-            v-model="formModel.phoneNumber"
-            name="phoneNumber"
-            type="tel"
-            placeholder="300 123 4567"
-            :error="errors.phoneNumber"
-            required
-            @blur="validateField('phoneNumber')"
-            @input="validateField('phoneNumber')"
-          />
+          <div class="phone-input-wrapper">
+            <Input
+              id="phoneNumber"
+              v-model="formModel.phoneNumber"
+              name="phoneNumber"
+              type="tel"
+              placeholder="300 123 4567"
+              :error="errors.phoneNumber"
+              required
+              @blur="validateField('phoneNumber')"
+              @input="validateField('phoneNumber')"
+            />
+            <span v-if="isCheckingPhone" class="phone-status">
+              <span class="phone-status__spinner" />
+            </span>
+            <span v-else-if="phoneAvailable === true" class="phone-status">
+              <span class="material-symbols-outlined phone-status__icon--ok">check_circle</span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -207,5 +257,17 @@
   }
   .form-field__helper {
     @apply mt-1 text-xs text-neutral-400;
+  }
+  .phone-input-wrapper {
+    @apply relative flex-1;
+  }
+  .phone-status {
+    @apply absolute right-3 top-1/2 -translate-y-1/2;
+  }
+  .phone-status__spinner {
+    @apply block h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-primary-500;
+  }
+  .phone-status__icon--ok {
+    @apply text-base text-success-600;
   }
 </style>

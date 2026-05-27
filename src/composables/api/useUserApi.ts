@@ -41,11 +41,18 @@ export const useUserApi = () => {
     )
   }
 
+  const checkPhoneAvailability = async (phone: string) => {
+    return await $fetch<{ available: boolean }>('/api/users/check-phone', {
+      query: { phone }
+    })
+  }
+
   return {
     getUserMe,
     getUserMeWithCredentials,
     completeOnboarding,
     updateUserProfile,
-    updateFinancialProfile
+    updateFinancialProfile,
+    checkPhoneAvailability
   }
 }
