@@ -8,6 +8,11 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2026-05-26',
 
+  routeRules: {
+    '/dashboard/debts': { redirect: '/dashboard/accounts' },
+    '/dashboard/receivables': { redirect: '/dashboard/accounts' }
+  },
+
   app: {
     head: {
       title: 'Mi Comodoro',

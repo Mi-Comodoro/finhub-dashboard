@@ -50,8 +50,7 @@
     { name: 'Grupos', icon: 'group', path: '/dashboard/groups', className: 'nav-item--sub' },
     { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
     { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' },
-    { name: 'Cuentas por Pagar', icon: 'credit_score', path: '/dashboard/debts' },
-    { name: 'Cuentas por Cobrar', icon: 'payments', path: '/dashboard/receivables' },
+    { name: 'Cuentas', icon: 'account_balance', path: '/dashboard/accounts' },
     { name: 'Módulos', icon: 'view_module', className: 'nav-item--disabled' }
   ]
 
