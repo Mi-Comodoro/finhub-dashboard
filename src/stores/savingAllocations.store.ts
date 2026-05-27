@@ -45,6 +45,21 @@ export const useSavingAllocationsStore = defineStore('allocations', {
         this.handleError(err as FetchError)
       }
     },
+    async replaceAllocations(
+      budgetId: string,
+      distributions: Array<{ goalId: string; percentage: number }>
+    ) {
+      const { replaceAllocations } = useSavingsApi()
+      this.error = null
+      try {
+        const { result } = await replaceAllocations(budgetId, distributions)
+        this.savingAllocations = result
+        return { success: true }
+      } catch (err) {
+        this.handleError(err as FetchError)
+        return { success: false }
+      }
+    },
     setNewSavingAmount(amount: number) {
       this.newSavingAmount = amount
     },

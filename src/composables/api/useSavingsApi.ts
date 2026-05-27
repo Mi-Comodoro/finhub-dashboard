@@ -113,6 +113,15 @@ export function useSavingsApi() {
       body: { savingGoalId }
     })
 
+  const replaceAllocations = async (
+    budgetId: string,
+    distributions: Array<{ goalId: string; percentage: number }>
+  ) =>
+    $fetch<{ success: boolean; result: SavingAllocationData[] }>(
+      `/api/savings/allocations/${budgetId}`,
+      { method: 'PATCH', body: { distributions } }
+    )
+
   return {
     getPlannedSavingsByBudget,
     updatePlannedSaving,
@@ -130,6 +139,7 @@ export function useSavingsApi() {
     getGoalSummary,
     registerGoalInterest,
     createPlannedSaving,
-    assignGoalToPlannedSaving
+    assignGoalToPlannedSaving,
+    replaceAllocations
   }
 }

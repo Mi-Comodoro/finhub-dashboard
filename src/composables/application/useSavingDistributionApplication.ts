@@ -113,11 +113,25 @@ export function useSavingDistributionApplication() {
     }
   }
 
+  const updateDistribution = async (
+    budgetId: string,
+    distributions: Array<{ goalId: string; percentage: number }>
+  ): Promise<{ success: boolean; error?: { title: string; message: string } | null }> => {
+    await savingsAllocationsStore.replaceAllocations(budgetId, distributions)
+
+    if (!savingsAllocationsStore.error) {
+      return { success: true }
+    } else {
+      return { success: false, error: savingsAllocationsStore.error }
+    }
+  }
+
   return {
     initialize,
     getSavingsAmount,
     getGoalOptions,
     getTotalAllocatedPercentage,
-    submitAllocation
+    submitAllocation,
+    updateDistribution
   }
 }

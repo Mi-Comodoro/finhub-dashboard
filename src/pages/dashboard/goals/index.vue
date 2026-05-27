@@ -7,6 +7,7 @@
   import AccountSavingForm from '@/components/business/account/forms/AccountSavingForm.vue'
   import FinancialTipCarousel from '@/components/business/savings/FinancialTipCarousel.vue'
   import GoalsForm from '@/components/business/savings/forms/GoalsForm.vue'
+  import SavingDistributionEditForm from '@/components/business/savings/forms/SavingDistributionEditForm.vue'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
@@ -287,6 +288,29 @@
   const closeSavingDistributionForm = () => {
     showSavingDistributionForm.value = false
   }
+
+  const showDistributionEditForm = ref(false)
+  const openDistributionEditForm = () => {
+    showDistributionEditForm.value = true
+  }
+  const closeDistributionEditForm = () => {
+    showDistributionEditForm.value = false
+  }
+  const onDistributionEditSuccess = () => {
+    show({
+      title: 'Distribución actualizada',
+      description: 'La plantilla de ahorro se actualizó correctamente',
+      type: 'success'
+    })
+    closeDistributionEditForm()
+  }
+  const onDistributionEditError = () => {
+    show({
+      title: '¡Ups! Algo falló',
+      description: 'No se pudo actualizar la distribución. Intenta de nuevo.',
+      type: 'error'
+    })
+  }
   type ExistingGoal = GoalsData & { id: string }
   const editingGoal = ref<ExistingGoal | null>(null)
 
@@ -416,6 +440,15 @@
           />
         </div>
 
+        <Button
+          v-if="isSavingsAllocationCompleted"
+          size="sm"
+          icon="tune"
+          variant="secondary"
+          @click="openDistributionEditForm"
+        >
+          Reajustar distribución
+        </Button>
         <Button
           size="sm"
           icon="add_task"
@@ -716,6 +749,16 @@
         @on-success="onSavingAllocationSuccess"
         @on-error="onSavingAllocationError"
         @on-close="closeSavingDistributionForm"
+      />
+    </ModalWizard>
+
+    <ModalWizard v-model:show="showDistributionEditForm">
+      <SavingDistributionEditForm
+        v-if="currentBudgetId"
+        :budget-id="currentBudgetId"
+        @on-close="closeDistributionEditForm"
+        @on-success="onDistributionEditSuccess"
+        @on-error="onDistributionEditError"
       />
     </ModalWizard>
 
