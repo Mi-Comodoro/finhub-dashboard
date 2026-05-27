@@ -17,6 +17,7 @@
     savingsScore?: number
     expenseScore?: number
     debtScore?: number
+    totalTransactions?: number
   }
 
   interface Bill {
@@ -72,12 +73,12 @@
     {
       label: 'Flujo de caja',
       value: props.healthScore?.cashFlowScore ?? 0,
-      max: 30,
+      max: 25,
       color: 'primary'
     },
-    { label: 'Ahorro', value: props.healthScore?.savingsScore ?? 0, max: 35, color: 'warning' },
-    { label: 'Gastos', value: props.healthScore?.expenseScore ?? 0, max: 30, color: 'danger' },
-    { label: 'Deudas', value: props.healthScore?.debtScore ?? 0, max: 5, color: 'secondary' }
+    { label: 'Ahorro', value: props.healthScore?.savingsScore ?? 0, max: 30, color: 'warning' },
+    { label: 'Gastos', value: props.healthScore?.expenseScore ?? 0, max: 20, color: 'danger' },
+    { label: 'Deudas', value: props.healthScore?.debtScore ?? 0, max: 20, color: 'secondary' }
   ])
 
   function getPillarBarClass(color: string): string {
@@ -163,7 +164,7 @@
           </div>
         </div>
 
-        <div v-if="score > 0" class="dashboard-sidebar__pillars">
+        <div v-if="(healthScore?.totalTransactions ?? 1) > 0" class="dashboard-sidebar__pillars">
           <div v-for="pillar in pillars" :key="pillar.label" class="dashboard-sidebar__pillar">
             <div class="dashboard-sidebar__pillar-header">
               <Text size="xs" color="muted">{{ pillar.label }}</Text>
