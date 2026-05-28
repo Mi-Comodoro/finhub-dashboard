@@ -103,6 +103,18 @@
     ((netPosition.value?.debtToIncomeRatio ?? 0) * 100).toFixed(1)
   )
 
+  const sidebarHealthColor = computed(() => {
+    const level = healthScore.value?.level ?? ''
+    if (level === 'critical') return 'danger'
+    if (level === 'at_risk' || level === 'regular') return 'warning'
+    if (level === 'optimal') return 'success'
+    return 'primary'
+  })
+
+  const sidebarHealthNeedsAttention = computed(
+    () => sidebarHealthScore.value > 0 && sidebarHealthScore.value < 60
+  )
+
   // ── Navigation ──
 
   const ALL_SECTIONS = [
@@ -245,12 +257,24 @@
                 favorite
               </span>
               <span class="analytics-sidebar__section-label">Salud Financiera</span>
+              <span
+                v-if="sidebarHealthNeedsAttention"
+                class="analytics-sidebar__alert analytics-sidebar__alert--warning"
+              />
             </button>
             <p class="analytics-sidebar__section-status">
-              Score: {{ sidebarHealthScore }}/100 · {{ sidebarHealthLevel }}
+              <span
+                :class="[
+                  'analytics-sidebar__score-value',
+                  `analytics-sidebar__score-value--${sidebarHealthColor}`
+                ]"
+              >
+                {{ sidebarHealthScore }}/100
+              </span>
+              · {{ sidebarHealthLevel }}
             </p>
             <button
-              v-if="sidebarHealthScore > 0 && sidebarHealthScore < 60"
+              v-if="sidebarHealthNeedsAttention"
               class="analytics-sidebar__section-cta"
               @click="scrollTo('salud')"
             >
@@ -270,9 +294,20 @@
                 account_balance
               </span>
               <span class="analytics-sidebar__section-label">Flujo de Caja</span>
+              <span
+                v-if="sidebarHasTxs && sidebarNetFlow < 0"
+                class="analytics-sidebar__alert analytics-sidebar__alert--danger"
+              />
             </button>
             <p v-if="sidebarHasTxs" class="analytics-sidebar__section-status">
-              Neto: {{ formatCompactCurrency(sidebarNetFlow, currency) }}
+              Neto:
+              <span
+                :class="
+                  sidebarNetFlow >= 0 ? 'analytics-sidebar__val--ok' : 'analytics-sidebar__val--bad'
+                "
+              >
+                {{ formatCompactCurrency(sidebarNetFlow, currency) }}
+              </span>
             </p>
             <p
               v-else
@@ -525,5 +560,48 @@
 
   .analytics-sidebar__ratio-badge--danger {
     @apply bg-danger-100 text-danger-700;
+  }
+
+  /* Score color in sidebar */
+  .analytics-sidebar__score-value {
+    @apply font-semibold;
+  }
+
+  .analytics-sidebar__score-value--danger {
+    @apply text-danger-600;
+  }
+
+  .analytics-sidebar__score-value--warning {
+    @apply text-warning-600;
+  }
+
+  .analytics-sidebar__score-value--primary {
+    @apply text-primary-600;
+  }
+
+  .analytics-sidebar__score-value--success {
+    @apply text-success-600;
+  }
+
+  /* Net flow color */
+  .analytics-sidebar__val--ok {
+    @apply font-medium text-primary-600;
+  }
+
+  .analytics-sidebar__val--bad {
+    @apply font-medium text-danger-600;
+  }
+
+  /* Alert dot */
+  .analytics-sidebar__alert {
+    @apply ml-auto h-2 w-2 shrink-0 rounded-full;
+  }
+
+  .analytics-sidebar__alert--warning {
+    @apply bg-warning-500;
+  }
+
+  .analytics-sidebar__alert--danger {
+    @apply bg-danger-500;
   }
 </style>

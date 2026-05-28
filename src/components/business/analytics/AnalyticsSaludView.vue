@@ -398,7 +398,7 @@
   }
 
   .pillar-card__hint {
-    @apply text-xs leading-tight text-neutral-400;
+    @apply text-xs leading-tight text-neutral-500;
   }
 
   .pillar-card__track {
@@ -422,7 +422,7 @@
   }
 
   .salud-scale {
-    @apply mt-3 flex flex-wrap gap-x-4 gap-y-1;
+    @apply mt-3 hidden flex-wrap gap-x-4 gap-y-1 sm:flex;
   }
 
   .salud-scale__item {

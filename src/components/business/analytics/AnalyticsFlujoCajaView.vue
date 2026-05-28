@@ -307,11 +307,12 @@
                 ↓ {{ formatCompactCurrency(month.projectedExpenses ?? 0, currency) }}
               </span>
             </div>
-            <p class="cashflow-view__forecast-hint">
-              Estimado con base en tu historial de ingresos y gastos.
-            </p>
           </div>
         </div>
+
+        <p class="cashflow-view__forecast-note">
+          Valores estimados con base en el historial de ingresos y gastos del período.
+        </p>
 
         <Card class="cashflow-view__chart-card">
           <div class="cashflow-view__chart-header">
@@ -521,8 +522,8 @@
     @apply text-danger-600;
   }
 
-  .cashflow-view__forecast-hint {
-    @apply text-[11px] leading-tight text-neutral-400;
+  .cashflow-view__forecast-note {
+    @apply text-[11px] italic text-neutral-400;
   }
 
   .cashflow-view__pill-summary {
