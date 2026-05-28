@@ -76,7 +76,7 @@
       max: 25,
       color: 'primary'
     },
-    { label: 'Ahorro', value: props.healthScore?.savingsScore ?? 0, max: 30, color: 'warning' },
+    { label: 'Ahorro', value: props.healthScore?.savingsScore ?? 0, max: 35, color: 'warning' },
     { label: 'Gastos', value: props.healthScore?.expenseScore ?? 0, max: 20, color: 'danger' },
     { label: 'Deudas', value: props.healthScore?.debtScore ?? 0, max: 20, color: 'secondary' }
   ])
