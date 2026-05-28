@@ -20,6 +20,7 @@
   import Tips from '@/components/business/tips/Tips.vue'
   import TransactionList from '@/components/business/transactions/TransactionList.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
+  import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
   import { useBudgetTransferApplication } from '@/composables/application/useBudgetTransferApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
@@ -353,14 +354,16 @@
       </div>
 
       <div class="budget-detail__sidebar">
-        <Tips icon="show_chart" title="Optimizacion Inteligente">
-          El ahorro del {{ plan?.limits?.savings || 0 }}% del
-          <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
-          , se activará automáticamente cuando confirmes tu primer ingreso.
-        </Tips>
-        <BudgetIncome :budget-id="budgetId" />
-        <BudgetDistribution />
-        <TransactionList :budget-id="budgetId" />
+        <SidebarPage>
+          <Tips icon="show_chart" title="Optimizacion Inteligente">
+            El ahorro del {{ plan?.limits?.savings || 0 }}% del
+            <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
+            , se activará automáticamente cuando confirmes tu primer ingreso.
+          </Tips>
+          <BudgetIncome :budget-id="budgetId" />
+          <BudgetDistribution />
+          <TransactionList :budget-id="budgetId" />
+        </SidebarPage>
       </div>
     </div>
 
@@ -461,15 +464,33 @@
   }
 
   .budget-detail__layout {
-    @apply grid w-full grid-cols-12 gap-4 px-4;
+    @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start lg:px-0;
   }
 
   .budget-detail__main {
-    @apply col-span-8 flex flex-col gap-4;
+    @apply flex min-w-0 flex-1 flex-col gap-4;
   }
 
   .budget-detail__sidebar {
-    @apply col-span-4 flex flex-col gap-4;
+    @apply w-full lg:sticky lg:top-4 lg:w-80 lg:shrink-0 lg:self-start;
+  }
+
+  .budget-detail__sidebar :deep(.sidebar-page) {
+    @apply gap-3;
+  }
+
+  /* Compact Card atoms in sidebar */
+  .budget-detail__sidebar :deep(.card) {
+    @apply p-3;
+  }
+
+  /* Compact SectionCard (BudgetDistribution, TransactionList) in sidebar */
+  .budget-detail__sidebar :deep(.section-card__header) {
+    @apply p-3;
+  }
+
+  .budget-detail__sidebar :deep(.section-card__body) {
+    @apply p-3;
   }
 
   .budget-detail__empty {

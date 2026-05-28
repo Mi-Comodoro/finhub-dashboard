@@ -2,6 +2,7 @@
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import Select from '@/components/molecules/select/Select.vue'
+  import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
   import { useAnalyticsCashFlowApplication } from '@/composables/application/useAnalyticsCashFlowApplication'
   import { useAnalyticsExpensesApplication } from '@/composables/application/useAnalyticsExpensesApplication'
@@ -223,7 +224,7 @@
 
       <!-- ── Sidebar ── -->
       <aside class="analytics-page__sidebar">
-        <div class="analytics-sidebar">
+        <SidebarPage>
           <!-- Period badge -->
           <div class="analytics-sidebar__period">
             <span class="material-symbols-outlined analytics-sidebar__period-icon">
@@ -232,151 +233,153 @@
             <span class="analytics-sidebar__period-text">{{ periodLabel }}</span>
           </div>
 
-          <!-- Smart nav items -->
-          <nav class="analytics-sidebar__nav">
-            <!-- Salud Financiera -->
-            <div
-              :class="[
-                'analytics-sidebar__item',
-                { 'analytics-sidebar__item--active': activeSection === 'salud' }
-              ]"
+          <!-- Salud Financiera -->
+          <div
+            :class="[
+              'analytics-sidebar__section',
+              { 'analytics-sidebar__section--active': activeSection === 'salud' }
+            ]"
+          >
+            <button class="analytics-sidebar__section-head" @click="scrollTo('salud')">
+              <span class="material-symbols-outlined analytics-sidebar__section-icon">
+                favorite
+              </span>
+              <span class="analytics-sidebar__section-label">Salud Financiera</span>
+            </button>
+            <p class="analytics-sidebar__section-status">
+              Score: {{ sidebarHealthScore }}/100 · {{ sidebarHealthLevel }}
+            </p>
+            <button
+              v-if="sidebarHealthScore > 0 && sidebarHealthScore < 60"
+              class="analytics-sidebar__section-cta"
+              @click="scrollTo('salud')"
             >
-              <button class="analytics-sidebar__item-head" @click="scrollTo('salud')">
-                <span class="material-symbols-outlined analytics-sidebar__item-icon">favorite</span>
-                <span class="analytics-sidebar__item-label">Salud Financiera</span>
-              </button>
-              <p class="analytics-sidebar__item-status">
-                Score: {{ sidebarHealthScore }}/100 · {{ sidebarHealthLevel }}
-              </p>
-              <button
-                v-if="sidebarHealthScore > 0 && sidebarHealthScore < 60"
-                class="analytics-sidebar__item-cta"
-                @click="scrollTo('salud')"
-              >
-                ¿Cómo mejorar?
-              </button>
-            </div>
+              ¿Cómo mejorar?
+            </button>
+          </div>
 
-            <!-- Flujo de Caja -->
-            <div
-              :class="[
-                'analytics-sidebar__item',
-                { 'analytics-sidebar__item--active': activeSection === 'flujo' }
-              ]"
+          <!-- Flujo de Caja -->
+          <div
+            :class="[
+              'analytics-sidebar__section',
+              { 'analytics-sidebar__section--active': activeSection === 'flujo' }
+            ]"
+          >
+            <button class="analytics-sidebar__section-head" @click="scrollTo('flujo')">
+              <span class="material-symbols-outlined analytics-sidebar__section-icon">
+                account_balance
+              </span>
+              <span class="analytics-sidebar__section-label">Flujo de Caja</span>
+            </button>
+            <p v-if="sidebarHasTxs" class="analytics-sidebar__section-status">
+              Neto: {{ formatCompactCurrency(sidebarNetFlow, currency) }}
+            </p>
+            <p
+              v-else
+              class="analytics-sidebar__section-status analytics-sidebar__section-status--empty"
             >
-              <button class="analytics-sidebar__item-head" @click="scrollTo('flujo')">
-                <span class="material-symbols-outlined analytics-sidebar__item-icon">
-                  account_balance
-                </span>
-                <span class="analytics-sidebar__item-label">Flujo de Caja</span>
-              </button>
-              <p v-if="sidebarHasTxs" class="analytics-sidebar__item-status">
-                Neto: {{ formatCompactCurrency(sidebarNetFlow, currency) }}
-              </p>
-              <p
-                v-else
-                class="analytics-sidebar__item-status analytics-sidebar__item-status--empty"
-              >
-                Sin movimientos este mes
-              </p>
-              <NuxtLink
-                v-if="!sidebarHasTxs"
-                to="/dashboard/budget"
-                class="analytics-sidebar__item-cta"
-              >
-                Ir al presupuesto
-              </NuxtLink>
-            </div>
+              Sin movimientos este mes
+            </p>
+            <NuxtLink
+              v-if="!sidebarHasTxs"
+              to="/dashboard/budget"
+              class="analytics-sidebar__section-cta"
+            >
+              Ir al presupuesto
+            </NuxtLink>
+          </div>
 
-            <!-- Gastos -->
-            <div
-              :class="[
-                'analytics-sidebar__item',
-                { 'analytics-sidebar__item--active': activeSection === 'gastos' }
-              ]"
+          <!-- Gastos -->
+          <div
+            :class="[
+              'analytics-sidebar__section',
+              { 'analytics-sidebar__section--active': activeSection === 'gastos' }
+            ]"
+          >
+            <button class="analytics-sidebar__section-head" @click="scrollTo('gastos')">
+              <span class="material-symbols-outlined analytics-sidebar__section-icon">
+                shopping_cart
+              </span>
+              <span class="analytics-sidebar__section-label">Gastos</span>
+            </button>
+            <p v-if="sidebarHasExpenses" class="analytics-sidebar__section-status">
+              {{ formatCompactCurrency(sidebarTotalExpense, currency) }}
+              <template v-if="sidebarTopCategory">· {{ sidebarTopCategory }}</template>
+            </p>
+            <p
+              v-else
+              class="analytics-sidebar__section-status analytics-sidebar__section-status--empty"
             >
-              <button class="analytics-sidebar__item-head" @click="scrollTo('gastos')">
-                <span class="material-symbols-outlined analytics-sidebar__item-icon">
-                  shopping_cart
-                </span>
-                <span class="analytics-sidebar__item-label">Gastos</span>
-              </button>
-              <p v-if="sidebarHasExpenses" class="analytics-sidebar__item-status">
-                {{ formatCompactCurrency(sidebarTotalExpense, currency) }}
-                <template v-if="sidebarTopCategory">· {{ sidebarTopCategory }}</template>
-              </p>
-              <p
-                v-else
-                class="analytics-sidebar__item-status analytics-sidebar__item-status--empty"
-              >
-                Sin gastos registrados
-              </p>
-              <NuxtLink
-                v-if="!sidebarHasExpenses"
-                to="/dashboard/budget"
-                class="analytics-sidebar__item-cta"
-              >
-                Registrar gasto
-              </NuxtLink>
-            </div>
+              Sin gastos registrados
+            </p>
+            <NuxtLink
+              v-if="!sidebarHasExpenses"
+              to="/dashboard/budget"
+              class="analytics-sidebar__section-cta"
+            >
+              Registrar gasto
+            </NuxtLink>
+          </div>
 
-            <!-- Ahorro -->
-            <div
-              :class="[
-                'analytics-sidebar__item',
-                { 'analytics-sidebar__item--active': activeSection === 'ahorro' }
-              ]"
+          <!-- Ahorro -->
+          <div
+            :class="[
+              'analytics-sidebar__section',
+              { 'analytics-sidebar__section--active': activeSection === 'ahorro' }
+            ]"
+          >
+            <button class="analytics-sidebar__section-head" @click="scrollTo('ahorro')">
+              <span class="material-symbols-outlined analytics-sidebar__section-icon">savings</span>
+              <span class="analytics-sidebar__section-label">Ahorro</span>
+            </button>
+            <p v-if="sidebarHasSavings" class="analytics-sidebar__section-status">
+              +{{ formatCompactCurrency(sidebarMonthSaving, currency) }} este mes
+            </p>
+            <p
+              v-else
+              class="analytics-sidebar__section-status analytics-sidebar__section-status--empty"
             >
-              <button class="analytics-sidebar__item-head" @click="scrollTo('ahorro')">
-                <span class="material-symbols-outlined analytics-sidebar__item-icon">savings</span>
-                <span class="analytics-sidebar__item-label">Ahorro</span>
-              </button>
-              <p v-if="sidebarHasSavings" class="analytics-sidebar__item-status">
-                +{{ formatCompactCurrency(sidebarMonthSaving, currency) }} este mes
-              </p>
-              <p
-                v-else
-                class="analytics-sidebar__item-status analytics-sidebar__item-status--empty"
-              >
-                Sin aportes este mes
-              </p>
-              <NuxtLink
-                v-if="!sidebarHasSavings"
-                to="/dashboard/goals"
-                class="analytics-sidebar__item-cta"
-              >
-                Ver metas
-              </NuxtLink>
-            </div>
+              Sin aportes este mes
+            </p>
+            <NuxtLink
+              v-if="!sidebarHasSavings"
+              to="/dashboard/goals"
+              class="analytics-sidebar__section-cta"
+            >
+              Ver metas
+            </NuxtLink>
+          </div>
 
-            <!-- Posición Neta -->
-            <div
-              :class="[
-                'analytics-sidebar__item',
-                { 'analytics-sidebar__item--active': activeSection === 'posicion' }
-              ]"
+          <!-- Posición Neta -->
+          <div
+            :class="[
+              'analytics-sidebar__section',
+              { 'analytics-sidebar__section--active': activeSection === 'posicion' }
+            ]"
+          >
+            <button class="analytics-sidebar__section-head" @click="scrollTo('posicion')">
+              <span class="material-symbols-outlined analytics-sidebar__section-icon">balance</span>
+              <span class="analytics-sidebar__section-label">Posición Neta</span>
+            </button>
+            <p v-if="sidebarHasDebts" class="analytics-sidebar__section-status">
+              Ratio: {{ sidebarRatioPct }}% ·
+              <span
+                :class="[
+                  'analytics-sidebar__ratio-badge',
+                  `analytics-sidebar__ratio-badge--${debtRatioStatus.color}`
+                ]"
+              >
+                {{ debtRatioStatus.label }}
+              </span>
+            </p>
+            <p
+              v-else
+              class="analytics-sidebar__section-status analytics-sidebar__section-status--ok"
             >
-              <button class="analytics-sidebar__item-head" @click="scrollTo('posicion')">
-                <span class="material-symbols-outlined analytics-sidebar__item-icon">balance</span>
-                <span class="analytics-sidebar__item-label">Posición Neta</span>
-              </button>
-              <p v-if="sidebarHasDebts" class="analytics-sidebar__item-status">
-                Ratio: {{ sidebarRatioPct }}% ·
-                <span
-                  :class="[
-                    'analytics-sidebar__ratio-badge',
-                    `analytics-sidebar__ratio-badge--${debtRatioStatus.color}`
-                  ]"
-                >
-                  {{ debtRatioStatus.label }}
-                </span>
-              </p>
-              <p v-else class="analytics-sidebar__item-status analytics-sidebar__item-status--ok">
-                ✓ Sin deudas registradas
-              </p>
-            </div>
-          </nav>
-        </div>
+              ✓ Sin deudas registradas
+            </p>
+          </div>
+        </SidebarPage>
       </aside>
     </div>
   </div>
@@ -427,9 +430,9 @@
     @apply flex min-w-0 flex-col gap-10;
   }
 
-  /* Sidebar hidden on mobile */
+  /* Sidebar: hidden on mobile, sticky on desktop */
   .analytics-page__sidebar {
-    @apply hidden lg:block;
+    @apply hidden lg:sticky lg:top-4 lg:block lg:self-start;
   }
 
   /* ── Sections ── */
@@ -445,12 +448,7 @@
     @apply border-t border-neutral-100;
   }
 
-  /* ── Sidebar ── */
-  .analytics-sidebar {
-    @apply sticky top-4 flex flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-3;
-    @apply dark:border-neutral-700 dark:bg-neutral-800;
-  }
-
+  /* Period badge */
   .analytics-sidebar__period {
     @apply flex items-center gap-1.5 rounded-lg bg-primary-50 px-2.5 py-1.5;
     @apply dark:bg-primary-900;
@@ -464,50 +462,52 @@
     @apply text-[11px] font-semibold text-primary-700 dark:text-primary-300;
   }
 
-  .analytics-sidebar__nav {
-    @apply flex flex-col divide-y divide-neutral-100;
+  /* Section cards */
+  .analytics-sidebar__section {
+    @apply flex flex-col gap-2 rounded-lg border border-neutral-100 bg-white p-3;
+    @apply transition-colors dark:border-neutral-700 dark:bg-neutral-800;
   }
 
-  /* Sidebar item */
-  .analytics-sidebar__item {
-    @apply flex flex-col gap-0.5 py-2;
+  .analytics-sidebar__section--active {
+    @apply border-primary-200 bg-primary-50;
+    @apply dark:border-primary-800 dark:bg-primary-900;
   }
 
-  .analytics-sidebar__item--active .analytics-sidebar__item-label {
-    @apply text-primary-700;
+  .analytics-sidebar__section-head {
+    @apply flex w-full items-center gap-2 text-left;
   }
 
-  .analytics-sidebar__item--active .analytics-sidebar__item-icon {
-    @apply text-primary-600;
-  }
-
-  .analytics-sidebar__item-head {
-    @apply flex w-full items-center gap-1.5 text-left;
-  }
-
-  .analytics-sidebar__item-icon {
+  .analytics-sidebar__section-icon {
     @apply shrink-0 text-sm leading-none text-neutral-400 transition-colors;
   }
 
-  .analytics-sidebar__item-label {
-    @apply text-xs font-semibold text-neutral-700 transition-colors;
+  .analytics-sidebar__section--active .analytics-sidebar__section-icon {
+    @apply text-primary-600;
+  }
+
+  .analytics-sidebar__section-label {
+    @apply flex-1 text-xs font-semibold text-neutral-700 transition-colors;
     @apply dark:text-neutral-300;
   }
 
-  .analytics-sidebar__item-status {
-    @apply pl-5 text-[11px] text-neutral-500;
+  .analytics-sidebar__section--active .analytics-sidebar__section-label {
+    @apply text-primary-700;
   }
 
-  .analytics-sidebar__item-status--empty {
+  .analytics-sidebar__section-status {
+    @apply text-[11px] text-neutral-500;
+  }
+
+  .analytics-sidebar__section-status--empty {
     @apply italic text-neutral-400;
   }
 
-  .analytics-sidebar__item-status--ok {
+  .analytics-sidebar__section-status--ok {
     @apply text-success-600;
   }
 
-  .analytics-sidebar__item-cta {
-    @apply mt-0.5 pl-5 text-[11px] font-medium text-primary-600 underline underline-offset-2;
+  .analytics-sidebar__section-cta {
+    @apply text-[11px] font-medium text-primary-600 underline underline-offset-2;
     @apply hover:text-primary-700;
   }
 

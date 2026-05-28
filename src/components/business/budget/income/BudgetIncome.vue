@@ -49,7 +49,7 @@
         title="Ingresos del Mes"
         sub-title="Marca tus ingresos como recibidos"
         weight="extrabold"
-        title-size="lg"
+        title-size="sm"
         sub-title-size="xs"
         sub-title-color="muted"
         icon="payments"

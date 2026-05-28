@@ -11,6 +11,7 @@
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
+  import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
   import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
@@ -571,161 +572,147 @@
       />
 
       <div class="goals-page__sidebar">
-        <!--  -->
-        <div v-if="budgetStatus !== 'ACTIVE'">
-          <div v-for="(step, index) in steps" :key="index" class="goals-page__tip-step">
-            <Tips
-              v-if="step.condition"
-              :title="step.title"
-              :icon="step.icon"
-              :description="step.description"
-              :action-label="step.actionLabel"
-              :event="step.event"
-            />
-          </div>
-        </div>
-
-        <div v-if="budgetStatus !== 'ACTIVE'">
-          <FinancialProgressCard
-            :title="'Setup'"
-            title-color="white"
-            :subtitle="'Configura tu estrategia'"
-            sub-title-color="white"
-            icon-name="settings_slow_motion"
-            icon-text-class="text-primary-600"
-            currency-text-class="text-primary-600"
-            show-alert
-            class="goals-page__setup-card"
-          >
-            <template #body>
-              <SetupProgressCard
-                :accounts-count="accounts.length"
-                :goals-count="goalsProgress"
-                :distribution-percentage="allocationProgress"
-              >
-                <template #action>
-                  <div v-if="canActive" class="goals-page__setup-action">
-                    <Text color="white" size="xs">
-                      ¡Todo listo para comenzar! Ya definiste tu ahorro y organización inicial.
-                      Ahora es momento de planificar tus gastos.
-                    </Text>
-                    <div class="goals-page__setup-button">
-                      <Button
-                        icon="rocket_launch"
-                        size="sm"
-                        variant="ghost"
-                        @click="activateBudget"
-                      >
-                        Activar
-                      </Button>
-                    </div>
-                  </div>
-                </template>
-              </SetupProgressCard>
-            </template>
-          </FinancialProgressCard>
-        </div>
-
-        <div class="goals-page__accounts-wrapper">
-          <div v-if="isAccountExits" class="goals-page__accounts-section">
-            <div class="goals-page__accounts-header">
-              <CardInfo
-                title="Mis Cuentas"
-                level="h2"
-                weight="extrabold"
-                sub-title="Gestiona tus cuentas"
-                sub-title-size="sm"
-                sub-title-color="muted"
-              />
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                icon="add"
-                icon-only
-                @click="createAccountSavings"
+        <SidebarPage>
+          <!--  -->
+          <div v-if="budgetStatus !== 'ACTIVE'">
+            <div v-for="(step, index) in steps" :key="index" class="goals-page__tip-step">
+              <Tips
+                v-if="step.condition"
+                :title="step.title"
+                :icon="step.icon"
+                :description="step.description"
+                :action-label="step.actionLabel"
+                :event="step.event"
               />
             </div>
-            <div class="goals-page__accounts-list">
-              <Card v-for="(account, index) in accounts" :key="index" class-name="!p-2">
-                <div class="goals-page__account-card">
-                  <div class="goals-page__account-info">
-                    <div class="goals-page__account-badge-wrapper">
-                      <div class="goals-page__account-badge-wrapper">
-                        <Badge
-                          :rounded="false"
-                          class="goals-page__account-badge"
-                          :variant="rateVariant(getRateCategory(account.interestRate).level)"
-                        >
-                          {{ getInitials(account.name) }}
-                        </Badge>
-                        <CardInfo
-                          level="h3"
-                          title-size="sm"
-                          weight="extrabold"
-                          :title="account.name"
-                          :sub-title="
-                            account.description ||
-                            getRateCategory(account.interestRate ?? 0).description
-                          "
-                          sub-title-size="xs"
-                          sub-title-color="muted"
-                        />
-                      </div>
-                      <div class="goals-page__account-edit">
+          </div>
+
+          <div v-if="budgetStatus !== 'ACTIVE'">
+            <FinancialProgressCard
+              :title="'Setup'"
+              title-color="white"
+              :subtitle="'Configura tu estrategia'"
+              sub-title-color="white"
+              icon-name="settings_slow_motion"
+              icon-text-class="text-primary-600"
+              currency-text-class="text-primary-600"
+              show-alert
+              class="goals-page__setup-card"
+            >
+              <template #body>
+                <SetupProgressCard
+                  :accounts-count="accounts.length"
+                  :goals-count="goalsProgress"
+                  :distribution-percentage="allocationProgress"
+                >
+                  <template #action>
+                    <div v-if="canActive" class="goals-page__setup-action">
+                      <Text color="white" size="xs">
+                        ¡Todo listo para comenzar! Ya definiste tu ahorro y organización inicial.
+                        Ahora es momento de planificar tus gastos.
+                      </Text>
+                      <div class="goals-page__setup-button">
                         <Button
-                          icon="edit"
-                          variant="ghost"
+                          icon="rocket_launch"
                           size="sm"
-                          icon-only
-                          @click="editAccount(account)"
-                        />
+                          variant="ghost"
+                          @click="activateBudget"
+                        >
+                          Activar
+                        </Button>
                       </div>
                     </div>
+                  </template>
+                </SetupProgressCard>
+              </template>
+            </FinancialProgressCard>
+          </div>
 
-                    <div class="goals-page__account-stats">
+          <div class="goals-page__accounts-wrapper">
+            <div v-if="isAccountExits" class="goals-page__accounts-section">
+              <div class="goals-page__accounts-header">
+                <CardInfo
+                  title="Mis Cuentas"
+                  level="h2"
+                  weight="extrabold"
+                  sub-title="Gestiona tus cuentas"
+                  sub-title-size="sm"
+                  sub-title-color="muted"
+                />
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  icon="add"
+                  icon-only
+                  @click="createAccountSavings"
+                />
+              </div>
+              <div class="goals-page__accounts-list">
+                <div
+                  v-for="(account, index) in accounts"
+                  :key="index"
+                  class="goals-page__account-row"
+                >
+                  <Badge
+                    :rounded="false"
+                    class="goals-page__account-badge"
+                    :variant="rateVariant(getRateCategory(account.interestRate).level)"
+                  >
+                    {{ getInitials(account.name) }}
+                  </Badge>
+                  <div class="goals-page__account-name">
+                    <span class="goals-page__account-name-text">{{ account.name }}</span>
+                    <div class="goals-page__account-meta">
                       <Badge :variant="frequencyVariant(account.compoundingFrequency)" size="xs">
                         {{ frequencyMap(account.compoundingFrequency) }}
                       </Badge>
                       <Text size="xs">{{ account.interestRate.toFixed(2) }}%EA</Text>
                     </div>
                   </div>
+                  <Button
+                    icon="edit"
+                    variant="ghost"
+                    size="sm"
+                    icon-only
+                    @click="editAccount(account)"
+                  />
                 </div>
-              </Card>
+              </div>
+            </div>
+
+            <div
+              v-else
+              class="goals-page__accounts-empty"
+              :class="[
+                {
+                  'goals-page__accounts-empty--bordered': !isAccountExits
+                }
+              ]"
+            >
+              <div class="goals-page__accounts-empty-content">
+                <IconBadge icon="account_balance" size="md" />
+                <Heading
+                  level="h1"
+                  size="sm"
+                  weight="extrabold"
+                  color="primary"
+                  class="goals-page__accounts-empty-title"
+                >
+                  No se han creado cuentas
+                </Heading>
+
+                <Text size="xs" color="muted" class="goals-page__accounts-empty-text">
+                  A continuacion crea las cuentas que vas a asociar a tus metas de ahorro
+                </Text>
+                <Button type="submit" size="sm" variant="ghost" @click="createAccountSavings">
+                  Agregar
+                </Button>
+              </div>
             </div>
           </div>
-
-          <div
-            v-else
-            class="goals-page__accounts-empty"
-            :class="[
-              {
-                'goals-page__accounts-empty--bordered': !isAccountExits
-              }
-            ]"
-          >
-            <div class="goals-page__accounts-empty-content">
-              <IconBadge icon="account_balance" size="md" />
-              <Heading
-                level="h1"
-                size="sm"
-                weight="extrabold"
-                color="primary"
-                class="goals-page__accounts-empty-title"
-              >
-                No se han creado cuentas
-              </Heading>
-
-              <Text size="xs" color="muted" class="goals-page__accounts-empty-text">
-                A continuacion crea las cuentas que vas a asociar a tus metas de ahorro
-              </Text>
-              <Button type="submit" size="sm" variant="ghost" @click="createAccountSavings">
-                Agregar
-              </Button>
-            </div>
-          </div>
-        </div>
+        </SidebarPage>
       </div>
     </div>
     <ModalWizard v-model:show="showGoalsForm">
@@ -820,11 +807,11 @@
   }
 
   .goals-page__grid {
-    @apply grid w-full grid-cols-12 gap-4;
+    @apply flex flex-col gap-6 lg:flex-row lg:items-start;
   }
 
   .goals-page__goals-section {
-    @apply col-span-8 flex flex-col gap-4;
+    @apply flex min-w-0 flex-1 flex-col gap-4;
   }
 
   .goals-page__goals-cards {
@@ -933,11 +920,16 @@
   }
 
   .goals-page__empty-section {
-    @apply col-span-8 rounded-md bg-slate-200;
+    @apply min-w-0 flex-1 rounded-md bg-slate-200;
   }
 
   .goals-page__sidebar {
-    @apply col-span-4 flex flex-col gap-4;
+    @apply w-full lg:sticky lg:top-4 lg:w-80 lg:shrink-0 lg:self-start;
+  }
+
+  /* Compact Card atoms in sidebar */
+  .goals-page__sidebar :deep(.card) {
+    @apply p-3;
   }
 
   .goals-page__tip-step {
@@ -957,47 +949,47 @@
   }
 
   .goals-page__accounts-wrapper {
-    @apply rounded-md bg-white px-2 py-3;
+    @apply rounded-lg border border-neutral-100 bg-white p-3;
   }
 
   .goals-page__accounts-section {
-    @apply flex max-h-[335px] min-h-[335px] flex-col space-y-4 p-2;
+    @apply flex flex-col gap-2;
   }
 
   .goals-page__accounts-header {
-    @apply flex justify-between;
+    @apply flex items-center justify-between;
   }
 
   .goals-page__accounts-list {
-    @apply flex max-h-80 flex-col space-y-2 overflow-y-auto rounded-md;
+    @apply flex max-h-48 flex-col gap-1.5 overflow-y-auto;
   }
 
-  .goals-page__account-card {
-    @apply flex w-full flex-col;
-  }
-
-  .goals-page__account-info {
-    @apply flex flex-col items-start gap-2;
-  }
-
-  .goals-page__account-badge-wrapper {
-    @apply flex w-full items-center gap-2;
+  .goals-page__account-row {
+    @apply flex items-center gap-2 rounded-md border border-neutral-100 bg-neutral-50 px-2 py-1.5;
   }
 
   .goals-page__account-badge {
-    @apply !py-3;
+    @apply shrink-0 !py-1.5;
   }
 
-  .goals-page__account-stats {
-    @apply ml-auto flex items-center gap-2;
+  .goals-page__account-name {
+    @apply flex min-w-0 flex-1 flex-col gap-0.5;
+  }
+
+  .goals-page__account-name-text {
+    @apply truncate text-xs font-semibold text-neutral-800;
+  }
+
+  .goals-page__account-meta {
+    @apply flex items-center gap-1.5;
   }
 
   .goals-page__accounts-empty {
-    @apply flex max-h-[335px] min-h-[335px] flex-col items-center justify-center p-2;
+    @apply flex flex-col items-center justify-center gap-3 py-4;
   }
 
   .goals-page__accounts-empty--bordered {
-    @apply border border-dashed border-neutral-400 bg-neutral-100;
+    @apply rounded-md border border-dashed border-neutral-400 bg-neutral-100;
   }
 
   .goals-page__accounts-empty-content {
@@ -1019,9 +1011,5 @@
 
   .goals-page__delete-actions {
     @apply flex justify-end gap-2;
-  }
-
-  .goals-page__account-edit {
-    @apply place-items-end;
   }
 </style>
