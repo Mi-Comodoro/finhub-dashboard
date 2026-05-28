@@ -49,7 +49,7 @@
     muted: 'text-slate-500 dark:text-slate-400',
     accent: 'text-primary-600 dark:text-teal-400',
     white: 'text-white',
-    black: 'text-black'
+    black: 'text-black dark:text-neutral-100'
   }
 
   const weightClasses = {

@@ -104,6 +104,7 @@
 
   .search-input__field {
     @apply flex items-center rounded-md border border-neutral-300 bg-white transition-all duration-200;
+    @apply dark:border-neutral-700 dark:bg-neutral-900;
   }
 
   .search-input__field:hover {
@@ -116,14 +117,17 @@
 
   .search-input__field--disabled {
     @apply cursor-not-allowed bg-neutral-100;
+    @apply dark:bg-neutral-800;
   }
 
   .search-input__icon {
     @apply flex items-center justify-center pl-3 text-neutral-400;
+    @apply dark:text-neutral-500;
   }
 
   .search-input__input {
     @apply flex-1 border-none bg-transparent text-neutral-900 outline-none placeholder:text-neutral-400;
+    @apply dark:text-neutral-100 dark:placeholder:text-neutral-500;
   }
 
   .search-input__input--sm {

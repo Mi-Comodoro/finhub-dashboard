@@ -111,6 +111,7 @@
 
   .user-avatar-dropdown__menu {
     @apply absolute right-0 top-11 z-50 min-w-52 rounded-xl border border-neutral-200 bg-white py-1 shadow-lg;
+    @apply dark:border-neutral-700 dark:bg-neutral-800 dark:shadow-neutral-900;
   }
 
   .user-avatar-dropdown__user-info {
@@ -119,27 +120,33 @@
 
   .user-avatar-dropdown__user-name {
     @apply text-sm font-semibold text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .user-avatar-dropdown__user-email {
     @apply mt-0.5 text-xs text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .user-avatar-dropdown__divider {
     @apply mx-2 my-1 border-t border-neutral-100;
+    @apply dark:border-neutral-700;
   }
 
   .user-avatar-dropdown__item {
     @apply flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-neutral-700 transition-colors duration-150;
     @apply hover:bg-neutral-50 hover:text-neutral-900;
+    @apply dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-neutral-100;
   }
 
   .user-avatar-dropdown__item--danger {
     @apply text-danger-600 hover:bg-danger-50 hover:text-danger-700;
+    @apply dark:hover:bg-danger-950 dark:text-danger-400 dark:hover:text-danger-300;
   }
 
   .user-avatar-dropdown__trigger--placeholder {
     @apply h-9 w-9 rounded-full bg-neutral-200;
+    @apply dark:bg-neutral-700;
   }
 
   .user-avatar-dropdown__item-icon {

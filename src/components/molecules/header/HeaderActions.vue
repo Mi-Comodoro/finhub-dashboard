@@ -74,6 +74,7 @@
   .header-actions__help-btn {
     @apply flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 transition-colors duration-150;
     @apply hover:bg-neutral-100 hover:text-primary-600;
+    @apply dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-primary-400;
   }
 
   .header-actions__help-icon {

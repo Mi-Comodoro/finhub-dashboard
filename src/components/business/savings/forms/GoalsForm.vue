@@ -175,6 +175,7 @@
 <style lang="postcss" scoped>
   .goals-form {
     @apply flex h-full w-full flex-col gap-2 rounded-md bg-white;
+    @apply dark:bg-neutral-800;
   }
 
   .goals-form__alert {

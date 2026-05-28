@@ -215,13 +215,16 @@
 
   .expense-planned-form__view-row {
     @apply flex items-start justify-between gap-4 border-b border-neutral-100 pb-2;
+    @apply dark:border-neutral-700;
   }
 
   .expense-planned-form__view-label {
     @apply text-sm font-medium text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .expense-planned-form__view-value {
     @apply text-sm font-semibold text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 </style>

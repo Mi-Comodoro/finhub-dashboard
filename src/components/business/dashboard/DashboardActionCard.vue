@@ -87,26 +87,32 @@
 
   .action-card--planned {
     @apply border-primary-200 bg-primary-50;
+    @apply dark:bg-primary-950 dark:border-primary-900;
   }
 
   .action-card--active-free {
     @apply border-secondary-200 bg-secondary-50;
+    @apply dark:bg-secondary-950 dark:border-secondary-900;
   }
 
   .action-card--closed-free {
     @apply border-warning-200 bg-warning-50;
+    @apply dark:bg-warning-950 dark:border-warning-900;
   }
 
   .action-card--committed {
     @apply border-success-200 bg-success-50;
+    @apply dark:bg-success-950 dark:border-success-900;
   }
 
   .action-card__label {
     @apply text-xs font-semibold uppercase tracking-wide text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .action-card__message {
     @apply text-xs leading-snug text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .action-card__actions {

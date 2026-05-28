@@ -20,10 +20,12 @@
   <div class="mx-auto w-full">
     <!-- Cabecera con Título y Valor -->
     <div class="mb-6 flex items-center justify-between">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-gray-500">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
         {{ label }}
       </h2>
-      <span class="text-2xl font-bold text-emerald-900">{{ modelValue }}%</span>
+      <span class="text-2xl font-bold text-emerald-900 dark:text-emerald-400">
+        {{ modelValue }}%
+      </span>
     </div>
 
     <!-- Contenedor del Slider -->
@@ -34,12 +36,14 @@
         min="0"
         max="100"
         step="1"
-        class="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-emerald-700"
+        class="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-emerald-700 dark:bg-neutral-700"
         @input="onChange"
       />
 
       <!-- Etiquetas de rango inferior (0, 50, 100) -->
-      <div class="mt-4 flex justify-between px-1 text-[10px] font-medium text-gray-400">
+      <div
+        class="mt-4 flex justify-between px-1 text-[10px] font-medium text-gray-400 dark:text-neutral-500"
+      >
         <span>0%</span>
         <span>50%</span>
         <span>100%</span>

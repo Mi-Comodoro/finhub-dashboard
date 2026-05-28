@@ -53,12 +53,14 @@
   }
   .calendar-grid__day {
     @apply flex h-9 w-9 items-center justify-center rounded-md text-sm transition hover:cursor-pointer;
+    @apply dark:text-slate-200;
   }
   .calendar-grid__day--selected {
     @apply bg-teal-600 font-semibold text-white;
   }
   .calendar-grid__day--range {
     @apply bg-teal-100 text-teal-700;
+    @apply dark:bg-teal-900/30 dark:text-teal-300;
   }
   .calendar-grid__day--start,
   .calendar-grid__day--end {
@@ -69,6 +71,6 @@
     @apply cursor-not-allowed bg-transparent text-transparent;
   }
   .calendar-grid__day:hover:not(.calendar-grid__day--disabled):not(.calendar-grid__day--selected) {
-    @apply bg-teal-50;
+    @apply bg-teal-50 dark:bg-teal-900/20;
   }
 </style>

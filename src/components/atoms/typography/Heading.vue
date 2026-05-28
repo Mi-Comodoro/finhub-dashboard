@@ -56,14 +56,14 @@
 
   const colorClasses = {
     primary: 'text-slate-900 dark:text-white',
-    secondary: 'text-secondary-700 dark:secondary-300',
+    secondary: 'text-secondary-700 dark:text-secondary-300',
     muted: 'text-slate-500 dark:text-slate-400',
     accent: 'text-teal-600 dark:text-teal-400',
     success: 'text-green-600 dark:text-green-400',
     warning: 'text-yellow-900 dark:text-yellow-400',
     error: 'text-red-600 dark:text-red-400',
     white: 'text-white',
-    black: 'text-black'
+    black: 'text-black dark:text-neutral-100'
   }
 
   const trackingClasses = {

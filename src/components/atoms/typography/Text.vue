@@ -65,7 +65,7 @@
     warning: 'text-yellow-900 dark:text-yellow-400',
     error: 'text-red-600 dark:text-red-400',
     white: 'text-white',
-    black: 'text-black',
+    black: 'text-black dark:text-neutral-100',
     inherit: 'text-inherit'
   }
 

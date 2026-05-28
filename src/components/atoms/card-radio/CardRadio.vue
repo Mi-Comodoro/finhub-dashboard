@@ -33,6 +33,7 @@
 <style scoped lang="postcss">
   .card-radio {
     @apply flex cursor-pointer flex-col items-center rounded-lg border border-neutral-200 transition-all;
+    @apply dark:border-neutral-700;
   }
 
   .card-radio--md {
@@ -45,14 +46,17 @@
 
   .card-radio--selected {
     @apply border-2 border-primary-500 bg-primary-50;
+    @apply dark:bg-primary-950 dark:border-primary-400;
   }
 
   .card-radio__icon {
     @apply text-primary-500;
+    @apply dark:text-primary-400;
   }
 
   .card-radio__label {
     @apply text-sm font-medium text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .card-radio--sm .card-radio__label {

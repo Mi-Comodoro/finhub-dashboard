@@ -23,11 +23,12 @@
 
   const variantClass = {
     primary: 'bg-primary-900 text-primary-100',
-    secondary: 'bg-secondary-50 text-secondary-600',
-    success: 'bg-green-50 text-green-600',
-    warning: 'bg-yellow-50 text-yellow-600',
-    danger: 'bg-red-50 text-red-600',
-    neutral: 'bg-neutral-50 text-neutral-600'
+    secondary:
+      'bg-secondary-50 text-secondary-600 dark:bg-secondary-900/20 dark:text-secondary-300',
+    success: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
+    warning: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400',
+    danger: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
+    neutral: 'bg-neutral-50 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
   } as const
   const iconResponsive = computed(() => {
     if (props.size === 'sm') return 'sm:text-sm sm:px-1'

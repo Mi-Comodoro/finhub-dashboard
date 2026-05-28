@@ -227,6 +227,7 @@
 <style scoped lang="postcss">
   .date-picker {
     @apply w-[340px] rounded-2xl bg-white p-4 shadow-lg;
+    @apply dark:bg-neutral-800;
   }
   .date-picker__header {
     @apply mb-4 flex items-center justify-between;

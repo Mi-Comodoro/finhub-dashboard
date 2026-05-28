@@ -138,6 +138,7 @@
 
   .btn--outline {
     @apply border border-slate-300 bg-transparent text-slate-900 hover:bg-slate-50 focus:ring-secondary-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500;
+    @apply dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700/50;
   }
 
   .btn--danger {
@@ -146,6 +147,7 @@
 
   .btn--ghost {
     @apply border border-slate-200 bg-neutral-100 text-slate-900 hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500;
+    @apply dark:border-slate-700 dark:bg-neutral-800 dark:text-slate-100 dark:hover:bg-neutral-700;
   }
 
   /* =========================
