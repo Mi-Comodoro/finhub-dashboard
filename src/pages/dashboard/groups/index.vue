@@ -7,7 +7,11 @@
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import { useFriendshipsStore } from '@/stores/friendships.store'
-  import type { FriendSearchResult, Friendship, FriendWithProfile } from '@/types/friendships.types'
+  import type {
+    FriendSearchResult,
+    FriendshipRequest,
+    FriendWithProfile
+  } from '@/types/friendships.types'
   import type { GroupType } from '@/types/groups.types'
 
   definePageMeta({
@@ -53,6 +57,7 @@
     handleSendRequest,
     handleAcceptRequest,
     handleRejectRequest,
+    handleCancelSent,
     handleRemoveFriend,
     handleSearchUsers
   } = useFriendshipsApplication()
@@ -99,8 +104,8 @@
     }
   }
 
-  const handleAccept = async (request: Friendship) => {
-    const { success, error } = await handleAcceptRequest(request.requesterId)
+  const handleAccept = async (request: FriendshipRequest) => {
+    const { success, error } = await handleAcceptRequest(request.requester.id)
     if (success) {
       successToast('Solicitud aceptada', 'Ahora son amigos')
     } else {
@@ -108,10 +113,23 @@
     }
   }
 
-  const handleReject = async (request: Friendship) => {
-    const { success, error } = await handleRejectRequest(request.requesterId)
+  const handleReject = async (request: FriendshipRequest) => {
+    const { success, error } = await handleRejectRequest(request.requester.id)
     if (success) {
       successToast('Solicitud rechazada', 'La solicitud fue rechazada')
+    } else {
+      errorToast(error?.title ?? 'Error', error?.message ?? '')
+    }
+  }
+
+  const cancelSentHandle = ref<string | null>(null)
+
+  const handleCancelRequest = async (addresseeId: string) => {
+    cancelSentHandle.value = addresseeId
+    const { success, error } = await handleCancelSent(addresseeId)
+    cancelSentHandle.value = null
+    if (success) {
+      successToast('Solicitud cancelada', 'La solicitud fue cancelada')
     } else {
       errorToast(error?.title ?? 'Error', error?.message ?? '')
     }
@@ -294,13 +312,26 @@
           <Heading level="h3" size="lg" weight="semibold">Sin solicitudes</Heading>
           <Text size="sm" color="muted">No tienes solicitudes de amistad pendientes.</Text>
         </div>
-        <div v-for="request in receivedRequests" :key="request.id" class="groups-page__friend-item">
+        <div
+          v-for="request in receivedRequests"
+          :key="request.friendshipId"
+          class="groups-page__friend-item"
+        >
           <div class="groups-page__friend-avatar">
-            <span class="material-symbols-outlined">person</span>
+            <span class="groups-page__friend-avatar-letter">
+              {{
+                (request.requester.displayName ?? request.requester.handle ?? '?')[0].toUpperCase()
+              }}
+            </span>
           </div>
           <div class="groups-page__friend-info">
-            <Text size="sm" weight="semibold">{{ request.requesterId }}</Text>
-            <Text size="xs" color="muted">Quiere ser tu amigo</Text>
+            <Text size="sm" weight="semibold">
+              {{ request.requester.displayName ?? request.requester.handle ?? 'Usuario' }}
+            </Text>
+            <Text v-if="request.requester.handle" size="xs" color="muted">
+              @{{ request.requester.handle }}
+            </Text>
+            <Text v-else size="xs" color="muted">Quiere ser tu amigo</Text>
           </div>
           <div class="groups-page__friend-actions">
             <Button size="sm" variant="primary" @click="handleAccept(request)">Aceptar</Button>
@@ -316,15 +347,34 @@
           <Heading level="h3" size="lg" weight="semibold">Sin solicitudes enviadas</Heading>
           <Text size="sm" color="muted">No has enviado solicitudes pendientes.</Text>
         </div>
-        <div v-for="request in sentRequests" :key="request.id" class="groups-page__friend-item">
+        <div
+          v-for="request in sentRequests"
+          :key="request.friendshipId"
+          class="groups-page__friend-item"
+        >
           <div class="groups-page__friend-avatar">
-            <span class="material-symbols-outlined">person</span>
+            <span class="groups-page__friend-avatar-letter">
+              {{
+                (request.addressee.displayName ?? request.addressee.handle ?? '?')[0].toUpperCase()
+              }}
+            </span>
           </div>
           <div class="groups-page__friend-info">
-            <Text size="sm" weight="semibold">{{ request.addresseeId }}</Text>
-            <Text size="xs" color="muted">Pendiente de respuesta</Text>
+            <Text size="sm" weight="semibold">
+              {{ request.addressee.displayName ?? request.addressee.handle ?? 'Usuario' }}
+            </Text>
+            <Text v-if="request.addressee.handle" size="xs" color="muted">
+              @{{ request.addressee.handle }}
+            </Text>
           </div>
-          <span class="groups-page__friend-status">Pendiente</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            :disabled="cancelSentHandle === request.addressee.id"
+            @click="handleCancelRequest(request.addressee.id)"
+          >
+            Cancelar
+          </Button>
         </div>
       </div>
     </template>
