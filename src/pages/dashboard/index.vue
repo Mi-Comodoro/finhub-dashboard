@@ -34,14 +34,12 @@
 
   const {
     loadDashboardData,
-    loadGoalContributionsForPeriod,
     currency,
     totalCommittedExpenses,
     expenses,
     totalSavingGenerated,
     totalSavingTarget,
     totalTransactionSavings,
-    totalGoalContributions,
     totalIncomeReceived,
     totalPlanned,
     totalExpensesPaid
@@ -130,12 +128,10 @@
     totalSavingTarget.value > 0 ? totalSavingTarget.value : buckets.value.savingsAmount
   )
 
-  // PLANNED → planned savings completed, ACTIVE/CLOSED → savings transactions + goal contributions
-  const realSavings = computed(() => {
-    const base =
-      budgetStatus.value === 'PLANNED' ? totalSavingGenerated.value : totalTransactionSavings.value
-    return base + totalGoalContributions.value
-  })
+  // PLANNED → planned savings completed, ACTIVE/CLOSED → actual savings transactions
+  const realSavings = computed(() =>
+    budgetStatus.value === 'PLANNED' ? totalSavingGenerated.value : totalTransactionSavings.value
+  )
 
   // LIBRE uses actual commitment so spontaneous savings are deducted
   const savingsBase = computed(() =>
@@ -232,10 +228,6 @@
 
       if (currentBudget.value?.id) {
         await loadDashboardData(currentBudget.value.id)
-        await loadGoalContributionsForPeriod(
-          currentBudget.value.year,
-          Number(currentBudget.value.month)
-        )
       }
 
       await Promise.all([loadGoalsData(), refreshHealthScore()])
