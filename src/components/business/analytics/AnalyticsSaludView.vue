@@ -103,9 +103,25 @@
     return sorted[0] ?? null
   })
 
+  const gaugeHint = computed(() => {
+    const score = healthScore.value?.totalScore ?? 0
+    if (score === 0) return 'Registra ingresos y gastos para ver tu diagnóstico real.'
+    if (score < 60)
+      return `Tu mayor oportunidad está en ${worstPillar.value?.label ?? 'los pilares'}.`
+    return 'Buen ritmo. Mantén el control de gastos para seguir subiendo.'
+  })
+
+  const PILLAR_HINTS: Record<string, string> = {
+    'Flujo de Caja': 'Lo que te queda después de cubrir tus gastos',
+    'Ahorro y Metas': 'Si cumples tu meta de ahorro mensual',
+    'Control de Gastos': 'Si gastas menos de lo que planificaste',
+    Deudas: 'Según el peso de tus deudas sobre tus ingresos'
+  }
+
   const insightText = computed(() => {
     if (!healthScore.value || !bestPillar.value) return null
     const score = healthScore.value.totalScore
+    if (score === 0) return null
     let text = `Tu mejor pilar es ${bestPillar.value.label} (${bestPillar.value.score}/${bestPillar.value.max} pts).`
     if (score < 60 && worstPillar.value && worstPillar.value.label !== bestPillar.value.label) {
       text += ` Para mejorar, enfócate en ${worstPillar.value.label}.`
@@ -187,6 +203,7 @@
             </svg>
             <div class="salud-view__level-label">
               <span class="salud-score__level" :class="scoreLevelClass">{{ levelLabel }}</span>
+              <p class="salud-gauge__hint">{{ gaugeHint }}</p>
             </div>
           </div>
 
@@ -220,31 +237,19 @@
             </span>
           </div>
 
-          <template v-if="pillar.isNeutral">
-            <div class="pillar-card__neutral">
-              <Badge size="xs">en planificación</Badge>
-              <Text size="xs" color="muted">
-                Registra tus deudas en Cuentas por Pagar para ver este indicador.
-              </Text>
-              <NuxtLink to="/dashboard/debts" class="pillar-card__neutral-link">
-                Registrar deudas
-              </NuxtLink>
-            </div>
-          </template>
-
-          <template v-else>
-            <div class="pillar-card__score-row">
-              <span class="pillar-card__score-value">{{ pillar.score }}</span>
-              <span class="pillar-card__score-max">/ {{ pillar.max }} pts</span>
-            </div>
-            <div class="pillar-card__track">
-              <div
-                class="pillar-bar"
-                :class="pillarBarClass(pillar.score, pillar.max)"
-                :style="{ width: `${Math.min((pillar.score / pillar.max) * 100, 100)}%` }"
-              />
-            </div>
-          </template>
+          <div class="pillar-card__score-row">
+            <span class="pillar-card__score-value">{{ pillar.isNeutral ? 0 : pillar.score }}</span>
+            <span class="pillar-card__score-max">/ {{ pillar.max }} pts</span>
+          </div>
+          <p class="pillar-card__hint">{{ PILLAR_HINTS[pillar.label] }}</p>
+          <div class="pillar-card__track">
+            <div
+              v-if="!pillar.isNeutral"
+              class="pillar-bar"
+              :class="pillarBarClass(pillar.score, pillar.max)"
+              :style="{ width: `${Math.min((pillar.score / pillar.max) * 100, 100)}%` }"
+            />
+          </div>
         </Card>
       </div>
 
@@ -319,11 +324,15 @@
   }
 
   .salud-view__level-label {
-    @apply mt-2;
+    @apply mt-2 flex flex-col items-center gap-1;
   }
 
   .salud-score__level {
     @apply text-base font-bold;
+  }
+
+  .salud-gauge__hint {
+    @apply max-w-[140px] text-center text-[11px] leading-tight text-neutral-500;
   }
 
   .salud-score__level--danger {
@@ -348,7 +357,7 @@
 
   /* Pillars grid */
   .salud-view__pillars {
-    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4;
+    @apply grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4;
   }
 
   /* Pillar card */
@@ -388,6 +397,10 @@
     @apply text-sm text-neutral-400;
   }
 
+  .pillar-card__hint {
+    @apply text-xs leading-tight text-neutral-400;
+  }
+
   .pillar-card__track {
     @apply h-2 overflow-hidden rounded-full bg-neutral-100;
   }
@@ -406,15 +419,6 @@
 
   .pillar-bar--low {
     @apply bg-danger-400;
-  }
-
-  .pillar-card__neutral {
-    @apply flex flex-col gap-2;
-  }
-
-  .pillar-card__neutral-link {
-    @apply text-xs font-medium text-primary-600 underline underline-offset-2;
-    @apply hover:text-primary-700 dark:text-primary-400;
   }
 
   .salud-scale {

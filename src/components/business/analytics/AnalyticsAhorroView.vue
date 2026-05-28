@@ -77,59 +77,69 @@
 
 <template>
   <div class="ahorro-view">
-    <div class="ahorro-view__kpis">
-      <div class="ahorro-view__kpi-card">
-        <div class="ahorro-view__kpi-icon">
-          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">account_balance</span>
+    <template v-if="isLoading || totalSaved > 0">
+      <div class="ahorro-view__kpis">
+        <div class="ahorro-view__kpi-card ahorro-view__kpi-card--neutral">
+          <div class="ahorro-view__kpi-icon ahorro-view__kpi-icon--neutral">
+            <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">account_balance</span>
+          </div>
+          <div class="ahorro-view__kpi-content">
+            <Text size="xs" color="muted">Saldo anterior al año</Text>
+            <p class="ahorro-view__kpi-value" :title="formatCurrency(0, currency.value)">
+              {{ formatCompactCurrency(0, currency.value) }}
+            </p>
+          </div>
         </div>
-        <div class="ahorro-view__kpi-content">
-          <Text size="xs" color="muted">Saldo anterior al año</Text>
-          <Heading level="h3" size="xl" weight="bold" color="black">
-            {{ formatCurrency(0, currency.value) }}
-          </Heading>
+
+        <div class="ahorro-view__kpi-card ahorro-view__kpi-card--warning">
+          <div class="ahorro-view__kpi-icon ahorro-view__kpi-icon--warning">
+            <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">savings</span>
+          </div>
+          <div class="ahorro-view__kpi-content">
+            <Text size="xs" color="muted">Ahorro del mes</Text>
+            <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
+            <p
+              v-else
+              class="ahorro-view__kpi-value"
+              :title="formatCurrency(selectedMonthSaving, currency.value)"
+            >
+              {{ formatCompactCurrency(selectedMonthSaving, currency.value) }}
+            </p>
+          </div>
+        </div>
+
+        <div class="ahorro-view__kpi-card ahorro-view__kpi-card--success">
+          <div class="ahorro-view__kpi-icon ahorro-view__kpi-icon--success">
+            <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">query_stats</span>
+          </div>
+          <div class="ahorro-view__kpi-content">
+            <Text size="xs" color="muted">Estimación mensual</Text>
+            <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
+            <p
+              v-else
+              class="ahorro-view__kpi-value"
+              :title="formatCurrency(monthlyAvg, currency.value)"
+            >
+              {{ formatCompactCurrency(monthlyAvg, currency.value) }}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div class="ahorro-view__kpi-card">
-        <div class="ahorro-view__kpi-icon">
-          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">savings</span>
-        </div>
-        <div class="ahorro-view__kpi-content">
-          <Text size="xs" color="muted">Ahorro del mes</Text>
-          <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
-          <Heading v-else level="h3" size="xl" weight="bold" color="black">
-            {{ formatCurrency(selectedMonthSaving, currency.value) }}
-          </Heading>
-        </div>
+      <div class="ahorro-insight">
+        <span class="material-symbols-outlined ahorro-insight__icon">tips_and_updates</span>
+        <Text size="xs" color="muted">
+          El ahorro constante, aunque pequeño, genera más impacto que un gran esfuerzo esporádico.
+          Automatiza tus aportes para mantener el hábito.
+        </Text>
       </div>
-
-      <div class="ahorro-view__kpi-card">
-        <div class="ahorro-view__kpi-icon">
-          <span class="material-symbols-outlined ahorro-view__kpi-icon-svg">query_stats</span>
-        </div>
-        <div class="ahorro-view__kpi-content">
-          <Text size="xs" color="muted">Estimación mensual</Text>
-          <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
-          <Heading v-else level="h3" size="xl" weight="bold" color="black">
-            {{ formatCurrency(monthlyAvg, currency.value) }}
-          </Heading>
-        </div>
-      </div>
-    </div>
-
-    <div class="ahorro-insight">
-      <span class="material-symbols-outlined ahorro-insight__icon">tips_and_updates</span>
-      <Text size="xs" color="muted">
-        El ahorro constante, aunque pequeño, genera más impacto que un gran esfuerzo esporádico.
-        Automatiza tus aportes para mantener el hábito.
-      </Text>
-    </div>
+    </template>
 
     <div v-if="!isLoading && totalSaved === 0" class="analytics-view__empty">
       <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
-      <p class="analytics-view__empty-title">Sin datos de ahorro</p>
+      <p class="analytics-view__empty-title">Sin aportes registrados</p>
       <p class="analytics-view__empty-description">
-        Completa un aporte a tus metas para ver tu tendencia
+        Completa un aporte a tus metas para ver tu tendencia de ahorro.
       </p>
       <NuxtLink to="/dashboard/goals" class="analytics-view__empty-cta">Ver metas</NuxtLink>
     </div>
@@ -175,19 +185,60 @@
   }
 
   .ahorro-view__kpi-card {
-    @apply flex items-start gap-3 rounded-xl border border-warning-100 bg-warning-50 p-4;
+    @apply flex min-w-0 items-start gap-3 rounded-xl border p-4;
+  }
+
+  .ahorro-view__kpi-card--neutral {
+    @apply border-neutral-200 bg-neutral-50;
+  }
+
+  .ahorro-view__kpi-card--warning {
+    @apply border-warning-100 bg-warning-50;
+  }
+
+  .ahorro-view__kpi-card--success {
+    @apply border-success-100 bg-success-50;
   }
 
   .ahorro-view__kpi-icon {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning-100;
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg;
+  }
+
+  .ahorro-view__kpi-icon--neutral {
+    @apply bg-neutral-200;
+  }
+
+  .ahorro-view__kpi-icon--warning {
+    @apply bg-warning-100;
+  }
+
+  .ahorro-view__kpi-icon--success {
+    @apply bg-success-100;
   }
 
   .ahorro-view__kpi-icon-svg {
-    @apply text-xl leading-none text-warning-600;
+    @apply text-xl leading-none;
+  }
+
+  .ahorro-view__kpi-icon--neutral .ahorro-view__kpi-icon-svg {
+    @apply text-neutral-600;
+  }
+
+  .ahorro-view__kpi-icon--warning .ahorro-view__kpi-icon-svg {
+    @apply text-warning-600;
+  }
+
+  .ahorro-view__kpi-icon--success .ahorro-view__kpi-icon-svg {
+    @apply text-success-600;
   }
 
   .ahorro-view__kpi-content {
-    @apply flex flex-col gap-0.5;
+    @apply flex min-w-0 flex-col gap-0.5;
+    overflow-wrap: anywhere;
+  }
+
+  .ahorro-view__kpi-value {
+    @apply font-sans text-lg font-bold leading-snug text-black;
   }
 
   .ahorro-view__kpi-skeleton {

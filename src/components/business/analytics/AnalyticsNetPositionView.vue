@@ -14,7 +14,7 @@
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import { useAnalyticsNetPositionApplication } from '@/composables/application/useAnalyticsNetPositionApplication'
-  import { formatCompactCurrency, formatCurrency, formatNumber } from '@/utils/currency'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
   use([LineChart, BarChart, GridComponent, TooltipComponent, CanvasRenderer])
@@ -118,9 +118,12 @@
           </div>
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Activos fijos</Text>
-            <Heading level="h3" size="xl" weight="bold" color="black">
-              {{ formatCurrency(netPosition.totalAssets, 'COP') }}
-            </Heading>
+            <p
+              class="net-position-view__kpi-value"
+              :title="formatCurrency(netPosition.totalAssets, 'COP')"
+            >
+              {{ formatCompactCurrency(netPosition.totalAssets, 'COP') }}
+            </p>
           </div>
         </div>
 
@@ -133,9 +136,12 @@
           </div>
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Deudas totales</Text>
-            <Heading level="h3" size="xl" weight="bold" color="black">
-              {{ formatCurrency(netPosition.totalDebts, 'COP') }}
-            </Heading>
+            <p
+              class="net-position-view__kpi-value"
+              :title="formatCurrency(netPosition.totalDebts, 'COP')"
+            >
+              {{ formatCompactCurrency(netPosition.totalDebts, 'COP') }}
+            </p>
           </div>
         </div>
 
@@ -146,9 +152,12 @@
           </div>
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Por cobrar</Text>
-            <Heading level="h3" size="xl" weight="bold" color="black">
-              {{ formatCurrency(netPosition.totalReceivable, 'COP') }}
-            </Heading>
+            <p
+              class="net-position-view__kpi-value"
+              :title="formatCurrency(netPosition.totalReceivable, 'COP')"
+            >
+              {{ formatCompactCurrency(netPosition.totalReceivable, 'COP') }}
+            </p>
           </div>
         </div>
 
@@ -169,20 +178,15 @@
           </div>
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Posición neta</Text>
-            <Heading level="h3" size="xl" weight="bold" color="black">
-              {{ formatCurrency(netPosition.netPosition, 'COP') }}
-            </Heading>
+            <p
+              class="net-position-view__kpi-value"
+              :title="formatCurrency(netPosition.netPosition, 'COP')"
+            >
+              {{ formatCompactCurrency(netPosition.netPosition, 'COP') }}
+            </p>
+            <p class="net-position-view__kpi-hint">Activos + Por cobrar − Deudas</p>
           </div>
         </div>
-      </div>
-
-      <!-- Insight formula -->
-      <div class="net-position-view__insight">
-        <span class="material-symbols-outlined net-position-view__insight-icon">info</span>
-        <Text size="xs" color="muted">
-          Posición Neta = Activos Fijos + Por Cobrar − Deudas. Un valor positivo indica que tus
-          activos superan tus obligaciones.
-        </Text>
       </div>
 
       <template v-if="netPosition.totalDebts > 0">
@@ -211,15 +215,17 @@
           </div>
 
           <div class="net-position-view__ratio-meta">
-            <Text size="sm" color="muted">
-              Por cada $1 de ingreso anual, debes ${{
-                formatNumber(netPosition.debtToIncomeRatio, 'COP', 2)
-              }}
-            </Text>
             <Text size="sm" weight="semibold">
               {{ (netPosition.debtToIncomeRatio * 100).toFixed(1) }}%
             </Text>
           </div>
+          <p class="net-position-view__ratio-hint">
+            <template v-if="netPosition.debtToIncomeRatio > 0">
+              Por cada ${{ Math.round(100 / (netPosition.debtToIncomeRatio * 100)) }} que ganas,
+              debes $1.
+            </template>
+            <template v-else>No tienes deudas. Excelente posición.</template>
+          </p>
         </div>
 
         <!-- Debt projection chart -->
@@ -317,7 +323,7 @@
   }
 
   .net-position-view__kpi-card {
-    @apply flex items-start gap-3 rounded-xl border p-4;
+    @apply flex min-w-0 items-start gap-3 rounded-xl border p-4;
   }
 
   .net-position-view__kpi-card--primary {
@@ -365,7 +371,16 @@
   }
 
   .net-position-view__kpi-body {
-    @apply flex flex-col gap-0.5;
+    @apply flex min-w-0 flex-col gap-0.5;
+    overflow-wrap: anywhere;
+  }
+
+  .net-position-view__kpi-value {
+    @apply font-sans text-lg font-bold leading-snug text-black;
+  }
+
+  .net-position-view__kpi-hint {
+    @apply text-[11px] leading-tight text-neutral-400;
   }
 
   /* Ratio card */
@@ -417,6 +432,10 @@
     @apply flex items-center justify-between gap-2;
   }
 
+  .net-position-view__ratio-hint {
+    @apply text-xs text-neutral-500;
+  }
+
   /* Chart card */
   .net-position-view__chart-card {
     @apply rounded-xl border border-neutral-200 bg-white;
@@ -452,15 +471,6 @@
 
   .net-position-view__chart-empty {
     @apply flex h-40 items-center justify-center;
-  }
-
-  .net-position-view__insight {
-    @apply flex items-start gap-2 rounded-lg bg-neutral-50 px-3 py-2.5;
-    @apply dark:bg-neutral-800;
-  }
-
-  .net-position-view__insight-icon {
-    @apply shrink-0 text-base leading-none text-neutral-400;
   }
 
   .net-position-view__no-debts {

@@ -77,14 +77,6 @@
       </div>
 
       <template v-else>
-        <div class="gastos-view__bubble">
-          <span class="material-symbols-outlined gastos-view__bubble-icon">info</span>
-          <Text size="xs" color="muted">
-            Los gastos se clasifican en Necesidades (esenciales), Deseos (discrecionales) y Ahorro
-            (aportes a metas). Analiza cómo se distribuyen los tuyos.
-          </Text>
-        </div>
-
         <Card class="gastos-view__card">
           <div class="gastos-view__header">
             <Heading level="h3" size="lg" weight="semibold">Distribución de Gastos</Heading>
@@ -265,14 +257,5 @@
 
   .gastos-table__cell--right {
     @apply text-right;
-  }
-
-  .gastos-view__bubble {
-    @apply flex items-start gap-2 rounded-lg bg-primary-50 px-3 py-2.5;
-    @apply dark:bg-primary-900/20;
-  }
-
-  .gastos-view__bubble-icon {
-    @apply shrink-0 text-base leading-none text-primary-600;
   }
 </style>
