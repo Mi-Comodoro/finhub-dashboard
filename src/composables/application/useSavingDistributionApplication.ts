@@ -3,7 +3,7 @@
  * Coordinates business logic for saving distribution form
  */
 
-import type { ComputedRef } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 
 import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
@@ -22,6 +22,12 @@ interface GoalOption {
   label: string
   value: string
   disabled: boolean
+}
+
+export interface AllocationItem {
+  goalId: string
+  goalName: string
+  percentage: number
 }
 
 export function useSavingDistributionApplication() {
@@ -113,6 +119,22 @@ export function useSavingDistributionApplication() {
     }
   }
 
+  /**
+   * Get per-goal allocation items for a budget (reactive, accepts a Ref)
+   */
+  const getAllocationItems = (budgetId: Ref<string | null>): ComputedRef<AllocationItem[]> => {
+    return computed(() => {
+      if (!budgetId.value) return []
+      return savingsAllocationsStore.savingAllocations
+        .filter(a => a.budgetId === budgetId.value)
+        .map(a => ({
+          goalId: a.goalId,
+          goalName: goalsStore.goals.find(g => g.id === a.goalId)?.name ?? 'Meta desconocida',
+          percentage: Number(a.percentage ?? 0)
+        }))
+    })
+  }
+
   const updateDistribution = async (
     budgetId: string,
     distributions: Array<{ goalId: string; percentage: number }>
@@ -131,6 +153,7 @@ export function useSavingDistributionApplication() {
     getSavingsAmount,
     getGoalOptions,
     getTotalAllocatedPercentage,
+    getAllocationItems,
     submitAllocation,
     updateDistribution
   }

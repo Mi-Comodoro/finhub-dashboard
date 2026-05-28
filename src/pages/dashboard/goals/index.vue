@@ -16,6 +16,7 @@
   import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
+  import { useSavingDistributionApplication } from '@/composables/application/useSavingDistributionApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
   import type { CompoundingFrequency, GoalsData, Transaction } from '@/types/api'
@@ -281,6 +282,12 @@
   }
   const isAccountExits = computed(() => accounts.value?.length >= 1)
   const isGoalsExists = computed(() => goalsProgress.value >= 1)
+
+  const { getAllocationItems } = useSavingDistributionApplication()
+  const distributionItems = getAllocationItems(currentBudgetId)
+  const distributionTotal = computed(() =>
+    distributionItems.value.reduce((acc, item) => acc + item.percentage, 0)
+  )
 
   const showSavingDistributionForm = ref(false)
   const createSavingDistributionForm = () => {
@@ -712,6 +719,73 @@
               </div>
             </div>
           </div>
+
+          <!-- Distribución de Ahorro -->
+          <div class="goals-page__distribution">
+            <CardInfo
+              title="Distribución de Ahorro"
+              level="h2"
+              weight="extrabold"
+              title-size="sm"
+              sub-title="Cuánto del ahorro mensual va a cada meta"
+              sub-title-size="xs"
+              sub-title-color="muted"
+            />
+
+            <!-- Empty state -->
+            <div v-if="distributionItems.length === 0" class="goals-page__distribution-empty">
+              <span class="material-symbols-outlined goals-page__distribution-empty-icon">
+                pie_chart
+              </span>
+              <p class="goals-page__distribution-empty-title">Aún no tienes metas</p>
+              <p class="goals-page__distribution-empty-desc">
+                Crea una meta para empezar a distribuir tu ahorro.
+              </p>
+            </div>
+
+            <!-- Distribution list + total + button -->
+            <template v-else>
+              <div class="goals-page__distribution-list">
+                <div
+                  v-for="item in distributionItems"
+                  :key="item.goalId"
+                  class="goals-page__distribution-row"
+                >
+                  <span class="goals-page__distribution-name">{{ item.goalName }}</span>
+                  <span class="goals-page__distribution-pct">{{ item.percentage }}%</span>
+                  <div class="goals-page__distribution-track">
+                    <div
+                      class="goals-page__distribution-fill"
+                      :style="{ width: `${item.percentage}%` }"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="goals-page__distribution-total"
+                :class="{
+                  'goals-page__distribution-total--complete': distributionTotal === 100,
+                  'goals-page__distribution-total--warning': distributionTotal !== 100
+                }"
+              >
+                <span class="material-symbols-outlined goals-page__distribution-total-icon">
+                  {{ distributionTotal === 100 ? 'check_circle' : 'warning' }}
+                </span>
+                <span class="goals-page__distribution-total-text">
+                  {{
+                    distributionTotal === 100
+                      ? '100% asignado'
+                      : `Distribución incompleta · ${distributionTotal}% asignado`
+                  }}
+                </span>
+              </div>
+
+              <Button size="sm" variant="ghost" icon="edit" @click="openDistributionEditForm">
+                Editar distribución
+              </Button>
+            </template>
+          </div>
         </SidebarPage>
       </div>
     </div>
@@ -1011,5 +1085,71 @@
 
   .goals-page__delete-actions {
     @apply flex justify-end gap-2;
+  }
+
+  /* Distribución de ahorro */
+  .goals-page__distribution {
+    @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-3;
+  }
+
+  .goals-page__distribution-empty {
+    @apply flex flex-col items-center gap-1.5 py-3 text-center;
+  }
+
+  .goals-page__distribution-empty-icon {
+    @apply text-2xl text-neutral-300;
+  }
+
+  .goals-page__distribution-empty-title {
+    @apply text-xs font-semibold text-neutral-600;
+  }
+
+  .goals-page__distribution-empty-desc {
+    @apply max-w-[180px] text-xs text-neutral-400;
+  }
+
+  .goals-page__distribution-list {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .goals-page__distribution-row {
+    @apply grid items-center gap-2;
+    grid-template-columns: minmax(0, 1fr) 2.5rem minmax(0, 2fr);
+  }
+
+  .goals-page__distribution-name {
+    @apply truncate text-xs text-neutral-700;
+  }
+
+  .goals-page__distribution-pct {
+    @apply text-right text-xs font-semibold text-neutral-900;
+  }
+
+  .goals-page__distribution-track {
+    @apply h-1.5 overflow-hidden rounded-full bg-neutral-100;
+  }
+
+  .goals-page__distribution-fill {
+    @apply h-full rounded-full bg-primary-500 transition-all duration-500;
+  }
+
+  .goals-page__distribution-total {
+    @apply flex items-center gap-1.5 rounded-md px-2 py-1.5 transition-colors;
+  }
+
+  .goals-page__distribution-total--complete {
+    @apply bg-success-50 text-success-700;
+  }
+
+  .goals-page__distribution-total--warning {
+    @apply bg-warning-50 text-warning-700;
+  }
+
+  .goals-page__distribution-total-icon {
+    @apply shrink-0 text-sm leading-none;
+  }
+
+  .goals-page__distribution-total-text {
+    @apply text-xs font-medium;
   }
 </style>

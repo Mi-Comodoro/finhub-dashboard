@@ -104,7 +104,7 @@
             v-model.number="row.percentage"
             type="number"
             min="1"
-            max="100"
+            max="99"
             class="distribution-edit-form__input"
           />
           <span class="distribution-edit-form__input-suffix">%</span>
@@ -126,6 +126,18 @@
     <AlertBanner v-if="isOverAllocated" icon="warning" variant="danger">
       <Text size="sm" color="error">
         La suma de porcentajes ({{ totalPercentage }}%) supera el 100%.
+      </Text>
+    </AlertBanner>
+
+    <AlertBanner
+      v-else-if="totalPercentage > 0 && totalPercentage < 100"
+      icon="info"
+      variant="warning"
+    >
+      <Text size="sm" color="warning">
+        Te quedan
+        <strong>{{ 100 - totalPercentage }}%</strong>
+        sin asignar.
       </Text>
     </AlertBanner>
 
