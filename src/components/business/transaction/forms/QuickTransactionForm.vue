@@ -124,8 +124,15 @@
     () => formData.value['type'],
     newType => {
       selectedType.value = String(newType ?? '')
+      formData.value = { ...formData.value, categoryId: '' }
     }
   )
+
+  watch(filteredCategoryOptions, newOptions => {
+    if (newOptions.length > 0 && !formData.value['categoryId']) {
+      formData.value = { ...formData.value, categoryId: newOptions[0].value }
+    }
+  })
 
   const savingsAmount = computed(() => {
     const amount = Number(pendingFormData.value?.['amount'] ?? 0)

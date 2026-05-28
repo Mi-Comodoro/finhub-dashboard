@@ -537,11 +537,17 @@
         <div class="transaction-detail__grid">
           <div class="transaction-detail__field">
             <Text size="xs" color="muted">Fuente</Text>
-            <Text size="xs">{{ formatText(selectedTransaction.source) || 'N/A' }}</Text>
+            <Text size="xs">{{ formatText(selectedTransaction.source) || '—' }}</Text>
           </div>
           <div class="transaction-detail__field">
             <Text size="xs" color="muted">Categoria</Text>
-            <Text size="xs">{{ selectedTransaction.category?.name || 'N/A' }}</Text>
+            <Text size="xs">
+              {{
+                selectedTransaction.type === 'income' || selectedTransaction.type === 'savings'
+                  ? '—'
+                  : selectedTransaction.category?.name || '—'
+              }}
+            </Text>
           </div>
           <div class="transaction-detail__field">
             <Text size="xs" color="muted">Planificacion</Text>
