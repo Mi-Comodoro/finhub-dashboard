@@ -225,7 +225,7 @@
 
   .income-form__savings-preview {
     @apply flex items-start gap-3 rounded-lg bg-primary-50 p-4;
-    @apply dark:bg-primary-950;
+    @apply dark:bg-primary-900;
   }
 
   .income-form__savings-icon {

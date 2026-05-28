@@ -205,7 +205,7 @@
 
   .radio-card-option--selected {
     @apply border-primary-500 bg-primary-50 text-primary-900 hover:border-primary-500;
-    @apply dark:bg-primary-950 dark:border-primary-400 dark:text-primary-100;
+    @apply dark:border-primary-400 dark:bg-primary-900 dark:text-primary-100;
   }
 
   .radio-card-option--disabled {

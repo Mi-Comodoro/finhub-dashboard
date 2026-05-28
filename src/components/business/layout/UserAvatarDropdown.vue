@@ -141,7 +141,7 @@
 
   .user-avatar-dropdown__item--danger {
     @apply text-danger-600 hover:bg-danger-50 hover:text-danger-700;
-    @apply dark:hover:bg-danger-950 dark:text-danger-400 dark:hover:text-danger-300;
+    @apply dark:text-danger-400 dark:hover:bg-danger-900 dark:hover:text-danger-300;
   }
 
   .user-avatar-dropdown__trigger--placeholder {

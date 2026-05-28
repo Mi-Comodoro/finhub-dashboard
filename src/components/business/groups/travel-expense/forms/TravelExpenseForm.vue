@@ -313,7 +313,7 @@
 
   .travel-expense-form__preview {
     @apply flex items-center gap-1 rounded-lg bg-primary-50 px-3 py-2;
-    @apply dark:bg-primary-950;
+    @apply dark:bg-primary-900;
   }
 
   .travel-expense-form__preview-icon {
@@ -353,7 +353,7 @@
 
   .travel-expense-form__error {
     @apply rounded-lg bg-danger-50 px-3 py-2;
-    @apply dark:bg-danger-950;
+    @apply dark:bg-danger-900;
   }
 
   .travel-expense-form__actions {

@@ -46,7 +46,7 @@
 
   .card-radio--selected {
     @apply border-2 border-primary-500 bg-primary-50;
-    @apply dark:bg-primary-950 dark:border-primary-400;
+    @apply dark:border-primary-400 dark:bg-primary-900;
   }
 
   .card-radio__icon {
