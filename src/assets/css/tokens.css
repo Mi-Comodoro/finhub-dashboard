@@ -1,0 +1,68 @@
+/* ============================================================
+   DESIGN SYSTEM TOKENS — Mi Comodoro
+   Referenciables como var(--token) en @apply, :style o CSS puro.
+   Light mode: :root | Dark mode: .dark
+   ============================================================ */
+
+:root {
+  /* --- SURFACES (escala de profundidad) --- */
+  --surface-base: #f1f5f9; /* fondo de página */
+  --surface-1: #ffffff; /* cards principales */
+  --surface-2: #f0f1f6; /* cards anidados, inputs */
+  --surface-3: #e8e9f0; /* tooltips, dropdowns, tracks */
+  --surface-border: rgba(0, 0, 0, 0.08);
+
+  /* --- TIPOGRAFÍA (escala de contraste) --- */
+  --text-primary: #111827; /* headings, valores monetarios */
+  --text-secondary: #4b5563; /* subtítulos, labels */
+  --text-tertiary: #9ca3af; /* metadata, captions, placeholders */
+  --text-disabled: #d1d5db;
+
+  /* --- SEMÁNTICOS DE NEGOCIO --- */
+  --color-income: #14b8a6; /* Ingresos — teal */
+  --color-saving: #f59e0b; /* Ahorro — amber */
+  --color-expense-fixed: #6366f1; /* Gastos fijos — indigo */
+  --color-expense-variable: #8b5cf6; /* Gastos variables — violet */
+  --color-free: #10b981; /* Libre sin comprometer — emerald */
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* --- SOMBRAS --- */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* --- DISPLAY MONETARIO --- */
+  --display-l-size: 2rem; /* card principal — Ingresos, Libre */
+  --display-m-size: 1.5rem; /* cards secundarios — Ahorro, Gastos */
+  --display-s-size: 1.125rem; /* items de lista, metas individuales */
+}
+
+.dark {
+  /* --- SURFACES --- */
+  --surface-base: #0b0d17;
+  --surface-1: #13151f;
+  --surface-2: #1c1f2e;
+  --surface-3: #252838;
+  --surface-border: rgba(255, 255, 255, 0.07);
+
+  /* --- TIPOGRAFÍA --- */
+  --text-primary: #ffffff;
+  --text-secondary: #8a8fa8;
+  --text-tertiary: #565a72;
+  --text-disabled: #383b52;
+
+  /* --- SEMÁNTICOS DE NEGOCIO (más luminosos sobre fondo oscuro) --- */
+  --color-income: #2dd4bf;
+  --color-saving: #fbbf24;
+  --color-expense-fixed: #818cf8;
+  --color-expense-variable: #a78bfa;
+  --color-free: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+
+  /* --- SOMBRAS (más pronunciadas en oscuro) --- */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+}

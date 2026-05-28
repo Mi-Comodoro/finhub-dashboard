@@ -893,6 +893,7 @@
 
   .goals-page__filter-chip {
     @apply rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-all hover:border-primary-500 hover:bg-primary-50;
+    @apply dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:border-primary-500 dark:hover:bg-primary-900/20;
   }
 
   .goals-page__filter-chip--active {
@@ -902,6 +903,7 @@
   /* Toggle vista */
   .goals-page__view-toggle {
     @apply flex gap-1 rounded-lg border border-neutral-200 bg-neutral-50 p-1;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-page__view-btn--active {
@@ -939,22 +941,27 @@
 
   .goals-page__table {
     @apply w-full min-w-[570px] table-fixed border-collapse bg-white;
+    @apply dark:bg-neutral-800;
   }
 
   .goals-page__table thead {
     @apply bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__table th {
     @apply px-4 py-3 text-left text-xs font-semibold text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .goals-page__table td {
     @apply border-t border-neutral-200 px-4 py-3 text-sm text-neutral-800;
+    @apply dark:border-neutral-700 dark:text-neutral-200;
   }
 
   .goals-page__table tbody tr:hover {
     @apply bg-neutral-50;
+    @apply dark:bg-neutral-700/50;
   }
 
   .goals-page__table-row {
@@ -979,6 +986,7 @@
 
   .goals-page__progress-bar {
     @apply h-2 w-16 overflow-hidden rounded-full bg-neutral-200 xl:w-24;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__progress-fill {
@@ -987,6 +995,7 @@
 
   .goals-page__progress-text {
     @apply text-xs font-medium text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .goals-page__achievement-card {
@@ -1027,6 +1036,7 @@
 
   .goals-page__empty-section {
     @apply min-w-0 flex-1 rounded-md bg-slate-200;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__sidebar {
@@ -1056,6 +1066,7 @@
 
   .goals-page__accounts-wrapper {
     @apply rounded-lg border border-neutral-100 bg-white p-3;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-page__accounts-section {
@@ -1072,6 +1083,7 @@
 
   .goals-page__account-row {
     @apply flex items-center gap-2 rounded-md border border-neutral-100 bg-neutral-50 px-2 py-1.5;
+    @apply dark:border-neutral-700 dark:bg-neutral-700/50;
   }
 
   .goals-page__account-badge {
@@ -1084,6 +1096,7 @@
 
   .goals-page__account-name-text {
     @apply truncate text-xs font-semibold text-neutral-800;
+    @apply dark:text-neutral-200;
   }
 
   .goals-page__account-meta {
@@ -1096,6 +1109,7 @@
 
   .goals-page__accounts-empty--bordered {
     @apply rounded-md border border-dashed border-neutral-400 bg-neutral-100;
+    @apply dark:border-neutral-600 dark:bg-neutral-700/50;
   }
 
   .goals-page__accounts-empty-content {
@@ -1122,6 +1136,7 @@
   /* Distribución de ahorro */
   .goals-page__distribution {
     @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-3;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-page__distribution-empty {
@@ -1134,6 +1149,7 @@
 
   .goals-page__distribution-empty-title {
     @apply text-xs font-semibold text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .goals-page__distribution-empty-desc {
@@ -1151,14 +1167,17 @@
 
   .goals-page__distribution-name {
     @apply truncate text-xs text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .goals-page__distribution-pct {
     @apply text-right text-xs font-semibold text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .goals-page__distribution-track {
     @apply h-1.5 overflow-hidden rounded-full bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__distribution-fill {
@@ -1171,10 +1190,12 @@
 
   .goals-page__distribution-total--complete {
     @apply bg-success-50 text-success-700;
+    @apply dark:bg-success-900/20 dark:text-success-400;
   }
 
   .goals-page__distribution-total--warning {
     @apply bg-warning-50 text-warning-700;
+    @apply dark:bg-warning-900/20 dark:text-warning-400;
   }
 
   .goals-page__distribution-total-icon {
@@ -1187,6 +1208,7 @@
 
   .goals-page__distribution-new-warning {
     @apply flex items-center gap-1.5 rounded-md bg-primary-50 px-2 py-1.5 text-primary-700;
+    @apply dark:bg-primary-900/20 dark:text-primary-300;
   }
 
   .goals-page__distribution-new-warning-icon {
