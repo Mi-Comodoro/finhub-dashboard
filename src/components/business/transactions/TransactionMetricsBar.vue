@@ -41,7 +41,7 @@
     <Card class="space-y-1">
       <Text size="xs" color="muted">Total ahorros</Text>
       <Text size="lg" weight="bold" class="text-warning-700">
-        ~{{ formatCurrency(totalSavings, currency) }}
+        {{ formatCurrency(totalSavings, currency) }}
       </Text>
       <Text size="xs" color="muted">{{ countSavings }} transacciones</Text>
     </Card>

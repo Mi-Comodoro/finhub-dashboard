@@ -167,7 +167,15 @@
     const accountName = getAccountName(transaction.accountId, transaction.account)
 
     if (fromAccountName) {
-      return { label: fromAccountName, detail: 'Cuenta origen' }
+      const detail =
+        transaction.type === 'income'
+          ? 'Fuente del ingreso'
+          : transaction.type === 'expense'
+            ? 'Cuenta de pago'
+            : transaction.type === 'savings'
+              ? 'Cuenta de débito'
+              : 'Cuenta origen'
+      return { label: fromAccountName, detail }
     }
 
     if (transaction.type === 'income') {
@@ -193,11 +201,17 @@
     const accountName = getAccountName(transaction.accountId, transaction.account)
 
     if (toAccountName) {
-      return { label: toAccountName, detail: 'Cuenta destino' }
+      const detail =
+        transaction.type === 'income'
+          ? 'Cuenta de depósito'
+          : transaction.type === 'savings'
+            ? 'Cuenta de ahorro'
+            : 'Cuenta de destino'
+      return { label: toAccountName, detail }
     }
 
     if (transaction.type === 'income') {
-      if (accountName) return { label: accountName, detail: 'Cuenta destino' }
+      if (accountName) return { label: accountName, detail: 'Cuenta de depósito' }
       return { label: 'Presupuesto', detail: 'Destino del ingreso' }
     }
 
@@ -240,7 +254,7 @@
     const amount = formatCurrency(item.amount, currency.value)
     if (item.type === 'income') return { text: `+${amount}`, colorClass: 'text-success-700' }
     if (item.type === 'expense') return { text: `-${amount}`, colorClass: 'text-danger-700' }
-    return { text: `~${amount}`, colorClass: 'text-warning-700' }
+    return { text: amount, colorClass: 'text-warning-700' }
   }
 
   // --- Init ---
@@ -368,7 +382,7 @@
         </template>
 
         <template #cell-category="{ row, value }">
-          {{ row.type === 'income' || row.type === 'savings' ? 'N/A' : value?.name }}
+          {{ row.type === 'income' || row.type === 'savings' ? '—' : value?.name || '—' }}
         </template>
 
         <template #cell-actions="{ row }">

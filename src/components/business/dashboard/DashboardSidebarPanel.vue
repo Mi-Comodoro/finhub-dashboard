@@ -83,40 +83,36 @@
       (score.value >= 70 ? 'Saludable' : score.value >= 40 ? 'Regular' : 'Crítico')
   )
 
-  const pillars = computed(() => {
-    const rawDebtScore = props.healthScore?.debtScore ?? 0
-    const isDebtNeutral = rawDebtScore === 10
-    return [
-      {
-        label: 'Flujo de caja',
-        value: props.healthScore?.cashFlowScore ?? 0,
-        max: 25,
-        color: 'primary',
-        note: ''
-      },
-      {
-        label: 'Ahorro',
-        value: props.healthScore?.savingsScore ?? 0,
-        max: 35,
-        color: 'warning',
-        note: ''
-      },
-      {
-        label: 'Gastos',
-        value: props.healthScore?.expenseScore ?? 0,
-        max: 20,
-        color: 'danger',
-        note: ''
-      },
-      {
-        label: 'Deudas',
-        value: rawDebtScore,
-        max: 20,
-        color: isDebtNeutral ? 'neutral' : 'secondary',
-        note: isDebtNeutral ? 'Sin deudas' : ''
-      }
-    ]
-  })
+  const pillars = computed(() => [
+    {
+      label: 'Flujo de caja',
+      value: props.healthScore?.cashFlowScore ?? 0,
+      max: 25,
+      color: 'primary',
+      note: ''
+    },
+    {
+      label: 'Ahorro',
+      value: props.healthScore?.savingsScore ?? 0,
+      max: 25,
+      color: 'warning',
+      note: ''
+    },
+    {
+      label: 'Gastos',
+      value: props.healthScore?.expenseScore ?? 0,
+      max: 25,
+      color: 'danger',
+      note: ''
+    },
+    {
+      label: 'Deudas',
+      value: props.healthScore?.debtScore ?? 0,
+      max: 25,
+      color: 'secondary',
+      note: ''
+    }
+  ])
 
   function getPillarBarClass(color: string): string {
     const map: Record<string, string> = {
@@ -151,6 +147,15 @@
     if (days < 0) return `Vencido`
     if (days === 0) return 'Hoy'
     return `${days}d`
+  }
+
+  function getRealSavingsClass(): string {
+    if (!props.plannedSavings || props.plannedSavings === 0)
+      return 'dashboard-sidebar__savings-real--neutral'
+    const ratio = (props.realSavings ?? 0) / props.plannedSavings
+    if (ratio >= 0.9) return 'dashboard-sidebar__savings-real--success'
+    if (ratio >= 0.5) return 'dashboard-sidebar__savings-real--warning'
+    return 'dashboard-sidebar__savings-real--danger'
   }
 
   function getDaysClass(days: number, isEssential: boolean): string {
@@ -264,7 +269,7 @@
           <div class="dashboard-sidebar__savings-divider" />
           <div class="dashboard-sidebar__savings-row">
             <Text size="xs" color="muted">Real</Text>
-            <Text size="xs" weight="semibold" class="dashboard-sidebar__savings-real">
+            <Text size="xs" weight="semibold" :class="getRealSavingsClass()">
               {{ formatCurrency(realSavings, currency) }}
             </Text>
           </div>
@@ -532,8 +537,20 @@
     @apply dark:border-neutral-700;
   }
 
-  .dashboard-sidebar__savings-real {
-    @apply text-warning-600;
+  .dashboard-sidebar__savings-real--success {
+    @apply text-success-600 dark:text-success-400;
+  }
+
+  .dashboard-sidebar__savings-real--warning {
+    @apply text-warning-600 dark:text-warning-400;
+  }
+
+  .dashboard-sidebar__savings-real--danger {
+    @apply text-danger-600 dark:text-danger-400;
+  }
+
+  .dashboard-sidebar__savings-real--neutral {
+    @apply text-neutral-500 dark:text-neutral-400;
   }
 
   /* Skeleton */

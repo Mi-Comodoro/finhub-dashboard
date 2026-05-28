@@ -52,37 +52,32 @@
       icon: 'account_balance',
       score: healthScore.value?.cashFlowScore ?? 0,
       max: 25,
-      tip: 'Mide si tus ingresos cubren tus gastos con margen libre.',
-      isNeutral: false
+      tip: 'Mide si tus ingresos cubren tus gastos con margen libre.'
     },
     {
       label: 'Ahorro y Metas',
       icon: 'savings',
       score: healthScore.value?.savingsScore ?? 0,
-      max: 35,
-      tip: 'Evalúa qué tanto estás ejecutando tu plan de ahorro.',
-      isNeutral: false
+      max: 25,
+      tip: 'Evalúa qué tanto estás ejecutando tu plan de ahorro.'
     },
     {
       label: 'Control de Gastos',
       icon: 'price_check',
       score: healthScore.value?.expenseScore ?? 0,
-      max: 20,
-      tip: 'Compara tus gastos reales vs lo que planificaste.',
-      isNeutral: false
+      max: 25,
+      tip: 'Compara tus gastos reales vs lo que planificaste.'
     },
     {
       label: 'Deudas',
       icon: 'credit_card',
       score: healthScore.value?.debtScore ?? 0,
-      max: 20,
-      tip: 'Analiza el impacto de tus deudas en tu salud financiera.',
-      isNeutral: healthScore.value?.debtScore === 10
+      max: 25,
+      tip: 'Analiza el impacto de tus deudas en tu salud financiera.'
     }
   ])
 
-  function pillarBarClass(score: number, max: number, isNeutral: boolean): string {
-    if (isNeutral) return 'pillar-bar--neutral'
+  function pillarBarClass(score: number, max: number): string {
     const pct = max > 0 ? (score / max) * 100 : 0
     if (pct >= 80) return 'pillar-bar--high'
     if (pct >= 40) return 'pillar-bar--medium'
@@ -103,9 +98,7 @@
   })
 
   const worstPillar = computed(() => {
-    const nonNeutral = pillars.value.filter(p => !p.isNeutral)
-    const pool = nonNeutral.length > 0 ? nonNeutral : pillars.value
-    const sorted = [...pool].sort((a, b) => a.score / a.max - b.score / b.max)
+    const sorted = [...pillars.value].sort((a, b) => a.score / a.max - b.score / b.max)
     return sorted[0] ?? null
   })
 
@@ -234,7 +227,7 @@
           <div class="salud-view__score-info">
             <Heading level="h2" size="xl" weight="bold">Salud Financiera</Heading>
             <Text size="sm" color="muted">
-              Tu puntuación suma: 25 pts (flujo de caja) + 35 pts (ahorro) + 20 pts (gastos) + 20
+              Tu puntuación suma: 25 pts (flujo de caja) + 25 pts (ahorro) + 25 pts (gastos) + 25
               pts (deudas) = 100 pts máximo.
             </Text>
           </div>
@@ -265,23 +258,16 @@
           <div class="pillar-card__score-row">
             <span class="pillar-card__score-value">{{ pillar.score }}</span>
             <span class="pillar-card__score-max">/ {{ pillar.max }} pts</span>
-            <span v-if="pillar.isNeutral" class="pillar-card__neutral-badge">
-              Sin deudas · Puntaje neutro
-            </span>
           </div>
           <p class="pillar-card__hint">{{ PILLAR_HINTS[pillar.label] }}</p>
           <div class="pillar-card__track">
             <div
               class="pillar-bar"
-              :class="pillarBarClass(pillar.score, pillar.max, pillar.isNeutral)"
+              :class="pillarBarClass(pillar.score, pillar.max)"
               :style="{ width: `${Math.min((pillar.score / pillar.max) * 100, 100)}%` }"
             />
           </div>
-          <p v-if="pillar.isNeutral" class="pillar-card__neutral-note">
-            No tienes deudas registradas. El sistema asigna 10/20 pts como base neutral — ni suma ni
-            resta significativamente.
-          </p>
-          <p v-else-if="pillar.score / pillar.max >= 0.8" class="pillar-card__ok-note">
+          <p v-if="pillar.score / pillar.max >= 0.8" class="pillar-card__ok-note">
             Sigue así, este pilar está en buen camino.
           </p>
           <p v-else class="pillar-card__improvement">
@@ -464,18 +450,6 @@
 
   .pillar-bar--low {
     @apply bg-danger-400;
-  }
-
-  .pillar-bar--neutral {
-    @apply bg-neutral-300 dark:bg-neutral-600;
-  }
-
-  .pillar-card__neutral-badge {
-    @apply inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400;
-  }
-
-  .pillar-card__neutral-note {
-    @apply text-[11px] leading-snug text-neutral-400 dark:text-neutral-500;
   }
 
   .pillar-card__improvement {
