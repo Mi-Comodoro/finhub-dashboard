@@ -139,7 +139,6 @@
         expenseDate: dateStr,
         splitType: splitType.value,
         groupId: props.groupId,
-        paidBy: paidBy.value,
         assignments
       })
 
