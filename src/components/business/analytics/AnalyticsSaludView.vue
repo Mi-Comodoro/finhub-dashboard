@@ -81,7 +81,8 @@
     }
   ])
 
-  function pillarBarClass(score: number, max: number): string {
+  function pillarBarClass(score: number, max: number, isNeutral: boolean): string {
+    if (isNeutral) return 'pillar-bar--neutral'
     const pct = max > 0 ? (score / max) * 100 : 0
     if (pct >= 80) return 'pillar-bar--high'
     if (pct >= 40) return 'pillar-bar--medium'
@@ -91,20 +92,20 @@
   const SCORE_LEVELS = [
     { range: '0–20', label: 'Crítico', color: '#EF4444' },
     { range: '21–40', label: 'En riesgo', color: '#F97316' },
-    { range: '41–60', label: 'Precario', color: '#F59E0B' },
+    { range: '41–60', label: 'Regular', color: '#F59E0B' },
     { range: '61–80', label: 'Saludable', color: '#14B8A6' },
     { range: '81–100', label: 'Óptimo', color: '#22C55E' }
   ]
 
-  const activePillars = computed(() => pillars.value.filter(p => !p.isNeutral))
-
   const bestPillar = computed(() => {
-    const sorted = [...activePillars.value].sort((a, b) => b.score / b.max - a.score / a.max)
+    const sorted = [...pillars.value].sort((a, b) => b.score / b.max - a.score / a.max)
     return sorted[0] ?? null
   })
 
   const worstPillar = computed(() => {
-    const sorted = [...activePillars.value].sort((a, b) => a.score / a.max - b.score / b.max)
+    const nonNeutral = pillars.value.filter(p => !p.isNeutral)
+    const pool = nonNeutral.length > 0 ? nonNeutral : pillars.value
+    const sorted = [...pool].sort((a, b) => a.score / a.max - b.score / b.max)
     return sorted[0] ?? null
   })
 
@@ -123,12 +124,23 @@
     Deudas: 'Según el peso de tus deudas sobre tus ingresos'
   }
 
+  const PILLAR_IMPROVEMENTS: Record<string, string> = {
+    'Flujo de Caja':
+      'Registra todos tus ingresos y evita gastos no planificados para ampliar tu margen libre.',
+    'Ahorro y Metas':
+      'Abona a tus metas cada mes. Nota: este puntaje mide el cumplimiento de tu plan de ahorro del presupuesto, no el total de aportes a metas.',
+    'Control de Gastos':
+      'Revisa qué categorías superan el presupuesto y ajusta antes del cierre del período.',
+    Deudas: 'Prioriza liquidar deudas con mayor tasa de interés y evita nueva deuda de consumo.'
+  }
+
   const insightText = computed(() => {
     if (!healthScore.value || !bestPillar.value) return null
     const score = healthScore.value.totalScore
     if (score === 0) return null
-    let text = `Tu mejor pilar es ${bestPillar.value.label} (${bestPillar.value.score}/${bestPillar.value.max} pts).`
-    if (score < 60 && worstPillar.value && worstPillar.value.label !== bestPillar.value.label) {
+    const best = bestPillar.value
+    let text = `Tu mejor pilar es ${best.label} (${best.score}/${best.max} pts).`
+    if (score < 60 && worstPillar.value && worstPillar.value.label !== best.label) {
       text += ` Para mejorar, enfócate en ${worstPillar.value.label}.`
     }
     return text
@@ -222,7 +234,8 @@
           <div class="salud-view__score-info">
             <Heading level="h2" size="xl" weight="bold">Salud Financiera</Heading>
             <Text size="sm" color="muted">
-              Tu puntuación combina flujo de caja, ahorro, control de gastos y gestión de deudas.
+              Tu puntuación suma: 25 pts (flujo de caja) + 35 pts (ahorro) + 20 pts (gastos) + 20
+              pts (deudas) = 100 pts máximo.
             </Text>
           </div>
         </div>
@@ -250,18 +263,30 @@
           </div>
 
           <div class="pillar-card__score-row">
-            <span class="pillar-card__score-value">{{ pillar.isNeutral ? 0 : pillar.score }}</span>
+            <span class="pillar-card__score-value">{{ pillar.score }}</span>
             <span class="pillar-card__score-max">/ {{ pillar.max }} pts</span>
+            <span v-if="pillar.isNeutral" class="pillar-card__neutral-badge">
+              Sin deudas · Puntaje neutro
+            </span>
           </div>
           <p class="pillar-card__hint">{{ PILLAR_HINTS[pillar.label] }}</p>
           <div class="pillar-card__track">
             <div
-              v-if="!pillar.isNeutral"
               class="pillar-bar"
-              :class="pillarBarClass(pillar.score, pillar.max)"
+              :class="pillarBarClass(pillar.score, pillar.max, pillar.isNeutral)"
               :style="{ width: `${Math.min((pillar.score / pillar.max) * 100, 100)}%` }"
             />
           </div>
+          <p v-if="pillar.isNeutral" class="pillar-card__neutral-note">
+            No tienes deudas registradas. El sistema asigna 10/20 pts como base neutral — ni suma ni
+            resta significativamente.
+          </p>
+          <p v-else-if="pillar.score / pillar.max >= 0.8" class="pillar-card__ok-note">
+            Sigue así, este pilar está en buen camino.
+          </p>
+          <p v-else class="pillar-card__improvement">
+            {{ PILLAR_IMPROVEMENTS[pillar.label] }}
+          </p>
         </Card>
       </div>
 
@@ -439,6 +464,26 @@
 
   .pillar-bar--low {
     @apply bg-danger-400;
+  }
+
+  .pillar-bar--neutral {
+    @apply bg-neutral-300 dark:bg-neutral-600;
+  }
+
+  .pillar-card__neutral-badge {
+    @apply inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400;
+  }
+
+  .pillar-card__neutral-note {
+    @apply text-[11px] leading-snug text-neutral-400 dark:text-neutral-500;
+  }
+
+  .pillar-card__improvement {
+    @apply text-[11px] leading-snug text-neutral-500 dark:text-neutral-400;
+  }
+
+  .pillar-card__ok-note {
+    @apply text-[11px] font-medium text-success-600 dark:text-success-400;
   }
 
   .salud-scale {

@@ -57,22 +57,35 @@
 
   const score = computed(() => props.healthScore?.totalScore ?? 0)
 
+  const LEVEL_LABELS: Record<string, string> = {
+    critical: 'Crítico',
+    at_risk: 'En riesgo',
+    regular: 'Regular',
+    healthy: 'Saludable',
+    optimal: 'Óptimo'
+  }
+
   const scoreClass = computed(() => {
+    const level = props.healthScore?.level ?? ''
+    if (level === 'critical') return 'dashboard-sidebar__score--critical'
+    if (level === 'at_risk' || level === 'regular') return 'dashboard-sidebar__score--regular'
+    if (level === 'optimal') return 'dashboard-sidebar__score--optimal'
+    if (level === 'healthy') return 'dashboard-sidebar__score--healthy'
+    // fallback when level field is absent
     if (score.value >= 70) return 'dashboard-sidebar__score--healthy'
     if (score.value >= 40) return 'dashboard-sidebar__score--regular'
     return 'dashboard-sidebar__score--critical'
   })
 
-  const scoreLevelLabel = computed(() => {
-    if (score.value >= 70) return 'Saludable'
-    if (score.value >= 40) return 'Regular'
-    return 'Crítico'
-  })
+  const scoreLevelLabel = computed(
+    () =>
+      LEVEL_LABELS[props.healthScore?.level ?? ''] ??
+      (score.value >= 70 ? 'Saludable' : score.value >= 40 ? 'Regular' : 'Crítico')
+  )
 
   const pillars = computed(() => {
     const rawDebtScore = props.healthScore?.debtScore ?? 0
-    // debtScore === 10 means neutral (no debts registered) — display as full bar with "Sin deudas" note
-    const debtValue = rawDebtScore === 10 ? 20 : rawDebtScore
+    const isDebtNeutral = rawDebtScore === 10
     return [
       {
         label: 'Flujo de caja',
@@ -97,10 +110,10 @@
       },
       {
         label: 'Deudas',
-        value: debtValue,
+        value: rawDebtScore,
         max: 20,
-        color: 'secondary',
-        note: rawDebtScore === 10 ? 'Sin deudas' : ''
+        color: isDebtNeutral ? 'neutral' : 'secondary',
+        note: isDebtNeutral ? 'Sin deudas' : ''
       }
     ]
   })
@@ -110,7 +123,8 @@
       primary: 'dashboard-sidebar__pillar-fill--primary',
       warning: 'dashboard-sidebar__pillar-fill--warning',
       danger: 'dashboard-sidebar__pillar-fill--danger',
-      secondary: 'dashboard-sidebar__pillar-fill--secondary'
+      secondary: 'dashboard-sidebar__pillar-fill--secondary',
+      neutral: 'dashboard-sidebar__pillar-fill--neutral'
     }
     return map[color] ?? ''
   }
@@ -192,16 +206,11 @@
           <div v-for="pillar in pillars" :key="pillar.label" class="dashboard-sidebar__pillar">
             <div class="dashboard-sidebar__pillar-header">
               <Text size="xs" color="muted">{{ pillar.label }}</Text>
-              <Text
-                v-if="pillar.note"
-                size="xs"
-                weight="medium"
-                class="dashboard-sidebar__pillar-note--ok"
-              >
-                {{ pillar.note }}
-              </Text>
-              <Text v-else size="xs" weight="medium">{{ pillar.value }}/{{ pillar.max }}</Text>
+              <Text size="xs" weight="medium">{{ pillar.value }}/{{ pillar.max }}</Text>
             </div>
+            <Text v-if="pillar.note" size="xs" class="dashboard-sidebar__pillar-note">
+              {{ pillar.note }}
+            </Text>
             <div class="dashboard-sidebar__pillar-bar">
               <div
                 class="dashboard-sidebar__pillar-fill"
@@ -356,16 +365,20 @@
     @apply text-4xl font-extrabold leading-none;
   }
 
+  .dashboard-sidebar__score--optimal {
+    @apply text-success-600 dark:text-success-400;
+  }
+
   .dashboard-sidebar__score--healthy {
-    @apply text-success-600;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   .dashboard-sidebar__score--regular {
-    @apply text-warning-600;
+    @apply text-warning-600 dark:text-warning-400;
   }
 
   .dashboard-sidebar__score--critical {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
   .dashboard-sidebar__score-meta {
@@ -394,8 +407,8 @@
     @apply dark:bg-neutral-700;
   }
 
-  .dashboard-sidebar__pillar-note--ok {
-    @apply text-success-600 dark:text-success-400;
+  .dashboard-sidebar__pillar-note {
+    @apply text-neutral-400 dark:text-neutral-500;
   }
 
   .dashboard-sidebar__pillar-fill {
@@ -416,6 +429,10 @@
 
   .dashboard-sidebar__pillar-fill--secondary {
     @apply bg-secondary-500;
+  }
+
+  .dashboard-sidebar__pillar-fill--neutral {
+    @apply bg-neutral-300 dark:bg-neutral-600;
   }
 
   /* Goals */
