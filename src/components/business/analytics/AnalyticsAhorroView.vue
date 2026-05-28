@@ -109,8 +109,8 @@
           </div>
           <div class="ahorro-view__kpi-content">
             <Text size="xs" color="muted">Saldo anterior al año</Text>
-            <p class="ahorro-view__kpi-value" :title="formatCurrency(0, currency.value)">
-              {{ formatCompactCurrency(0, currency.value) }}
+            <p class="ahorro-view__kpi-value" :title="formatCurrency(0, currency)">
+              {{ formatCompactCurrency(0, currency) }}
             </p>
           </div>
         </div>
@@ -123,9 +123,9 @@
             <Text size="xs" color="muted">Ahorro del mes</Text>
             <p
               class="ahorro-view__kpi-value"
-              :title="formatCurrency(selectedMonthSaving, currency.value)"
+              :title="formatCurrency(selectedMonthSaving, currency)"
             >
-              {{ formatCompactCurrency(selectedMonthSaving, currency.value) }}
+              {{ formatCompactCurrency(selectedMonthSaving, currency) }}
             </p>
           </div>
         </div>
@@ -136,8 +136,8 @@
           </div>
           <div class="ahorro-view__kpi-content">
             <Text size="xs" color="muted">Estimación mensual</Text>
-            <p class="ahorro-view__kpi-value" :title="formatCurrency(monthlyAvg, currency.value)">
-              {{ formatCompactCurrency(monthlyAvg, currency.value) }}
+            <p class="ahorro-view__kpi-value" :title="formatCurrency(monthlyAvg, currency)">
+              {{ formatCompactCurrency(monthlyAvg, currency) }}
             </p>
           </div>
         </div>
