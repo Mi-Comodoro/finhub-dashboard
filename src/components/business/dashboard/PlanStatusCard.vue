@@ -135,6 +135,7 @@
 <style scoped lang="postcss">
   .plan-status-card {
     @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .plan-status-card__header {
@@ -155,15 +156,16 @@
   }
 
   .plan-status-card__days--ok {
-    @apply text-warning-600;
+    @apply text-warning-600 dark:text-warning-400;
   }
 
   .plan-status-card__days--urgent {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
   .plan-status-card__track {
     @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .plan-status-card__fill {
@@ -179,12 +181,13 @@
   }
 
   .plan-status-card__urgent-label {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
   /* Link */
   .plan-status-card__link {
     @apply flex items-center gap-1 text-xs font-medium text-primary-600 transition-colors hover:text-primary-800;
+    @apply dark:text-primary-400 dark:hover:text-primary-300;
   }
 
   .plan-status-card__link-icon {

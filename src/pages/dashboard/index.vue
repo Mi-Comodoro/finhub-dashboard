@@ -584,6 +584,7 @@
   .dashboard-page__card--free {
     border-left: 3px solid theme('colors.primary.500');
     @apply !bg-primary-50;
+    @apply dark:!bg-neutral-800;
   }
 
   .dashboard-page__budget-header {

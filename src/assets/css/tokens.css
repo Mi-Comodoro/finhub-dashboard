@@ -39,11 +39,11 @@
 }
 
 .dark {
-  /* --- SURFACES --- */
-  --surface-base: #0b0d17;
-  --surface-1: #13151f;
-  --surface-2: #1c1f2e;
-  --surface-3: #252838;
+  /* --- SURFACES (aligned with Tailwind slate/neutral palette) --- */
+  --surface-base: #020617; /* slate-950 — page background */
+  --surface-1: #0f172a; /* slate-900 — sidebar, modals */
+  --surface-2: #1e293b; /* neutral-800 / slate-800 — card surface */
+  --surface-3: #334155; /* slate-700 — inputs, progress tracks */
   --surface-border: rgba(255, 255, 255, 0.07);
 
   /* --- TIPOGRAFÍA --- */

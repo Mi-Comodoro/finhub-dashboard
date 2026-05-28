@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import VChart from 'vue-echarts'
 
-  import EmptyState from '@/components/atoms/empty-state/EmptyState.vue'
   import type { BadgeVariant } from '@/components/atoms/badge/types/badge.types'
+  import EmptyState from '@/components/atoms/empty-state/EmptyState.vue'
   import AccountPayableForm from '@/components/business/debts/forms/AccountPayableForm.vue'
   import AccountPayablePaymentForm from '@/components/business/debts/forms/AccountPayablePaymentForm.vue'
   import AccountReceivableCollectionForm from '@/components/business/receivables/forms/AccountReceivableCollectionForm.vue'
@@ -14,10 +14,10 @@
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useFeedback } from '@/composables/useFeedBack'
   import { useFinancesStore } from '@/stores/finances.store'
-  import type { AccountPayable, CreateAccountPayableDto } from '~/types/accounts-payable.types'
   import type { AccountReceivable } from '@/types/accounts-receivable.types'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
+  import type { AccountPayable, CreateAccountPayableDto } from '~/types/accounts-payable.types'
 
   definePageMeta({
     layout: 'dashboard',
@@ -350,9 +350,7 @@
             <div>
               <Text size="xs" color="muted">Esperado este mes</Text>
               <Heading level="h3" size="xl" weight="bold">
-                {{
-                  formatCurrency(receivableSummary?.expectedThisMonth ?? 0, receivableCurrency)
-                }}
+                {{ formatCurrency(receivableSummary?.expectedThisMonth ?? 0, receivableCurrency) }}
               </Heading>
             </div>
           </div>
@@ -406,7 +404,10 @@
       </div>
 
       <!-- Loading -->
-      <div v-if="isLoadingReceivables && receivableAccounts.length === 0" class="accounts-page__loading">
+      <div
+        v-if="isLoadingReceivables && receivableAccounts.length === 0"
+        class="accounts-page__loading"
+      >
         <div class="accounts-page__list-skeleton" />
       </div>
 
@@ -446,7 +447,9 @@
           <div class="accounts-page__account-progress">
             <Text size="xs" color="muted">
               Cobrado:
-              {{ formatCurrency(account.originalAmount - account.currentBalance, receivableCurrency) }}
+              {{
+                formatCurrency(account.originalAmount - account.currentBalance, receivableCurrency)
+              }}
               / {{ formatCurrency(account.originalAmount, receivableCurrency) }}
             </Text>
             <div class="accounts-page__progress-bar">
@@ -525,10 +528,7 @@
           </Heading>
         </div>
 
-        <div
-          class="accounts-page__kpi-box"
-          :class="`accounts-page__kpi-box--${ratioStatus.color}`"
-        >
+        <div class="accounts-page__kpi-box" :class="`accounts-page__kpi-box--${ratioStatus.color}`">
           <Text size="xs" color="muted">Ratio deuda/ingreso</Text>
           <div v-if="isLoadingPayableSummary" class="accounts-page__kpi-skeleton" />
           <template v-else>
@@ -559,7 +559,10 @@
       </div>
 
       <!-- Chart -->
-      <div v-if="byTypeChartData.length > 0" class="accounts-page__charts accounts-page__charts--single">
+      <div
+        v-if="byTypeChartData.length > 0"
+        class="accounts-page__charts accounts-page__charts--single"
+      >
         <div class="accounts-page__chart-card-plain">
           <Text size="sm" weight="bold" color="black">Distribución por tipo</Text>
           <ClientOnly>
@@ -809,7 +812,7 @@
   }
 
   .accounts-page__kpi-skeleton {
-    @apply animate-pulse rounded-md bg-slate-100 h-8 w-32;
+    @apply h-8 w-32 animate-pulse rounded-md bg-slate-100;
   }
 
   /* ---- Charts ---- */
@@ -844,7 +847,7 @@
   }
 
   .accounts-page__list-skeleton {
-    @apply animate-pulse rounded-xl bg-slate-100 h-32 w-full;
+    @apply h-32 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .accounts-page__account-card {
