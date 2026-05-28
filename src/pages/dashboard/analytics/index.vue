@@ -450,10 +450,12 @@
   .analytics-chip {
     @apply shrink-0 whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-600;
     @apply transition-colors hover:border-primary-300 hover:text-primary-700;
+    @apply dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-primary-600 dark:hover:text-primary-400;
   }
 
   .analytics-chip--active {
     @apply border-primary-400 bg-primary-50 text-primary-700;
+    @apply dark:border-primary-600 dark:bg-primary-900/30 dark:text-primary-400;
   }
 
   /* Body: 2-column grid on large screens */
@@ -481,12 +483,13 @@
 
   .analytics-section__divider {
     @apply border-t border-neutral-100;
+    @apply dark:border-neutral-700;
   }
 
   /* Period badge */
   .analytics-sidebar__period {
     @apply flex items-center gap-1.5 rounded-lg bg-primary-50 px-2.5 py-1.5;
-    @apply dark:bg-primary-900;
+    @apply dark:bg-primary-900/30;
   }
 
   .analytics-sidebar__period-icon {
@@ -505,7 +508,7 @@
 
   .analytics-sidebar__section--active {
     @apply border-primary-200 bg-primary-50;
-    @apply dark:border-primary-800 dark:bg-primary-900;
+    @apply dark:border-primary-800 dark:bg-primary-900/30;
   }
 
   .analytics-sidebar__section-head {
@@ -517,7 +520,7 @@
   }
 
   .analytics-sidebar__section--active .analytics-sidebar__section-icon {
-    @apply text-primary-600;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   .analytics-sidebar__section-label {
@@ -526,7 +529,7 @@
   }
 
   .analytics-sidebar__section--active .analytics-sidebar__section-label {
-    @apply text-primary-700;
+    @apply text-primary-700 dark:text-primary-400;
   }
 
   .analytics-sidebar__section-status {
@@ -538,12 +541,12 @@
   }
 
   .analytics-sidebar__section-status--ok {
-    @apply text-success-600;
+    @apply text-success-600 dark:text-success-400;
   }
 
   .analytics-sidebar__section-cta {
     @apply text-[11px] font-medium text-primary-600 underline underline-offset-2;
-    @apply hover:text-primary-700;
+    @apply hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300;
   }
 
   .analytics-sidebar__ratio-badge {
@@ -552,14 +555,17 @@
 
   .analytics-sidebar__ratio-badge--primary {
     @apply bg-primary-100 text-primary-700;
+    @apply dark:bg-primary-900/30 dark:text-primary-400;
   }
 
   .analytics-sidebar__ratio-badge--warning {
     @apply bg-warning-100 text-warning-700;
+    @apply dark:bg-warning-900/30 dark:text-warning-400;
   }
 
   .analytics-sidebar__ratio-badge--danger {
     @apply bg-danger-100 text-danger-700;
+    @apply dark:bg-danger-900/30 dark:text-danger-400;
   }
 
   /* Score color in sidebar */
@@ -568,28 +574,28 @@
   }
 
   .analytics-sidebar__score-value--danger {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
   .analytics-sidebar__score-value--warning {
-    @apply text-warning-600;
+    @apply text-warning-600 dark:text-warning-400;
   }
 
   .analytics-sidebar__score-value--primary {
-    @apply text-primary-600;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   .analytics-sidebar__score-value--success {
-    @apply text-success-600;
+    @apply text-success-600 dark:text-success-400;
   }
 
   /* Net flow color */
   .analytics-sidebar__val--ok {
-    @apply font-medium text-primary-600;
+    @apply font-medium text-primary-600 dark:text-primary-400;
   }
 
   .analytics-sidebar__val--bad {
-    @apply font-medium text-danger-600;
+    @apply font-medium text-danger-600 dark:text-danger-400;
   }
 
   /* Alert dot */

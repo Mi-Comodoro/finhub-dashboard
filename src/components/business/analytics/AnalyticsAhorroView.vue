@@ -15,6 +15,7 @@
   import Text from '@/components/atoms/typography/Text.vue'
   import { useAnalyticsSavingsTrendApplication } from '@/composables/application/useAnalyticsSavingsTrendApplication'
   import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
+  import { useTheme } from '@/composables/useTheme'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
@@ -29,6 +30,10 @@
 
   const { savingsByMonth, isLoading, totalSaved, monthlyAvg, currency } =
     useAnalyticsSavingsTrendApplication(selectedYear)
+
+  const { isDark } = useTheme()
+  const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
+  const chartGridColor = computed(() => (isDark.value ? '#334155' : '#e2e8f0'))
 
   const selectedMonthSaving = computed(
     () => savingsByMonth.value[selectedMonth.value - 1]?.actual ?? 0
@@ -49,17 +54,17 @@
       type: 'category',
       data: savingsByMonth.value.map(m => m.label),
       axisTick: { show: false },
-      axisLine: { lineStyle: { color: '#e2e8f0' } },
-      axisLabel: { color: '#64748b', fontSize: 12 }
+      axisLine: { lineStyle: { color: chartGridColor.value } },
+      axisLabel: { color: chartAxisColor.value, fontSize: 12 }
     },
     yAxis: {
       type: 'value',
       axisLabel: {
-        color: '#64748b',
+        color: chartAxisColor.value,
         fontSize: 11,
         formatter: (value: number) => formatCompactCurrency(value, currency.value)
       },
-      splitLine: { lineStyle: { color: '#e2e8f0', type: 'dashed' } }
+      splitLine: { lineStyle: { color: chartGridColor.value, type: 'dashed' } }
     },
     series: [
       {
@@ -214,11 +219,11 @@
   }
 
   .ahorro-view__kpi-icon--warning {
-    @apply bg-warning-100;
+    @apply bg-warning-100 dark:bg-warning-800;
   }
 
   .ahorro-view__kpi-icon--success {
-    @apply bg-success-100;
+    @apply bg-success-100 dark:bg-success-800;
   }
 
   .ahorro-view__kpi-icon-svg {
@@ -231,11 +236,11 @@
   }
 
   .ahorro-view__kpi-icon--warning .ahorro-view__kpi-icon-svg {
-    @apply text-warning-600;
+    @apply text-warning-600 dark:text-warning-400;
   }
 
   .ahorro-view__kpi-icon--success .ahorro-view__kpi-icon-svg {
-    @apply text-success-600;
+    @apply text-success-600 dark:text-success-400;
   }
 
   .ahorro-view__kpi-content {
@@ -254,10 +259,12 @@
 
   .ahorro-view__kpi-skeleton-card {
     @apply h-20 animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .ahorro-view__chart-full-skeleton {
     @apply h-72 animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .ahorro-view__chart-card {
@@ -267,6 +274,7 @@
 
   .ahorro-view__chart-header {
     @apply flex flex-col gap-0.5 border-b border-neutral-100 px-5 py-4;
+    @apply dark:border-neutral-700;
   }
 
   .ahorro-view__chart-body {
@@ -283,6 +291,7 @@
 
   .ahorro-view__chart-skeleton {
     @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .analytics-view__empty {
@@ -295,14 +304,16 @@
 
   .analytics-view__empty-title {
     @apply text-base font-semibold text-neutral-800;
+    @apply dark:text-neutral-200;
   }
 
   .analytics-view__empty-description {
     @apply max-w-xs text-sm text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .analytics-view__empty-cta {
-    @apply text-sm font-medium text-primary-600 underline;
+    @apply text-sm font-medium text-primary-600 underline dark:text-primary-400;
   }
 
   .ahorro-insight {

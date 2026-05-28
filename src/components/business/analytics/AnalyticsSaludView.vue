@@ -4,8 +4,13 @@
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
+  import { useTheme } from '@/composables/useTheme'
 
   const { healthScore, healthScorePending, healthScoreError } = useAnalyticsApplication()
+
+  const { isDark } = useTheme()
+  const svgScoreColor = computed(() => (isDark.value ? '#F1F5F9' : '#0F172A'))
+  const svgRingBgColor = computed(() => (isDark.value ? '#334155' : '#E2E8F0'))
 
   const CIRCUMFERENCE = 2 * Math.PI * 50
 
@@ -173,7 +178,14 @@
           <div class="salud-view__gauge-wrapper">
             <svg viewBox="0 0 120 120" class="salud-view__gauge-svg" aria-hidden="true">
               <!-- Background ring -->
-              <circle cx="60" cy="60" r="50" fill="none" stroke="#E2E8F0" stroke-width="10" />
+              <circle
+                cx="60"
+                cy="60"
+                r="50"
+                fill="none"
+                :stroke="svgRingBgColor"
+                stroke-width="10"
+              />
               <!-- Progress ring -->
               <circle
                 cx="60"
@@ -194,7 +206,7 @@
                 text-anchor="middle"
                 font-size="30"
                 font-weight="800"
-                fill="#0F172A"
+                :fill="svgScoreColor"
               >
                 {{ healthScore.totalScore }}
               </text>
@@ -274,6 +286,7 @@
 
   .salud-view__skeleton-score {
     @apply h-48 w-full animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .salud-view__skeleton-pillars {
@@ -282,6 +295,7 @@
 
   .salud-view__skeleton-pillar {
     @apply h-32 animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   /* Empty */
@@ -295,10 +309,12 @@
 
   .analytics-view__empty-title {
     @apply text-base font-semibold text-neutral-800;
+    @apply dark:text-neutral-200;
   }
 
   .analytics-view__empty-description {
     @apply max-w-xs text-sm text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   /* Content */
@@ -336,19 +352,19 @@
   }
 
   .salud-score__level--danger {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
   .salud-score__level--warning {
-    @apply text-warning-600;
+    @apply text-warning-600 dark:text-warning-400;
   }
 
   .salud-score__level--primary {
-    @apply text-primary-600;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   .salud-score__level--success {
-    @apply text-success-600;
+    @apply text-success-600 dark:text-success-400;
   }
 
   .salud-view__score-info {
@@ -371,6 +387,7 @@
 
   .pillar-card__icon-wrapper {
     @apply flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50;
+    @apply dark:bg-primary-900/20;
   }
 
   .pillar-card__icon {
@@ -379,6 +396,7 @@
 
   .pillar-card__label {
     @apply flex-1 text-sm font-semibold text-neutral-700;
+    @apply dark:text-neutral-200;
   }
 
   .pillar-card__info-icon {
@@ -391,6 +409,7 @@
 
   .pillar-card__score-value {
     @apply text-2xl font-bold text-neutral-800;
+    @apply dark:text-neutral-100;
   }
 
   .pillar-card__score-max {
@@ -403,6 +422,7 @@
 
   .pillar-card__track {
     @apply h-2 overflow-hidden rounded-full bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .pillar-bar {
@@ -434,7 +454,7 @@
   }
 
   .salud-scale__label {
-    @apply text-xs text-neutral-500;
+    @apply text-xs text-neutral-500 dark:text-neutral-400;
   }
 
   .salud-insight {

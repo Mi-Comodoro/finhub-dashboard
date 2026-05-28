@@ -14,6 +14,7 @@
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import { useAnalyticsNetPositionApplication } from '@/composables/application/useAnalyticsNetPositionApplication'
+  import { useTheme } from '@/composables/useTheme'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
@@ -38,6 +39,10 @@
     Math.min((netPosition.value?.debtToIncomeRatio ?? 0) * 100, 100)
   )
 
+  const { isDark } = useTheme()
+  const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
+  const chartGridColor = computed(() => (isDark.value ? '#334155' : '#e2e8f0'))
+
   const chartOption = computed<EChartsOption>(() => ({
     grid: { left: '2%', right: '2%', top: 16, bottom: '2%', containLabel: true },
     tooltip: {
@@ -53,17 +58,17 @@
       type: 'category',
       data: debtProjection.value?.projection.map(p => p.month) ?? [],
       axisTick: { show: false },
-      axisLine: { lineStyle: { color: '#e2e8f0' } },
-      axisLabel: { color: '#64748b', fontSize: 12 }
+      axisLine: { lineStyle: { color: chartGridColor.value } },
+      axisLabel: { color: chartAxisColor.value, fontSize: 12 }
     },
     yAxis: {
       type: 'value',
       axisLabel: {
-        color: '#64748b',
+        color: chartAxisColor.value,
         fontSize: 11,
         formatter: (value: number) => formatCompactCurrency(value, 'COP')
       },
-      splitLine: { lineStyle: { color: '#e2e8f0', type: 'dashed' } }
+      splitLine: { lineStyle: { color: chartGridColor.value, type: 'dashed' } }
     },
     series: [
       {
@@ -285,14 +290,17 @@
 
   .net-position-view__kpi-skeleton {
     @apply h-24 animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .net-position-view__ratio-skeleton {
     @apply h-24 animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .net-position-view__chart-skeleton {
     @apply h-72 animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   /* Empty */
@@ -306,10 +314,12 @@
 
   .analytics-view__empty-title {
     @apply text-base font-semibold text-neutral-800;
+    @apply dark:text-neutral-200;
   }
 
   .analytics-view__empty-description {
     @apply max-w-xs text-sm text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   /* Content */
@@ -328,14 +338,22 @@
 
   .net-position-view__kpi-card--primary {
     @apply border-primary-100 bg-primary-50;
+    @apply dark:border-primary-800 dark:bg-primary-900/20;
   }
 
   .net-position-view__kpi-card--danger {
     @apply border-danger-100 bg-danger-50;
+    @apply dark:border-danger-800 dark:bg-danger-900/20;
   }
 
   .net-position-view__kpi-card--warning {
     @apply border-warning-100 bg-warning-50;
+    @apply dark:border-warning-800 dark:bg-warning-900/20;
+  }
+
+  .net-position-view__kpi-card--success {
+    @apply border-success-100 bg-success-50;
+    @apply dark:border-success-800 dark:bg-success-900/20;
   }
 
   .net-position-view__kpi-icon {
@@ -343,15 +361,19 @@
   }
 
   .net-position-view__kpi-icon--primary {
-    @apply bg-primary-100;
+    @apply bg-primary-100 dark:bg-primary-800;
   }
 
   .net-position-view__kpi-icon--danger {
-    @apply bg-danger-100;
+    @apply bg-danger-100 dark:bg-danger-800;
   }
 
   .net-position-view__kpi-icon--warning {
-    @apply bg-warning-100;
+    @apply bg-warning-100 dark:bg-warning-800;
+  }
+
+  .net-position-view__kpi-icon--success {
+    @apply bg-success-100 dark:bg-success-800;
   }
 
   .net-position-view__kpi-icon-svg {
@@ -359,15 +381,19 @@
   }
 
   .net-position-view__kpi-icon--primary .net-position-view__kpi-icon-svg {
-    @apply text-primary-600;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   .net-position-view__kpi-icon--danger .net-position-view__kpi-icon-svg {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
   .net-position-view__kpi-icon--warning .net-position-view__kpi-icon-svg {
-    @apply text-warning-600;
+    @apply text-warning-600 dark:text-warning-400;
+  }
+
+  .net-position-view__kpi-icon--success .net-position-view__kpi-icon-svg {
+    @apply text-success-600 dark:text-success-400;
   }
 
   .net-position-view__kpi-body {
@@ -421,14 +447,17 @@
 
   .net-position-view__ratio-badge--primary {
     @apply bg-primary-100 text-primary-700;
+    @apply dark:bg-primary-900/30 dark:text-primary-400;
   }
 
   .net-position-view__ratio-badge--warning {
     @apply bg-warning-100 text-warning-700;
+    @apply dark:bg-warning-900/30 dark:text-warning-400;
   }
 
   .net-position-view__ratio-badge--danger {
     @apply bg-danger-100 text-danger-700;
+    @apply dark:bg-danger-900/30 dark:text-danger-400;
   }
 
   .net-position-view__ratio-meta {
@@ -436,7 +465,7 @@
   }
 
   .net-position-view__ratio-hint {
-    @apply text-xs text-neutral-500;
+    @apply text-xs text-neutral-500 dark:text-neutral-400;
   }
 
   /* Chart card */
@@ -447,10 +476,12 @@
 
   .net-position-view__chart-header {
     @apply flex flex-col gap-0.5 border-b border-neutral-100 px-5 py-4;
+    @apply dark:border-neutral-700;
   }
 
   .net-position-view__simplified-note {
     @apply flex items-center gap-1.5 border-b border-neutral-100 px-5 py-3;
+    @apply dark:border-neutral-700;
   }
 
   .net-position-view__simplified-icon {
@@ -471,6 +502,7 @@
 
   .net-position-view__chart-inner-skeleton {
     @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .net-position-view__chart-empty {

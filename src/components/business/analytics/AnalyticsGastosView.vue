@@ -164,6 +164,7 @@
 
   .gastos-view__skeleton {
     @apply h-96 w-full animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .analytics-view__empty {
@@ -176,10 +177,12 @@
 
   .analytics-view__empty-title {
     @apply text-base font-semibold text-neutral-800;
+    @apply dark:text-neutral-200;
   }
 
   .analytics-view__empty-description {
     @apply max-w-xs text-sm text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .analytics-view__empty-cta {
@@ -228,6 +231,7 @@
 
   .gastos-view__chart-skeleton {
     @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .gastos-view__table {
