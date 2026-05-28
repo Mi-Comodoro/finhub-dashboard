@@ -13,6 +13,7 @@
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useFeedback } from '@/composables/useFeedBack'
+  import { useTheme } from '@/composables/useTheme'
   import { useFinancesStore } from '@/stores/finances.store'
   import type { AccountReceivable } from '@/types/accounts-receivable.types'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
@@ -27,6 +28,11 @@
 
   type TabKey = 'cobrar' | 'pagar'
   const activeTab = ref<TabKey>('cobrar')
+
+  const { isDark } = useTheme()
+  const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
+  const chartGridColor = computed(() => (isDark.value ? '#334155' : '#e2e8f0'))
+  const chartLegendColor = computed(() => (isDark.value ? '#94a3b8' : '#374151'))
 
   // --- Shared ---
   const { fetchCurrentBudget } = useBudgetActions()
@@ -134,9 +140,17 @@
     grid: { left: '3%', right: '6%', top: '8%', bottom: '3%', containLabel: true },
     xAxis: {
       type: 'value',
-      axisLabel: { formatter: (v: number) => formatCompactCurrency(v, receivableCurrency.value) }
+      axisLabel: {
+        formatter: (v: number) => formatCompactCurrency(v, receivableCurrency.value),
+        color: chartAxisColor.value
+      },
+      splitLine: { lineStyle: { color: chartGridColor.value, type: 'dashed' } }
     },
-    yAxis: { type: 'category', data: agingData.value.map(b => b.label) },
+    yAxis: {
+      type: 'category',
+      data: agingData.value.map(b => b.label),
+      axisLabel: { color: chartAxisColor.value }
+    },
     series: [
       {
         type: 'bar',
@@ -158,11 +172,16 @@
     xAxis: {
       type: 'category',
       data: flowData.value.map(m => m.label),
-      boundaryGap: false
+      boundaryGap: false,
+      axisLabel: { color: chartAxisColor.value }
     },
     yAxis: {
       type: 'value',
-      axisLabel: { formatter: (v: number) => formatCompactCurrency(v, receivableCurrency.value) }
+      axisLabel: {
+        formatter: (v: number) => formatCompactCurrency(v, receivableCurrency.value),
+        color: chartAxisColor.value
+      },
+      splitLine: { lineStyle: { color: chartGridColor.value, type: 'dashed' } }
     },
     series: [
       {
@@ -268,11 +287,17 @@
 
   const donutChartOption = computed(() => ({
     tooltip: { trigger: 'item' },
+    legend: {
+      orient: 'horizontal',
+      bottom: 0,
+      textStyle: { color: chartLegendColor.value, fontSize: 11 }
+    },
     series: [
       {
         type: 'pie',
         radius: ['50%', '70%'],
         data: byTypeChartData.value,
+        label: { color: chartAxisColor.value },
         emphasis: { itemStyle: { shadowBlur: 10 } }
       }
     ]
@@ -734,14 +759,17 @@
   /* ---- Tabs ---- */
   .accounts-page__tabs {
     @apply flex gap-1 rounded-xl border border-neutral-200 bg-neutral-50 p-1;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .accounts-page__tab {
     @apply flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-white hover:text-neutral-900;
+    @apply dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-white;
   }
 
   .accounts-page__tab--active {
     @apply bg-white font-semibold text-neutral-900 shadow-sm;
+    @apply dark:bg-neutral-700 dark:text-white dark:shadow-none;
   }
 
   .accounts-page__tab-icon {
@@ -775,15 +803,15 @@
   }
 
   .accounts-page__kpi-icon--warning {
-    @apply text-2xl text-warning-600;
+    @apply text-2xl text-warning-600 dark:text-warning-400;
   }
 
   .accounts-page__kpi-icon--danger {
-    @apply text-2xl text-danger-600;
+    @apply text-2xl text-danger-600 dark:text-danger-400;
   }
 
   .accounts-page__kpi-overdue {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
   /* ---- KPI boxes — payable (inline bordered boxes) ---- */
@@ -797,22 +825,26 @@
 
   .accounts-page__kpi-box--danger {
     @apply border-danger-100 bg-danger-50;
+    @apply dark:border-danger-900/40 dark:bg-danger-900/20;
   }
 
   .accounts-page__kpi-box--warning {
     @apply border-warning-100 bg-warning-50;
+    @apply dark:border-warning-900/40 dark:bg-warning-900/20;
   }
 
   .accounts-page__kpi-box--primary {
     @apply border-primary-100 bg-primary-50;
+    @apply dark:border-primary-900/40 dark:bg-primary-900/20;
   }
 
   .accounts-page__kpi-box--neutral {
     @apply border-neutral-200 bg-neutral-50;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .accounts-page__kpi-skeleton {
-    @apply h-8 w-32 animate-pulse rounded-md bg-slate-100;
+    @apply h-8 w-32 animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
   }
 
   /* ---- Charts ---- */
@@ -830,6 +862,7 @@
 
   .accounts-page__chart-card-plain {
     @apply flex flex-col gap-2 rounded-xl border border-neutral-200 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .accounts-page__chart {
@@ -847,11 +880,12 @@
   }
 
   .accounts-page__list-skeleton {
-    @apply h-32 w-full animate-pulse rounded-xl bg-slate-100;
+    @apply h-32 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-700;
   }
 
   .accounts-page__account-card {
     @apply flex flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm;
+    @apply dark:border-neutral-700 dark:bg-neutral-800 dark:shadow-none;
   }
 
   .accounts-page__account-header {
@@ -879,7 +913,7 @@
   }
 
   .accounts-page__progress-bar {
-    @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100;
+    @apply h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-700;
   }
 
   .accounts-page__progress-fill {
@@ -895,7 +929,7 @@
   }
 
   .accounts-page__progress-track {
-    @apply h-2 w-full overflow-hidden rounded-full bg-neutral-100;
+    @apply h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-700;
   }
 
   .accounts-page__progress-fill--payable {
@@ -908,14 +942,15 @@
 
   .accounts-page__overdue-alert {
     @apply flex items-center gap-1.5 rounded-md bg-danger-50 px-3 py-1.5;
+    @apply dark:bg-danger-900/20;
   }
 
   .accounts-page__overdue-icon {
-    @apply text-sm text-danger-600;
+    @apply text-sm text-danger-600 dark:text-danger-400;
   }
 
   .accounts-page__overdue-text {
-    @apply text-danger-500;
+    @apply text-danger-500 dark:text-danger-400;
   }
 
   .accounts-page__account-actions {
