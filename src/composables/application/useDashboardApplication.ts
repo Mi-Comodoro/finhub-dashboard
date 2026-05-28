@@ -1,5 +1,6 @@
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
+import { useSavingsApi } from '@/composables/api/useSavingsApi'
 import { useExpensesStore } from '@/stores/expense.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { usePlannedSavingStore } from '@/stores/planned-saving.store'
@@ -10,6 +11,24 @@ export const useDashboardApplication = () => {
   const transactionStore = useTransactionStore()
   const plannedSavingStore = usePlannedSavingStore()
   const financesStore = useFinancesStore()
+  const savingsApi = useSavingsApi()
+
+  const totalGoalContributions = ref(0)
+
+  const loadGoalContributionsForPeriod = async (year: number, month: number) => {
+    const { result: goals } = await savingsApi.getGoals()
+    if (!goals?.length) return
+
+    const responses = await Promise.all(goals.map(g => savingsApi.getGoalContributions(g.id)))
+
+    totalGoalContributions.value = responses
+      .flatMap(r => r.result ?? [])
+      .filter(t => {
+        const d = new Date(t.transactionDate)
+        return d.getFullYear() === year && d.getMonth() + 1 === month
+      })
+      .reduce((sum, t) => sum + Number(t.amount ?? 0), 0)
+  }
 
   /**
    * Carga inicial de datos del dashboard para un presupuesto específico
@@ -58,6 +77,7 @@ export const useDashboardApplication = () => {
 
   return {
     loadDashboardData,
+    loadGoalContributionsForPeriod,
     currency,
     totalExpenses,
     totalCommittedExpenses,
@@ -66,6 +86,7 @@ export const useDashboardApplication = () => {
     totalSavingTarget,
     totalSavingFromPlan,
     totalTransactionSavings,
+    totalGoalContributions,
     totalIncomeReceived,
     totalPlanned,
     totalExpensesPaid

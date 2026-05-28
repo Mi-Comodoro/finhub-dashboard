@@ -69,17 +69,41 @@
     return 'Crítico'
   })
 
-  const pillars = computed(() => [
-    {
-      label: 'Flujo de caja',
-      value: props.healthScore?.cashFlowScore ?? 0,
-      max: 25,
-      color: 'primary'
-    },
-    { label: 'Ahorro', value: props.healthScore?.savingsScore ?? 0, max: 35, color: 'warning' },
-    { label: 'Gastos', value: props.healthScore?.expenseScore ?? 0, max: 20, color: 'danger' },
-    { label: 'Deudas', value: props.healthScore?.debtScore ?? 0, max: 20, color: 'secondary' }
-  ])
+  const pillars = computed(() => {
+    const rawDebtScore = props.healthScore?.debtScore ?? 0
+    // debtScore === 10 means neutral (no debts registered) — display as full bar with "Sin deudas" note
+    const debtValue = rawDebtScore === 10 ? 20 : rawDebtScore
+    return [
+      {
+        label: 'Flujo de caja',
+        value: props.healthScore?.cashFlowScore ?? 0,
+        max: 25,
+        color: 'primary',
+        note: ''
+      },
+      {
+        label: 'Ahorro',
+        value: props.healthScore?.savingsScore ?? 0,
+        max: 35,
+        color: 'warning',
+        note: ''
+      },
+      {
+        label: 'Gastos',
+        value: props.healthScore?.expenseScore ?? 0,
+        max: 20,
+        color: 'danger',
+        note: ''
+      },
+      {
+        label: 'Deudas',
+        value: debtValue,
+        max: 20,
+        color: 'secondary',
+        note: rawDebtScore === 10 ? 'Sin deudas' : ''
+      }
+    ]
+  })
 
   function getPillarBarClass(color: string): string {
     const map: Record<string, string> = {
@@ -168,7 +192,15 @@
           <div v-for="pillar in pillars" :key="pillar.label" class="dashboard-sidebar__pillar">
             <div class="dashboard-sidebar__pillar-header">
               <Text size="xs" color="muted">{{ pillar.label }}</Text>
-              <Text size="xs" weight="medium">{{ pillar.value }}/{{ pillar.max }}</Text>
+              <Text
+                v-if="pillar.note"
+                size="xs"
+                weight="medium"
+                class="dashboard-sidebar__pillar-note--ok"
+              >
+                {{ pillar.note }}
+              </Text>
+              <Text v-else size="xs" weight="medium">{{ pillar.value }}/{{ pillar.max }}</Text>
             </div>
             <div class="dashboard-sidebar__pillar-bar">
               <div
@@ -360,6 +392,10 @@
   .dashboard-sidebar__pillar-bar {
     @apply h-1.5 w-full overflow-hidden rounded-full bg-slate-100;
     @apply dark:bg-neutral-700;
+  }
+
+  .dashboard-sidebar__pillar-note--ok {
+    @apply text-success-600 dark:text-success-400;
   }
 
   .dashboard-sidebar__pillar-fill {

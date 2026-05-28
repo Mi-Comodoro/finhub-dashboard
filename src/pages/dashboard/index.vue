@@ -34,12 +34,14 @@
 
   const {
     loadDashboardData,
+    loadGoalContributionsForPeriod,
     currency,
     totalCommittedExpenses,
     expenses,
     totalSavingGenerated,
     totalSavingTarget,
     totalTransactionSavings,
+    totalGoalContributions,
     totalIncomeReceived,
     totalPlanned,
     totalExpensesPaid
@@ -62,7 +64,7 @@
   const { goals, accounts, loadGoalsData } = useGoalsApplication()
   const { accounts: payableAccounts } = useAccountsPayableApplication()
 
-  const { healthScore } = useAnalyticsApplication()
+  const { healthScore, refreshHealthScore } = useAnalyticsApplication()
 
   const isPageLoading = ref(true)
   const showQuickModal = ref(false)
@@ -128,10 +130,12 @@
     totalSavingTarget.value > 0 ? totalSavingTarget.value : buckets.value.savingsAmount
   )
 
-  // PLANNED → planned savings completed, ACTIVE/CLOSED → actual savings transactions
-  const realSavings = computed(() =>
-    budgetStatus.value === 'PLANNED' ? totalSavingGenerated.value : totalTransactionSavings.value
-  )
+  // PLANNED → planned savings completed, ACTIVE/CLOSED → savings transactions + goal contributions
+  const realSavings = computed(() => {
+    const base =
+      budgetStatus.value === 'PLANNED' ? totalSavingGenerated.value : totalTransactionSavings.value
+    return base + totalGoalContributions.value
+  })
 
   // LIBRE uses actual commitment so spontaneous savings are deducted
   const savingsBase = computed(() =>
@@ -228,9 +232,13 @@
 
       if (currentBudget.value?.id) {
         await loadDashboardData(currentBudget.value.id)
+        await loadGoalContributionsForPeriod(
+          currentBudget.value.year,
+          Number(currentBudget.value.month)
+        )
       }
 
-      await loadGoalsData()
+      await Promise.all([loadGoalsData(), refreshHealthScore()])
     } catch (error) {
       console.error('Error cargando datos del dashboard:', error)
     } finally {
