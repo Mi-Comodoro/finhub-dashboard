@@ -579,6 +579,7 @@
 
   .dashboard-page__card--accent {
     @apply !bg-primary-900;
+    @apply dark:!bg-primary-700;
   }
 
   .dashboard-page__card--free {

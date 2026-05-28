@@ -731,7 +731,7 @@
   /* Deadline at risk banner */
   .goal-detail__deadline-banner {
     @apply flex flex-wrap items-start justify-between gap-4 rounded-lg border border-warning-300 bg-warning-50 px-4 py-3;
-    @apply dark:border-warning-700 dark:bg-warning-900;
+    @apply dark:border-warning-700/50 dark:bg-warning-900/20;
   }
 
   .goal-detail__deadline-banner-left {
@@ -753,6 +753,7 @@
   /* Interest banner */
   .goal-detail__interest-banner {
     @apply flex items-center justify-between gap-4 rounded-lg border border-secondary-300 bg-secondary-50 px-4 py-3;
+    @apply dark:border-secondary-700/50 dark:bg-secondary-900/20;
   }
 
   .goal-detail__interest-banner-info {
@@ -760,7 +761,7 @@
   }
 
   .goal-detail__interest-banner-icon {
-    @apply text-secondary-600;
+    @apply text-secondary-600 dark:text-secondary-400;
   }
 
   /* Layout Principal */
@@ -797,6 +798,7 @@
 
   .goal-detail__horizon-btn--active {
     @apply bg-primary-900 text-white hover:bg-primary-900 focus:ring-primary-500;
+    @apply dark:bg-primary-600 dark:hover:bg-primary-600;
   }
 
   /* Skeleton */

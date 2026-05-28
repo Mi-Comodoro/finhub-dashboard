@@ -252,11 +252,12 @@
   }
 
   .goal-sidebar-panel__interest {
-    @apply text-warning-600;
+    @apply text-warning-600 dark:text-warning-400;
   }
 
   .goal-sidebar-panel__row--highlight {
     @apply rounded-md bg-primary-50 px-2 py-1;
+    @apply dark:bg-primary-900/30;
   }
 
   .goal-sidebar-panel__history-list {
