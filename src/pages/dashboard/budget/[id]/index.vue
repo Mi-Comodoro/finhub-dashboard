@@ -162,7 +162,7 @@
     formMode.value = 'create'
   }
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = async () => {
     const isEdit = formMode.value === 'edit'
     successToast(
       isEdit ? 'Gasto actualizado' : 'Gasto registrado',
@@ -171,6 +171,9 @@
         : 'El gasto fue agregado al presupuesto.'
     )
     closeForm()
+    if (budgetId) {
+      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+    }
   }
 
   const showSavingDistributionForm = ref(false)
@@ -179,8 +182,11 @@
     showSavingDistributionForm.value = false
   }
 
-  const handleMarkExpenseAsPaid = (_row: { id: string }) => {
+  const handleMarkExpenseAsPaid = async (_row: { id: string }) => {
     successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
+    if (budgetId) {
+      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+    }
   }
 
   const handleEditExpense = (row: Record<string, unknown>) => {

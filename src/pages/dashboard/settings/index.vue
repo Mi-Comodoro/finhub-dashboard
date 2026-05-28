@@ -1,11 +1,15 @@
 <script setup lang="ts">
+  import { useDebounceFn } from '@vueuse/core'
+
   import { FINANCIAL_PROFILE_OPTIONS } from '@/common/constants'
+  import { useFriendshipsApplication } from '@/composables/application/useFriendshipsApplication'
   import { usePlansApplication } from '@/composables/application/usePlansApplication'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useAuth } from '@/composables/useAuth'
   import { useFeedback } from '@/composables/useFeedBack'
   import { useAuthStore } from '@/stores/auth.store'
+  import { useUserStore } from '@/stores/user.store'
   import type { PlanData } from '@/types/api'
   import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
@@ -31,6 +35,8 @@
   const { logout } = useAuth()
   const { success: successToast, error: errorToast } = useFeedback()
   const authStore = useAuthStore()
+  const userStore = useUserStore()
+  const { handleUpdateHandle, handleSearchUsers } = useFriendshipsApplication()
 
   type TabId = 'profile' | 'account' | 'notifications' | 'app' | 'billing'
 
@@ -153,6 +159,67 @@
       }
     } finally {
       isSavingProfile.value = false
+    }
+  }
+
+  // [1b] Handle
+  const handleForm = ref('')
+  const handleStatus = ref<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle')
+  const handleSnapshot = ref('')
+  const isSavingHandle = ref(false)
+
+  const HANDLE_REGEX = /^[a-z0-9_]{3,20}$/
+
+  watch(
+    () => userStore.handle,
+    val => {
+      if (val) {
+        handleForm.value = val
+        handleSnapshot.value = val
+      }
+    },
+    { immediate: true }
+  )
+
+  const isHandleDirty = computed(
+    () => handleForm.value !== handleSnapshot.value && handleForm.value !== ''
+  )
+
+  const checkHandleAvailability = useDebounceFn(async (val: string) => {
+    if (!HANDLE_REGEX.test(val)) {
+      handleStatus.value = 'invalid'
+      return
+    }
+    if (val === handleSnapshot.value) {
+      handleStatus.value = 'idle'
+      return
+    }
+    handleStatus.value = 'checking'
+    const { results } = await handleSearchUsers(val)
+    const isTaken = results.some(r => r.handle === val)
+    handleStatus.value = isTaken ? 'taken' : 'available'
+  }, 500)
+
+  watch(handleForm, val => {
+    if (!val) {
+      handleStatus.value = 'idle'
+      return
+    }
+    checkHandleAvailability(val)
+  })
+
+  const handleSaveHandle = async () => {
+    if (!isHandleDirty.value || handleStatus.value === 'taken' || handleStatus.value === 'invalid')
+      return
+    isSavingHandle.value = true
+    const { success, error } = await handleUpdateHandle(handleForm.value)
+    isSavingHandle.value = false
+    if (success) {
+      handleSnapshot.value = handleForm.value
+      handleStatus.value = 'idle'
+      successToast('Handle actualizado', `Tu handle es ahora @${handleForm.value}`)
+    } else {
+      errorToast(error?.title ?? 'Error', error?.message ?? 'No se pudo guardar el handle')
     }
   }
 
@@ -441,6 +508,74 @@
                   class="settings-card__input settings-card__input--readonly"
                   readonly
                 />
+              </div>
+
+              <div class="settings-card__field">
+                <Text size="sm" weight="medium" class="settings-card__label">Handle</Text>
+                <div class="settings-card__handle-row">
+                  <div class="settings-card__handle-input-wrap">
+                    <span class="settings-card__handle-at">@</span>
+                    <input
+                      v-model="handleForm"
+                      type="text"
+                      class="settings-card__input settings-card__input--handle"
+                      placeholder="tu_handle"
+                      maxlength="20"
+                    />
+                    <span
+                      v-if="handleStatus === 'checking'"
+                      class="material-symbols-outlined settings-card__handle-icon settings-card__handle-icon--checking"
+                    >
+                      sync
+                    </span>
+                    <span
+                      v-else-if="handleStatus === 'available'"
+                      class="material-symbols-outlined settings-card__handle-icon settings-card__handle-icon--ok"
+                    >
+                      check_circle
+                    </span>
+                    <span
+                      v-else-if="handleStatus === 'taken' || handleStatus === 'invalid'"
+                      class="material-symbols-outlined settings-card__handle-icon settings-card__handle-icon--error"
+                    >
+                      cancel
+                    </span>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    :disabled="
+                      isSavingHandle ||
+                      !isHandleDirty ||
+                      handleStatus === 'taken' ||
+                      handleStatus === 'invalid' ||
+                      handleStatus === 'checking'
+                    "
+                    :loading="isSavingHandle"
+                    @click="handleSaveHandle"
+                  >
+                    Guardar
+                  </Button>
+                </div>
+                <Text
+                  v-if="handleStatus === 'taken'"
+                  size="xs"
+                  color="error"
+                  class="settings-card__handle-hint"
+                >
+                  Este handle ya está en uso.
+                </Text>
+                <Text
+                  v-else-if="handleStatus === 'invalid'"
+                  size="xs"
+                  color="error"
+                  class="settings-card__handle-hint"
+                >
+                  Solo letras minúsculas, números y guiones bajos (3-20 caracteres).
+                </Text>
+                <Text v-else size="xs" color="muted" class="settings-card__handle-hint">
+                  Tu handle único para que otros te encuentren.
+                </Text>
               </div>
 
               <div class="settings-card__field">
@@ -1062,5 +1197,46 @@
 
   .plan-card__feature-icon {
     @apply mt-0.5 shrink-0 text-sm text-success-500;
+  }
+
+  .settings-card__handle-row {
+    @apply flex items-center gap-2;
+  }
+
+  .settings-card__handle-input-wrap {
+    @apply relative flex flex-1 items-center rounded-lg border border-neutral-300 bg-white px-3 py-2;
+    @apply focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500;
+    @apply dark:border-neutral-600 dark:bg-neutral-800;
+  }
+
+  .settings-card__handle-at {
+    @apply mr-1 font-semibold text-primary-500;
+  }
+
+  .settings-card__input--handle {
+    @apply flex-1 bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-400;
+    @apply dark:text-neutral-100;
+    border: none;
+    padding: 0;
+  }
+
+  .settings-card__handle-icon {
+    @apply ml-2 text-base;
+  }
+
+  .settings-card__handle-icon--checking {
+    @apply animate-spin text-neutral-400;
+  }
+
+  .settings-card__handle-icon--ok {
+    @apply text-success-500;
+  }
+
+  .settings-card__handle-icon--error {
+    @apply text-danger-500;
+  }
+
+  .settings-card__handle-hint {
+    @apply mt-1;
   }
 </style>

@@ -5,6 +5,7 @@ export interface MenuItem {
   isActive?: boolean
   onClick?: () => void | Promise<void>
   className?: string
+  badge?: number
 }
 
 export interface NavigationSectionProps {

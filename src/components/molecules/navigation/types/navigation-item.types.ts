@@ -5,5 +5,6 @@ export interface NavigationItemProps {
   isActive?: boolean
   collapsed?: boolean
   className?: string
+  badge?: number
   onClick?: () => void | Promise<void>
 }

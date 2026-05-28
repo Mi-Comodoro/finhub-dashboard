@@ -6,6 +6,7 @@ export type BackendUserMe = {
   data: {
     id: string
     email: string
+    handle?: string | null
     onboarding: string
     createdAt: Date
     role?: string
@@ -37,6 +38,7 @@ export type UserMe = {
     user: {
       id: string
       email: string
+      handle?: string | null
       name: string
       displayName: string
       photo?: string

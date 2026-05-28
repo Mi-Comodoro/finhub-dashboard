@@ -289,6 +289,11 @@
     distributionItems.value.reduce((acc, item) => acc + item.percentage, 0)
   )
 
+  const goalsWithoutDistribution = computed(() => {
+    const distributedIds = new Set(distributionItems.value.map(i => i.goalId))
+    return goals.value.filter(g => !distributedIds.has(g.id))
+  })
+
   const showSavingDistributionForm = ref(false)
   const createSavingDistributionForm = () => {
     showSavingDistributionForm.value = true
@@ -399,23 +404,46 @@
 <template>
   <div class="goals-page">
     <div class="goals-page__header">
-      <div class="goals-page__header-text">
-        <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
-          Define tus Propositos
-        </Heading>
-        <Text size="xs" color="muted">
-          Organiza tu futuro financiero creando propósitos específicos.
-        </Text>
+      <div class="goals-page__header-top">
+        <div class="goals-page__header-text">
+          <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
+            Define tus Propositos
+          </Heading>
+          <Text size="xs" color="muted">
+            Organiza tu futuro financiero creando propósitos específicos.
+          </Text>
+        </div>
+
+        <div class="goals-page__header-buttons">
+          <Button
+            v-if="isSavingsAllocationCompleted"
+            size="sm"
+            icon="tune"
+            variant="secondary"
+            @click="openDistributionEditForm"
+          >
+            Reajustar distribución
+          </Button>
+          <Button
+            size="sm"
+            icon="add_task"
+            variant="primary"
+            :disabled="!isAccountCreated"
+            :onclick="createGoalsForm"
+          >
+            Nueva Meta
+          </Button>
+        </div>
       </div>
-      <div class="goals-page__header-actions">
-        <!-- Filtros de plazo -->
+
+      <div class="goals-page__header-controls">
         <div class="goals-page__filters">
           <button
             v-for="f in [
               { value: 'all', label: 'Todas' },
-              { value: 'short', label: 'Corto plazo' },
-              { value: 'medium', label: 'Mediano plazo' },
-              { value: 'long', label: 'Largo plazo' }
+              { value: 'short', label: 'Corto' },
+              { value: 'medium', label: 'Mediano' },
+              { value: 'long', label: 'Largo' }
             ]"
             :key="f.value"
             :class="[
@@ -428,7 +456,6 @@
           </button>
         </div>
 
-        <!-- Toggle vista -->
         <div class="goals-page__view-toggle">
           <Button
             variant="ghost"
@@ -447,25 +474,6 @@
             @click="viewMode = 'table'"
           />
         </div>
-
-        <Button
-          v-if="isSavingsAllocationCompleted"
-          size="sm"
-          icon="tune"
-          variant="secondary"
-          @click="openDistributionEditForm"
-        >
-          Reajustar distribución
-        </Button>
-        <Button
-          size="sm"
-          icon="add_task"
-          variant="primary"
-          :disabled="!isAccountCreated"
-          :onclick="createGoalsForm"
-        >
-          Nueva Meta
-        </Button>
       </div>
     </div>
     <AllocationSummary />
@@ -781,6 +789,22 @@
                 </span>
               </div>
 
+              <div
+                v-if="goalsWithoutDistribution.length > 0"
+                class="goals-page__distribution-new-warning"
+              >
+                <span class="material-symbols-outlined goals-page__distribution-new-warning-icon">
+                  info
+                </span>
+                <span class="goals-page__distribution-new-warning-text">
+                  {{
+                    goalsWithoutDistribution.length === 1
+                      ? '1 meta nueva sin distribución asignada'
+                      : `${goalsWithoutDistribution.length} metas nuevas sin distribución asignada`
+                  }}
+                </span>
+              </div>
+
               <Button size="sm" variant="ghost" icon="edit" @click="openDistributionEditForm">
                 Editar distribución
               </Button>
@@ -843,15 +867,23 @@
   }
 
   .goals-page__header {
-    @apply flex flex-col gap-4 md:flex-row md:items-center md:justify-between;
+    @apply flex flex-col gap-2;
+  }
+
+  .goals-page__header-top {
+    @apply flex items-start justify-between gap-4;
   }
 
   .goals-page__header-text {
-    @apply md:pr-4 xl:pr-0;
+    @apply flex flex-col gap-0.5;
   }
 
-  .goals-page__header-actions {
-    @apply flex flex-wrap items-center gap-2;
+  .goals-page__header-buttons {
+    @apply flex shrink-0 items-center gap-2;
+  }
+
+  .goals-page__header-controls {
+    @apply flex items-center justify-between gap-2;
   }
 
   /* Filtros */
@@ -1150,6 +1182,18 @@
   }
 
   .goals-page__distribution-total-text {
+    @apply text-xs font-medium;
+  }
+
+  .goals-page__distribution-new-warning {
+    @apply flex items-center gap-1.5 rounded-md bg-primary-50 px-2 py-1.5 text-primary-700;
+  }
+
+  .goals-page__distribution-new-warning-icon {
+    @apply shrink-0 text-sm leading-none;
+  }
+
+  .goals-page__distribution-new-warning-text {
     @apply text-xs font-medium;
   }
 </style>

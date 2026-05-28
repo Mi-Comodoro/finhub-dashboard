@@ -24,7 +24,7 @@ export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
   const transactionApi = useTransactionApi()
   const budgetStore = useBudgetStore()
   const financesStore = useFinancesStore()
-  const currency = computed(() => financesStore.defaultCurrency as Currency)
+  const currency = computed(() => (financesStore.defaultCurrency as Currency) ?? 'COP')
 
   const fetchSavingsForYear = async (yr: number) => {
     const hasYearLoaded = budgetStore.budgetPlans.some(b => Number(b.year) === yr)

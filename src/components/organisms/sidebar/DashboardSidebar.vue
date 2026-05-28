@@ -8,14 +8,18 @@
   import { useSidebarMode } from '@/composables/ui/useSidebarMode'
   import { useSidebar } from '@/composables/useSidebar'
   import { useAuthStore } from '@/stores/auth.store'
+  import { useFriendshipsStore } from '@/stores/friendships.store'
 
   import type { MenuItem } from './types/dashboard-sidebar.types'
 
   const route = useRoute()
   const authStore = useAuthStore()
+  const friendshipsStore = useFriendshipsStore()
 
   const { isCollapsed, toggleCollapse, close } = useSidebar()
   const { isAdminMode, toggle } = useSidebarMode()
+
+  const pendingRequestsCount = computed(() => friendshipsStore.pendingCount)
 
   const emit = defineEmits<{
     navigate: []
@@ -43,16 +47,21 @@
     navigateTo(target)
   }
 
-  const userMenuItems: Omit<MenuItem, 'isActive'>[] = [
+  const userMenuItems = computed<Omit<MenuItem, 'isActive'>[]>(() => [
     { name: 'Dashboard', icon: 'dashboard_2', path: '/dashboard' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
-    { name: 'Grupos', icon: 'group', path: '/dashboard/groups' },
+    {
+      name: 'Grupos',
+      icon: 'group',
+      path: '/dashboard/groups',
+      badge: pendingRequestsCount.value || undefined
+    },
     { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
     { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' },
     { name: 'Cuentas', icon: 'account_balance', path: '/dashboard/accounts' },
     { name: 'Módulos', icon: 'view_module', className: 'nav-item--disabled' }
-  ]
+  ])
 
   const settingsItems: Omit<MenuItem, 'isActive'>[] = [
     { name: 'Configuración', icon: 'settings', path: '/dashboard/settings' }
@@ -68,7 +77,7 @@
   const isAdmin = computed(() => authStore.user?.role === 'admin')
 
   const mainMenuItems = computed<MenuItem[]>(() =>
-    userMenuItems.map(item => ({
+    userMenuItems.value.map(item => ({
       ...item,
       isActive: item.path ? isActiveRoute(item.path, route.path) : false
     }))
