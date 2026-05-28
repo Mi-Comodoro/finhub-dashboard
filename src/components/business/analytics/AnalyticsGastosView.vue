@@ -211,7 +211,7 @@
   }
 
   .gastos-view__body {
-    @apply grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start;
+    @apply grid grid-cols-1 gap-6 md:grid-cols-2 md:items-start;
   }
 
   .gastos-view__chart-wrapper {

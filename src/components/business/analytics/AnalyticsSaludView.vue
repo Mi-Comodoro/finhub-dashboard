@@ -308,7 +308,7 @@
 
   /* Score card */
   .salud-view__score-card {
-    @apply p-6;
+    @apply p-4 sm:p-6;
   }
 
   .salud-view__score-inner {

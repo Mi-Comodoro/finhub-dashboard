@@ -526,7 +526,7 @@
   }
 
   .cashflow-view__pill-summary {
-    @apply flex flex-wrap items-center gap-2 text-sm text-neutral-600;
+    @apply hidden flex-wrap items-center gap-2 text-sm text-neutral-600 sm:flex;
   }
 
   .cashflow-view__pill-sep {

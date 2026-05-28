@@ -77,7 +77,26 @@
 
 <template>
   <div class="ahorro-view">
-    <template v-if="isLoading || totalSaved > 0">
+    <!-- Loading: unified skeleton, no data race -->
+    <template v-if="isLoading">
+      <div class="ahorro-view__kpis">
+        <div v-for="i in 3" :key="i" class="ahorro-view__kpi-skeleton-card" />
+      </div>
+      <div class="ahorro-view__chart-full-skeleton" />
+    </template>
+
+    <!-- No savings -->
+    <div v-else-if="totalSaved === 0" class="analytics-view__empty">
+      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
+      <p class="analytics-view__empty-title">Sin aportes registrados</p>
+      <p class="analytics-view__empty-description">
+        Completa un aporte a tus metas para ver tu tendencia de ahorro.
+      </p>
+      <NuxtLink to="/dashboard/goals" class="analytics-view__empty-cta">Ver metas</NuxtLink>
+    </div>
+
+    <!-- Has savings -->
+    <template v-else>
       <div class="ahorro-view__kpis">
         <div class="ahorro-view__kpi-card ahorro-view__kpi-card--neutral">
           <div class="ahorro-view__kpi-icon ahorro-view__kpi-icon--neutral">
@@ -97,9 +116,7 @@
           </div>
           <div class="ahorro-view__kpi-content">
             <Text size="xs" color="muted">Ahorro del mes</Text>
-            <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
             <p
-              v-else
               class="ahorro-view__kpi-value"
               :title="formatCurrency(selectedMonthSaving, currency.value)"
             >
@@ -114,12 +131,7 @@
           </div>
           <div class="ahorro-view__kpi-content">
             <Text size="xs" color="muted">Estimación mensual</Text>
-            <div v-if="isLoading" class="ahorro-view__kpi-skeleton" />
-            <p
-              v-else
-              class="ahorro-view__kpi-value"
-              :title="formatCurrency(monthlyAvg, currency.value)"
-            >
+            <p class="ahorro-view__kpi-value" :title="formatCurrency(monthlyAvg, currency.value)">
               {{ formatCompactCurrency(monthlyAvg, currency.value) }}
             </p>
           </div>
@@ -133,45 +145,35 @@
           Automatiza tus aportes para mantener el hábito.
         </Text>
       </div>
+
+      <!-- Insufficient months -->
+      <div v-if="monthsWithData < 2" class="analytics-view__empty">
+        <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
+        <p class="analytics-view__empty-title">Datos insuficientes</p>
+        <p class="analytics-view__empty-description">
+          Se necesitan al menos 2 meses con datos para mostrar la tendencia de ahorro.
+        </p>
+      </div>
+
+      <!-- Chart -->
+      <div v-else class="ahorro-view__chart-card">
+        <div class="ahorro-view__chart-header">
+          <Heading level="h3" size="lg" weight="semibold">Tendencia de ahorro</Heading>
+          <Text size="xs" color="muted">Ahorro real mes a mes durante {{ selectedYear }}</Text>
+        </div>
+
+        <div class="ahorro-view__chart-body">
+          <ClientOnly>
+            <VChart :option="chartOption" autoresize class="ahorro-view__chart" />
+            <template #fallback>
+              <div class="ahorro-view__chart ahorro-view__chart--loading">
+                <div class="ahorro-view__chart-skeleton" />
+              </div>
+            </template>
+          </ClientOnly>
+        </div>
+      </div>
     </template>
-
-    <div v-if="!isLoading && totalSaved === 0" class="analytics-view__empty">
-      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
-      <p class="analytics-view__empty-title">Sin aportes registrados</p>
-      <p class="analytics-view__empty-description">
-        Completa un aporte a tus metas para ver tu tendencia de ahorro.
-      </p>
-      <NuxtLink to="/dashboard/goals" class="analytics-view__empty-cta">Ver metas</NuxtLink>
-    </div>
-
-    <div v-else-if="!isLoading && monthsWithData < 2" class="analytics-view__empty">
-      <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
-      <p class="analytics-view__empty-title">Datos insuficientes</p>
-      <p class="analytics-view__empty-description">
-        Se necesitan al menos 2 meses con datos para mostrar la tendencia de ahorro.
-      </p>
-    </div>
-
-    <div v-else class="ahorro-view__chart-card">
-      <div class="ahorro-view__chart-header">
-        <Heading level="h3" size="lg" weight="semibold">Tendencia de ahorro</Heading>
-        <Text size="xs" color="muted">Ahorro real mes a mes durante {{ selectedYear }}</Text>
-      </div>
-
-      <div class="ahorro-view__chart-body">
-        <ClientOnly>
-          <VChart v-if="!isLoading" :option="chartOption" autoresize class="ahorro-view__chart" />
-          <div v-else class="ahorro-view__chart ahorro-view__chart--loading">
-            <div class="ahorro-view__chart-skeleton" />
-          </div>
-          <template #fallback>
-            <div class="ahorro-view__chart ahorro-view__chart--loading">
-              <div class="ahorro-view__chart-skeleton" />
-            </div>
-          </template>
-        </ClientOnly>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -243,6 +245,14 @@
 
   .ahorro-view__kpi-skeleton {
     @apply mt-1 h-7 w-36 animate-pulse rounded bg-slate-100;
+  }
+
+  .ahorro-view__kpi-skeleton-card {
+    @apply h-20 animate-pulse rounded-xl bg-slate-100;
+  }
+
+  .ahorro-view__chart-full-skeleton {
+    @apply h-72 animate-pulse rounded-xl bg-slate-100;
   }
 
   .ahorro-view__chart-card {

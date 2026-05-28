@@ -446,7 +446,7 @@
   }
 
   .net-position-view__simplified-note {
-    @apply flex items-center gap-1.5 border-b border-neutral-100 px-5 pb-3;
+    @apply flex items-center gap-1.5 border-b border-neutral-100 px-5 py-3;
   }
 
   .net-position-view__simplified-icon {
