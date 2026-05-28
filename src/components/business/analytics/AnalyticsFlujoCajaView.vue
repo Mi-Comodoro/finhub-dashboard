@@ -390,6 +390,7 @@
 
   .cashflow-view__kpi-value {
     @apply font-sans text-lg font-bold leading-snug text-black;
+    @apply dark:text-neutral-100;
   }
 
   .cashflow-view__kpi-value--negative {

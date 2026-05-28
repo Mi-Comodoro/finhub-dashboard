@@ -555,6 +555,7 @@
 
   .budget-index__skeleton {
     @apply h-52 animate-pulse rounded-xl bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .budget-index__error {
@@ -567,6 +568,7 @@
 
   .budget-index__empty {
     @apply rounded-xl border border-neutral-200 bg-white;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .budget-index__grid {
@@ -575,6 +577,7 @@
 
   .budget-index__card {
     @apply flex flex-col rounded-xl bg-white p-4 transition-shadow;
+    @apply dark:bg-neutral-800;
   }
 
   .budget-index__card--active-current {
@@ -599,6 +602,7 @@
 
   .budget-index__card-title {
     @apply truncate text-neutral-900;
+    @apply dark:text-neutral-50;
   }
 
   .budget-index__card-date {
@@ -611,6 +615,7 @@
 
   .budget-index__metric {
     @apply rounded-lg bg-neutral-50 p-2;
+    @apply dark:bg-neutral-700;
   }
 
   .budget-index__metric-label {
@@ -619,6 +624,7 @@
 
   .budget-index__metric-value {
     @apply text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .budget-index__metric-value--savings {

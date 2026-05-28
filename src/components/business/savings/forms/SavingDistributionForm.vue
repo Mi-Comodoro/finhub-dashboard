@@ -193,6 +193,7 @@
 
   .saving-distribution-form__amount {
     @apply flex items-center justify-between rounded-md border border-neutral-100 bg-neutral-50 px-3 py-2;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .saving-distribution-form__amount-value {

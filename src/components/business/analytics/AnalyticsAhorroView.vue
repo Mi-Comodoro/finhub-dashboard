@@ -192,14 +192,17 @@
 
   .ahorro-view__kpi-card--neutral {
     @apply border-neutral-200 bg-neutral-50;
+    @apply dark:border-neutral-700 dark:bg-neutral-700/40;
   }
 
   .ahorro-view__kpi-card--warning {
     @apply border-warning-100 bg-warning-50;
+    @apply dark:border-warning-900/40 dark:bg-warning-900/20;
   }
 
   .ahorro-view__kpi-card--success {
     @apply border-success-100 bg-success-50;
+    @apply dark:border-success-900/40 dark:bg-success-900/20;
   }
 
   .ahorro-view__kpi-icon {
@@ -224,6 +227,7 @@
 
   .ahorro-view__kpi-icon--neutral .ahorro-view__kpi-icon-svg {
     @apply text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .ahorro-view__kpi-icon--warning .ahorro-view__kpi-icon-svg {
@@ -241,6 +245,7 @@
 
   .ahorro-view__kpi-value {
     @apply font-sans text-lg font-bold leading-snug text-black;
+    @apply dark:text-neutral-100;
   }
 
   .ahorro-view__kpi-skeleton {
@@ -257,6 +262,7 @@
 
   .ahorro-view__chart-card {
     @apply rounded-xl border border-neutral-200 bg-white;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .ahorro-view__chart-header {

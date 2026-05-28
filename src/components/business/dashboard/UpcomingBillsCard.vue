@@ -202,6 +202,7 @@
 <style scoped lang="postcss">
   .bills-card {
     @apply flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .bills-card__header {
@@ -218,22 +219,27 @@
 
   .bills-card__item--overdue {
     @apply border-l-2 border-danger-400 bg-danger-50 pl-2.5;
+    @apply dark:bg-danger-900/20;
   }
 
   .bills-card__item--critical {
     @apply bg-danger-50;
+    @apply dark:bg-danger-900/20;
   }
 
   .bills-card__item--soon {
     @apply bg-warning-50;
+    @apply dark:bg-warning-900/20;
   }
 
   .bills-card__item--ok {
     @apply bg-slate-50;
+    @apply dark:bg-neutral-700/40;
   }
 
   .bills-card__item--low {
     @apply bg-slate-50;
+    @apply dark:bg-neutral-700/40;
   }
 
   .bills-card__dot {
@@ -266,10 +272,12 @@
 
   .bills-card__item-name {
     @apply truncate text-sm font-medium text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .bills-card__item-amount {
     @apply text-sm font-semibold text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .bills-card__item-right {

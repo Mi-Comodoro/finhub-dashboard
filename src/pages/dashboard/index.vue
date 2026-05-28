@@ -596,6 +596,7 @@
 
   .dashboard-page__budget-donut {
     @apply flex flex-col gap-2 rounded-xl border border-neutral-200 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .dashboard-page__budget-donut-header {
@@ -612,18 +613,22 @@
 
   .dashboard-page__budget-kpi--needs {
     @apply border-primary-100 bg-primary-50;
+    @apply dark:border-primary-900/40 dark:bg-primary-900/20;
   }
 
   .dashboard-page__budget-kpi--wants {
     @apply border-secondary-100 bg-secondary-50;
+    @apply dark:border-secondary-900/40 dark:bg-secondary-900/20;
   }
 
   .dashboard-page__budget-kpi--savings {
     @apply border-warning-100 bg-warning-50;
+    @apply dark:border-warning-900/40 dark:bg-warning-900/20;
   }
 
   .dashboard-page__budget-track {
     @apply h-2 w-full overflow-hidden rounded-full bg-white/60;
+    @apply dark:bg-white/10;
   }
 
   .dashboard-page__budget-fill {

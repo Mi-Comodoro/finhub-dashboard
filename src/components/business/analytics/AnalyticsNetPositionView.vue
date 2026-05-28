@@ -377,6 +377,7 @@
 
   .net-position-view__kpi-value {
     @apply font-sans text-lg font-bold leading-snug text-black;
+    @apply dark:text-neutral-100;
   }
 
   .net-position-view__kpi-hint {
@@ -386,6 +387,7 @@
   /* Ratio card */
   .net-position-view__ratio-card {
     @apply flex flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-5;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .net-position-view__ratio-header {
@@ -394,6 +396,7 @@
 
   .net-position-view__ratio-track {
     @apply h-3 overflow-hidden rounded-full bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .net-position-view__ratio-bar {
@@ -439,6 +442,7 @@
   /* Chart card */
   .net-position-view__chart-card {
     @apply rounded-xl border border-neutral-200 bg-white;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .net-position-view__chart-header {

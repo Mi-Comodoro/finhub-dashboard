@@ -228,6 +228,7 @@
   .distribution-edit-form__total {
     @apply flex items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2;
     @apply transition-colors;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .distribution-edit-form__total--over {

@@ -230,6 +230,7 @@
 <style scoped lang="postcss">
   .goal-sidebar-panel__section {
     @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goal-sidebar-panel__details {
@@ -242,10 +243,12 @@
 
   .goal-sidebar-panel__label {
     @apply text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .goal-sidebar-panel__divider {
     @apply border-t border-neutral-100;
+    @apply dark:border-neutral-700;
   }
 
   .goal-sidebar-panel__interest {
