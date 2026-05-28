@@ -162,7 +162,7 @@
         </button>
       </div>
       <div class="dashboard-sidebar__toggle">
-        <AppVersion v-if="!isCollapsed" class="ml-1 font-bold text-primary-900" size="xs" />
+        <AppVersion v-if="!isCollapsed" class="dashboard-sidebar__version" size="xs" />
         <Button
           :icon="isCollapsed ? 'chevron_right' : 'chevron_left'"
           variant="primary"
@@ -211,6 +211,10 @@
   }
   .mode-switch--on .mode-switch__thumb {
     @apply translate-x-5;
+  }
+
+  .dashboard-sidebar__version {
+    @apply ml-1 font-bold text-primary-900 dark:text-primary-400;
   }
 
   .sidebar-mode-enter-active,

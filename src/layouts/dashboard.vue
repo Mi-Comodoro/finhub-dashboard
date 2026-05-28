@@ -67,7 +67,8 @@
 
 <style scoped lang="postcss">
   .dashboard-layout {
-    @apply fixed inset-0 flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950;
+    @apply fixed inset-0 flex h-screen w-screen overflow-hidden;
+    background-color: var(--surface-base);
   }
 
   .dashboard-container {
@@ -98,7 +99,8 @@
   }
 
   .dashboard-scroll-area {
-    @apply h-screen flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950;
+    @apply h-screen flex-1 overflow-y-auto;
+    background-color: var(--surface-base);
   }
 
   .dashboard-view-wrapper {

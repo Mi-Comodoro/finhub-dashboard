@@ -312,6 +312,7 @@
 <style scoped lang="postcss">
   .dashboard-sidebar__section {
     @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   /* Score */
@@ -358,6 +359,7 @@
 
   .dashboard-sidebar__pillar-bar {
     @apply h-1.5 w-full overflow-hidden rounded-full bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .dashboard-sidebar__pillar-fill {
@@ -391,10 +393,12 @@
 
   .dashboard-sidebar__goal-name {
     @apply min-w-0 truncate text-xs text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .dashboard-sidebar__goal-pct {
     @apply shrink-0 text-xs font-bold text-black;
+    @apply dark:text-neutral-100;
   }
 
   /* Bills */
@@ -432,6 +436,7 @@
 
   .dashboard-sidebar__bill-name {
     @apply min-w-0 flex-1 truncate text-xs text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .dashboard-sidebar__bill-days {
@@ -453,6 +458,7 @@
   /* Link */
   .dashboard-sidebar__link {
     @apply flex items-center gap-1 text-xs font-medium text-primary-600 transition-colors hover:text-primary-800;
+    @apply dark:text-primary-400 dark:hover:text-primary-300;
   }
 
   .dashboard-sidebar__link-icon {
@@ -470,6 +476,7 @@
 
   .dashboard-sidebar__savings-divider {
     @apply border-t border-neutral-100;
+    @apply dark:border-neutral-700;
   }
 
   .dashboard-sidebar__savings-real {
@@ -479,10 +486,12 @@
   /* Skeleton */
   .dashboard-sidebar__skeleton-section {
     @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .dashboard-sidebar__skeleton-header {
     @apply h-10 w-full animate-pulse rounded-lg bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .dashboard-sidebar__skeleton-rows {
@@ -491,5 +500,6 @@
 
   .dashboard-sidebar__skeleton-row {
     @apply h-4 w-full animate-pulse rounded-md bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 </style>
