@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import ThemeToggle from '@/components/atoms/theme/ThemeToggle.vue'
   import UserAvatarDropdown from '@/components/business/layout/UserAvatarDropdown.vue'
   import NotificationCenter from '@/components/molecules/notification/NotificationCenter.vue'
   import { useAuthStore } from '~/stores/auth.store'
@@ -52,6 +53,9 @@
                 : 'Gratis'
       }}
     </Badge>
+
+    <!-- Theme toggle -->
+    <ThemeToggle size="sm" />
 
     <!-- Help button -->
     <NuxtLink to="/dashboard/help" class="header-actions__help-btn" title="Ayuda">
