@@ -38,21 +38,24 @@ export const logoutError = (event: H3Event, status: number): never => {
   }
 }
 
-export const validateError = (event: H3Event, status: number): never => {
+export const validateError = (event: H3Event, status: number, backendMessage?: string): never => {
   if (status === 401) {
     deleteCookie(event, ACCESS_TOKEN)
     deleteCookie(event, ACCOUNT_TYPE)
     deleteCookie(event, TOKEN_EXPIRES_AT)
-
     throw apiError.unauthorized('La sesión ha expirado')
   }
 
   switch (status) {
+    case 400:
+      throw apiError.badRequest(backendMessage ?? 'Solicitud inválida')
+    case 422:
+      throw apiError.badRequest(backendMessage ?? 'Datos inválidos')
     case 403:
-      throw apiError.forbidden('No tienes permisos para esto')
+      throw apiError.forbidden(backendMessage ?? 'No tienes permisos para esto')
     case 404:
-      throw apiError.notFound('Recurso no encontrado')
+      throw apiError.notFound(backendMessage ?? 'Recurso no encontrado')
     default:
-      throw apiError.internal('Error inesperado en el servidor')
+      throw apiError.internal(backendMessage ?? 'Error inesperado en el servidor')
   }
 }
