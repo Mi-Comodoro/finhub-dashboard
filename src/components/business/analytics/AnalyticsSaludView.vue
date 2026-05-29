@@ -15,64 +15,63 @@
   const CIRCUMFERENCE = 2 * Math.PI * 50
 
   const scoreHexColor = computed(() => {
-    const s = healthScore.value?.totalScore ?? 0
-    if (s < 40) return '#EF4444'
-    if (s < 70) return '#F59E0B'
-    if (s >= 100) return '#22C55E'
-    return '#14B8A6'
+    const s = healthScore.value?.score.total ?? 0
+    if (s < 20) return '#EF4444'
+    if (s < 40) return '#F97316'
+    if (s < 60) return '#F59E0B'
+    if (s < 75) return '#A3E635'
+    if (s < 90) return '#14B8A6'
+    return '#22C55E'
   })
 
   const dashOffset = computed(() => {
-    const s = Math.min(Math.max(healthScore.value?.totalScore ?? 0, 0), 100)
+    const s = Math.min(Math.max(healthScore.value?.score.total ?? 0, 0), 100)
     return CIRCUMFERENCE * (1 - s / 100)
   })
 
-  const levelLabel = computed(() => {
-    const labels: Record<string, string> = {
-      critical: 'Crítico',
-      at_risk: 'En riesgo',
-      regular: 'Regular',
-      healthy: 'Saludable',
-      optimal: 'Óptimo'
-    }
-    return labels[healthScore.value?.level ?? 'regular'] ?? 'Regular'
-  })
+  const levelLabel = computed(() => healthScore.value?.score.label ?? 'Regular')
 
   const scoreLevelClass = computed(() => {
-    const level = healthScore.value?.level ?? 'regular'
-    if (level === 'critical') return 'salud-score__level--danger'
-    if (level === 'at_risk' || level === 'regular') return 'salud-score__level--warning'
-    if (level === 'optimal') return 'salud-score__level--success'
-    return 'salud-score__level--primary'
+    const total = healthScore.value?.score.total ?? 0
+    if (total < 20) return 'salud-score__level--danger'
+    if (total < 40) return 'salud-score__level--orange'
+    if (total < 60) return 'salud-score__level--warning'
+    if (total < 75) return 'salud-score__level--lime'
+    if (total < 90) return 'salud-score__level--primary'
+    return 'salud-score__level--success'
   })
 
   const pillars = computed(() => [
     {
       label: 'Flujo de Caja',
       icon: 'account_balance',
-      score: healthScore.value?.cashFlowScore ?? 0,
+      score: healthScore.value?.score.pillars.cashFlow.score ?? 0,
       max: 25,
+      pillarLabel: healthScore.value?.score.pillars.cashFlow.label ?? '',
       tip: 'Mide si tus ingresos cubren tus gastos con margen libre.'
     },
     {
       label: 'Ahorro y Metas',
       icon: 'savings',
-      score: healthScore.value?.savingsScore ?? 0,
+      score: healthScore.value?.score.pillars.savings.score ?? 0,
       max: 25,
+      pillarLabel: healthScore.value?.score.pillars.savings.label ?? '',
       tip: 'Evalúa qué tanto estás ejecutando tu plan de ahorro.'
     },
     {
       label: 'Control de Gastos',
       icon: 'price_check',
-      score: healthScore.value?.expenseScore ?? 0,
+      score: healthScore.value?.score.pillars.expenses.score ?? 0,
       max: 25,
+      pillarLabel: healthScore.value?.score.pillars.expenses.label ?? '',
       tip: 'Compara tus gastos reales vs lo que planificaste.'
     },
     {
       label: 'Deudas',
       icon: 'credit_card',
-      score: healthScore.value?.debtScore ?? 0,
+      score: healthScore.value?.score.pillars.debt.score ?? 0,
       max: 25,
+      pillarLabel: healthScore.value?.score.pillars.debt.label ?? '',
       tip: 'Analiza el impacto de tus deudas en tu salud financiera.'
     }
   ])
@@ -85,29 +84,18 @@
   }
 
   const SCORE_LEVELS = [
-    { range: '0–20', label: 'Crítico', color: '#EF4444' },
-    { range: '21–40', label: 'En riesgo', color: '#F97316' },
-    { range: '41–60', label: 'Regular', color: '#F59E0B' },
-    { range: '61–80', label: 'Saludable', color: '#14B8A6' },
-    { range: '81–100', label: 'Óptimo', color: '#22C55E' }
+    { range: '0–19', label: 'Crítico', color: '#EF4444' },
+    { range: '20–39', label: 'Precario', color: '#F97316' },
+    { range: '40–59', label: 'En riesgo', color: '#F59E0B' },
+    { range: '60–74', label: 'Regular', color: '#A3E635' },
+    { range: '75–89', label: 'Saludable', color: '#14B8A6' },
+    { range: '90–100', label: 'Óptimo', color: '#22C55E' }
   ]
 
-  const bestPillar = computed(() => {
-    const sorted = [...pillars.value].sort((a, b) => b.score / b.max - a.score / a.max)
-    return sorted[0] ?? null
-  })
-
-  const worstPillar = computed(() => {
-    const sorted = [...pillars.value].sort((a, b) => a.score / a.max - b.score / b.max)
-    return sorted[0] ?? null
-  })
-
   const gaugeHint = computed(() => {
-    const score = healthScore.value?.totalScore ?? 0
-    if (score === 0) return 'Registra ingresos y gastos para ver tu diagnóstico real.'
-    if (score < 60)
-      return `Tu mayor oportunidad está en ${worstPillar.value?.label ?? 'los pilares'}.`
-    return 'Buen ritmo. Mantén el control de gastos para seguir subiendo.'
+    const insight = healthScore.value?.score.insight
+    if (!insight) return 'Registra ingresos y gastos para ver tu diagnóstico real.'
+    return insight
   })
 
   const PILLAR_HINTS: Record<string, string> = {
@@ -128,15 +116,10 @@
   }
 
   const insightText = computed(() => {
-    if (!healthScore.value || !bestPillar.value) return null
-    const score = healthScore.value.totalScore
-    if (score === 0) return null
-    const best = bestPillar.value
-    let text = `Tu mejor pilar es ${best.label} (${best.score}/${best.max} pts).`
-    if (score < 60 && worstPillar.value && worstPillar.value.label !== best.label) {
-      text += ` Para mejorar, enfócate en ${worstPillar.value.label}.`
-    }
-    return text
+    const total = healthScore.value?.score.total ?? 0
+    const insight = healthScore.value?.score.insight
+    if (total === 0 || !insight) return null
+    return insight
   })
 </script>
 
@@ -167,7 +150,14 @@
     </div>
 
     <!-- Empty state: budget active but no transactions recorded yet -->
-    <div v-else-if="healthScore.totalTransactions === 0" class="analytics-view__empty">
+    <div
+      v-else-if="
+        (healthScore.totals?.income ?? 0) === 0 &&
+        (healthScore.totals?.expenses ?? 0) === 0 &&
+        (healthScore.totals?.savings ?? 0) === 0
+      "
+      class="analytics-view__empty"
+    >
       <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
       <p class="analytics-view__empty-title">Sin datos aún</p>
       <p class="analytics-view__empty-description">
@@ -213,7 +203,7 @@
                 font-weight="800"
                 :fill="svgScoreColor"
               >
-                {{ healthScore.totalScore }}
+                {{ healthScore.score.total }}
               </text>
               <!-- /100 label -->
               <text x="60" y="72" text-anchor="middle" font-size="11" fill="#94A3B8">/ 100</text>
@@ -259,6 +249,7 @@
             <span class="pillar-card__score-value">{{ pillar.score }}</span>
             <span class="pillar-card__score-max">/ {{ pillar.max }} pts</span>
           </div>
+          <p class="pillar-card__pillar-label">{{ pillar.pillarLabel }}</p>
           <p class="pillar-card__hint">{{ PILLAR_HINTS[pillar.label] }}</p>
           <div class="pillar-card__track">
             <div
@@ -366,8 +357,16 @@
     @apply text-danger-600 dark:text-danger-400;
   }
 
+  .salud-score__level--orange {
+    color: #f97316;
+  }
+
   .salud-score__level--warning {
     @apply text-warning-600 dark:text-warning-400;
+  }
+
+  .salud-score__level--lime {
+    color: #84cc16;
   }
 
   .salud-score__level--primary {
@@ -425,6 +424,10 @@
 
   .pillar-card__score-max {
     @apply text-sm text-neutral-400;
+  }
+
+  .pillar-card__pillar-label {
+    @apply text-xs font-medium text-neutral-600 dark:text-neutral-400;
   }
 
   .pillar-card__hint {

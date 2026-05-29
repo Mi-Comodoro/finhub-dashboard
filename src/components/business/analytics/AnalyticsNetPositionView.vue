@@ -13,6 +13,7 @@
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
+  import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
   import { useAnalyticsNetPositionApplication } from '@/composables/application/useAnalyticsNetPositionApplication'
   import { useTheme } from '@/composables/useTheme'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
@@ -24,20 +25,16 @@
     LineSeriesOption | BarSeriesOption | GridComponentOption | TooltipComponentOption
   >
 
-  const {
-    netPosition,
-    loadingPosition,
-    debtProjection,
-    loadingProjection,
-    netPositionColor,
-    debtRatioStatus
-  } = useAnalyticsNetPositionApplication()
+  const { netPosition, loadingPosition, debtProjection, loadingProjection, netPositionColor } =
+    useAnalyticsNetPositionApplication()
+
+  const { healthScore } = useAnalyticsApplication()
+
+  const debtRatio = computed(() => healthScore.value?.debtRatio ?? null)
+
+  const hasPaymentHistory = computed(() => debtProjection.value?.hasPaymentHistory ?? false)
 
   const isLoading = computed(() => loadingPosition.value || loadingProjection.value)
-
-  const ratioPercent = computed(() =>
-    Math.min((netPosition.value?.debtToIncomeRatio ?? 0) * 100, 100)
-  )
 
   const { isDark } = useTheme()
   const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
@@ -194,18 +191,23 @@
         </div>
       </div>
 
-      <template v-if="netPosition.totalDebts > 0">
-        <!-- Debt ratio -->
+      <!-- Debt ratio -->
+      <div v-if="debtRatio && debtRatio.totalDebt === 0" class="net-position-view__no-debts">
+        <span class="material-symbols-outlined net-position-view__no-debts-icon">check_circle</span>
+        <Text size="sm" color="muted">Sin deudas registradas.</Text>
+      </div>
+
+      <template v-else-if="debtRatio && debtRatio.totalDebt > 0">
         <div class="net-position-view__ratio-card">
           <div class="net-position-view__ratio-header">
             <Heading level="h3" size="lg" weight="semibold">Ratio deuda / ingreso</Heading>
             <span
               :class="[
                 'net-position-view__ratio-badge',
-                `net-position-view__ratio-badge--${debtRatioStatus.color}`
+                `net-position-view__ratio-badge--${debtRatio.badge}`
               ]"
             >
-              {{ debtRatioStatus.label }}
+              {{ debtRatio.label }}
             </span>
           </div>
 
@@ -213,28 +215,20 @@
             <div
               :class="[
                 'net-position-view__ratio-bar',
-                `net-position-view__ratio-bar--${debtRatioStatus.color}`
+                `net-position-view__ratio-bar--${debtRatio.badge}`
               ]"
-              :style="{ width: `${ratioPercent}%` }"
+              :style="{ width: `${Math.min(debtRatio.ratio, 100)}%` }"
             />
           </div>
 
           <div class="net-position-view__ratio-meta">
-            <Text size="sm" weight="semibold">
-              {{ (netPosition.debtToIncomeRatio * 100).toFixed(1) }}%
-            </Text>
+            <Text size="sm" weight="semibold">{{ debtRatio.ratio.toFixed(1) }}%</Text>
           </div>
-          <p class="net-position-view__ratio-hint">
-            <template v-if="netPosition.debtToIncomeRatio > 0">
-              Por cada ${{ Math.round(100 / (netPosition.debtToIncomeRatio * 100)) }} que ganas,
-              debes $1.
-            </template>
-            <template v-else>No tienes deudas. Excelente posición.</template>
-          </p>
+          <p class="net-position-view__ratio-hint">Deuda total sobre ingreso anual estimado.</p>
         </div>
 
-        <!-- Debt projection chart -->
-        <div class="net-position-view__chart-card">
+        <!-- Debt projection chart (only when there's actual payment history) -->
+        <div v-if="hasPaymentHistory" class="net-position-view__chart-card">
           <div class="net-position-view__chart-header">
             <Heading level="h3" size="lg" weight="semibold">Proyección de deuda</Heading>
             <Text size="xs" color="muted">Balance proyectado y pagos mínimos mensuales</Text>
@@ -265,11 +259,6 @@
           </div>
         </div>
       </template>
-
-      <div v-else class="net-position-view__no-debts">
-        <span class="material-symbols-outlined net-position-view__no-debts-icon">check_circle</span>
-        <Text size="sm" color="muted">No tienes deudas registradas.</Text>
-      </div>
     </div>
   </div>
 </template>
@@ -458,6 +447,15 @@
   .net-position-view__ratio-badge--danger {
     @apply bg-danger-100 text-danger-700;
     @apply dark:bg-danger-900/30 dark:text-danger-400;
+  }
+
+  .net-position-view__ratio-badge--success {
+    @apply bg-success-100 text-success-700;
+    @apply dark:bg-success-900/30 dark:text-success-400;
+  }
+
+  .net-position-view__ratio-bar--success {
+    @apply bg-success-500;
   }
 
   .net-position-view__ratio-meta {

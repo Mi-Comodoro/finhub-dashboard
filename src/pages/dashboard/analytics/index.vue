@@ -60,22 +60,12 @@
   const { totalSaved: savingsTotalSaved, savingsByMonth } =
     useAnalyticsSavingsTrendApplication(selectedYear)
 
-  const { netPosition, debtRatioStatus } = useAnalyticsNetPositionApplication()
+  const { netPosition } = useAnalyticsNetPositionApplication()
 
   // ── Sidebar computed state ──
 
-  const sidebarHealthScore = computed(() => healthScore.value?.totalScore ?? 0)
-  const sidebarHealthLevel = computed(() => {
-    const level = healthScore.value?.level ?? ''
-    const labels: Record<string, string> = {
-      critical: 'Crítico',
-      at_risk: 'En riesgo',
-      regular: 'Regular',
-      healthy: 'Saludable',
-      optimal: 'Óptimo'
-    }
-    return labels[level] ?? '—'
-  })
+  const sidebarHealthScore = computed(() => healthScore.value?.score.total ?? 0)
+  const sidebarHealthLevel = computed(() => healthScore.value?.score.label ?? '—')
 
   const sidebarNetFlow = computed(() => {
     const txs = cashflowTxs.value ?? []
@@ -99,15 +89,13 @@
   const sidebarHasSavings = computed(() => savingsTotalSaved.value > 0)
 
   const sidebarHasDebts = computed(() => (netPosition.value?.totalDebts ?? 0) > 0)
-  const sidebarRatioPct = computed(() =>
-    ((netPosition.value?.debtToIncomeRatio ?? 0) * 100).toFixed(1)
-  )
+  const sidebarRatioPct = computed(() => (healthScore.value?.debtRatio?.ratio ?? 0).toFixed(1))
 
   const sidebarHealthColor = computed(() => {
-    const level = healthScore.value?.level ?? ''
-    if (level === 'critical') return 'danger'
-    if (level === 'at_risk' || level === 'regular') return 'warning'
-    if (level === 'optimal') return 'success'
+    const total = healthScore.value?.score.total ?? 0
+    if (total < 20) return 'danger'
+    if (total < 60) return 'warning'
+    if (total >= 90) return 'success'
     return 'primary'
   })
 
@@ -401,10 +389,10 @@
               <span
                 :class="[
                   'analytics-sidebar__ratio-badge',
-                  `analytics-sidebar__ratio-badge--${debtRatioStatus.color}`
+                  `analytics-sidebar__ratio-badge--${healthScore?.debtRatio?.badge ?? 'primary'}`
                 ]"
               >
-                {{ debtRatioStatus.label }}
+                {{ healthScore?.debtRatio?.label ?? '—' }}
               </span>
             </p>
             <p

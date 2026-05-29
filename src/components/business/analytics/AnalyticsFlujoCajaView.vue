@@ -35,7 +35,9 @@
       : null
   )
 
-  const weeklyGroups = computed(() => groupTransactionsByWeek(transactions.value ?? []))
+  const weeklyGroups = computed(() =>
+    groupTransactionsByWeek(transactions.value ?? [], selectedYear.value, selectedMonth.value)
+  )
 
   const totalIncome = computed(() =>
     (transactions.value ?? [])

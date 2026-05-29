@@ -11,13 +11,21 @@
   import { getProgressPercentage } from '@/utils/goal-formatters'
 
   interface HealthScore {
-    totalScore?: number
-    level?: string
-    cashFlowScore?: number
-    savingsScore?: number
-    expenseScore?: number
-    debtScore?: number
-    totalTransactions?: number
+    score?: {
+      total: number
+      label: string
+      pillars?: {
+        cashFlow?: { score: number; max: number }
+        savings?: { score: number; max: number }
+        expenses?: { score: number; max: number }
+        debt?: { score: number; max: number }
+      }
+    }
+    totals?: {
+      income: number
+      expenses: number
+      savings: number
+    }
   }
 
   interface Bill {
@@ -55,59 +63,49 @@
   const activeGoals = computed(() => (props.goals ?? []).filter(g => g.isActive).slice(0, 5))
   const urgentBills = computed(() => (props.bills ?? []).slice(0, 3))
 
-  const score = computed(() => props.healthScore?.totalScore ?? 0)
-
-  const LEVEL_LABELS: Record<string, string> = {
-    critical: 'Crítico',
-    at_risk: 'En riesgo',
-    regular: 'Regular',
-    healthy: 'Saludable',
-    optimal: 'Óptimo'
-  }
+  const score = computed(() => props.healthScore?.score?.total ?? 0)
 
   const scoreClass = computed(() => {
-    const level = props.healthScore?.level ?? ''
-    if (level === 'critical') return 'dashboard-sidebar__score--critical'
-    if (level === 'at_risk' || level === 'regular') return 'dashboard-sidebar__score--regular'
-    if (level === 'optimal') return 'dashboard-sidebar__score--optimal'
-    if (level === 'healthy') return 'dashboard-sidebar__score--healthy'
-    // fallback when level field is absent
-    if (score.value >= 70) return 'dashboard-sidebar__score--healthy'
-    if (score.value >= 40) return 'dashboard-sidebar__score--regular'
+    const s = score.value
+    if (s >= 90) return 'dashboard-sidebar__score--optimal'
+    if (s >= 75) return 'dashboard-sidebar__score--healthy'
+    if (s >= 40) return 'dashboard-sidebar__score--regular'
     return 'dashboard-sidebar__score--critical'
   })
 
-  const scoreLevelLabel = computed(
-    () =>
-      LEVEL_LABELS[props.healthScore?.level ?? ''] ??
-      (score.value >= 70 ? 'Saludable' : score.value >= 40 ? 'Regular' : 'Crítico')
-  )
+  const scoreLevelLabel = computed(() => props.healthScore?.score?.label ?? 'Crítico')
+
+  const isEmpty = computed(() => {
+    const t = props.healthScore?.totals
+    if (!t) return false
+    return t.income === 0 && t.expenses === 0 && t.savings === 0
+  })
 
   const pillars = computed(() => [
     {
       label: 'Flujo de caja',
-      value: props.healthScore?.cashFlowScore ?? 0,
+      value: props.healthScore?.score?.pillars?.cashFlow?.score ?? 0,
       max: 25,
       color: 'primary',
       note: ''
     },
     {
       label: 'Ahorro',
-      value: props.healthScore?.savingsScore ?? 0,
+      value: props.healthScore?.score?.pillars?.savings?.score ?? 0,
       max: 25,
       color: 'warning',
       note: ''
     },
     {
       label: 'Gastos',
-      value: props.healthScore?.expenseScore ?? 0,
+      value: props.healthScore?.score?.pillars?.expenses?.score ?? 0,
       max: 25,
       color: 'danger',
       note: ''
     },
     {
       label: 'Deudas',
-      value: props.healthScore?.debtScore ?? 0,
+      value: props.healthScore?.score?.pillars?.debt?.score ?? 0,
       max: 25,
       color: 'secondary',
       note: ''
@@ -207,7 +205,7 @@
           </div>
         </div>
 
-        <div v-if="(healthScore?.totalTransactions ?? 1) > 0" class="dashboard-sidebar__pillars">
+        <div v-if="!isEmpty" class="dashboard-sidebar__pillars">
           <div v-for="pillar in pillars" :key="pillar.label" class="dashboard-sidebar__pillar">
             <div class="dashboard-sidebar__pillar-header">
               <Text size="xs" color="muted">{{ pillar.label }}</Text>
