@@ -19,6 +19,7 @@
   import PlannedSavingList from '@/components/business/savings/PlannedSavingList.vue'
   import Tips from '@/components/business/tips/Tips.vue'
   import TransactionList from '@/components/business/transactions/TransactionList.vue'
+  import ConfirmDeleteModal from '@/components/organisms/confirm-delete/ConfirmDeleteModal.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
@@ -130,6 +131,8 @@
   const showForm = ref(false)
   const showIncomeModal = ref(false)
   const showEditModal = ref(false)
+  const showDeleteConfirm = ref(false)
+  const expenseToDelete = ref<{ id: string; name: string } | null>(null)
   const editingExpense = ref<{ id: string; data: Record<string, unknown> } | null>(null)
   const formMode = ref<'create' | 'edit' | 'view'>('create')
 
@@ -223,14 +226,18 @@
     showForm.value = true
   }
 
-  const handleDeleteExpense = async (row: { id: string; name: string }) => {
-    const confirmed = confirm(`¿Estás seguro de eliminar el gasto "${row.name}"?`)
-    if (!confirmed) return
+  const handleDeleteExpense = (row: { id: string; name: string }) => {
+    expenseToDelete.value = row
+    showDeleteConfirm.value = true
+  }
 
-    const { success } = await deleteExpense(row.id)
+  const confirmDeleteExpense = async () => {
+    if (!expenseToDelete.value) return
+    const { success } = await deleteExpense(expenseToDelete.value.id)
     if (success) {
       successToast('Gasto eliminado', 'El gasto planificado fue eliminado correctamente.')
     }
+    expenseToDelete.value = null
   }
   const statusConfig = {
     isActive: () => planStatus.value === 'ACTIVE',
@@ -407,6 +414,12 @@
         @on-close="handleEditClose"
       />
     </ModalWizard>
+
+    <ConfirmDeleteModal
+      v-model:show="showDeleteConfirm"
+      :title="`¿Eliminar '${expenseToDelete?.name}'?`"
+      @confirm="confirmDeleteExpense"
+    />
   </div>
   <div v-else class="budget-detail__empty">
     <Icon name="search_off" class="budget-detail__empty-icon" size="2xl" />

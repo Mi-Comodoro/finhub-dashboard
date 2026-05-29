@@ -29,7 +29,7 @@
   const props = withDefaults(defineProps<TextProps>(), {
     size: 'base',
     weight: 'normal',
-    color: 'black',
+    color: 'default',
     align: 'left',
     italic: false,
     uppercase: false,
@@ -57,6 +57,7 @@
   }
 
   const colorClasses = {
+    default: 'text-neutral-900 dark:text-neutral-100',
     primary: 'text-primary-600 dark:text-white',
     secondary: 'text-secondary-600 dark:text-slate-300',
     muted: 'text-slate-600 dark:text-slate-400',

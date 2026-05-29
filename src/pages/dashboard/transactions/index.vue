@@ -638,19 +638,19 @@
   }
 
   .transactions-page__endpoint-label {
-    @apply max-w-36 truncate text-sm font-semibold text-slate-900;
+    @apply max-w-36 truncate text-sm font-semibold text-slate-900 dark:text-neutral-100;
   }
 
   .transactions-page__endpoint-detail {
-    @apply max-w-36 truncate text-xs text-slate-500;
+    @apply max-w-36 truncate text-xs text-slate-500 dark:text-neutral-400;
   }
 
   .transactions-page__flow-icon {
-    @apply text-base text-slate-400;
+    @apply text-base text-slate-400 dark:text-neutral-500;
   }
 
   .transactions-page__footer {
-    @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5;
+    @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5 dark:border-neutral-700;
   }
 
   .transactions-page__footer-info {
@@ -670,7 +670,7 @@
   }
 
   .transaction-detail__amount {
-    @apply flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-4;
+    @apply flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .transaction-detail__flow {
@@ -678,11 +678,11 @@
   }
 
   .transaction-detail__endpoint {
-    @apply min-h-24 rounded-lg border border-slate-200 p-4;
+    @apply min-h-24 rounded-lg border border-slate-200 p-4 dark:border-neutral-700;
   }
 
   .transaction-detail__flow-icon {
-    @apply text-xl text-slate-400;
+    @apply text-xl text-slate-400 dark:text-neutral-500;
   }
 
   .transaction-detail__grid {
@@ -691,7 +691,7 @@
 
   .transaction-detail__field,
   .transaction-detail__description {
-    @apply rounded-lg border border-slate-100 p-3;
+    @apply rounded-lg border border-slate-100 p-3 dark:border-neutral-700;
   }
 
   .transaction-detail__category {
