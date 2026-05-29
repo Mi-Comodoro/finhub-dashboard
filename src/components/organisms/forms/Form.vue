@@ -360,7 +360,7 @@
   }
 
   .form-base__footer {
-    @apply sticky bottom-0 bg-white pt-4 dark:bg-slate-800;
+    @apply sticky bottom-0 bg-white pt-4 dark:bg-neutral-800;
   }
 
   .card-radio-group {

@@ -141,7 +141,7 @@
               Cancelar
             </Button>
             <Button type="submit" variant="primary" size="sm" :disabled="!isSumValid">
-              {{ mode === 'create' ? 'Crear presupuesto' : 'Guardar cambios' }}
+              {{ mode === 'create' ? 'Crear Presupuesto' : 'Actualizar Presupuesto' }}
             </Button>
           </div>
         </template>

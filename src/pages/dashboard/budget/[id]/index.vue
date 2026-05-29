@@ -517,7 +517,7 @@
   }
 
   .budget-detail__empty-icon {
-    @apply text-slate-400 dark:text-slate-600;
+    @apply text-slate-400 dark:text-neutral-500;
   }
 
   .budget-detail__empty-button {
