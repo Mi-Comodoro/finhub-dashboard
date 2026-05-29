@@ -221,8 +221,11 @@
 
         if (success) {
           show({
-            title: 'Gasto registrado',
-            description: 'El movimiento se guardó correctamente.',
+            title: type === 'income' ? 'Ingreso registrado' : 'Gasto registrado',
+            description:
+              type === 'income'
+                ? 'El ingreso se guardó correctamente.'
+                : 'El gasto se guardó correctamente.',
             type: 'success'
           })
           emit('onClose')

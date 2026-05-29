@@ -159,7 +159,7 @@
   }
 
   .execution-gauge__fallback {
-    @apply h-[180px] animate-pulse rounded-lg bg-slate-100;
+    @apply h-[180px] animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
   }
 
   .execution-gauge__score-row {

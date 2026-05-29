@@ -46,7 +46,7 @@
     @apply mb-2 grid grid-cols-7;
   }
   .calendar-grid__weekday {
-    @apply text-center text-xs text-slate-400;
+    @apply text-center text-xs text-slate-400 dark:text-neutral-500;
   }
   .calendar-grid__body {
     @apply grid grid-cols-7 gap-1;
@@ -56,7 +56,7 @@
     @apply dark:text-slate-200;
   }
   .calendar-grid__day--selected {
-    @apply bg-teal-600 font-semibold text-white;
+    @apply bg-primary-600 font-semibold text-white;
   }
   .calendar-grid__day--range {
     @apply bg-teal-100 text-teal-700;
@@ -64,7 +64,7 @@
   }
   .calendar-grid__day--start,
   .calendar-grid__day--end {
-    @apply bg-teal-600 font-semibold text-white;
+    @apply bg-primary-600 font-semibold text-white;
   }
   .calendar-grid__day--disabled,
   .calendar-grid__day--out {

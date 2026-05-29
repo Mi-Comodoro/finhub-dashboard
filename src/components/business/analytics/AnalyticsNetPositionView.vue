@@ -16,6 +16,7 @@
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
   import { useAnalyticsNetPositionApplication } from '@/composables/application/useAnalyticsNetPositionApplication'
   import { useTheme } from '@/composables/useTheme'
+  import { useFinancesStore } from '@/stores/finances.store'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
@@ -36,6 +37,9 @@
 
   const isLoading = computed(() => loadingPosition.value || loadingProjection.value)
 
+  const financesStore = useFinancesStore()
+  const currency = computed(() => financesStore.profile?.currency || 'COP')
+
   const { isDark } = useTheme()
   const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
   const chartGridColor = computed(() => (isDark.value ? '#334155' : '#e2e8f0'))
@@ -47,7 +51,8 @@
       formatter: (params: Array<{ seriesName: string; value: number }>) =>
         params
           .map(
-            p => `${p.seriesName}: <strong>${formatCurrency(Number(p.value ?? 0), 'COP')}</strong>`
+            p =>
+              `${p.seriesName}: <strong>${formatCurrency(Number(p.value ?? 0), currency.value)}</strong>`
           )
           .join('<br/>')
     },
@@ -63,7 +68,7 @@
       axisLabel: {
         color: chartAxisColor.value,
         fontSize: 11,
-        formatter: (value: number) => formatCompactCurrency(value, 'COP')
+        formatter: (value: number) => formatCompactCurrency(value, currency.value)
       },
       splitLine: { lineStyle: { color: chartGridColor.value, type: 'dashed' } }
     },
@@ -122,9 +127,9 @@
             <Text size="xs" color="muted">Activos fijos</Text>
             <p
               class="net-position-view__kpi-value"
-              :title="formatCurrency(netPosition.totalAssets, 'COP')"
+              :title="formatCurrency(netPosition.totalAssets, currency)"
             >
-              {{ formatCompactCurrency(netPosition.totalAssets, 'COP') }}
+              {{ formatCompactCurrency(netPosition.totalAssets, currency) }}
             </p>
           </div>
         </div>
@@ -140,9 +145,9 @@
             <Text size="xs" color="muted">Deudas totales</Text>
             <p
               class="net-position-view__kpi-value"
-              :title="formatCurrency(netPosition.totalDebts, 'COP')"
+              :title="formatCurrency(netPosition.totalDebts, currency)"
             >
-              {{ formatCompactCurrency(netPosition.totalDebts, 'COP') }}
+              {{ formatCompactCurrency(netPosition.totalDebts, currency) }}
             </p>
           </div>
         </div>
@@ -156,9 +161,9 @@
             <Text size="xs" color="muted">Por cobrar</Text>
             <p
               class="net-position-view__kpi-value"
-              :title="formatCurrency(netPosition.totalReceivable, 'COP')"
+              :title="formatCurrency(netPosition.totalReceivable, currency)"
             >
-              {{ formatCompactCurrency(netPosition.totalReceivable, 'COP') }}
+              {{ formatCompactCurrency(netPosition.totalReceivable, currency) }}
             </p>
           </div>
         </div>
@@ -182,9 +187,9 @@
             <Text size="xs" color="muted">Posición neta</Text>
             <p
               class="net-position-view__kpi-value"
-              :title="formatCurrency(netPosition.netPosition, 'COP')"
+              :title="formatCurrency(netPosition.netPosition, currency)"
             >
-              {{ formatCompactCurrency(netPosition.netPosition, 'COP') }}
+              {{ formatCompactCurrency(netPosition.netPosition, currency) }}
             </p>
             <p class="net-position-view__kpi-hint">Activos + Por cobrar − Deudas</p>
           </div>

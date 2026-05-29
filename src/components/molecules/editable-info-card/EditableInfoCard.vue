@@ -65,7 +65,7 @@
   }
 
   .editable-info-card__title {
-    @apply text-slate-900;
+    @apply text-slate-900 dark:text-neutral-100;
   }
 
   .editable-info-card__content {

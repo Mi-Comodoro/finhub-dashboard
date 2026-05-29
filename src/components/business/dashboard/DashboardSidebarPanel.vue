@@ -508,7 +508,7 @@
   }
 
   .dashboard-sidebar__bill-days--ok {
-    @apply text-slate-500;
+    @apply text-slate-500 dark:text-neutral-400;
   }
 
   /* Link */
