@@ -364,8 +364,6 @@
           <FinancialProgressCard
             :title="'Libre Sin Comprometer'"
             :amount="available"
-            title-color="black"
-            text-color="black"
             icon-name="payments"
             variant="custom"
             icon-text-class="text-primary-600"
@@ -408,7 +406,7 @@
           <div class="dashboard-page__budget-body">
             <div class="dashboard-page__budget-donut">
               <div class="dashboard-page__budget-donut-header">
-                <Text size="sm" weight="bold" color="black">Distribución del ingreso</Text>
+                <Text size="sm" weight="bold">Distribución del ingreso</Text>
                 <Text size="xs" color="muted">
                   {{ budgetStatus === 'PLANNED' ? 'Ingreso planificado' : 'Ingreso recibido' }}:
                   {{ formatCurrency(incomeBase, currency) }}

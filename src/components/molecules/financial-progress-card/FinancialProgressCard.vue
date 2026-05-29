@@ -63,9 +63,9 @@
       showAlert: false,
       textFooter: '',
       amount: null,
-      titleColor: 'black',
+      titleColor: 'primary',
       subTitleColor: 'muted',
-      textColor: 'black',
+      textColor: 'primary',
       variant: 'neutral'
     }
   )
