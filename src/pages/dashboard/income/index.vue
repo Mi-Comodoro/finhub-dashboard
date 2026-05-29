@@ -183,7 +183,7 @@
 
 <style scoped lang="postcss">
   .income-page {
-    @apply space-y-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   .income-page__header {
