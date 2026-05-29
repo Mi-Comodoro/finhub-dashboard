@@ -90,11 +90,11 @@
       id: row.id as string,
       data: {
         type: row.type,
-        amount: row.amount,
-        transactionDate: row.transactionDate,
+        amount: Number(row.amount),
+        transactionDate: new Date(row.transactionDate),
         source: row.source,
-        categoryId: row.category?.id,
-        description: row.description
+        categoryId: row.category?.id ?? '',
+        description: row.description ?? ''
       }
     }
     showForm.value = true
@@ -255,6 +255,13 @@
     if (item.type === 'income') return { text: `+${amount}`, colorClass: 'text-success-700' }
     if (item.type === 'expense') return { text: `-${amount}`, colorClass: 'text-danger-700' }
     return { text: amount, colorClass: 'text-warning-700' }
+  }
+
+  const getCategoryBadgeVariant = (categoryType?: string) => {
+    if (categoryType === 'income') return 'primary'
+    if (categoryType === 'expense') return 'danger'
+    if (categoryType === 'savings') return 'warning'
+    return 'default'
   }
 
   // --- Init ---
@@ -491,7 +498,7 @@
       <div v-if="selectedTransaction" class="transaction-detail">
         <div class="transaction-detail__header">
           <div>
-            <Heading level="h2" size="lg" weight="extrabold">Detalle de Transaccion</Heading>
+            <Heading level="h2" size="lg" weight="extrabold">Detalle de Transacción</Heading>
             <Text size="xs" color="muted">
               {{ DateUtils.formatDate(selectedTransaction.transactionDate) }}
             </Text>
@@ -540,17 +547,16 @@
             <Text size="xs">{{ formatText(selectedTransaction.source) || '—' }}</Text>
           </div>
           <div class="transaction-detail__field">
-            <Text size="xs" color="muted">Categoria</Text>
-            <Text size="xs">
-              {{
-                selectedTransaction.type === 'income' || selectedTransaction.type === 'savings'
-                  ? '—'
-                  : selectedTransaction.category?.name || '—'
-              }}
-            </Text>
+            <Text size="xs" color="muted">Categoría</Text>
+            <div v-if="selectedTransaction.category" class="transaction-detail__category">
+              <Badge :variant="getCategoryBadgeVariant(selectedTransaction.category.type)">
+                {{ selectedTransaction.category.name }}
+              </Badge>
+            </div>
+            <Text v-else size="xs">—</Text>
           </div>
           <div class="transaction-detail__field">
-            <Text size="xs" color="muted">Planificacion</Text>
+            <Text size="xs" color="muted">Planificación</Text>
             <Text size="xs">
               {{
                 selectedTransaction.plannedIncomeId || selectedTransaction.plannedExpenseId
@@ -566,12 +572,12 @@
         </div>
 
         <div class="transaction-detail__description">
-          <Text size="xs" color="muted">Descripcion</Text>
-          <Text size="xs">{{ selectedTransaction.description || 'Sin descripcion' }}</Text>
+          <Text size="xs" color="muted">Descripción</Text>
+          <Text size="xs">{{ selectedTransaction.description || 'Sin descripción' }}</Text>
         </div>
 
         <div class="transaction-detail__actions">
-          <Button variant="outline" size="sm" @click="closeDetailsModal">Cerrar</Button>
+          <Button variant="ghost" size="sm" @click="closeDetailsModal">Cerrar</Button>
           <Button
             variant="primary"
             size="sm"
@@ -686,6 +692,10 @@
   .transaction-detail__field,
   .transaction-detail__description {
     @apply rounded-lg border border-slate-100 p-3;
+  }
+
+  .transaction-detail__category {
+    @apply mt-1;
   }
 
   .transaction-detail__actions {

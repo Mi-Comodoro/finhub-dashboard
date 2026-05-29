@@ -32,7 +32,7 @@ export function useExpenseApi() {
         data: Array<{
           id: string
           budgetId: string
-          categoryId: string
+          category: string
           bucket: string
           name: string
           expectedAmount: number

@@ -13,7 +13,7 @@ interface ExpensesResponse {
       id: string
       budgetId: string
       bucket: string
-      categoryId: string
+      category: string
       name: string
       expectedAmount: number
       dueDate: Date
