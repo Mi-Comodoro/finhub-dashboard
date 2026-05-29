@@ -236,30 +236,30 @@
   }
 
   const reasonTextMap: Record<string, string> = {
-    emergency: 'text-red-600',
-    elderly: 'text-amber-600',
-    home: 'text-orange-600',
-    school: 'text-blue-600',
-    flight: 'text-sky-600',
-    medical_services: 'text-rose-600',
-    payments: 'text-green-600',
-    trending_up: 'text-emerald-600',
-    directions_car: 'text-indigo-600',
-    shopping_cart: 'text-purple-600'
+    emergency: 'text-red-600 dark:text-red-400',
+    elderly: 'text-amber-600 dark:text-amber-400',
+    home: 'text-orange-600 dark:text-orange-400',
+    school: 'text-blue-600 dark:text-blue-400',
+    flight: 'text-sky-600 dark:text-sky-400',
+    medical_services: 'text-rose-600 dark:text-rose-400',
+    payments: 'text-green-600 dark:text-green-400',
+    trending_up: 'text-emerald-600 dark:text-emerald-400',
+    directions_car: 'text-indigo-600 dark:text-indigo-400',
+    shopping_cart: 'text-purple-600 dark:text-purple-400'
   }
 
   // 2. Mapa para el color de fondo (Contenedor)
   const reasonBgMap: Record<string, string> = {
-    emergency: 'bg-red-100',
-    elderly: 'bg-amber-100',
-    home: 'bg-orange-100',
-    school: 'bg-blue-100',
-    flight: 'bg-sky-100',
-    medical_services: 'bg-rose-100',
-    payments: 'bg-green-100',
-    trending_up: 'bg-emerald-100',
-    directions_car: 'bg-indigo-100',
-    shopping_cart: 'bg-purple-100'
+    emergency: 'bg-red-100 dark:bg-red-900/30',
+    elderly: 'bg-amber-100 dark:bg-amber-900/30',
+    home: 'bg-orange-100 dark:bg-orange-900/30',
+    school: 'bg-blue-100 dark:bg-blue-900/30',
+    flight: 'bg-sky-100 dark:bg-sky-900/30',
+    medical_services: 'bg-rose-100 dark:bg-rose-900/30',
+    payments: 'bg-green-100 dark:bg-green-900/30',
+    trending_up: 'bg-emerald-100 dark:bg-emerald-900/30',
+    directions_car: 'bg-indigo-100 dark:bg-indigo-900/30',
+    shopping_cart: 'bg-purple-100 dark:bg-purple-900/30'
   }
 
   function frequencyVariant(frequency: CompoundingFrequency): BadgeVariant {

@@ -22,7 +22,7 @@
   } as const
 
   const variantClass = {
-    primary: 'bg-primary-900 text-primary-100',
+    primary: 'bg-primary-900 text-primary-100 dark:bg-primary-700 dark:text-primary-50',
     secondary:
       'bg-secondary-50 text-secondary-600 dark:bg-secondary-900/20 dark:text-secondary-300',
     success: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',

@@ -33,6 +33,10 @@
   const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
   const chartGridColor = computed(() => (isDark.value ? '#334155' : '#e2e8f0'))
   const chartLegendColor = computed(() => (isDark.value ? '#94a3b8' : '#374151'))
+  const chartPrimaryColor = computed(() => (isDark.value ? '#2dd4bf' : '#0d9488'))
+  const chartPrimaryArea = computed(() =>
+    isDark.value ? 'rgba(45, 212, 191, 0.1)' : 'rgba(13, 148, 136, 0.1)'
+  )
 
   // --- Shared ---
   const { fetchCurrentBudget } = useBudgetActions()
@@ -188,9 +192,9 @@
         type: 'line',
         data: flowData.value.map(m => m.value),
         smooth: true,
-        lineStyle: { color: '#10b981', width: 2 },
-        itemStyle: { color: '#10b981' },
-        areaStyle: { color: 'rgba(16, 185, 129, 0.1)' }
+        lineStyle: { color: chartPrimaryColor.value, width: 2 },
+        itemStyle: { color: chartPrimaryColor.value },
+        areaStyle: { color: chartPrimaryArea.value }
       }
     ]
   }))
