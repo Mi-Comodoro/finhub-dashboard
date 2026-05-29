@@ -111,7 +111,7 @@
     <div class="saving-distribution-form__amount">
       <Text size="xs" color="muted">Monto disponible</Text>
       <Text size="sm" weight="bold" class="saving-distribution-form__amount-value">
-        {{ formatCurrency(savingDiscount, 'COP') }}
+        {{ formatCurrency(savingDiscount, currency) }}
       </Text>
     </div>
 
@@ -139,7 +139,7 @@
             {{ allocation.percentage }}%
           </Text>
           <Text size="xs" color="muted" class="saving-distribution-form__allocation-amount">
-            {{ formatCurrency(allocation.amount, 'COP') }}
+            {{ formatCurrency(allocation.amount, currency) }}
           </Text>
         </div>
         <div
@@ -152,7 +152,7 @@
             {{ availablePercentage }}%
           </Text>
           <Text size="xs" weight="medium" class="saving-distribution-form__allocation-amount">
-            {{ formatCurrency(newAmount, 'COP') }}
+            {{ formatCurrency(newAmount, currency) }}
           </Text>
         </div>
       </div>

@@ -165,7 +165,7 @@
   }
 
   .badge--solid.badge--secondary {
-    @apply bg-indigo-600;
+    @apply bg-indigo-600 dark:bg-indigo-500;
   }
 
   .badge--solid.badge--success {
@@ -181,7 +181,7 @@
   }
 
   .badge--solid.badge--info {
-    @apply bg-blue-600;
+    @apply bg-blue-600 dark:bg-blue-500;
   }
 
   /* Interactive variants (for clickable badges) */

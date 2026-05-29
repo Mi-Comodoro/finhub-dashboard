@@ -40,7 +40,7 @@
     @apply cursor-pointer border-none bg-transparent text-2xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200;
   }
   .modal-wizard__container--auto {
-    @apply h-auto max-h-[90vh] w-[650px] overflow-y-auto overflow-x-hidden p-8;
+    @apply h-auto max-h-[90vh] w-full max-w-[650px] overflow-y-auto overflow-x-hidden p-8;
   }
   .modal-wizard__content {
     @apply flex w-full flex-auto flex-col gap-6;

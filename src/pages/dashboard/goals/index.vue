@@ -429,7 +429,7 @@
             icon="add_task"
             variant="primary"
             :disabled="!isAccountCreated"
-            :onclick="createGoalsForm"
+            @click="createGoalsForm"
           >
             Nueva Meta
           </Button>

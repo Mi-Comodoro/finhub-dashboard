@@ -25,9 +25,9 @@
     primary: 'bg-primary-900 text-primary-100 dark:bg-primary-700 dark:text-primary-50',
     secondary:
       'bg-secondary-50 text-secondary-600 dark:bg-secondary-900/20 dark:text-secondary-300',
-    success: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
+    success: 'bg-success-50 text-success-600 dark:bg-success-900/20 dark:text-success-400',
     warning: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400',
-    danger: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
+    danger: 'bg-danger-50 text-danger-600 dark:bg-danger-900/20 dark:text-danger-400',
     neutral: 'bg-neutral-50 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
   } as const
   const iconResponsive = computed(() => {

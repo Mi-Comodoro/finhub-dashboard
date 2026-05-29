@@ -483,7 +483,7 @@
   }
 
   .budget-detail__layout {
-    @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start lg:px-0;
+    @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start;
   }
 
   .budget-detail__main {

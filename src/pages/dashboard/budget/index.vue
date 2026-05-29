@@ -458,7 +458,7 @@
     <ModalWizard v-model:show="showNextBudgetModal">
       <div v-if="nextBudgetSource" class="next-budget-modal">
         <div class="next-budget-modal__header">
-          <span class="material-symbols-outlined next-budget-modal__icon">calendar_month</span>
+          <IconBadge icon="calendar_month" variant="primary" size="lg" />
           <Heading level="h1" size="xl" weight="extrabold" color="black">
             ¿Y el próximo mes?
           </Heading>
@@ -504,7 +504,7 @@
     <ModalWizard v-model:show="showDeficitModal">
       <div class="deficit-modal">
         <div class="deficit-modal__header">
-          <span class="material-symbols-outlined deficit-modal__icon">warning</span>
+          <IconBadge icon="warning" variant="danger" size="lg" />
           <Heading level="h1" size="xl" weight="extrabold" color="black">
             El presupuesto tiene un déficit
           </Heading>
@@ -663,10 +663,6 @@
     @apply flex flex-col items-center gap-2 text-center;
   }
 
-  .next-budget-modal__icon {
-    @apply text-4xl text-primary-500;
-  }
-
   .next-budget-modal__actions {
     @apply flex justify-end gap-3;
   }
@@ -677,10 +673,6 @@
 
   .deficit-modal__header {
     @apply flex flex-col items-center gap-2 text-center;
-  }
-
-  .deficit-modal__icon {
-    @apply text-4xl text-danger-500;
   }
 
   .deficit-modal__actions {
