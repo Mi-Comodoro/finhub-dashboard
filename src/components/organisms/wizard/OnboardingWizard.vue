@@ -136,6 +136,11 @@
     }
   }
 
+  const handleSkip = () => {
+    sessionStorage.removeItem(ONBOARDING_KEY)
+    emit('skip')
+  }
+
   // Exponer método para uso externo
   defineExpose({
     tryComplete
@@ -212,6 +217,9 @@
 </script>
 <template>
   <div class="onboarding-wizard">
+    <div class="onboarding-wizard__skip-row">
+      <Button variant="ghost" size="sm" icon="close" @click="handleSkip">Omitir</Button>
+    </div>
     <ProgressBar
       :current-step="currentStep"
       :total-steps="totalSteps"
@@ -315,6 +323,11 @@
   .onboarding-wizard {
     @apply w-full;
   }
+
+  .onboarding-wizard__skip-row {
+    @apply mb-2 flex justify-end;
+  }
+
   .onboarding-wizard__step {
     @apply box-content flex w-full flex-col flex-wrap gap-1 text-wrap;
   }
