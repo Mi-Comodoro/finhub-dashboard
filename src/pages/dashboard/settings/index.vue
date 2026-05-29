@@ -901,7 +901,7 @@
   }
 
   .settings-page__skeleton {
-    @apply h-32 w-full animate-pulse rounded-xl bg-slate-100;
+    @apply h-32 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-700;
   }
 
   .settings-page__skeleton--short {
