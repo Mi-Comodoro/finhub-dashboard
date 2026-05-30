@@ -40,6 +40,13 @@
   const financesStore = useFinancesStore()
   const currency = computed(() => financesStore.profile?.currency || 'COP')
 
+  function kpiValueClass(amount: number): string {
+    const formatted = formatCompactCurrency(amount, currency.value)
+    if (formatted.length > 16) return 'net-position-view__kpi-value--xs'
+    if (formatted.length > 12) return 'net-position-view__kpi-value--sm'
+    return ''
+  }
+
   const { isDark } = useTheme()
   const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
   const chartGridColor = computed(() => (isDark.value ? '#334155' : '#e2e8f0'))
@@ -126,7 +133,7 @@
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Activos fijos</Text>
             <p
-              class="net-position-view__kpi-value"
+              :class="['net-position-view__kpi-value', kpiValueClass(netPosition.totalAssets)]"
               :title="formatCurrency(netPosition.totalAssets, currency)"
             >
               {{ formatCompactCurrency(netPosition.totalAssets, currency) }}
@@ -144,7 +151,7 @@
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Deudas totales</Text>
             <p
-              class="net-position-view__kpi-value"
+              :class="['net-position-view__kpi-value', kpiValueClass(netPosition.totalDebts)]"
               :title="formatCurrency(netPosition.totalDebts, currency)"
             >
               {{ formatCompactCurrency(netPosition.totalDebts, currency) }}
@@ -160,7 +167,7 @@
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Por cobrar</Text>
             <p
-              class="net-position-view__kpi-value"
+              :class="['net-position-view__kpi-value', kpiValueClass(netPosition.totalReceivable)]"
               :title="formatCurrency(netPosition.totalReceivable, currency)"
             >
               {{ formatCompactCurrency(netPosition.totalReceivable, currency) }}
@@ -186,7 +193,7 @@
           <div class="net-position-view__kpi-body">
             <Text size="xs" color="muted">Posición neta</Text>
             <p
-              class="net-position-view__kpi-value"
+              :class="['net-position-view__kpi-value', kpiValueClass(netPosition.netPosition)]"
               :title="formatCurrency(netPosition.netPosition, currency)"
             >
               {{ formatCompactCurrency(netPosition.netPosition, currency) }}
@@ -398,6 +405,14 @@
   .net-position-view__kpi-value {
     @apply font-sans text-lg font-bold leading-snug text-black;
     @apply dark:text-neutral-100;
+  }
+
+  .net-position-view__kpi-value--sm {
+    @apply text-base;
+  }
+
+  .net-position-view__kpi-value--xs {
+    @apply text-sm;
   }
 
   .net-position-view__kpi-hint {

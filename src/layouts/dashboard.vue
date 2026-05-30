@@ -5,17 +5,25 @@
   import DashboardHeader from '@/components/organisms/header/DashboardHeader.vue'
   import ModalNotification from '@/components/organisms/modal-notification/ModalNotification.vue'
   import DashboardSidebar from '@/components/organisms/sidebar/DashboardSidebar.vue'
+  import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
+  import { useNotificationsSocket } from '@/composables/useNotificationsSocket'
   import { useSidebar } from '@/composables/useSidebar'
   import { useModalStore } from '@/stores/modal.store'
 
   const modalStore = useModalStore()
   const sidebar = useSidebar()
 
-  // Mantenemos el computed para que sea dinámico,
-  // pero QUITAMOS el .value para que no deje de ser reactivo.
   const isOpen = computed({
     get: () => sidebar.isOpen.value,
     set: val => (sidebar.isOpen.value = val)
+  })
+
+  const { loadNotifications } = useNotificationsApplication()
+  const { connect } = useNotificationsSocket()
+
+  onMounted(async () => {
+    await loadNotifications()
+    await connect()
   })
 </script>
 

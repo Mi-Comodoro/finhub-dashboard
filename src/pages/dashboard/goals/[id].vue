@@ -9,6 +9,7 @@
   import type { GoalMovementItem } from '@/components/business/savings/GoalMovements.vue'
   import GoalMovements from '@/components/business/savings/GoalMovements.vue'
   import GoalSidebarPanel from '@/components/business/savings/GoalSidebarPanel.vue'
+  import GoalStatusStepper from '@/components/business/savings/GoalStatusStepper.vue'
   import GoalDetailInsights from '@/components/business/savings/insight/GoalDetailInsights.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
@@ -20,6 +21,7 @@
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
+  import type { GoalStatus } from '@/utils/goals.utils'
 
   const GoalProjectionChart = defineAsyncComponent(
     () => import('@/components/business/savings/GoalProjectionChart.vue')
@@ -632,6 +634,8 @@
               Registrar
             </Button>
           </div>
+
+          <GoalStatusStepper :status="(goal.status as GoalStatus) ?? 'SCHEDULED'" />
 
           <!-- Proyección de crecimiento -->
           <Card class="goal-detail__projection-card">

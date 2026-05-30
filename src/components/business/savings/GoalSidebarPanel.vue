@@ -88,6 +88,7 @@
       return formatDateOnly(String(value))
     }
     if (percentFields.includes(field)) return `${value}%`
+    if (field === 'status') return GOAL_STATUS_LABELS[value as GoalStatus] ?? String(value ?? '—')
     return String(value ?? '—')
   }
 </script>

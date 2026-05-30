@@ -265,95 +265,97 @@
       </Card>
 
       <!-- Forecast section -->
-      <div class="cashflow-view__section-title">
-        <span>Pronóstico próximos 3 meses</span>
-      </div>
-
-      <div v-if="forecastWarning" class="cashflow-view__forecast-banner">
-        <span class="material-symbols-outlined cashflow-view__forecast-banner-icon">warning</span>
-        <Text size="sm" color="warning">{{ forecastWarning }}</Text>
-      </div>
-
-      <div v-if="loadingForecast" class="cashflow-view__forecast-kpis">
-        <div v-for="n in 3" :key="n" class="cashflow-view__forecast-skeleton" />
-      </div>
-
-      <template v-else>
-        <div class="cashflow-view__forecast-kpis">
-          <div
-            v-for="month in forecast?.months ?? []"
-            :key="month.month"
-            :class="[
-              'cashflow-view__forecast-card',
-              month.projectedNet >= 0
-                ? 'cashflow-view__forecast-card--positive'
-                : 'cashflow-view__forecast-card--negative'
-            ]"
-          >
-            <div class="cashflow-view__forecast-card-top">
-              <div
-                :class="[
-                  'cashflow-view__forecast-icon',
-                  month.projectedNet >= 0
-                    ? 'cashflow-view__forecast-icon--positive'
-                    : 'cashflow-view__forecast-icon--negative'
-                ]"
-              >
-                <span
-                  v-if="month.projectedNet >= 0"
-                  class="material-symbols-outlined cashflow-view__forecast-icon-svg"
-                >
-                  trending_up
-                </span>
-                <span v-else class="material-symbols-outlined cashflow-view__forecast-icon-svg">
-                  trending_down
-                </span>
-              </div>
-              <p class="cashflow-view__forecast-month">{{ month.month }}</p>
-            </div>
-
-            <p
-              :class="[
-                'cashflow-view__forecast-net',
-                month.projectedNet >= 0
-                  ? 'cashflow-view__forecast-net--positive'
-                  : 'cashflow-view__forecast-net--negative'
-              ]"
-              :title="formatCurrency(month.projectedNet ?? 0, currency)"
-            >
-              {{ formatCompactCurrency(month.projectedNet ?? 0, currency) }}
-            </p>
-
-            <div class="cashflow-view__forecast-detail">
-              <span class="cashflow-view__forecast-detail-income">
-                ↑ {{ formatCompactCurrency(month.projectedIncome ?? 0, currency) }}
-              </span>
-              <span class="cashflow-view__forecast-detail-expense">
-                ↓ {{ formatCompactCurrency(month.projectedExpenses ?? 0, currency) }}
-              </span>
-            </div>
-          </div>
+      <template v-if="hasData">
+        <div class="cashflow-view__section-title">
+          <span>Pronóstico próximos 3 meses</span>
         </div>
 
-        <p class="cashflow-view__forecast-note">
-          Valores estimados con base en el historial de ingresos y gastos del período.
-        </p>
+        <div v-if="forecastWarning" class="cashflow-view__forecast-banner">
+          <span class="material-symbols-outlined cashflow-view__forecast-banner-icon">warning</span>
+          <Text size="sm" color="warning">{{ forecastWarning }}</Text>
+        </div>
 
-        <Card class="cashflow-view__chart-card">
-          <div class="cashflow-view__chart-header">
-            <Heading level="h3" size="lg" weight="semibold">
-              Pronóstico — Líneas Proyectadas
-            </Heading>
-          </div>
-          <ClientOnly>
-            <VChart :option="forecastChartOption" style="height: 320px" autoresize />
-            <template #fallback>
-              <div class="cashflow-view__chart-fallback">
-                <div class="cashflow-view__chart-skeleton" />
+        <div v-if="loadingForecast" class="cashflow-view__forecast-kpis">
+          <div v-for="n in 3" :key="n" class="cashflow-view__forecast-skeleton" />
+        </div>
+
+        <template v-else>
+          <div class="cashflow-view__forecast-kpis">
+            <div
+              v-for="month in forecast?.months ?? []"
+              :key="month.month"
+              :class="[
+                'cashflow-view__forecast-card',
+                month.projectedNet >= 0
+                  ? 'cashflow-view__forecast-card--positive'
+                  : 'cashflow-view__forecast-card--negative'
+              ]"
+            >
+              <div class="cashflow-view__forecast-card-top">
+                <div
+                  :class="[
+                    'cashflow-view__forecast-icon',
+                    month.projectedNet >= 0
+                      ? 'cashflow-view__forecast-icon--positive'
+                      : 'cashflow-view__forecast-icon--negative'
+                  ]"
+                >
+                  <span
+                    v-if="month.projectedNet >= 0"
+                    class="material-symbols-outlined cashflow-view__forecast-icon-svg"
+                  >
+                    trending_up
+                  </span>
+                  <span v-else class="material-symbols-outlined cashflow-view__forecast-icon-svg">
+                    trending_down
+                  </span>
+                </div>
+                <p class="cashflow-view__forecast-month">{{ month.month }}</p>
               </div>
-            </template>
-          </ClientOnly>
-        </Card>
+
+              <p
+                :class="[
+                  'cashflow-view__forecast-net',
+                  month.projectedNet >= 0
+                    ? 'cashflow-view__forecast-net--positive'
+                    : 'cashflow-view__forecast-net--negative'
+                ]"
+                :title="formatCurrency(month.projectedNet ?? 0, currency)"
+              >
+                {{ formatCompactCurrency(month.projectedNet ?? 0, currency) }}
+              </p>
+
+              <div class="cashflow-view__forecast-detail">
+                <span class="cashflow-view__forecast-detail-income">
+                  ↑ {{ formatCompactCurrency(month.projectedIncome ?? 0, currency) }}
+                </span>
+                <span class="cashflow-view__forecast-detail-expense">
+                  ↓ {{ formatCompactCurrency(month.projectedExpenses ?? 0, currency) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p class="cashflow-view__forecast-note">
+            Valores estimados con base en el historial de ingresos y gastos del período.
+          </p>
+
+          <Card class="cashflow-view__chart-card">
+            <div class="cashflow-view__chart-header">
+              <Heading level="h3" size="lg" weight="semibold">
+                Pronóstico — Líneas Proyectadas
+              </Heading>
+            </div>
+            <ClientOnly>
+              <VChart :option="forecastChartOption" style="height: 320px" autoresize />
+              <template #fallback>
+                <div class="cashflow-view__chart-fallback">
+                  <div class="cashflow-view__chart-skeleton" />
+                </div>
+              </template>
+            </ClientOnly>
+          </Card>
+        </template>
       </template>
     </template>
   </div>
