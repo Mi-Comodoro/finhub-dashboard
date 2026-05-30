@@ -1,10 +1,13 @@
 <script setup lang="ts">
   import { defineAsyncComponent, onMounted, ref } from 'vue'
 
+  import Badge from '@/components/atoms/badge/Badge.vue'
   import Button from '@/components/atoms/button/Button.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAdminApplication } from '@/composables/application/useAdminApplication'
   import type { AdminUser, GrowthPeriod } from '@/types/domain'
 
@@ -270,13 +273,9 @@
                 <Text size="sm" color="muted">{{ user.email }}</Text>
               </td>
               <td class="admin-page__td">
-                <UBadge
-                  :color="user.role === 'admin' ? 'red' : 'neutral'"
-                  variant="subtle"
-                  size="sm"
-                >
+                <Badge :variant="user.role === 'admin' ? 'danger' : 'default'" size="sm">
                   {{ user.role }}
-                </UBadge>
+                </Badge>
               </td>
               <td class="admin-page__td">
                 <Text size="sm" color="muted">{{ formatDate(user.createdAt) }}</Text>
@@ -319,18 +318,22 @@
       </div>
     </section>
 
-    <USlideover
-      v-model:open="showUserPanel"
-      side="right"
-      @update:open="val => !val && closeUserPanel()"
-    >
-      <template #header>
-        <div class="admin-page__panel-header">
-          <Heading level="h3" size="lg" weight="semibold">Detalle del usuario</Heading>
-        </div>
-      </template>
+    <ModalWizard :show="showUserPanel">
+      <div class="admin-page__modal">
+        <CardInfo
+          title="Detalle del usuario"
+          sub-title="Información del usuario seleccionado"
+          title-size="xl"
+          weight="extrabold"
+          level="h1"
+          color="black"
+          sub-title-size="xs"
+          sub-title-color="muted"
+          icon="person"
+          icon-size="md"
+          icon-variant="primary"
+        />
 
-      <div class="admin-page__panel-body">
         <div v-if="isLoadingUser" class="admin-page__panel-skeleton" />
 
         <div v-else-if="selectedUser" class="admin-page__panel-content">
@@ -344,13 +347,9 @@
           </div>
           <div class="admin-page__panel-row">
             <Text size="xs" color="muted">Rol</Text>
-            <UBadge
-              :color="selectedUser.role === 'admin' ? 'red' : 'neutral'"
-              variant="subtle"
-              size="sm"
-            >
+            <Badge :variant="selectedUser.role === 'admin' ? 'danger' : 'default'" size="sm">
               {{ selectedUser.role }}
-            </UBadge>
+            </Badge>
           </div>
           <div class="admin-page__panel-row">
             <Text size="xs" color="muted">País</Text>
@@ -366,13 +365,17 @@
           </div>
           <div class="admin-page__panel-row">
             <Text size="xs" color="muted">Estado</Text>
-            <UBadge :color="selectedUser.isActive ? 'green' : 'neutral'" variant="subtle" size="sm">
+            <Badge :variant="selectedUser.isActive ? 'success' : 'default'" size="sm">
               {{ selectedUser.isActive ? 'Activo' : 'Inactivo' }}
-            </UBadge>
+            </Badge>
           </div>
         </div>
+
+        <div class="admin-page__modal-actions">
+          <Button variant="ghost" size="sm" @click="closeUserPanel">Cerrar</Button>
+        </div>
       </div>
-    </USlideover>
+    </ModalWizard>
   </div>
 </template>
 
@@ -538,5 +541,13 @@
 
   .admin-page__panel-row {
     @apply flex flex-col gap-1;
+  }
+
+  .admin-page__modal {
+    @apply flex flex-col gap-4;
+  }
+
+  .admin-page__modal-actions {
+    @apply flex justify-end pt-2;
   }
 </style>

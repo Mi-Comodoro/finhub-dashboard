@@ -5,6 +5,7 @@
   import Button from '@/components/atoms/button/Button.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import SearchInput from '@/components/molecules/input/SearchInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
@@ -269,17 +270,23 @@
       </div>
     </section>
 
-    <!-- ── Slideover detalle ────────────────────────────────────────────── -->
-    <USlideover
-      v-model:open="showDetailPanel"
-      side="right"
-      @update:open="val => !val && closeDetail()"
-    >
-      <template #header>
-        <Heading level="h3" size="lg" weight="semibold">Detalle del usuario</Heading>
-      </template>
+    <!-- ── Modal detalle ──────────────────────────────────────────────── -->
+    <ModalWizard :show="showDetailPanel">
+      <div class="admin-users-page__detail-modal">
+        <CardInfo
+          title="Detalle del usuario"
+          sub-title="Información y gestión del usuario seleccionado"
+          title-size="xl"
+          weight="extrabold"
+          level="h1"
+          color="black"
+          sub-title-size="xs"
+          sub-title-color="muted"
+          icon="person"
+          icon-size="md"
+          icon-variant="primary"
+        />
 
-      <div class="admin-users-page__panel-body">
         <div v-if="isLoadingUser" class="admin-users-page__panel-skeleton" />
 
         <div v-else-if="selectedUser" class="admin-users-page__panel-content">
@@ -344,8 +351,12 @@
             </div>
           </div>
         </div>
+
+        <div class="admin-users-page__detail-modal-actions">
+          <Button variant="ghost" size="sm" @click="closeDetail">Cerrar</Button>
+        </div>
       </div>
-    </USlideover>
+    </ModalWizard>
 
     <!-- ── Modal confirmación cambio de rol ─────────────────────────────── -->
     <ModalWizard :show="showRoleModal">
@@ -467,6 +478,14 @@
 
   .admin-users-page__panel-role-btns {
     @apply flex gap-2;
+  }
+
+  .admin-users-page__detail-modal {
+    @apply flex flex-col gap-4;
+  }
+
+  .admin-users-page__detail-modal-actions {
+    @apply flex justify-end pt-2;
   }
 
   /* ── Modal ──────────────────────────────────────────────────────────── */

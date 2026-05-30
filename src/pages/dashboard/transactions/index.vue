@@ -293,14 +293,9 @@
       <div>
         <div class="transactions-page__title-row">
           <Heading level="h1" size="2xl" weight="extrabold">Transacciones</Heading>
-          <UBadge
-            v-if="pagination?.total"
-            variant="soft"
-            color="gray"
-            class="transactions-page__count-badge"
-          >
+          <Badge v-if="pagination?.total" variant="default" class="transactions-page__count-badge">
             {{ pagination.total }}
-          </UBadge>
+          </Badge>
         </div>
         <Text size="xs" color="muted">Historial completo de movimientos</Text>
       </div>

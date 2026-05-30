@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { useDebounceFn } from '@vueuse/core'
 
+  import Badge from '@/components/atoms/badge/Badge.vue'
   import GroupForm from '@/components/business/groups/forms/GroupForm.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useFriendshipsApplication } from '@/composables/application/useFriendshipsApplication'
@@ -218,12 +219,9 @@
             <Heading level="h3" size="lg" weight="semibold" class="groups-page__card-name">
               {{ group.name }}
             </Heading>
-            <UBadge
-              :label="typeLabels[group.type]"
-              :color="typeColors[group.type]"
-              variant="subtle"
-              size="sm"
-            />
+            <Badge :variant="typeColors[group.type] as any" size="sm">
+              {{ typeLabels[group.type] }}
+            </Badge>
           </div>
           <div class="groups-page__card-footer">
             <span class="material-symbols-outlined groups-page__member-icon">group</span>

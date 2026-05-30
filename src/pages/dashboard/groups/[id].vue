@@ -1,5 +1,7 @@
 <script setup lang="ts">
+  import Badge from '@/components/atoms/badge/Badge.vue'
   import GroupExpenseForm from '@/components/business/groups/forms/GroupExpenseForm.vue'
+  import ProgressBar from '@/components/molecules/progress-bar/ProgressBar.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useFriendshipsApplication } from '@/composables/application/useFriendshipsApplication'
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
@@ -102,7 +104,7 @@
     TRAVEL: 'warning'
   }
   const statusColors: Record<GroupStatus, string> = {
-    Planificando: 'neutral',
+    Planificando: 'default',
     Activo: 'success',
     Cerrado: 'danger'
   }
@@ -130,7 +132,7 @@
     today.setHours(0, 0, 0, 0)
     const due = new Date(expense.dueDate)
     if (due <= today) return { label: 'Pendiente', color: 'warning' }
-    return { label: 'Planificado', color: 'neutral' }
+    return { label: 'Planificado', color: 'default' }
   }
 
   const isPending = (expense: GroupExpense) => {
@@ -292,18 +294,12 @@
             <Heading level="h1" size="2xl" weight="extrabold">
               {{ selectedGroup.name }}
             </Heading>
-            <UBadge
-              :label="selectedGroup.status"
-              :color="statusColors[selectedGroup.status]"
-              variant="subtle"
-              size="sm"
-            />
-            <UBadge
-              :label="typeLabels[selectedGroup.type]"
-              :color="typeColors[selectedGroup.type]"
-              variant="subtle"
-              size="sm"
-            />
+            <Badge :variant="statusColors[selectedGroup.status] as any" size="sm">
+              {{ selectedGroup.status }}
+            </Badge>
+            <Badge :variant="typeColors[selectedGroup.type] as any" size="sm">
+              {{ typeLabels[selectedGroup.type] }}
+            </Badge>
           </div>
 
           <div class="group-detail__header-meta">
@@ -373,9 +369,9 @@
               {{ progressPercent }}%
             </Text>
           </div>
-          <UProgress
-            :value="progressPercent"
-            :color="isClosed ? 'neutral' : 'primary'"
+          <ProgressBar
+            :progress="progressPercent"
+            variant="primary"
             size="md"
             class="group-detail__progress-bar"
           />
@@ -424,7 +420,7 @@
                 v-if="member.memberStatus === 'invited'"
                 class="group-detail__contribution-status"
               >
-                <UBadge label="Invitación enviada" color="secondary" variant="subtle" size="xs" />
+                <Badge variant="secondary" size="xs">Invitación enviada</Badge>
               </div>
               <div
                 v-else-if="member.memberStatus === 'external'"
@@ -508,12 +504,9 @@
             </Text>
 
             <!-- Badge -->
-            <UBadge
-              :label="getExpenseBadge(expense).label"
-              :color="getExpenseBadge(expense).color as any"
-              variant="subtle"
-              size="sm"
-            />
+            <Badge :variant="getExpenseBadge(expense).color as any" size="sm">
+              {{ getExpenseBadge(expense).label }}
+            </Badge>
 
             <!-- Actions (desktop) -->
             <div class="group-detail__expense-actions group-detail__expense-actions--desktop">
@@ -533,26 +526,13 @@
               </Text>
             </div>
 
-            <!-- Kebab menu (mobile) -->
+            <!-- Actions (mobile) -->
             <div
               v-if="canActOnExpense(expense)"
               class="group-detail__expense-actions group-detail__expense-actions--mobile"
             >
-              <UPopover>
-                <Button variant="ghost" size="sm" icon="more_vert" :icon-only="true" />
-                <template #content>
-                  <div class="group-detail__kebab-menu">
-                    <button class="group-detail__kebab-item" @click="openPayModal(expense.id)">
-                      <span class="material-symbols-outlined">payments</span>
-                      Pagar
-                    </button>
-                    <button class="group-detail__kebab-item" @click="handleMarkCxp(expense.id)">
-                      <span class="material-symbols-outlined">description</span>
-                      Crear CxP
-                    </button>
-                  </div>
-                </template>
-              </UPopover>
+              <Button variant="ghost" size="sm" @click="openPayModal(expense.id)">Pagar</Button>
+              <Button variant="ghost" size="sm" @click="handleMarkCxp(expense.id)">CxP</Button>
             </div>
           </li>
         </ul>
