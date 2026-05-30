@@ -63,9 +63,9 @@
       showAlert: false,
       textFooter: '',
       amount: null,
-      titleColor: 'black',
+      titleColor: 'primary',
       subTitleColor: 'muted',
-      textColor: 'black',
+      textColor: 'primary',
       variant: 'neutral'
     }
   )
@@ -129,45 +129,45 @@
   const variantStyles = {
     primary: {
       icon: 'bg-primary-900 text-primary-100',
-      currency: 'text-primary-600',
-      alert: 'text-primary-600',
+      currency: 'text-primary-600 dark:text-primary-400',
+      alert: 'text-primary-600 dark:text-primary-400',
       bgAccent: 'text-primary-200',
-      background: '!bg-white'
+      background: ''
     },
     secondary: {
-      icon: 'bg-secondary-100 text-secondary-600',
-      currency: 'text-secondary-600',
-      alert: 'text-secondary-600',
+      icon: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-300',
+      currency: 'text-secondary-600 dark:text-secondary-400',
+      alert: 'text-secondary-600 dark:text-secondary-400',
       bgAccent: 'text-secondary-200',
-      background: '!bg-white'
+      background: ''
     },
     success: {
-      icon: 'bg-green-100 text-green-600',
-      currency: 'text-green-600',
-      alert: 'text-green-600',
+      icon: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+      currency: 'text-green-600 dark:text-green-400',
+      alert: 'text-green-600 dark:text-green-400',
       bgAccent: 'text-green-200',
-      background: '!bg-white'
+      background: ''
     },
     warning: {
-      icon: 'bg-amber-100 text-amber-600',
-      currency: 'text-amber-600',
-      alert: 'text-amber-600',
+      icon: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
+      currency: 'text-amber-600 dark:text-amber-400',
+      alert: 'text-amber-600 dark:text-amber-400',
       bgAccent: 'text-amber-200',
-      background: '!bg-white'
+      background: ''
     },
     danger: {
-      icon: 'bg-red-100 text-red-600',
-      currency: 'text-red-600',
-      alert: 'text-red-600',
+      icon: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+      currency: 'text-red-600 dark:text-red-400',
+      alert: 'text-red-600 dark:text-red-400',
       bgAccent: 'text-red-200',
-      background: '!bg-white'
+      background: ''
     },
     gold: {
-      icon: 'bg-yellow-100 text-yellow-500',
-      currency: 'text-yellow-500',
-      alert: 'text-yellow-500',
+      icon: 'bg-yellow-100 text-yellow-500 dark:bg-yellow-900/30 dark:text-yellow-400',
+      currency: 'text-yellow-500 dark:text-yellow-400',
+      alert: 'text-yellow-500 dark:text-yellow-400',
       bgAccent: 'text-yellow-200',
-      background: '!bg-white'
+      background: ''
     },
 
     accent: {
@@ -178,6 +178,21 @@
       background: '!bg-primary-900'
     }
   }
+
+  const progressFillColor = computed(() => {
+    const map: Record<string, string> = {
+      primary: 'var(--color-income)',
+      secondary: 'var(--color-expense-fixed)',
+      warning: 'var(--color-saving)',
+      success: 'var(--color-free)',
+      danger: 'var(--color-danger)',
+      gold: 'var(--color-saving)',
+      accent: 'var(--color-income)',
+      neutral: 'var(--color-income)',
+      custom: 'var(--color-income)'
+    }
+    return map[props.variant ?? 'neutral'] ?? 'var(--color-income)'
+  })
 
   const styles = computed(() => {
     // 1. Buscamos el estilo base usando la prop 'variant' original
@@ -257,10 +272,13 @@
         <!-- progress bar -->
 
         <div v-if="showProgressbar" class="flex w-full flex-col items-end gap-2">
-          <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+          <div
+            class="h-1.5 w-full overflow-hidden rounded-full"
+            style="background: var(--surface-3)"
+          >
             <div
-              class="h-full rounded-full bg-teal-500 transition-all duration-700"
-              :style="{ width: `${progressWidth}%` }"
+              class="h-full rounded-full transition-all duration-700"
+              :style="{ width: `${progressWidth}%`, background: progressFillColor }"
             />
           </div>
           <Text size="sm">
@@ -291,11 +309,12 @@
         <!-- progress bar -->
         <div
           v-if="showProgressbar"
-          class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700"
+          class="h-1.5 w-full overflow-hidden rounded-full"
+          style="background: var(--surface-3)"
         >
           <div
-            class="h-full rounded-full bg-teal-500 transition-all duration-700"
-            :style="{ width: `${progressWidth}%` }"
+            class="h-full rounded-full transition-all duration-700"
+            :style="{ width: `${progressWidth}%`, background: progressFillColor }"
           />
         </div>
 
@@ -316,7 +335,7 @@
     </div>
 
     <!-- Icon Background -->
-    <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-20">
+    <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-[0.08] dark:opacity-20">
       <Icon
         :name="iconName || iconMark"
         :class="styles.bgAccent"

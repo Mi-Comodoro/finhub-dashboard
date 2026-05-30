@@ -1,17 +1,40 @@
 import type { DebtProjectionResponse, NetPositionResponse } from '@/types/analytics.types'
 
+export interface HealthScorePillar {
+  score: number
+  max: number
+  label: string
+  rate?: number
+  excessPct?: number
+  dti?: number
+}
+
 export interface FinancialHealthScoreResponse {
-  totalScore: number
-  cashFlowScore: number
-  savingsScore: number
-  expenseScore: number
-  debtScore: number
-  level: 'critical' | 'at_risk' | 'regular' | 'healthy' | 'optimal'
-  calculatedAt: string
-  // TODO: [BE] incluir este campo en el servicio analytics/financial-health-score.
-  // Con 0 transacciones el backend devuelve scores en 0 que son engañosos en la UI.
-  // Agregar count de transacciones del presupuesto activo al calcular el score.
-  totalTransactions?: number
+  score: {
+    total: number
+    label: string
+    pillars: {
+      cashFlow: HealthScorePillar
+      savings: HealthScorePillar
+      expenses: HealthScorePillar
+      debt: HealthScorePillar
+    }
+    insight: string
+    weakestPillar: string
+  }
+  debtRatio: {
+    ratio: number
+    label: string
+    badge: string
+    totalDebt: number
+    annualIncomeEstimate: number
+  }
+  totalTransactions: number
+  totals: {
+    income: number
+    expenses: number
+    savings: number
+  }
 }
 
 export interface SavingsTrendItem {

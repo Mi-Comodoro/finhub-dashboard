@@ -7,6 +7,7 @@
   import Text from '@/components/atoms/typography/Text.vue'
   import { useAnalyticsCashFlowApplication } from '@/composables/application/useAnalyticsCashFlowApplication'
   import type { useAnalyticsPeriod } from '@/composables/useAnalyticsPeriod'
+  import { useTheme } from '@/composables/useTheme'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
@@ -34,7 +35,9 @@
       : null
   )
 
-  const weeklyGroups = computed(() => groupTransactionsByWeek(transactions.value ?? []))
+  const weeklyGroups = computed(() =>
+    groupTransactionsByWeek(transactions.value ?? [], selectedYear.value, selectedMonth.value)
+  )
 
   const totalIncome = computed(() =>
     (transactions.value ?? [])
@@ -56,19 +59,31 @@
 
   const hasData = computed(() => (transactions.value ?? []).length > 0)
 
+  const { isDark } = useTheme()
+  const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
+  const chartGridColor = computed(() => (isDark.value ? '#334155' : '#e2e8f0'))
+  const chartLegendColor = computed(() => (isDark.value ? '#94a3b8' : '#374151'))
+
   const forecastChartOption = computed(() => ({
     tooltip: { trigger: 'axis' },
-    legend: { data: ['Ingresos proy.', 'Gastos proy.', 'Neto proy.'], top: 8 },
+    legend: {
+      data: ['Ingresos proy.', 'Gastos proy.', 'Neto proy.'],
+      top: 8,
+      textStyle: { color: chartLegendColor.value }
+    },
     grid: { left: '3%', right: '4%', bottom: '3%', top: '15%', containLabel: true },
     xAxis: {
       type: 'category',
-      data: forecast.value?.months.map(m => m.month) ?? []
+      data: forecast.value?.months.map(m => m.month) ?? [],
+      axisLabel: { color: chartAxisColor.value }
     },
     yAxis: {
       type: 'value',
       axisLabel: {
+        color: chartAxisColor.value,
         formatter: (value: number) => formatCompactCurrency(value, currency.value)
-      }
+      },
+      splitLine: { lineStyle: { color: chartGridColor.value, type: 'dashed' } }
     },
     series: [
       {
@@ -106,14 +121,24 @@
           )
           .join('<br/>')
     },
-    legend: { data: ['Ingresos', 'Gastos', 'Ahorro', 'Flujo Neto'], top: 8 },
+    legend: {
+      data: ['Ingresos', 'Gastos', 'Ahorro', 'Flujo Neto'],
+      top: 8,
+      textStyle: { color: chartLegendColor.value }
+    },
     grid: { left: '3%', right: '4%', bottom: '3%', top: '15%', containLabel: true },
-    xAxis: { type: 'category', data: weeklyGroups.value.map(w => w.week) },
+    xAxis: {
+      type: 'category',
+      data: weeklyGroups.value.map(w => w.week),
+      axisLabel: { color: chartAxisColor.value }
+    },
     yAxis: {
       type: 'value',
       axisLabel: {
+        color: chartAxisColor.value,
         formatter: (value: number) => formatCompactCurrency(value, currency.value)
-      }
+      },
+      splitLine: { lineStyle: { color: chartGridColor.value, type: 'dashed' } }
     },
     series: [
       {
@@ -240,94 +265,97 @@
       </Card>
 
       <!-- Forecast section -->
-      <div class="cashflow-view__section-title">
-        <span>Pronóstico próximos 3 meses</span>
-      </div>
-
-      <div v-if="forecastWarning" class="cashflow-view__forecast-banner">
-        <span class="material-symbols-outlined cashflow-view__forecast-banner-icon">warning</span>
-        <Text size="sm" color="warning">{{ forecastWarning }}</Text>
-      </div>
-
-      <div v-if="loadingForecast" class="cashflow-view__forecast-kpis">
-        <div v-for="n in 3" :key="n" class="cashflow-view__forecast-skeleton" />
-      </div>
-
-      <template v-else>
-        <div class="cashflow-view__forecast-kpis">
-          <div
-            v-for="month in forecast?.months ?? []"
-            :key="month.month"
-            :class="[
-              'cashflow-view__forecast-card',
-              month.projectedNet >= 0
-                ? 'cashflow-view__forecast-card--positive'
-                : 'cashflow-view__forecast-card--negative'
-            ]"
-          >
-            <div class="cashflow-view__forecast-card-top">
-              <div
-                :class="[
-                  'cashflow-view__forecast-icon',
-                  month.projectedNet >= 0
-                    ? 'cashflow-view__forecast-icon--positive'
-                    : 'cashflow-view__forecast-icon--negative'
-                ]"
-              >
-                <span
-                  v-if="month.projectedNet >= 0"
-                  class="material-symbols-outlined cashflow-view__forecast-icon-svg"
-                >
-                  trending_up
-                </span>
-                <span v-else class="material-symbols-outlined cashflow-view__forecast-icon-svg">
-                  trending_down
-                </span>
-              </div>
-              <p class="cashflow-view__forecast-month">{{ month.month }}</p>
-            </div>
-
-            <p
-              :class="[
-                'cashflow-view__forecast-net',
-                month.projectedNet >= 0
-                  ? 'cashflow-view__forecast-net--positive'
-                  : 'cashflow-view__forecast-net--negative'
-              ]"
-              :title="formatCurrency(month.projectedNet ?? 0, currency)"
-            >
-              {{ formatCompactCurrency(month.projectedNet ?? 0, currency) }}
-            </p>
-
-            <div class="cashflow-view__forecast-detail">
-              <span class="cashflow-view__forecast-detail-income">
-                ↑ {{ formatCompactCurrency(month.projectedIncome ?? 0, currency) }}
-              </span>
-              <span class="cashflow-view__forecast-detail-expense">
-                ↓ {{ formatCompactCurrency(month.projectedExpenses ?? 0, currency) }}
-              </span>
-            </div>
-            <p class="cashflow-view__forecast-hint">
-              Estimado con base en tu historial de ingresos y gastos.
-            </p>
-          </div>
+      <template v-if="hasData">
+        <div class="cashflow-view__section-title">
+          <span>Pronóstico próximos 3 meses</span>
         </div>
 
-        <Card class="cashflow-view__chart-card">
-          <div class="cashflow-view__chart-header">
-            <Heading level="h3" size="lg" weight="semibold">
-              Pronóstico — Líneas Proyectadas
-            </Heading>
-          </div>
-          <ClientOnly>
-            <VChart :option="forecastChartOption" style="height: 320px" autoresize />
-            <template #fallback>
-              <div class="cashflow-view__chart-fallback">
-                <div class="cashflow-view__chart-skeleton" />
+        <div v-if="forecastWarning" class="cashflow-view__forecast-banner">
+          <span class="material-symbols-outlined cashflow-view__forecast-banner-icon">warning</span>
+          <Text size="sm" color="warning">{{ forecastWarning }}</Text>
+        </div>
+
+        <div v-if="loadingForecast" class="cashflow-view__forecast-kpis">
+          <div v-for="n in 3" :key="n" class="cashflow-view__forecast-skeleton" />
+        </div>
+
+        <template v-else>
+          <div class="cashflow-view__forecast-kpis">
+            <div
+              v-for="month in forecast?.months ?? []"
+              :key="month.month"
+              :class="[
+                'cashflow-view__forecast-card',
+                month.projectedNet >= 0
+                  ? 'cashflow-view__forecast-card--positive'
+                  : 'cashflow-view__forecast-card--negative'
+              ]"
+            >
+              <div class="cashflow-view__forecast-card-top">
+                <div
+                  :class="[
+                    'cashflow-view__forecast-icon',
+                    month.projectedNet >= 0
+                      ? 'cashflow-view__forecast-icon--positive'
+                      : 'cashflow-view__forecast-icon--negative'
+                  ]"
+                >
+                  <span
+                    v-if="month.projectedNet >= 0"
+                    class="material-symbols-outlined cashflow-view__forecast-icon-svg"
+                  >
+                    trending_up
+                  </span>
+                  <span v-else class="material-symbols-outlined cashflow-view__forecast-icon-svg">
+                    trending_down
+                  </span>
+                </div>
+                <p class="cashflow-view__forecast-month">{{ month.month }}</p>
               </div>
-            </template>
-          </ClientOnly>
-        </Card>
+
+              <p
+                :class="[
+                  'cashflow-view__forecast-net',
+                  month.projectedNet >= 0
+                    ? 'cashflow-view__forecast-net--positive'
+                    : 'cashflow-view__forecast-net--negative'
+                ]"
+                :title="formatCurrency(month.projectedNet ?? 0, currency)"
+              >
+                {{ formatCompactCurrency(month.projectedNet ?? 0, currency) }}
+              </p>
+
+              <div class="cashflow-view__forecast-detail">
+                <span class="cashflow-view__forecast-detail-income">
+                  ↑ {{ formatCompactCurrency(month.projectedIncome ?? 0, currency) }}
+                </span>
+                <span class="cashflow-view__forecast-detail-expense">
+                  ↓ {{ formatCompactCurrency(month.projectedExpenses ?? 0, currency) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p class="cashflow-view__forecast-note">
+            Valores estimados con base en el historial de ingresos y gastos del período.
+          </p>
+
+          <Card class="cashflow-view__chart-card">
+            <div class="cashflow-view__chart-header">
+              <Heading level="h3" size="lg" weight="semibold">
+                Pronóstico — Líneas Proyectadas
+              </Heading>
+            </div>
+            <ClientOnly>
+              <VChart :option="forecastChartOption" style="height: 320px" autoresize />
+              <template #fallback>
+                <div class="cashflow-view__chart-fallback">
+                  <div class="cashflow-view__chart-skeleton" />
+                </div>
+              </template>
+            </ClientOnly>
+          </Card>
+        </template>
       </template>
     </template>
   </div>
@@ -340,6 +368,7 @@
 
   .cashflow-view__skeleton {
     @apply h-64 w-full animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .cashflow-view__kpis {
@@ -389,6 +418,7 @@
 
   .cashflow-view__kpi-value {
     @apply font-sans text-lg font-bold leading-snug text-black;
+    @apply dark:text-neutral-100;
   }
 
   .cashflow-view__kpi-value--negative {
@@ -413,14 +443,16 @@
 
   .analytics-view__empty-title {
     @apply text-base font-semibold text-neutral-800;
+    @apply dark:text-neutral-200;
   }
 
   .analytics-view__empty-description {
     @apply max-w-xs text-sm text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .analytics-view__empty-cta {
-    @apply text-sm font-medium text-primary-600 underline;
+    @apply text-sm font-medium text-primary-600 underline dark:text-primary-400;
   }
 
   .cashflow-view__chart-fallback {
@@ -429,14 +461,17 @@
 
   .cashflow-view__chart-skeleton {
     @apply h-full w-full animate-pulse rounded-lg bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .cashflow-view__section-title {
     @apply flex flex-wrap items-center gap-2 text-sm font-semibold text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .cashflow-view__forecast-banner {
     @apply flex items-start gap-2 rounded-lg border border-warning-200 bg-warning-50 p-3;
+    @apply dark:border-warning-700/50 dark:bg-warning-900/20;
   }
 
   .cashflow-view__forecast-banner-icon {
@@ -449,6 +484,7 @@
 
   .cashflow-view__forecast-skeleton {
     @apply h-28 animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .cashflow-view__forecast-card {
@@ -457,10 +493,12 @@
 
   .cashflow-view__forecast-card--positive {
     @apply border-primary-100 bg-primary-50;
+    @apply dark:border-primary-800 dark:bg-primary-900/20;
   }
 
   .cashflow-view__forecast-card--negative {
     @apply border-danger-100 bg-danger-50;
+    @apply dark:border-danger-800 dark:bg-danger-900/20;
   }
 
   .cashflow-view__forecast-card-top {
@@ -472,11 +510,11 @@
   }
 
   .cashflow-view__forecast-icon--positive {
-    @apply bg-primary-100;
+    @apply bg-primary-100 dark:bg-primary-800;
   }
 
   .cashflow-view__forecast-icon--negative {
-    @apply bg-danger-100;
+    @apply bg-danger-100 dark:bg-danger-800;
   }
 
   .cashflow-view__forecast-icon-svg {
@@ -484,15 +522,16 @@
   }
 
   .cashflow-view__forecast-icon--positive .cashflow-view__forecast-icon-svg {
-    @apply text-primary-600;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   .cashflow-view__forecast-icon--negative .cashflow-view__forecast-icon-svg {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
   .cashflow-view__forecast-month {
     @apply text-xs font-semibold uppercase tracking-wide text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .cashflow-view__forecast-net {
@@ -501,11 +540,11 @@
   }
 
   .cashflow-view__forecast-net--positive {
-    @apply text-primary-700;
+    @apply text-primary-700 dark:text-primary-400;
   }
 
   .cashflow-view__forecast-net--negative {
-    @apply text-danger-700;
+    @apply text-danger-700 dark:text-danger-400;
   }
 
   .cashflow-view__forecast-detail {
@@ -514,30 +553,31 @@
   }
 
   .cashflow-view__forecast-detail-income {
-    @apply text-primary-600;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   .cashflow-view__forecast-detail-expense {
-    @apply text-danger-600;
+    @apply text-danger-600 dark:text-danger-400;
   }
 
-  .cashflow-view__forecast-hint {
-    @apply text-[11px] leading-tight text-neutral-400;
+  .cashflow-view__forecast-note {
+    @apply text-[11px] italic text-neutral-400;
   }
 
   .cashflow-view__pill-summary {
-    @apply flex flex-wrap items-center gap-2 text-sm text-neutral-600;
+    @apply hidden flex-wrap items-center gap-2 text-sm text-neutral-600 sm:flex;
+    @apply dark:text-neutral-400;
   }
 
   .cashflow-view__pill-sep {
-    @apply text-neutral-300;
+    @apply text-neutral-300 dark:text-neutral-600;
   }
 
   .cashflow-view__pill--positive {
-    @apply font-semibold text-primary-700;
+    @apply font-semibold text-primary-700 dark:text-primary-400;
   }
 
   .cashflow-view__pill--negative {
-    @apply font-semibold text-danger-700;
+    @apply font-semibold text-danger-700 dark:text-danger-400;
   }
 </style>

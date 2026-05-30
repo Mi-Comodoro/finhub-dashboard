@@ -16,11 +16,9 @@ export const useDashboardApplication = () => {
    */
   const loadDashboardData = async (budgetId: string) => {
     try {
-      // Configurar el filtro de budget en expenses
       expensesStore.setBudget(budgetId)
       const { useExpenseApplication } = await import('./useExpenseApplication')
       const { useTransactionApplication } = await import('./useTransactionApplication')
-      // Cargar datos en paralelo
       const { fetchExpenses } = useExpenseApplication()
       const { fetchByBudget, fetchTotals } = useTransactionApplication()
       await Promise.all([
@@ -37,7 +35,6 @@ export const useDashboardApplication = () => {
     }
   }
 
-  // Datos expuestos del dashboard
   const currency = computed(() => financesStore.defaultCurrency)
   const totalExpenses = computed(() => expensesStore.totalPaid)
   const totalCommittedExpenses = computed(() => expensesStore.totalCommitted)

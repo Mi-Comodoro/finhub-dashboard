@@ -64,7 +64,7 @@
   }
 
   .tips__title {
-    @apply !text-primary-800;
+    @apply !text-primary-800 dark:!text-primary-300;
   }
 
   .tips__actions {

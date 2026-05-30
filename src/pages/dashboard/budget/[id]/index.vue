@@ -19,6 +19,7 @@
   import PlannedSavingList from '@/components/business/savings/PlannedSavingList.vue'
   import Tips from '@/components/business/tips/Tips.vue'
   import TransactionList from '@/components/business/transactions/TransactionList.vue'
+  import ConfirmDeleteModal from '@/components/organisms/confirm-delete/ConfirmDeleteModal.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
@@ -130,6 +131,8 @@
   const showForm = ref(false)
   const showIncomeModal = ref(false)
   const showEditModal = ref(false)
+  const showDeleteConfirm = ref(false)
+  const expenseToDelete = ref<{ id: string; name: string } | null>(null)
   const editingExpense = ref<{ id: string; data: Record<string, unknown> } | null>(null)
   const formMode = ref<'create' | 'edit' | 'view'>('create')
 
@@ -162,7 +165,7 @@
     formMode.value = 'create'
   }
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = async () => {
     const isEdit = formMode.value === 'edit'
     successToast(
       isEdit ? 'Gasto actualizado' : 'Gasto registrado',
@@ -171,6 +174,9 @@
         : 'El gasto fue agregado al presupuesto.'
     )
     closeForm()
+    if (budgetId) {
+      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+    }
   }
 
   const showSavingDistributionForm = ref(false)
@@ -179,8 +185,11 @@
     showSavingDistributionForm.value = false
   }
 
-  const handleMarkExpenseAsPaid = (_row: { id: string }) => {
+  const handleMarkExpenseAsPaid = async (_row: { id: string }) => {
     successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
+    if (budgetId) {
+      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+    }
   }
 
   const handleEditExpense = (row: Record<string, unknown>) => {
@@ -217,14 +226,18 @@
     showForm.value = true
   }
 
-  const handleDeleteExpense = async (row: { id: string; name: string }) => {
-    const confirmed = confirm(`¿Estás seguro de eliminar el gasto "${row.name}"?`)
-    if (!confirmed) return
+  const handleDeleteExpense = (row: { id: string; name: string }) => {
+    expenseToDelete.value = row
+    showDeleteConfirm.value = true
+  }
 
-    const { success } = await deleteExpense(row.id)
+  const confirmDeleteExpense = async () => {
+    if (!expenseToDelete.value) return
+    const { success } = await deleteExpense(expenseToDelete.value.id)
     if (success) {
       successToast('Gasto eliminado', 'El gasto planificado fue eliminado correctamente.')
     }
+    expenseToDelete.value = null
   }
   const statusConfig = {
     isActive: () => planStatus.value === 'ACTIVE',
@@ -401,6 +414,12 @@
         @on-close="handleEditClose"
       />
     </ModalWizard>
+
+    <ConfirmDeleteModal
+      v-model:show="showDeleteConfirm"
+      :title="`¿Eliminar '${expenseToDelete?.name}'?`"
+      @confirm="confirmDeleteExpense"
+    />
   </div>
   <div v-else class="budget-detail__empty">
     <Icon name="search_off" class="budget-detail__empty-icon" size="2xl" />
@@ -464,7 +483,7 @@
   }
 
   .budget-detail__layout {
-    @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start lg:px-0;
+    @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start;
   }
 
   .budget-detail__main {
@@ -498,7 +517,7 @@
   }
 
   .budget-detail__empty-icon {
-    @apply text-slate-400 dark:text-slate-600;
+    @apply text-slate-400 dark:text-neutral-500;
   }
 
   .budget-detail__empty-button {

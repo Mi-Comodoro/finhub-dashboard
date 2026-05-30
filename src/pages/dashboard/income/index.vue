@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import IncomeForm from '@/components/business/income/forms/IncomeForm.vue'
   import IncomeHistory from '@/components/business/income/IncomeHistory.vue'
+  import ConfirmDeleteModal from '@/components/organisms/confirm-delete/ConfirmDeleteModal.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useIncomeApplication } from '@/composables/application/useIncomeApplication'
@@ -27,6 +28,8 @@
   // Modal state
   const showForm = ref(false)
   const editingIncome = ref<{ id: string; data: Record<string, unknown> } | null>(null)
+  const showDeleteConfirm = ref(false)
+  const incomeToDelete = ref<{ id: string; source: string } | null>(null)
 
   const openForm = () => {
     editingIncome.value = null
@@ -50,14 +53,18 @@
     showForm.value = true
   }
 
-  const handleDeleteIncome = async (row: { id: string; source: string }) => {
-    const confirmed = confirm(`¿Estás seguro de eliminar el ingreso "${row.source}"?`)
-    if (!confirmed) return
+  const handleDeleteIncome = (row: { id: string; source: string }) => {
+    incomeToDelete.value = row
+    showDeleteConfirm.value = true
+  }
 
-    const { success } = await deleteIncome(row.id)
+  const confirmDeleteIncome = async () => {
+    if (!incomeToDelete.value) return
+    const { success } = await deleteIncome(incomeToDelete.value.id)
     if (success) {
       successToast('Ingreso eliminado', 'El ingreso planificado fue eliminado correctamente.')
     }
+    incomeToDelete.value = null
   }
 
   const handleMarkAsReceived = async (row: { id: string; source: string }) => {
@@ -165,12 +172,18 @@
         @on-close="closeForm"
       />
     </ModalWizard>
+
+    <ConfirmDeleteModal
+      v-model:show="showDeleteConfirm"
+      :title="`¿Eliminar '${incomeToDelete?.source}'?`"
+      @confirm="confirmDeleteIncome"
+    />
   </div>
 </template>
 
 <style scoped lang="postcss">
   .income-page {
-    @apply space-y-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   .income-page__header {

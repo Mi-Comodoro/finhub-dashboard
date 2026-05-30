@@ -7,6 +7,7 @@
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import type { Column } from '@/components/organisms/datatable/types'
+  import { useFinancesStore } from '@/stores/finances.store'
   import { formatCurrency } from '@/utils/currency'
 
   export interface GoalMovementItem {
@@ -28,6 +29,9 @@
     goalId: '',
     movements: () => []
   })
+
+  const financesStore = useFinancesStore()
+  const currency = computed(() => financesStore.profile?.currency || 'COP')
 
   const columns: Column[] = [
     { key: 'date', label: 'Fecha', type: 'date', bold: true },
@@ -67,7 +71,7 @@
 
     <DataTable :columns="columns" :data="tableData">
       <template #cell-amount="{ value }">
-        <Text size="xs" weight="semibold">{{ formatCurrency(value as number, 'COP') }}</Text>
+        <Text size="xs" weight="semibold">{{ formatCurrency(value as number, currency) }}</Text>
       </template>
 
       <template #cell-kind="{ value }">

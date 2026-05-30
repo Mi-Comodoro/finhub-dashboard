@@ -30,7 +30,7 @@
           <!-- Logo -->
           <div class="login-page__logo">
             <Heading level="h1" size="3xl" weight="extrabold" class="drop-shadow-lg" color="white">
-              Mi Comodoro
+              FinHub
             </Heading>
           </div>
 

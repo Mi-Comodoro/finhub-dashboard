@@ -139,7 +139,6 @@
         expenseDate: dateStr,
         splitType: splitType.value,
         groupId: props.groupId,
-        paidBy: paidBy.value,
         assignments
       })
 
@@ -314,14 +313,17 @@
 
   .travel-expense-form__preview {
     @apply flex items-center gap-1 rounded-lg bg-primary-50 px-3 py-2;
+    @apply dark:bg-primary-900;
   }
 
   .travel-expense-form__preview-icon {
     @apply text-base text-primary-600;
+    @apply dark:text-primary-400;
   }
 
   .travel-expense-form__members {
     @apply flex flex-col gap-2 rounded-lg border border-neutral-200 p-3;
+    @apply dark:border-neutral-600;
   }
 
   .travel-expense-form__member-row {
@@ -338,6 +340,7 @@
 
   .travel-expense-form__sum-row {
     @apply mt-1 flex items-center justify-between border-t border-neutral-100 pt-2;
+    @apply dark:border-neutral-700;
   }
 
   .travel-expense-form__sum--ok {
@@ -350,6 +353,7 @@
 
   .travel-expense-form__error {
     @apply rounded-lg bg-danger-50 px-3 py-2;
+    @apply dark:bg-danger-900;
   }
 
   .travel-expense-form__actions {

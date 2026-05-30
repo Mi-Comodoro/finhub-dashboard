@@ -90,11 +90,11 @@
       id: row.id as string,
       data: {
         type: row.type,
-        amount: row.amount,
-        transactionDate: row.transactionDate,
+        amount: Number(row.amount),
+        transactionDate: new Date(row.transactionDate),
         source: row.source,
-        categoryId: row.category?.id,
-        description: row.description
+        categoryId: row.category?.id ?? '',
+        description: row.description ?? ''
       }
     }
     showForm.value = true
@@ -167,7 +167,15 @@
     const accountName = getAccountName(transaction.accountId, transaction.account)
 
     if (fromAccountName) {
-      return { label: fromAccountName, detail: 'Cuenta origen' }
+      const detail =
+        transaction.type === 'income'
+          ? 'Fuente del ingreso'
+          : transaction.type === 'expense'
+            ? 'Cuenta de pago'
+            : transaction.type === 'savings'
+              ? 'Cuenta de débito'
+              : 'Cuenta origen'
+      return { label: fromAccountName, detail }
     }
 
     if (transaction.type === 'income') {
@@ -193,11 +201,17 @@
     const accountName = getAccountName(transaction.accountId, transaction.account)
 
     if (toAccountName) {
-      return { label: toAccountName, detail: 'Cuenta destino' }
+      const detail =
+        transaction.type === 'income'
+          ? 'Cuenta de depósito'
+          : transaction.type === 'savings'
+            ? 'Cuenta de ahorro'
+            : 'Cuenta de destino'
+      return { label: toAccountName, detail }
     }
 
     if (transaction.type === 'income') {
-      if (accountName) return { label: accountName, detail: 'Cuenta destino' }
+      if (accountName) return { label: accountName, detail: 'Cuenta de depósito' }
       return { label: 'Presupuesto', detail: 'Destino del ingreso' }
     }
 
@@ -240,7 +254,14 @@
     const amount = formatCurrency(item.amount, currency.value)
     if (item.type === 'income') return { text: `+${amount}`, colorClass: 'text-success-700' }
     if (item.type === 'expense') return { text: `-${amount}`, colorClass: 'text-danger-700' }
-    return { text: `~${amount}`, colorClass: 'text-warning-700' }
+    return { text: amount, colorClass: 'text-warning-700' }
+  }
+
+  const getCategoryBadgeVariant = (categoryType?: string) => {
+    if (categoryType === 'income') return 'primary'
+    if (categoryType === 'expense') return 'danger'
+    if (categoryType === 'savings') return 'warning'
+    return 'default'
   }
 
   // --- Init ---
@@ -368,7 +389,7 @@
         </template>
 
         <template #cell-category="{ row, value }">
-          {{ row.type === 'income' || row.type === 'savings' ? 'N/A' : value?.name }}
+          {{ row.type === 'income' || row.type === 'savings' ? '—' : value?.name || '—' }}
         </template>
 
         <template #cell-actions="{ row }">
@@ -477,7 +498,7 @@
       <div v-if="selectedTransaction" class="transaction-detail">
         <div class="transaction-detail__header">
           <div>
-            <Heading level="h2" size="lg" weight="extrabold">Detalle de Transaccion</Heading>
+            <Heading level="h2" size="lg" weight="extrabold">Detalle de Transacción</Heading>
             <Text size="xs" color="muted">
               {{ DateUtils.formatDate(selectedTransaction.transactionDate) }}
             </Text>
@@ -523,14 +544,19 @@
         <div class="transaction-detail__grid">
           <div class="transaction-detail__field">
             <Text size="xs" color="muted">Fuente</Text>
-            <Text size="xs">{{ formatText(selectedTransaction.source) || 'N/A' }}</Text>
+            <Text size="xs">{{ formatText(selectedTransaction.source) || '—' }}</Text>
           </div>
           <div class="transaction-detail__field">
-            <Text size="xs" color="muted">Categoria</Text>
-            <Text size="xs">{{ selectedTransaction.category?.name || 'N/A' }}</Text>
+            <Text size="xs" color="muted">Categoría</Text>
+            <div v-if="selectedTransaction.category" class="transaction-detail__category">
+              <Badge :variant="getCategoryBadgeVariant(selectedTransaction.category.type)">
+                {{ selectedTransaction.category.name }}
+              </Badge>
+            </div>
+            <Text v-else size="xs">—</Text>
           </div>
           <div class="transaction-detail__field">
-            <Text size="xs" color="muted">Planificacion</Text>
+            <Text size="xs" color="muted">Planificación</Text>
             <Text size="xs">
               {{
                 selectedTransaction.plannedIncomeId || selectedTransaction.plannedExpenseId
@@ -546,12 +572,12 @@
         </div>
 
         <div class="transaction-detail__description">
-          <Text size="xs" color="muted">Descripcion</Text>
-          <Text size="xs">{{ selectedTransaction.description || 'Sin descripcion' }}</Text>
+          <Text size="xs" color="muted">Descripción</Text>
+          <Text size="xs">{{ selectedTransaction.description || 'Sin descripción' }}</Text>
         </div>
 
         <div class="transaction-detail__actions">
-          <Button variant="outline" size="sm" @click="closeDetailsModal">Cerrar</Button>
+          <Button variant="ghost" size="sm" @click="closeDetailsModal">Cerrar</Button>
           <Button
             variant="primary"
             size="sm"
@@ -612,19 +638,19 @@
   }
 
   .transactions-page__endpoint-label {
-    @apply max-w-36 truncate text-sm font-semibold text-slate-900;
+    @apply max-w-36 truncate text-sm font-semibold text-slate-900 dark:text-neutral-100;
   }
 
   .transactions-page__endpoint-detail {
-    @apply max-w-36 truncate text-xs text-slate-500;
+    @apply max-w-36 truncate text-xs text-slate-500 dark:text-neutral-400;
   }
 
   .transactions-page__flow-icon {
-    @apply text-base text-slate-400;
+    @apply text-base text-slate-400 dark:text-neutral-500;
   }
 
   .transactions-page__footer {
-    @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5;
+    @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5 dark:border-neutral-700;
   }
 
   .transactions-page__footer-info {
@@ -644,7 +670,7 @@
   }
 
   .transaction-detail__amount {
-    @apply flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-4;
+    @apply flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .transaction-detail__flow {
@@ -652,11 +678,11 @@
   }
 
   .transaction-detail__endpoint {
-    @apply min-h-24 rounded-lg border border-slate-200 p-4;
+    @apply min-h-24 rounded-lg border border-slate-200 p-4 dark:border-neutral-700;
   }
 
   .transaction-detail__flow-icon {
-    @apply text-xl text-slate-400;
+    @apply text-xl text-slate-400 dark:text-neutral-500;
   }
 
   .transaction-detail__grid {
@@ -665,7 +691,11 @@
 
   .transaction-detail__field,
   .transaction-detail__description {
-    @apply rounded-lg border border-slate-100 p-3;
+    @apply rounded-lg border border-slate-100 p-3 dark:border-neutral-700;
+  }
+
+  .transaction-detail__category {
+    @apply mt-1;
   }
 
   .transaction-detail__actions {

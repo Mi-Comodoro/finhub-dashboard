@@ -236,30 +236,30 @@
   }
 
   const reasonTextMap: Record<string, string> = {
-    emergency: 'text-red-600',
-    elderly: 'text-amber-600',
-    home: 'text-orange-600',
-    school: 'text-blue-600',
-    flight: 'text-sky-600',
-    medical_services: 'text-rose-600',
-    payments: 'text-green-600',
-    trending_up: 'text-emerald-600',
-    directions_car: 'text-indigo-600',
-    shopping_cart: 'text-purple-600'
+    emergency: 'text-red-600 dark:text-red-400',
+    elderly: 'text-amber-600 dark:text-amber-400',
+    home: 'text-orange-600 dark:text-orange-400',
+    school: 'text-blue-600 dark:text-blue-400',
+    flight: 'text-sky-600 dark:text-sky-400',
+    medical_services: 'text-rose-600 dark:text-rose-400',
+    payments: 'text-green-600 dark:text-green-400',
+    trending_up: 'text-emerald-600 dark:text-emerald-400',
+    directions_car: 'text-indigo-600 dark:text-indigo-400',
+    shopping_cart: 'text-purple-600 dark:text-purple-400'
   }
 
   // 2. Mapa para el color de fondo (Contenedor)
   const reasonBgMap: Record<string, string> = {
-    emergency: 'bg-red-100',
-    elderly: 'bg-amber-100',
-    home: 'bg-orange-100',
-    school: 'bg-blue-100',
-    flight: 'bg-sky-100',
-    medical_services: 'bg-rose-100',
-    payments: 'bg-green-100',
-    trending_up: 'bg-emerald-100',
-    directions_car: 'bg-indigo-100',
-    shopping_cart: 'bg-purple-100'
+    emergency: 'bg-red-100 dark:bg-red-900/30',
+    elderly: 'bg-amber-100 dark:bg-amber-900/30',
+    home: 'bg-orange-100 dark:bg-orange-900/30',
+    school: 'bg-blue-100 dark:bg-blue-900/30',
+    flight: 'bg-sky-100 dark:bg-sky-900/30',
+    medical_services: 'bg-rose-100 dark:bg-rose-900/30',
+    payments: 'bg-green-100 dark:bg-green-900/30',
+    trending_up: 'bg-emerald-100 dark:bg-emerald-900/30',
+    directions_car: 'bg-indigo-100 dark:bg-indigo-900/30',
+    shopping_cart: 'bg-purple-100 dark:bg-purple-900/30'
   }
 
   function frequencyVariant(frequency: CompoundingFrequency): BadgeVariant {
@@ -288,6 +288,11 @@
   const distributionTotal = computed(() =>
     distributionItems.value.reduce((acc, item) => acc + item.percentage, 0)
   )
+
+  const goalsWithoutDistribution = computed(() => {
+    const distributedIds = new Set(distributionItems.value.map(i => i.goalId))
+    return goals.value.filter(g => !distributedIds.has(g.id))
+  })
 
   const showSavingDistributionForm = ref(false)
   const createSavingDistributionForm = () => {
@@ -399,23 +404,46 @@
 <template>
   <div class="goals-page">
     <div class="goals-page__header">
-      <div class="goals-page__header-text">
-        <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
-          Define tus Propositos
-        </Heading>
-        <Text size="xs" color="muted">
-          Organiza tu futuro financiero creando propósitos específicos.
-        </Text>
+      <div class="goals-page__header-top">
+        <div class="goals-page__header-text">
+          <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
+            Define tus Propositos
+          </Heading>
+          <Text size="xs" color="muted">
+            Organiza tu futuro financiero creando propósitos específicos.
+          </Text>
+        </div>
+
+        <div class="goals-page__header-buttons">
+          <Button
+            v-if="isSavingsAllocationCompleted"
+            size="sm"
+            icon="tune"
+            variant="secondary"
+            @click="openDistributionEditForm"
+          >
+            Reajustar distribución
+          </Button>
+          <Button
+            size="sm"
+            icon="add_task"
+            variant="primary"
+            :disabled="!isAccountCreated"
+            @click="createGoalsForm"
+          >
+            Nueva Meta
+          </Button>
+        </div>
       </div>
-      <div class="goals-page__header-actions">
-        <!-- Filtros de plazo -->
+
+      <div class="goals-page__header-controls">
         <div class="goals-page__filters">
           <button
             v-for="f in [
               { value: 'all', label: 'Todas' },
-              { value: 'short', label: 'Corto plazo' },
-              { value: 'medium', label: 'Mediano plazo' },
-              { value: 'long', label: 'Largo plazo' }
+              { value: 'short', label: 'Corto' },
+              { value: 'medium', label: 'Mediano' },
+              { value: 'long', label: 'Largo' }
             ]"
             :key="f.value"
             :class="[
@@ -428,7 +456,6 @@
           </button>
         </div>
 
-        <!-- Toggle vista -->
         <div class="goals-page__view-toggle">
           <Button
             variant="ghost"
@@ -447,25 +474,6 @@
             @click="viewMode = 'table'"
           />
         </div>
-
-        <Button
-          v-if="isSavingsAllocationCompleted"
-          size="sm"
-          icon="tune"
-          variant="secondary"
-          @click="openDistributionEditForm"
-        >
-          Reajustar distribución
-        </Button>
-        <Button
-          size="sm"
-          icon="add_task"
-          variant="primary"
-          :disabled="!isAccountCreated"
-          :onclick="createGoalsForm"
-        >
-          Nueva Meta
-        </Button>
       </div>
     </div>
     <AllocationSummary />
@@ -781,6 +789,22 @@
                 </span>
               </div>
 
+              <div
+                v-if="goalsWithoutDistribution.length > 0"
+                class="goals-page__distribution-new-warning"
+              >
+                <span class="material-symbols-outlined goals-page__distribution-new-warning-icon">
+                  info
+                </span>
+                <span class="goals-page__distribution-new-warning-text">
+                  {{
+                    goalsWithoutDistribution.length === 1
+                      ? '1 meta nueva sin distribución asignada'
+                      : `${goalsWithoutDistribution.length} metas nuevas sin distribución asignada`
+                  }}
+                </span>
+              </div>
+
               <Button size="sm" variant="ghost" icon="edit" @click="openDistributionEditForm">
                 Editar distribución
               </Button>
@@ -843,15 +867,23 @@
   }
 
   .goals-page__header {
-    @apply flex flex-col gap-4 md:flex-row md:items-center md:justify-between;
+    @apply flex flex-col gap-2;
+  }
+
+  .goals-page__header-top {
+    @apply flex items-start justify-between gap-4;
   }
 
   .goals-page__header-text {
-    @apply md:pr-4 xl:pr-0;
+    @apply flex flex-col gap-0.5;
   }
 
-  .goals-page__header-actions {
-    @apply flex flex-wrap items-center gap-2;
+  .goals-page__header-buttons {
+    @apply flex shrink-0 items-center gap-2;
+  }
+
+  .goals-page__header-controls {
+    @apply flex items-center justify-between gap-2;
   }
 
   /* Filtros */
@@ -861,6 +893,7 @@
 
   .goals-page__filter-chip {
     @apply rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-all hover:border-primary-500 hover:bg-primary-50;
+    @apply dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:border-primary-500 dark:hover:bg-primary-900/20;
   }
 
   .goals-page__filter-chip--active {
@@ -870,6 +903,7 @@
   /* Toggle vista */
   .goals-page__view-toggle {
     @apply flex gap-1 rounded-lg border border-neutral-200 bg-neutral-50 p-1;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-page__view-btn--active {
@@ -907,22 +941,27 @@
 
   .goals-page__table {
     @apply w-full min-w-[570px] table-fixed border-collapse bg-white;
+    @apply dark:bg-neutral-800;
   }
 
   .goals-page__table thead {
     @apply bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__table th {
     @apply px-4 py-3 text-left text-xs font-semibold text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .goals-page__table td {
     @apply border-t border-neutral-200 px-4 py-3 text-sm text-neutral-800;
+    @apply dark:border-neutral-700 dark:text-neutral-200;
   }
 
   .goals-page__table tbody tr:hover {
     @apply bg-neutral-50;
+    @apply dark:bg-neutral-700/50;
   }
 
   .goals-page__table-row {
@@ -947,6 +986,7 @@
 
   .goals-page__progress-bar {
     @apply h-2 w-16 overflow-hidden rounded-full bg-neutral-200 xl:w-24;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__progress-fill {
@@ -955,6 +995,7 @@
 
   .goals-page__progress-text {
     @apply text-xs font-medium text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .goals-page__achievement-card {
@@ -995,6 +1036,7 @@
 
   .goals-page__empty-section {
     @apply min-w-0 flex-1 rounded-md bg-slate-200;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__sidebar {
@@ -1024,6 +1066,7 @@
 
   .goals-page__accounts-wrapper {
     @apply rounded-lg border border-neutral-100 bg-white p-3;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-page__accounts-section {
@@ -1040,6 +1083,7 @@
 
   .goals-page__account-row {
     @apply flex items-center gap-2 rounded-md border border-neutral-100 bg-neutral-50 px-2 py-1.5;
+    @apply dark:border-neutral-700 dark:bg-neutral-700/50;
   }
 
   .goals-page__account-badge {
@@ -1052,6 +1096,7 @@
 
   .goals-page__account-name-text {
     @apply truncate text-xs font-semibold text-neutral-800;
+    @apply dark:text-neutral-200;
   }
 
   .goals-page__account-meta {
@@ -1064,6 +1109,7 @@
 
   .goals-page__accounts-empty--bordered {
     @apply rounded-md border border-dashed border-neutral-400 bg-neutral-100;
+    @apply dark:border-neutral-600 dark:bg-neutral-700/50;
   }
 
   .goals-page__accounts-empty-content {
@@ -1090,6 +1136,7 @@
   /* Distribución de ahorro */
   .goals-page__distribution {
     @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-3;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-page__distribution-empty {
@@ -1102,6 +1149,7 @@
 
   .goals-page__distribution-empty-title {
     @apply text-xs font-semibold text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .goals-page__distribution-empty-desc {
@@ -1119,14 +1167,17 @@
 
   .goals-page__distribution-name {
     @apply truncate text-xs text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .goals-page__distribution-pct {
     @apply text-right text-xs font-semibold text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .goals-page__distribution-track {
     @apply h-1.5 overflow-hidden rounded-full bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__distribution-fill {
@@ -1139,10 +1190,12 @@
 
   .goals-page__distribution-total--complete {
     @apply bg-success-50 text-success-700;
+    @apply dark:bg-success-900/20 dark:text-success-400;
   }
 
   .goals-page__distribution-total--warning {
     @apply bg-warning-50 text-warning-700;
+    @apply dark:bg-warning-900/20 dark:text-warning-400;
   }
 
   .goals-page__distribution-total-icon {
@@ -1150,6 +1203,19 @@
   }
 
   .goals-page__distribution-total-text {
+    @apply text-xs font-medium;
+  }
+
+  .goals-page__distribution-new-warning {
+    @apply flex items-center gap-1.5 rounded-md bg-primary-50 px-2 py-1.5 text-primary-700;
+    @apply dark:bg-primary-900/20 dark:text-primary-300;
+  }
+
+  .goals-page__distribution-new-warning-icon {
+    @apply shrink-0 text-sm leading-none;
+  }
+
+  .goals-page__distribution-new-warning-text {
     @apply text-xs font-medium;
   }
 </style>

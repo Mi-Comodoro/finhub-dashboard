@@ -62,7 +62,7 @@
   const { goals, accounts, loadGoalsData } = useGoalsApplication()
   const { accounts: payableAccounts } = useAccountsPayableApplication()
 
-  const { healthScore } = useAnalyticsApplication()
+  const { healthScore, refreshHealthScore } = useAnalyticsApplication()
 
   const isPageLoading = ref(true)
   const showQuickModal = ref(false)
@@ -230,7 +230,7 @@
         await loadDashboardData(currentBudget.value.id)
       }
 
-      await loadGoalsData()
+      await Promise.all([loadGoalsData(), refreshHealthScore()])
     } catch (error) {
       console.error('Error cargando datos del dashboard:', error)
     } finally {
@@ -364,8 +364,6 @@
           <FinancialProgressCard
             :title="'Libre Sin Comprometer'"
             :amount="available"
-            title-color="black"
-            text-color="black"
             icon-name="payments"
             variant="custom"
             icon-text-class="text-primary-600"
@@ -408,7 +406,7 @@
           <div class="dashboard-page__budget-body">
             <div class="dashboard-page__budget-donut">
               <div class="dashboard-page__budget-donut-header">
-                <Text size="sm" weight="bold" color="black">Distribución del ingreso</Text>
+                <Text size="sm" weight="bold">Distribución del ingreso</Text>
                 <Text size="xs" color="muted">
                   {{ budgetStatus === 'PLANNED' ? 'Ingreso planificado' : 'Ingreso recibido' }}:
                   {{ formatCurrency(incomeBase, currency) }}
@@ -501,7 +499,7 @@
     </div>
 
     <ModalWizard :show="openOnboarding" class="dashboard-page__modal">
-      <OnboardingWizard @completed="handleCompleteSetup" />
+      <OnboardingWizard @completed="handleCompleteSetup" @skip="openOnboarding = false" />
     </ModalWizard>
 
     <ModalWizard v-model:show="showQuickModal">
@@ -579,11 +577,13 @@
 
   .dashboard-page__card--accent {
     @apply !bg-primary-900;
+    @apply dark:!bg-primary-700;
   }
 
   .dashboard-page__card--free {
     border-left: 3px solid theme('colors.primary.500');
     @apply !bg-primary-50;
+    @apply dark:!bg-neutral-800;
   }
 
   .dashboard-page__budget-header {
@@ -596,6 +596,7 @@
 
   .dashboard-page__budget-donut {
     @apply flex flex-col gap-2 rounded-xl border border-neutral-200 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .dashboard-page__budget-donut-header {
@@ -612,18 +613,22 @@
 
   .dashboard-page__budget-kpi--needs {
     @apply border-primary-100 bg-primary-50;
+    @apply dark:border-primary-900/40 dark:bg-primary-900/20;
   }
 
   .dashboard-page__budget-kpi--wants {
     @apply border-secondary-100 bg-secondary-50;
+    @apply dark:border-secondary-900/40 dark:bg-secondary-900/20;
   }
 
   .dashboard-page__budget-kpi--savings {
     @apply border-warning-100 bg-warning-50;
+    @apply dark:border-warning-900/40 dark:bg-warning-900/20;
   }
 
   .dashboard-page__budget-track {
     @apply h-2 w-full overflow-hidden rounded-full bg-white/60;
+    @apply dark:bg-white/10;
   }
 
   .dashboard-page__budget-fill {

@@ -43,13 +43,15 @@
   }
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    if (!props.budgetId) {
+    if (!isEditMode.value && !props.budgetId) {
       console.warn('[TransactionForm] budgetId is required but was not provided')
       return
     }
     try {
       if (isEditMode.value && props.transactionId) {
-        const { success } = await updateTransaction(props.transactionId, data)
+        const { type: _type, ...updateData } = data
+        if (!updateData['categoryId']) delete updateData['categoryId']
+        const { success } = await updateTransaction(props.transactionId, updateData)
         if (success) {
           emit('onClose')
         }
@@ -87,7 +89,7 @@
     />
 
     <div class="transaction-form__content">
-      <Form :schema="formSchema" :initial-data="initialData" @submit="handleSubmit">
+      <Form :schema="formSchema" :model-value="initialData" @submit="handleSubmit">
         <template #actions>
           <div class="transaction-form__actions">
             <Button type="button" variant="ghost" size="sm" @click.stop="close">Cancelar</Button>

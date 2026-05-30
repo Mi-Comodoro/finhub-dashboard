@@ -1,9 +1,11 @@
 <script setup lang="ts">
   import TravelExpenseSection from '@/components/business/groups/travel-expense/TravelExpenseSection.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
+  import { useFriendshipsApplication } from '@/composables/application/useFriendshipsApplication'
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import { useAuthStore } from '@/stores/auth.store'
+  import { useFriendshipsStore } from '@/stores/friendships.store'
   import type { GroupRole, GroupType } from '@/types/groups.types'
 
   definePageMeta({
@@ -20,6 +22,8 @@
 
   const { selectedGroup, isLoading, fetchGroup, addMember, removeMember, deleteGroup } =
     useGroupsApplication()
+  const { loadAll } = useFriendshipsApplication()
+  const friendshipsStore = useFriendshipsStore()
 
   const groupId = computed(() => route.params.id as string)
   const currentUserId = computed(() => authStore.user?.id ?? '')
@@ -35,10 +39,15 @@
     () => currentMemberRole.value === 'OWNER' || currentMemberRole.value === 'EDITOR'
   )
 
+  // Friends available to invite
+  const availableFriends = computed(() => {
+    const memberIds = new Set(selectedGroup.value?.members.map(m => m.userId) ?? [])
+    return friendshipsStore.friends.filter(f => !memberIds.has(f.friendUserId))
+  })
+
   // Invite member state
   const showInviteModal = ref(false)
-  const inviteUserId = ref('')
-  const isInviting = ref(false)
+  const invitingUserId = ref<string | null>(null)
 
   // Delete group state
   const showDeleteModal = ref(false)
@@ -68,20 +77,18 @@
     VIEWER: 'Visualizador'
   }
 
-  const handleInvite = async () => {
-    if (!inviteUserId.value.trim()) return
-    isInviting.value = true
+  const handleInvite = async (userId: string) => {
+    invitingUserId.value = userId
     try {
-      const { success } = await addMember(groupId.value, { userId: inviteUserId.value.trim() })
+      const { success } = await addMember(groupId.value, { userId })
       if (success) {
         successToast('Miembro invitado', 'El miembro fue agregado al grupo.')
         showInviteModal.value = false
-        inviteUserId.value = ''
       } else {
         errorToast('Error', 'No se pudo agregar el miembro.')
       }
     } finally {
-      isInviting.value = false
+      invitingUserId.value = null
     }
   }
 
@@ -102,7 +109,6 @@
 
   const handleCancelInvite = () => {
     showInviteModal.value = false
-    inviteUserId.value = ''
   }
 
   const handleDeleteGroup = async () => {
@@ -120,7 +126,7 @@
   }
 
   onMounted(async () => {
-    await fetchGroup(groupId.value)
+    await Promise.all([fetchGroup(groupId.value), loadAll()])
   })
 </script>
 
@@ -235,7 +241,7 @@
       <div class="group-detail__invite-modal">
         <CardInfo
           title="Invitar Miembro"
-          sub-title="Ingresa el ID del usuario que deseas invitar."
+          sub-title="Selecciona un amigo para agregar al grupo."
           title-size="xl"
           weight="extrabold"
           level="h1"
@@ -246,24 +252,44 @@
           icon-size="md"
           icon-variant="primary"
         />
-        <Input
-          v-model="inviteUserId"
-          label="ID del usuario"
-          placeholder="Ingresa el ID del usuario"
-          :required="true"
-        />
+
+        <div v-if="availableFriends.length === 0" class="group-detail__invite-empty">
+          <span class="material-symbols-outlined group-detail__invite-empty-icon">group</span>
+          <Text size="sm" color="muted">
+            Todos tus amigos ya son miembros del grupo o no tienes amigos aún.
+          </Text>
+        </div>
+
+        <ul v-else class="group-detail__friends-list">
+          <li
+            v-for="friend in availableFriends"
+            :key="friend.friendshipId"
+            class="group-detail__friend-row"
+          >
+            <div class="group-detail__friend-avatar">
+              {{ (friend.displayName ?? friend.handle ?? '?')[0].toUpperCase() }}
+            </div>
+            <div class="group-detail__friend-info">
+              <Text size="sm" weight="medium">
+                {{ friend.displayName ?? friend.handle ?? friend.friendUserId }}
+              </Text>
+              <Text v-if="friend.handle" size="xs" color="muted">@{{ friend.handle }}</Text>
+            </div>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              :disabled="invitingUserId === friend.friendUserId"
+              @click="handleInvite(friend.friendUserId)"
+            >
+              {{ invitingUserId === friend.friendUserId ? 'Invitando...' : 'Invitar' }}
+            </Button>
+          </li>
+        </ul>
+
         <div class="group-detail__invite-actions">
           <Button type="button" variant="ghost" size="sm" @click="handleCancelInvite">
             Cancelar
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            :disabled="!inviteUserId.trim()"
-            @click="handleInvite"
-          >
-            {{ isInviting ? 'Invitando...' : 'Invitar' }}
           </Button>
         </div>
       </div>
@@ -362,6 +388,33 @@
 
   .group-detail__invite-modal {
     @apply flex flex-col gap-4;
+  }
+
+  .group-detail__invite-empty {
+    @apply flex flex-col items-center gap-2 rounded-xl border border-neutral-100 py-8 text-center;
+    @apply dark:border-neutral-700;
+  }
+
+  .group-detail__invite-empty-icon {
+    @apply text-4xl text-neutral-300;
+  }
+
+  .group-detail__friends-list {
+    @apply max-h-64 divide-y divide-neutral-100 overflow-y-auto rounded-xl border border-neutral-200;
+    @apply dark:divide-neutral-700 dark:border-neutral-700;
+  }
+
+  .group-detail__friend-row {
+    @apply flex items-center gap-3 px-4 py-3;
+  }
+
+  .group-detail__friend-avatar {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700;
+    @apply dark:bg-primary-900/30 dark:text-primary-300;
+  }
+
+  .group-detail__friend-info {
+    @apply flex flex-1 flex-col;
   }
 
   .group-detail__invite-actions {

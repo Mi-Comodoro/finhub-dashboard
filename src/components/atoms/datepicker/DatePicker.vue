@@ -227,6 +227,7 @@
 <style scoped lang="postcss">
   .date-picker {
     @apply w-[340px] rounded-2xl bg-white p-4 shadow-lg;
+    @apply dark:bg-neutral-800;
   }
   .date-picker__header {
     @apply mb-4 flex items-center justify-between;
@@ -248,11 +249,5 @@
   }
   .date-picker__footer {
     @apply mt-4 flex justify-between;
-  }
-  .date-picker__footer-btn {
-    @apply rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200;
-  }
-  .date-picker__footer-btn--apply {
-    @apply bg-teal-600 text-white hover:bg-teal-700;
   }
 </style>

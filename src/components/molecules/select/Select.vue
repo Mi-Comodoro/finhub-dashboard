@@ -2,6 +2,7 @@
   import { computed } from 'vue'
 
   import Label from '@/components/atoms/typography/Label.vue'
+  import { useTheme } from '@/composables/useTheme'
 
   import type { SelectProps } from './types'
 
@@ -33,8 +34,11 @@
     return 'select-container--default'
   })
 
-  const arrowIcon =
-    "url(\"data:image/svg+xml,%3Csvg fill='none' stroke='%2364758b' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E\")"
+  const { isDark } = useTheme()
+  const arrowIcon = computed(() => {
+    const stroke = isDark.value ? '%239ca3af' : '%2364758b'
+    return `url("data:image/svg+xml,%3Csvg fill='none' stroke='${stroke}' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`
+  })
 
   const onChange = (event: Event) => {
     const value = (event.target as HTMLSelectElement).value
@@ -109,12 +113,14 @@
   }
   .select {
     @apply w-full appearance-none rounded-md border bg-white text-slate-700 focus:outline-none disabled:bg-neutral-100 disabled:text-neutral-400;
+    @apply dark:bg-neutral-900 dark:text-neutral-100 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500;
   }
   .select--error {
     @apply border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500;
   }
   .select--normal {
     @apply border-neutral-300 focus:border-slate-500 focus:ring-1 focus:ring-slate-500;
+    @apply dark:border-neutral-600 dark:focus:border-teal-400 dark:focus:ring-teal-400;
   }
   .select--sm {
     @apply h-8 px-2 py-0 text-xs;

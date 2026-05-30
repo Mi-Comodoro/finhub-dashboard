@@ -352,15 +352,15 @@
 
 <style scoped lang="postcss">
   .form-base {
-    @apply flex flex-col;
+    @apply flex min-h-0 flex-1 flex-col;
   }
 
   .form-base__fields {
-    @apply flex flex-col gap-4;
+    @apply flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto;
   }
 
   .form-base__footer {
-    @apply sticky bottom-0 bg-white pt-4 dark:bg-slate-800;
+    @apply shrink-0 bg-white pt-4 dark:bg-neutral-800;
   }
 
   .card-radio-group {

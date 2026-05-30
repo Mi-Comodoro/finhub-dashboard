@@ -458,7 +458,7 @@
     <ModalWizard v-model:show="showNextBudgetModal">
       <div v-if="nextBudgetSource" class="next-budget-modal">
         <div class="next-budget-modal__header">
-          <span class="material-symbols-outlined next-budget-modal__icon">calendar_month</span>
+          <IconBadge icon="calendar_month" variant="primary" size="lg" />
           <Heading level="h1" size="xl" weight="extrabold" color="black">
             ¿Y el próximo mes?
           </Heading>
@@ -504,7 +504,7 @@
     <ModalWizard v-model:show="showDeficitModal">
       <div class="deficit-modal">
         <div class="deficit-modal__header">
-          <span class="material-symbols-outlined deficit-modal__icon">warning</span>
+          <IconBadge icon="warning" variant="danger" size="lg" />
           <Heading level="h1" size="xl" weight="extrabold" color="black">
             El presupuesto tiene un déficit
           </Heading>
@@ -555,6 +555,7 @@
 
   .budget-index__skeleton {
     @apply h-52 animate-pulse rounded-xl bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .budget-index__error {
@@ -567,6 +568,7 @@
 
   .budget-index__empty {
     @apply rounded-xl border border-neutral-200 bg-white;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .budget-index__grid {
@@ -575,6 +577,7 @@
 
   .budget-index__card {
     @apply flex flex-col rounded-xl bg-white p-4 transition-shadow;
+    @apply dark:bg-neutral-800;
   }
 
   .budget-index__card--active-current {
@@ -599,6 +602,7 @@
 
   .budget-index__card-title {
     @apply truncate text-neutral-900;
+    @apply dark:text-neutral-50;
   }
 
   .budget-index__card-date {
@@ -611,6 +615,7 @@
 
   .budget-index__metric {
     @apply rounded-lg bg-neutral-50 p-2;
+    @apply dark:bg-neutral-700;
   }
 
   .budget-index__metric-label {
@@ -619,6 +624,7 @@
 
   .budget-index__metric-value {
     @apply text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .budget-index__metric-value--savings {
@@ -657,10 +663,6 @@
     @apply flex flex-col items-center gap-2 text-center;
   }
 
-  .next-budget-modal__icon {
-    @apply text-4xl text-primary-500;
-  }
-
   .next-budget-modal__actions {
     @apply flex justify-end gap-3;
   }
@@ -671,10 +673,6 @@
 
   .deficit-modal__header {
     @apply flex flex-col items-center gap-2 text-center;
-  }
-
-  .deficit-modal__icon {
-    @apply text-4xl text-danger-500;
   }
 
   .deficit-modal__actions {

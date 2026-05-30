@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
   import Form from '@/components/organisms/forms/Form.vue'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
 
@@ -66,6 +67,15 @@
     }
   )
 
+  const isCustomStrategy = computed(() => formData.value.strategy === 'CUSTOM')
+  const distributionSum = computed(
+    () =>
+      (formData.value.needsLimit ?? 0) +
+      (formData.value.wantsLimit ?? 0) +
+      (formData.value.savingsLimit ?? 0)
+  )
+  const isSumValid = computed(() => !isCustomStrategy.value || distributionSum.value === 100)
+
   // Submit handler
   const handleSubmit = async (data: {
     name: string
@@ -123,12 +133,15 @@
     <div class="budget-form__content">
       <Form v-model="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
+          <AlertBanner v-if="isCustomStrategy && !isSumValid" variant="danger">
+            Los porcentajes deben sumar 100%. Actualmente suman {{ distributionSum }}%.
+          </AlertBanner>
           <div class="budget-form__actions">
             <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" size="sm">
-              {{ mode === 'create' ? 'Crear presupuesto' : 'Guardar cambios' }}
+            <Button type="submit" variant="primary" size="sm" :disabled="!isSumValid">
+              {{ mode === 'create' ? 'Crear Presupuesto' : 'Actualizar Presupuesto' }}
             </Button>
           </div>
         </template>

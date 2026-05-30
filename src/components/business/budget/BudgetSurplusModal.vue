@@ -150,6 +150,7 @@
 
   .surplus-modal__option {
     @apply flex cursor-pointer items-center gap-3 rounded-xl border-2 border-neutral-200 p-4 text-left transition-all;
+    @apply dark:border-neutral-600;
   }
 
   .surplus-modal__option:hover {

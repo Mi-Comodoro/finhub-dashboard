@@ -206,14 +206,17 @@
 
   .income-form__step2-label {
     @apply text-sm font-semibold text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .income-form__toggle {
     @apply flex overflow-hidden rounded-lg border border-neutral-200;
+    @apply dark:border-neutral-600;
   }
 
   .income-form__toggle-btn {
     @apply px-4 py-1.5 text-sm font-medium text-neutral-500 transition-colors;
+    @apply dark:text-neutral-400;
   }
 
   .income-form__toggle-btn--active {
@@ -222,14 +225,17 @@
 
   .income-form__savings-preview {
     @apply flex items-start gap-3 rounded-lg bg-primary-50 p-4;
+    @apply dark:bg-primary-900;
   }
 
   .income-form__savings-icon {
     @apply mt-0.5 shrink-0 text-primary-600;
+    @apply dark:text-primary-400;
   }
 
   .income-form__savings-text {
     @apply text-sm text-primary-700;
+    @apply dark:text-primary-300;
   }
 
   .income-form__actions {

@@ -396,10 +396,12 @@
 
   .planned-saving-list__group {
     @apply rounded-md border border-slate-200 bg-white;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .planned-saving-list__group-header {
     @apply flex cursor-pointer items-center justify-between gap-2 p-4 transition-colors hover:bg-slate-50;
+    @apply dark:hover:bg-neutral-700/50;
   }
 
   .planned-saving-list__group-title {
@@ -424,6 +426,7 @@
 
   .planned-saving-list__group-content {
     @apply border-t border-slate-100 p-4 pt-2;
+    @apply dark:border-neutral-700;
   }
 
   .planned-saving-list__items {
@@ -432,6 +435,7 @@
 
   .planned-saving-list__item {
     @apply flex items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-b-0 last:pb-0;
+    @apply dark:border-neutral-700;
   }
 
   .planned-saving-list__item-info {
@@ -492,6 +496,7 @@
 
   .planned-saving-list__goal-panel {
     @apply absolute left-0 top-full z-20 mt-1 w-56 rounded-lg border border-neutral-200 bg-white p-2 shadow-lg;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .planned-saving-list__goal-panel-title {
@@ -500,6 +505,7 @@
 
   .planned-saving-list__goal-option {
     @apply flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 disabled:cursor-wait disabled:opacity-50;
+    @apply dark:text-neutral-300 dark:hover:bg-neutral-700;
   }
 
   .planned-saving-list__goal-option-icon {

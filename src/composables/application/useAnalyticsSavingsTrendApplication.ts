@@ -1,7 +1,6 @@
 import type { Ref } from 'vue'
 
-import { useTransactionApi } from '@/composables/api/useTransactionApi'
-import { useBudgetStore } from '@/stores/budget.store'
+import { useSavingsApi } from '@/composables/api/useSavingsApi'
 import { useFinancesStore } from '@/stores/finances.store'
 import type { Currency } from '@/utils/currency'
 
@@ -21,28 +20,19 @@ const MONTH_LABELS = [
 ]
 
 export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
-  const transactionApi = useTransactionApi()
-  const budgetStore = useBudgetStore()
+  const savingsApi = useSavingsApi()
   const financesStore = useFinancesStore()
-  const currency = computed(() => financesStore.defaultCurrency as Currency)
+  const currency = computed(() => (financesStore.defaultCurrency as Currency) ?? 'COP')
 
   const fetchSavingsForYear = async (yr: number) => {
-    const hasYearLoaded = budgetStore.budgetPlans.some(b => Number(b.year) === yr)
-    if (!hasYearLoaded) {
-      const { useBudgetActions } = await import('./useBudgetActions')
-      const { fetchBudgets } = useBudgetActions()
-      await fetchBudgets(financesStore.financeId, yr)
-    }
+    const { result: goals } = await savingsApi.getGoals()
+    if (!goals?.length) return []
 
-    const budgetsForYear = budgetStore.budgetPlans.filter(b => Number(b.year) === yr)
-    const results = await Promise.all(
-      budgetsForYear.map(budget => {
-        const query = new URLSearchParams({ type: 'savings', limit: '500' }).toString()
-        return transactionApi.getTransactionsByBudget(budget.id, query)
-      })
-    )
+    const results = await Promise.all(goals.map(g => savingsApi.getGoalContributions(g.id)))
 
-    return results.flatMap(r => (r.success && r.result ? r.result.transactions : []))
+    return results
+      .flatMap(r => (r.success && r.result ? r.result : []))
+      .filter(t => new Date(t.transactionDate).getFullYear() === yr)
   }
 
   const { data: rawTransactions, pending: isLoading } = useAsyncData(

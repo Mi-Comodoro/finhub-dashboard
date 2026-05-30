@@ -88,6 +88,7 @@
       return formatDateOnly(String(value))
     }
     if (percentFields.includes(field)) return `${value}%`
+    if (field === 'status') return GOAL_STATUS_LABELS[value as GoalStatus] ?? String(value ?? '—')
     return String(value ?? '—')
   }
 </script>
@@ -230,6 +231,7 @@
 <style scoped lang="postcss">
   .goal-sidebar-panel__section {
     @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goal-sidebar-panel__details {
@@ -242,18 +244,21 @@
 
   .goal-sidebar-panel__label {
     @apply text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .goal-sidebar-panel__divider {
     @apply border-t border-neutral-100;
+    @apply dark:border-neutral-700;
   }
 
   .goal-sidebar-panel__interest {
-    @apply text-warning-600;
+    @apply text-warning-600 dark:text-warning-400;
   }
 
   .goal-sidebar-panel__row--highlight {
     @apply rounded-md bg-primary-50 px-2 py-1;
+    @apply dark:bg-primary-900/30;
   }
 
   .goal-sidebar-panel__history-list {

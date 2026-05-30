@@ -203,22 +203,27 @@
 
   .plan-modal__card {
     @apply flex flex-col gap-3 rounded-xl border border-neutral-200 p-4 transition-all duration-150;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .plan-modal__card--selectable {
     @apply cursor-pointer hover:border-primary-300 hover:bg-primary-50/40;
+    @apply dark:hover:border-primary-500 dark:hover:bg-neutral-700;
   }
 
   .plan-modal__card--active {
     @apply border-primary-200 bg-primary-50;
+    @apply dark:border-primary-600 dark:bg-neutral-700/60;
   }
 
   .plan-modal__card--selected {
     @apply border-primary-500 bg-primary-50 ring-2 ring-primary-300 ring-offset-1;
+    @apply dark:border-primary-400 dark:bg-neutral-700 dark:ring-primary-500 dark:ring-offset-neutral-900;
   }
 
   .plan-modal__card--skeleton {
     @apply h-48 animate-pulse rounded-xl bg-slate-100;
+    @apply dark:bg-neutral-700;
   }
 
   .plan-modal__card-header {
@@ -235,6 +240,7 @@
 
   .plan-modal__price-value {
     @apply text-2xl font-extrabold text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .plan-modal__features {
@@ -252,5 +258,6 @@
   /* Footer */
   .plan-modal__footer {
     @apply flex items-center gap-3 border-t border-neutral-100 pt-2;
+    @apply dark:border-neutral-700;
   }
 </style>

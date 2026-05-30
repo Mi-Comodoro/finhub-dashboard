@@ -9,6 +9,7 @@
   import type { GoalMovementItem } from '@/components/business/savings/GoalMovements.vue'
   import GoalMovements from '@/components/business/savings/GoalMovements.vue'
   import GoalSidebarPanel from '@/components/business/savings/GoalSidebarPanel.vue'
+  import GoalStatusStepper from '@/components/business/savings/GoalStatusStepper.vue'
   import GoalDetailInsights from '@/components/business/savings/insight/GoalDetailInsights.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
@@ -20,6 +21,7 @@
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
+  import type { GoalStatus } from '@/utils/goals.utils'
 
   const GoalProjectionChart = defineAsyncComponent(
     () => import('@/components/business/savings/GoalProjectionChart.vue')
@@ -633,6 +635,8 @@
             </Button>
           </div>
 
+          <GoalStatusStepper :status="(goal.status as GoalStatus) ?? 'SCHEDULED'" />
+
           <!-- Proyección de crecimiento -->
           <Card class="goal-detail__projection-card">
             <div class="goal-detail__projection-header">
@@ -731,7 +735,7 @@
   /* Deadline at risk banner */
   .goal-detail__deadline-banner {
     @apply flex flex-wrap items-start justify-between gap-4 rounded-lg border border-warning-300 bg-warning-50 px-4 py-3;
-    @apply dark:border-warning-700 dark:bg-warning-900;
+    @apply dark:border-warning-700/50 dark:bg-warning-900/20;
   }
 
   .goal-detail__deadline-banner-left {
@@ -753,6 +757,7 @@
   /* Interest banner */
   .goal-detail__interest-banner {
     @apply flex items-center justify-between gap-4 rounded-lg border border-secondary-300 bg-secondary-50 px-4 py-3;
+    @apply dark:border-secondary-700/50 dark:bg-secondary-900/20;
   }
 
   .goal-detail__interest-banner-info {
@@ -760,7 +765,7 @@
   }
 
   .goal-detail__interest-banner-icon {
-    @apply text-secondary-600;
+    @apply text-secondary-600 dark:text-secondary-400;
   }
 
   /* Layout Principal */
@@ -797,6 +802,7 @@
 
   .goal-detail__horizon-btn--active {
     @apply bg-primary-900 text-white hover:bg-primary-900 focus:ring-primary-500;
+    @apply dark:bg-primary-600 dark:hover:bg-primary-600;
   }
 
   /* Skeleton */

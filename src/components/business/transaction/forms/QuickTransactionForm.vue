@@ -124,8 +124,15 @@
     () => formData.value['type'],
     newType => {
       selectedType.value = String(newType ?? '')
+      formData.value = { ...formData.value, categoryId: '' }
     }
   )
+
+  watch(filteredCategoryOptions, newOptions => {
+    if (newOptions.length > 0 && !formData.value['categoryId']) {
+      formData.value = { ...formData.value, categoryId: newOptions[0].value }
+    }
+  })
 
   const savingsAmount = computed(() => {
     const amount = Number(pendingFormData.value?.['amount'] ?? 0)
@@ -214,8 +221,11 @@
 
         if (success) {
           show({
-            title: 'Gasto registrado',
-            description: 'El movimiento se guardó correctamente.',
+            title: type === 'income' ? 'Ingreso registrado' : 'Gasto registrado',
+            description:
+              type === 'income'
+                ? 'El ingreso se guardó correctamente.'
+                : 'El gasto se guardó correctamente.',
             type: 'success'
           })
           emit('onClose')
@@ -379,11 +389,11 @@
 
 <style lang="postcss" scoped>
   .quick-transaction-form {
-    @apply flex h-full w-full flex-col gap-6;
+    @apply flex min-h-0 w-full flex-1 flex-col gap-6;
   }
 
   .quick-transaction-form__content {
-    @apply w-full;
+    @apply flex min-h-0 flex-1 flex-col;
   }
 
   .quick-transaction-form__actions {

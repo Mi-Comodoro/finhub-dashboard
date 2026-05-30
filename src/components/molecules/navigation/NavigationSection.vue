@@ -36,6 +36,7 @@
           :on-click="item.onClick"
           :collapsed="collapsed"
           :class-name="item.className"
+          :badge="item.badge"
           @navigate="emit('navigate')"
         />
       </li>

@@ -21,20 +21,12 @@ export function useAnalyticsNetPositionApplication() {
     return 'warning'
   })
 
-  const debtRatioStatus = computed(() => {
-    const ratio = netPosition.value?.debtToIncomeRatio ?? 0
-    if (ratio < 0.3) return { label: 'Saludable', color: 'primary' }
-    if (ratio < 0.5) return { label: 'Moderado', color: 'warning' }
-    return { label: 'Alto riesgo', color: 'danger' }
-  })
-
   return {
     netPosition,
     loadingPosition,
     errorPosition,
     debtProjection,
     loadingProjection,
-    netPositionColor,
-    debtRatioStatus
+    netPositionColor
   }
 }

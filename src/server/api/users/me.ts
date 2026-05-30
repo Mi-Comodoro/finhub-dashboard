@@ -40,6 +40,7 @@ export default defineEventHandler(async event => {
       user: {
         id: data.id,
         email: data.email,
+        handle: data.handle ?? null,
         name: data.userProfile.name,
         displayName: data.userProfile.displayName,
         photo: data.userProfile.photo,

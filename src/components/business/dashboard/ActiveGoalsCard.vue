@@ -75,6 +75,7 @@
 <style scoped lang="postcss">
   .goals-card {
     @apply flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-card__header {
@@ -88,6 +89,7 @@
 
   .goals-card__goal-card {
     @apply flex flex-col gap-0.5 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-2;
+    @apply dark:border-neutral-700 dark:bg-neutral-700/50;
   }
 
   .goals-card__goal-pct {
@@ -112,6 +114,7 @@
 
   .goals-card__view-all {
     @apply flex flex-col gap-0.5 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-2 text-left transition-colors hover:border-primary-200 hover:bg-primary-50;
+    @apply dark:border-neutral-700 dark:bg-neutral-700/50 dark:hover:border-primary-700 dark:hover:bg-primary-900/20;
   }
 
   .goals-card__view-all-icon {

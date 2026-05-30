@@ -18,6 +18,7 @@
     goalId: string
     goalName: string
     percentage: number
+    isNew: boolean
   }
 
   const rows = ref<DistributionRow[]>([])
@@ -27,14 +28,28 @@
     const current = savingsAllocationsStore.savingAllocations.filter(
       a => a.budgetId === props.budgetId
     )
-    rows.value = current.map(a => {
+    const allocatedIds = new Set(current.map(a => a.goalId))
+
+    const existingRows: DistributionRow[] = current.map(a => {
       const goal = goalsStore.goals.find(g => g.id === a.goalId)
       return {
         goalId: a.goalId,
         goalName: goal?.name ?? 'Meta desconocida',
-        percentage: Number(a.percentage)
+        percentage: Number(a.percentage),
+        isNew: false
       }
     })
+
+    const newRows: DistributionRow[] = goalsStore.goals
+      .filter(g => !allocatedIds.has(g.id))
+      .map(g => ({
+        goalId: g.id,
+        goalName: g.name,
+        percentage: 0,
+        isNew: true
+      }))
+
+    rows.value = [...existingRows, ...newRows]
   })
 
   const totalPercentage = computed(() =>
@@ -82,10 +97,9 @@
     />
 
     <AlertBanner icon="info" variant="warning">
-      <Text size="sm" color="warning">
+      <Text size="xs" color="warning">
         <strong>Cambios prospectivos.</strong>
-        Los cambios aplicarán a los próximos planes de ahorro generados. Las distribuciones actuales
-        no se verán afectadas.
+        Aplican a los próximos planes generados, no a los actuales.
       </Text>
     </AlertBanner>
 
@@ -96,15 +110,18 @@
         class="distribution-edit-form__row"
         :class="{ 'distribution-edit-form__row--last': index === rows.length - 1 }"
       >
-        <Text size="sm" class="distribution-edit-form__goal-name">
-          {{ row.goalName }}
-        </Text>
+        <div class="distribution-edit-form__goal-label">
+          <Text size="xs" class="distribution-edit-form__goal-name">
+            {{ row.goalName }}
+          </Text>
+          <span v-if="row.isNew" class="distribution-edit-form__goal-new-badge">Nueva</span>
+        </div>
         <div class="distribution-edit-form__input-wrapper">
           <input
             v-model.number="row.percentage"
             type="number"
-            min="1"
-            max="99"
+            min="0"
+            max="100"
             class="distribution-edit-form__input"
           />
           <span class="distribution-edit-form__input-suffix">%</span>
@@ -112,62 +129,63 @@
       </div>
     </div>
 
-    <div
-      class="distribution-edit-form__total"
-      :class="{
-        'distribution-edit-form__total--over': isOverAllocated,
-        'distribution-edit-form__total--complete': totalPercentage === 100
-      }"
-    >
-      <Text size="sm" weight="semibold">Total asignado</Text>
-      <Text size="sm" weight="bold">{{ totalPercentage }}%</Text>
-    </div>
-
-    <AlertBanner v-if="isOverAllocated" icon="warning" variant="danger">
-      <Text size="sm" color="error">
-        La suma de porcentajes ({{ totalPercentage }}%) supera el 100%.
-      </Text>
-    </AlertBanner>
-
-    <AlertBanner
-      v-else-if="totalPercentage > 0 && totalPercentage < 100"
-      icon="info"
-      variant="warning"
-    >
-      <Text size="sm" color="warning">
-        Te quedan
-        <strong>{{ 100 - totalPercentage }}%</strong>
-        sin asignar.
-      </Text>
-    </AlertBanner>
-
-    <div class="distribution-edit-form__actions">
-      <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">Cancelar</Button>
-      <Button
-        type="button"
-        variant="primary"
-        size="sm"
-        :disabled="!canSubmit"
-        @click="handleSubmit"
+    <div class="distribution-edit-form__footer">
+      <div
+        class="distribution-edit-form__total"
+        :class="{
+          'distribution-edit-form__total--over': isOverAllocated,
+          'distribution-edit-form__total--complete': totalPercentage === 100
+        }"
       >
-        {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
-      </Button>
+        <Text size="xs" weight="semibold">Total asignado</Text>
+        <Text size="xs" weight="bold">{{ totalPercentage }}%</Text>
+      </div>
+
+      <AlertBanner v-if="isOverAllocated" icon="warning" variant="danger">
+        <Text size="xs" color="error">La suma ({{ totalPercentage }}%) supera el 100%.</Text>
+      </AlertBanner>
+
+      <AlertBanner
+        v-else-if="totalPercentage > 0 && totalPercentage < 100"
+        icon="info"
+        variant="warning"
+      >
+        <Text size="xs" color="warning">
+          Quedan
+          <strong>{{ 100 - totalPercentage }}%</strong>
+          sin asignar.
+        </Text>
+      </AlertBanner>
+
+      <div class="distribution-edit-form__actions">
+        <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">Cancelar</Button>
+        <Button
+          type="button"
+          variant="primary"
+          size="sm"
+          :disabled="!canSubmit"
+          @click="handleSubmit"
+        >
+          {{ isSubmitting ? 'Guardando...' : 'Guardar' }}
+        </Button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="postcss">
   .distribution-edit-form {
-    @apply flex h-full w-full flex-col gap-6;
+    @apply flex w-full flex-col gap-3;
   }
 
   .distribution-edit-form__rows {
-    @apply flex flex-col gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-4;
+    @apply flex flex-col gap-0.5 overflow-y-auto rounded-lg border border-neutral-200 bg-neutral-50 p-2;
     @apply dark:border-neutral-700 dark:bg-neutral-800;
+    max-height: 40vh;
   }
 
   .distribution-edit-form__row {
-    @apply flex items-center justify-between gap-4 rounded-md bg-white p-3;
+    @apply flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2;
     @apply dark:bg-neutral-900;
     @apply border-b border-neutral-100 dark:border-neutral-700;
   }
@@ -176,27 +194,41 @@
     @apply border-b-0;
   }
 
+  .distribution-edit-form__goal-label {
+    @apply flex flex-1 items-center gap-2 overflow-hidden;
+  }
+
   .distribution-edit-form__goal-name {
-    @apply flex-1 text-neutral-700 dark:text-neutral-300;
+    @apply truncate text-neutral-700 dark:text-neutral-300;
+  }
+
+  .distribution-edit-form__goal-new-badge {
+    @apply shrink-0 rounded-full bg-primary-100 px-1.5 py-0.5 text-xs font-semibold text-primary-700;
+    @apply dark:bg-primary-900/30 dark:text-primary-300;
   }
 
   .distribution-edit-form__input-wrapper {
-    @apply flex items-center gap-1;
+    @apply flex shrink-0 items-center gap-1;
   }
 
   .distribution-edit-form__input {
-    @apply w-20 rounded-md border border-neutral-300 bg-white px-2 py-1 text-right text-sm font-medium text-neutral-900 outline-none transition-colors;
+    @apply w-14 rounded-md border border-neutral-300 bg-white px-1.5 py-1 text-right text-xs font-medium text-neutral-900 outline-none transition-colors;
     @apply focus:border-primary-500 focus:ring-1 focus:ring-primary-500;
     @apply dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100;
   }
 
   .distribution-edit-form__input-suffix {
-    @apply text-sm font-semibold text-neutral-500;
+    @apply text-xs font-semibold text-neutral-500;
+  }
+
+  .distribution-edit-form__footer {
+    @apply flex flex-col gap-2;
   }
 
   .distribution-edit-form__total {
-    @apply flex items-center justify-between rounded-md border-2 border-neutral-200 bg-neutral-50 px-4 py-3;
+    @apply flex items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2;
     @apply transition-colors;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .distribution-edit-form__total--over {

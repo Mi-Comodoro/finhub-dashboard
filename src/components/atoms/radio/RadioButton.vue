@@ -128,7 +128,7 @@
   }
 
   .radio-group__label {
-    @apply text-sm font-semibold text-neutral-700;
+    @apply text-sm font-semibold text-neutral-700 dark:text-neutral-300;
   }
 
   .radio-group__options {
@@ -152,7 +152,7 @@
   }
 
   .radio-group__custom {
-    @apply flex h-4 w-4 items-center justify-center rounded-full border border-neutral-400;
+    @apply flex h-4 w-4 items-center justify-center rounded-full border border-neutral-400 dark:border-neutral-500;
   }
 
   .radio-group__input:checked + .radio-group__custom {
@@ -165,7 +165,7 @@
   }
 
   .radio-group__text {
-    @apply text-sm text-neutral-700;
+    @apply text-sm text-neutral-700 dark:text-neutral-300;
   }
 
   .radio-group__input:disabled + .radio-group__custom {
@@ -178,7 +178,7 @@
   }
 
   .radio-card-group__label {
-    @apply mb-3 block text-sm font-semibold text-neutral-700;
+    @apply mb-3 block text-sm font-semibold text-neutral-700 dark:text-neutral-300;
   }
 
   .radio-card-group__options {
@@ -195,6 +195,7 @@
 
   .radio-card-option {
     @apply relative flex cursor-pointer items-center gap-4 rounded-md border border-neutral-300 bg-neutral-50 p-4 transition-all duration-200 hover:border-neutral-300;
+    @apply dark:border-neutral-600 dark:bg-neutral-800 dark:hover:border-neutral-500;
   }
 
   /* Adjust card width for row layout */
@@ -204,6 +205,7 @@
 
   .radio-card-option--selected {
     @apply border-primary-500 bg-primary-50 text-primary-900 hover:border-primary-500;
+    @apply dark:border-primary-400 dark:bg-primary-900 dark:text-primary-100;
   }
 
   .radio-card-option--disabled {
@@ -228,18 +230,22 @@
 
   .radio-card-title {
     @apply flex items-center gap-2 text-base font-medium text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .radio-card-option--selected .radio-card-title {
     @apply text-primary-900;
+    @apply dark:text-primary-200;
   }
 
   .radio-card-description {
     @apply text-xs text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .radio-card-option--selected .radio-card-description {
     @apply text-primary-900;
+    @apply dark:text-primary-300;
   }
 
   .radio-card-check {

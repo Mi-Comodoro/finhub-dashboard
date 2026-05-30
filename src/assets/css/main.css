@@ -1,4 +1,5 @@
 @import '@fontsource-variable/inter/wght.css';
+@import './tokens.css';
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +7,9 @@
 
 @layer base {
   html {
-    @apply bg-background-light font-sans text-slate-900;
+    @apply font-sans;
+    background-color: var(--surface-base);
+    color: var(--text-primary);
   }
 }
 
@@ -30,7 +33,8 @@ table {
 
 /* Dashboard layout — global to avoid scoped CSS rendering issues */
 .dashboard-layout {
-  @apply flex h-screen w-screen flex-row overflow-hidden bg-neutral-100 dark:bg-slate-950;
+  @apply flex h-screen w-screen flex-row overflow-hidden;
+  background-color: var(--surface-base);
 }
 
 .dashboard-layout__sidebar {
