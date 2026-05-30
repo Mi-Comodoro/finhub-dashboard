@@ -2,7 +2,14 @@ import type { FetchError } from 'ofetch'
 
 import { useGroupsApi } from '@/composables/api/useGroupsApi'
 import { useGroupsStore } from '@/stores/groups.store'
-import type { AddMemberDto, CreateGroupDto, UpdateGroupDto } from '@/types/groups.types'
+import type {
+  AddMemberDto,
+  ContributionSummary,
+  CreateGroupDto,
+  CreateGroupExpenseDto,
+  GroupExpense,
+  UpdateGroupDto
+} from '@/types/groups.types'
 
 const createErrorMessage = (error: FetchError) => {
   if (error.status === 401) {
@@ -107,6 +114,64 @@ export const useGroupsApplication = () => {
     }
   }
 
+  const fetchContributions = async (
+    groupId: string
+  ): Promise<{ success: boolean; data?: ContributionSummary }> => {
+    try {
+      const { result } = await groupsApi.getContributions(groupId)
+      return { success: true, data: result }
+    } catch (err) {
+      return { success: false }
+    }
+  }
+
+  const fetchExpenses = async (
+    groupId: string
+  ): Promise<{ success: boolean; data?: GroupExpense[] }> => {
+    try {
+      const { result } = await groupsApi.getExpenses(groupId)
+      return { success: true, data: result }
+    } catch (err) {
+      return { success: false }
+    }
+  }
+
+  const createExpense = async (
+    groupId: string,
+    dto: CreateGroupExpenseDto
+  ): Promise<{ success: boolean; data?: GroupExpense }> => {
+    try {
+      const { result } = await groupsApi.createExpense(groupId, dto)
+      return { success: true, data: result }
+    } catch (err) {
+      return { success: false }
+    }
+  }
+
+  const payExpense = async (
+    groupId: string,
+    expenseId: string
+  ): Promise<{ success: boolean; data?: GroupExpense }> => {
+    try {
+      const { result } = await groupsApi.payExpense(groupId, expenseId)
+      return { success: true, data: result }
+    } catch (err) {
+      return { success: false }
+    }
+  }
+
+  const markExpenseCxp = async (
+    groupId: string,
+    expenseId: string
+  ): Promise<{ success: boolean; data?: GroupExpense }> => {
+    try {
+      const { result } = await groupsApi.markCxp(groupId, expenseId)
+      return { success: true, data: result }
+    } catch (err) {
+      return { success: false }
+    }
+  }
+
   const groups = computed(() => groupsStore.groups)
   const selectedGroup = computed(() => groupsStore.selectedGroup)
   const isLoading = computed(() => groupsStore.isLoading)
@@ -123,6 +188,11 @@ export const useGroupsApplication = () => {
     updateGroup,
     deleteGroup,
     addMember,
-    removeMember
+    removeMember,
+    fetchContributions,
+    fetchExpenses,
+    createExpense,
+    payExpense,
+    markExpenseCxp
   }
 }
