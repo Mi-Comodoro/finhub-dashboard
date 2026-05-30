@@ -1,4 +1,5 @@
 export const ACCESS_TOKEN = `access-token`
+export const REFRESH_TOKEN = `refresh-token`
 export const ACCOUNT_TYPE = `account-type`
 export const TOKEN_EXPIRES_AT = `token-expires-at`
 
@@ -6,15 +7,29 @@ export const TOKEN_EXPIRES_AT = `token-expires-at`
 export const USER_DATA = `user-data`
 export const SESSION_STATE = `session-state`
 
-// Session duration: 24 hours in milliseconds
+// Access token: 15 minutes
+export const ACCESS_TOKEN_DURATION = 15 * 60
+
+// Refresh token: 7 days
+export const REFRESH_TOKEN_DURATION = 7 * 24 * 60 * 60
+
+// Session duration: 24 hours in milliseconds (kept for backward compat)
 export const SESSION_DURATION = 24 * 60 * 60 * 1000
 
 export const COOKIE_OPTIONS = {
-  httpOnly: true, // Secure - tokens not accessible via JavaScript
+  httpOnly: true,
   sameSite: `strict`,
   path: `/`,
   secure: process.env.NODE_ENV === `production`,
-  maxAge: SESSION_DURATION / 1000 // Convert from milliseconds to seconds
+  maxAge: ACCESS_TOKEN_DURATION
+} as const
+
+export const REFRESH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: `strict`,
+  path: `/api/auth/refresh`,
+  secure: process.env.NODE_ENV === `production`,
+  maxAge: REFRESH_TOKEN_DURATION
 } as const
 
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/

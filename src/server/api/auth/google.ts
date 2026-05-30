@@ -1,4 +1,11 @@
-import { ACCESS_TOKEN, ACCOUNT_TYPE, COOKIE_OPTIONS, TOKEN_EXPIRES_AT } from '~/common/constants'
+import {
+  ACCESS_TOKEN,
+  ACCOUNT_TYPE,
+  COOKIE_OPTIONS,
+  REFRESH_COOKIE_OPTIONS,
+  REFRESH_TOKEN,
+  TOKEN_EXPIRES_AT
+} from '~/common/constants'
 import type { AuthResponse } from '~/types/auth'
 
 import { loginError } from '../utils/auth.error'
@@ -13,6 +20,7 @@ export default defineEventHandler(async event => {
   }
 
   deleteCookie(event, ACCESS_TOKEN)
+  deleteCookie(event, REFRESH_TOKEN)
   deleteCookie(event, ACCOUNT_TYPE)
   deleteCookie(event, TOKEN_EXPIRES_AT)
 
@@ -33,9 +41,10 @@ export default defineEventHandler(async event => {
     }
   })
 
-  const { token, accountType, expiresAt } = response.data
+  const { token, refreshToken, accountType, expiresAt } = response.data
 
   setCookie(event, ACCESS_TOKEN, token, COOKIE_OPTIONS)
+  setCookie(event, REFRESH_TOKEN, refreshToken, REFRESH_COOKIE_OPTIONS)
   setCookie(event, ACCOUNT_TYPE, accountType, COOKIE_OPTIONS)
   setCookie(event, TOKEN_EXPIRES_AT, String(expiresAt), COOKIE_OPTIONS)
 
