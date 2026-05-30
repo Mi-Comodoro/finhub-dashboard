@@ -1,13 +1,40 @@
 import type { DebtProjectionResponse, NetPositionResponse } from '@/types/analytics.types'
 
+export interface HealthScorePillar {
+  score: number
+  max: number
+  label: string
+  rate?: number
+  excessPct?: number
+  dti?: number
+}
+
 export interface FinancialHealthScoreResponse {
-  totalScore: number
-  cashFlowScore: number
-  savingsScore: number
-  expenseScore: number
-  debtScore: number
-  level: 'critical' | 'at_risk' | 'regular' | 'healthy' | 'optimal'
-  calculatedAt: string
+  score: {
+    total: number
+    label: string
+    pillars: {
+      cashFlow: HealthScorePillar
+      savings: HealthScorePillar
+      expenses: HealthScorePillar
+      debt: HealthScorePillar
+    }
+    insight: string
+    weakestPillar: string
+  }
+  debtRatio: {
+    ratio: number
+    label: string
+    badge: string
+    totalDebt: number
+    annualIncomeEstimate: number
+  }
+  totalTransactions: number
+  totals: {
+    income: number
+    expenses: number
+    savings: number
+  }
 }
 
 export interface SavingsTrendItem {
@@ -47,14 +74,16 @@ export function useAnalyticsApi() {
     )
 
   const getNetPosition = () =>
-    $fetch<{ success: boolean; result: NetPositionResponse }>(
-      '/api/analytics/net-position'
-    )
+    $fetch<{ success: boolean; result: NetPositionResponse }>('/api/analytics/net-position')
 
   const getDebtProjection = () =>
-    $fetch<{ success: boolean; result: DebtProjectionResponse }>(
-      '/api/analytics/debt-projection'
-    )
+    $fetch<{ success: boolean; result: DebtProjectionResponse }>('/api/analytics/debt-projection')
 
-  return { getFinancialHealthScore, getSavingsTrend, getCashFlowForecast, getNetPosition, getDebtProjection }
+  return {
+    getFinancialHealthScore,
+    getSavingsTrend,
+    getCashFlowForecast,
+    getNetPosition,
+    getDebtProjection
+  }
 }

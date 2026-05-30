@@ -1,5 +1,9 @@
 <script setup lang="ts">
-  import { Button, Card, Heading, IconBadge, Text } from '@/components/atoms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Card from '@/components/atoms/card/Card.vue'
+  import IconBadge from '@/components/atoms/icons/IconBadge.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
 
   withDefaults(
     defineProps<{
@@ -60,7 +64,7 @@
   }
 
   .tips__title {
-    @apply !text-primary-800;
+    @apply !text-primary-800 dark:!text-primary-300;
   }
 
   .tips__actions {

@@ -1,42 +1,31 @@
 <script setup lang="ts">
-  import { CardInfo } from '@/components/molecules'
+  import IconBadge from '@/components/atoms/icons/IconBadge.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
-  import { IconBadge } from '~/components/atoms'
   import type { CompoundingFrequency } from '~/types/api'
 
   const emit = defineEmits(['open-form'])
   const { frequencyMap, getRateCategory, accounts } = useAccountSavingsApplication()
 
-  const getRateClass = (annualRate: number) => {
-    const { level } = getRateCategory(annualRate)
-
-    // Mapeo de niveles a clases de Tailwind (o tus clases personalizadas)
-    const classes: Record<string, string> = {
-      Alta: 'bg-green-200 text-green-700', // Rendimiento superior
-      Media: 'bg-blue-200 text-blue-700', // Competitivo
-      Baja: 'bg-warning-200 text-warning-700', // Estándar
-      'Muy Baja': 'bg-red-200 text-red-700' // Casi nulo
+  function rateVariant(level: string): string {
+    const map: Record<string, string> = {
+      Alta: 'success',
+      Media: 'secondary',
+      Baja: 'warning',
+      'Muy Baja': 'danger'
     }
-
-    return classes[level] || 'bg-gray-200 text-gray-500'
+    return map[level] ?? 'default'
   }
 
-  const getFrequencyClass = (frequency: CompoundingFrequency) => {
-    const classes: Record<CompoundingFrequency, string> = {
-      daily: 'bg-orange-100 text-orange-600', // Diario (Alta actividad)
-      monthly: 'bg-indigo-100 text-indigo-600', // Mensual (Estándar)
-      annually: 'bg-emerald-100 text-emerald-600' // Anual (Largo plazo)
+  function frequencyVariant(frequency: CompoundingFrequency): string {
+    const map: Record<CompoundingFrequency, string> = {
+      daily: 'warning',
+      monthly: 'secondary',
+      annually: 'success'
     }
-    return classes[frequency] || 'bg-gray-100 text-gray-600'
+    return map[frequency] ?? 'default'
   }
-  const getLevelRateClass = (level: string) => {
-    if (level === 'Alta') return 'bg-green-200 text-green-700'
-    if (level === 'Media') return 'bg-blue-200 text-blue-700'
-    if (level === 'Baja') return 'bg-warning-200 text-warning-700'
-    if (level === 'Muy Baja') return 'bg-red-200 text-red-700'
 
-    return 'bg-gray-200 text-gray-500'
-  }
   const rentabiliies = ['Alta', 'Media', 'Baja', 'Muy Baja']
 </script>
 <template>
@@ -69,14 +58,14 @@
             Identifica la rentabilidad de tus cuentas segun los colores
           </Text>
 
-          <span
+          <Badge
             v-for="(rentability, index) in rentabiliies"
             :key="index"
-            class="account-savings__legend-badge"
-            :class="getLevelRateClass(rentability)"
+            :variant="rateVariant(rentability)"
+            size="xs"
           >
             {{ rentability }}
-          </span>
+          </Badge>
         </Card>
       </div>
       <div v-for="(account, index) in accounts" :key="index">
@@ -93,18 +82,15 @@
                 sub-title-color="muted"
               />
               <div class="account-savings__card-badges">
-                <span
-                  class="account-savings__badge"
-                  :class="getFrequencyClass(account.compoundingFrequency)"
-                >
+                <Badge :variant="frequencyVariant(account.compoundingFrequency)" size="xs">
                   {{ frequencyMap(account.compoundingFrequency) }}
-                </span>
-                <span
-                  class="account-savings__badge"
-                  :class="getRateClass(account.interestRate ?? 0)"
+                </Badge>
+                <Badge
+                  :variant="rateVariant(getRateCategory(account.interestRate ?? 0).level)"
+                  size="xs"
                 >
                   {{ account.interestRate.toFixed(2) }}% EA
-                </span>
+                </Badge>
               </div>
             </div>
 
@@ -148,10 +134,6 @@
     /* coming-soon-card__description class preserved */
   }
 
-  .account-savings__legend-badge {
-    @apply mr-2 rounded-md px-2 py-0.5 text-xs font-semibold;
-  }
-
   .account-savings__card {
     @apply flex w-full flex-col;
   }
@@ -162,9 +144,5 @@
 
   .account-savings__card-badges {
     @apply flex items-center gap-2;
-  }
-
-  .account-savings__badge {
-    @apply rounded-md px-2 py-0.5 text-xs font-semibold;
   }
 </style>

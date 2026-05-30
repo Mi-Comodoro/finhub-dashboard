@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { computed } from 'vue'
+
   import { type Currency, formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
 
@@ -13,7 +15,7 @@
     currency: Currency
   }>()
 
-  const value = props.row[props.column.key]
+  const value = computed(() => props.row[props.column.key])
 </script>
 
 <template>

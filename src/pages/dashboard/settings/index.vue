@@ -1,11 +1,15 @@
 <script setup lang="ts">
+  import { useDebounceFn } from '@vueuse/core'
+
   import { FINANCIAL_PROFILE_OPTIONS } from '@/common/constants'
+  import { useFriendshipsApplication } from '@/composables/application/useFriendshipsApplication'
   import { usePlansApplication } from '@/composables/application/usePlansApplication'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useAuth } from '@/composables/useAuth'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { useAuthStore } from '@/stores/auth.store'
+  import { useUserStore } from '@/stores/user.store'
   import type { PlanData } from '@/types/api'
   import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
@@ -18,12 +22,21 @@
 
   const { settings, isLoading, fetchSettings, updateSettings, updateBudgetDefaults } =
     useSettingsApplication()
-  const { user, finances, avatarUrl, avatarInitials, updatePersonalInfo, updateFinancialInfo } =
-    useProfileApplication()
+  const {
+    user,
+    finances,
+    avatarUrl,
+    avatarInitials,
+    updatePersonalInfo,
+    updateFinancialInfo,
+    onAvatarError
+  } = useProfileApplication()
   const { fetchPublicPlans, publicPlans } = usePlansApplication()
   const { logout } = useAuth()
   const { success: successToast, error: errorToast } = useFeedback()
   const authStore = useAuthStore()
+  const userStore = useUserStore()
+  const { handleUpdateHandle, handleSearchUsers } = useFriendshipsApplication()
 
   type TabId = 'profile' | 'account' | 'notifications' | 'app' | 'billing'
 
@@ -50,30 +63,42 @@
   ]
 
   const dialCodeOptions = [
-    { value: '+57',  label: '🇨🇴 +57'  },
-    { value: '+1',   label: '🇺🇸 +1'   },
-    { value: '+52',  label: '🇲🇽 +52'  },
-    { value: '+54',  label: '🇦🇷 +54'  },
-    { value: '+56',  label: '🇨🇱 +56'  },
-    { value: '+51',  label: '🇵🇪 +51'  },
-    { value: '+58',  label: '🇻🇪 +58'  },
+    { value: '+57', label: '🇨🇴 +57' },
+    { value: '+1', label: '🇺🇸 +1' },
+    { value: '+52', label: '🇲🇽 +52' },
+    { value: '+54', label: '🇦🇷 +54' },
+    { value: '+56', label: '🇨🇱 +56' },
+    { value: '+51', label: '🇵🇪 +51' },
+    { value: '+58', label: '🇻🇪 +58' },
     { value: '+593', label: '🇪🇨 +593' },
     { value: '+507', label: '🇵🇦 +507' },
     { value: '+506', label: '🇨🇷 +506' },
     { value: '+503', label: '🇸🇻 +503' },
     { value: '+502', label: '🇬🇹 +502' },
     { value: '+504', label: '🇭🇳 +504' },
-    { value: '+505', label: '🇳🇮 +505' },
+    { value: '+505', label: '🇳🇮 +505' }
   ]
 
   const parsePhone = (full: string): { dialCode: string; number: string } => {
     const codes = dialCodeOptions.map(o => o.value).sort((a, b) => b.length - a.length)
     const match = codes.find(code => full.startsWith(code))
-    return match ? { dialCode: match, number: full.slice(match.length) } : { dialCode: '+57', number: full }
+    return match
+      ? { dialCode: match, number: full.slice(match.length) }
+      : { dialCode: '+57', number: full }
   }
 
-  type ProfileSnapshot = { displayName: string; dialCode: string; phoneNumber: string; gender: 'male' | 'female' | 'prefer_not_to_say' }
-  const profileSnapshot = ref<ProfileSnapshot>({ displayName: '', dialCode: '+57', phoneNumber: '', gender: 'prefer_not_to_say' })
+  type ProfileSnapshot = {
+    displayName: string
+    dialCode: string
+    phoneNumber: string
+    gender: 'male' | 'female' | 'prefer_not_to_say'
+  }
+  const profileSnapshot = ref<ProfileSnapshot>({
+    displayName: '',
+    dialCode: '+57',
+    phoneNumber: '',
+    gender: 'prefer_not_to_say'
+  })
 
   watch(
     () => user.value,
@@ -100,11 +125,12 @@
 
   const isPhoneVerified = computed(() => user.value?.isPhoneVerified ?? false)
 
-  const isProfileDirty = computed(() =>
-    displayNameForm.value !== profileSnapshot.value.displayName ||
-    dialCodeForm.value !== profileSnapshot.value.dialCode ||
-    phoneNumberForm.value !== profileSnapshot.value.phoneNumber ||
-    genderForm.value !== profileSnapshot.value.gender
+  const isProfileDirty = computed(
+    () =>
+      displayNameForm.value !== profileSnapshot.value.displayName ||
+      dialCodeForm.value !== profileSnapshot.value.dialCode ||
+      phoneNumberForm.value !== profileSnapshot.value.phoneNumber ||
+      genderForm.value !== profileSnapshot.value.gender
   )
 
   const isSavingProfile = ref(false)
@@ -121,7 +147,12 @@
         gender: genderForm.value
       })
       if (success) {
-        profileSnapshot.value = { displayName: displayNameForm.value, dialCode: dialCodeForm.value, phoneNumber: phoneNumberForm.value, gender: genderForm.value }
+        profileSnapshot.value = {
+          displayName: displayNameForm.value,
+          dialCode: dialCodeForm.value,
+          phoneNumber: phoneNumberForm.value,
+          gender: genderForm.value
+        }
         successToast('Perfil actualizado', 'Tu información personal fue guardada correctamente.')
       } else {
         errorToast('No se pudo guardar', 'Intenta de nuevo en unos segundos.')
@@ -131,17 +162,72 @@
     }
   }
 
+  // [1b] Handle
+  const handleForm = ref('')
+  const handleStatus = ref<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle')
+  const handleSnapshot = ref('')
+  const isSavingHandle = ref(false)
+
+  const HANDLE_REGEX = /^[a-z0-9_]{3,20}$/
+
+  watch(
+    () => userStore.handle,
+    val => {
+      if (val) {
+        handleForm.value = val
+        handleSnapshot.value = val
+      }
+    },
+    { immediate: true }
+  )
+
+  const isHandleDirty = computed(
+    () => handleForm.value !== handleSnapshot.value && handleForm.value !== ''
+  )
+
+  const checkHandleAvailability = useDebounceFn(async (val: string) => {
+    if (!HANDLE_REGEX.test(val)) {
+      handleStatus.value = 'invalid'
+      return
+    }
+    if (val === handleSnapshot.value) {
+      handleStatus.value = 'idle'
+      return
+    }
+    handleStatus.value = 'checking'
+    const { results } = await handleSearchUsers(val)
+    const isTaken = results.some(r => r.handle === val)
+    handleStatus.value = isTaken ? 'taken' : 'available'
+  }, 500)
+
+  watch(handleForm, val => {
+    if (!val) {
+      handleStatus.value = 'idle'
+      return
+    }
+    checkHandleAvailability(val)
+  })
+
+  const handleSaveHandle = async () => {
+    if (!isHandleDirty.value || handleStatus.value === 'taken' || handleStatus.value === 'invalid')
+      return
+    isSavingHandle.value = true
+    const { success, error } = await handleUpdateHandle(handleForm.value)
+    isSavingHandle.value = false
+    if (success) {
+      handleSnapshot.value = handleForm.value
+      handleStatus.value = 'idle'
+      successToast('Handle actualizado', `Tu handle es ahora @${handleForm.value}`)
+    } else {
+      errorToast(error?.title ?? 'Error', error?.message ?? 'No se pudo guardar el handle')
+    }
+  }
+
   // [2] Finances (profile subsection)
   const financialProfileForm = ref('')
   const financialCurrencyForm = ref('COP')
 
   const financialProfileOptions = FINANCIAL_PROFILE_OPTIONS
-
-  const currencyOptions = [
-    { label: 'COP - Peso Colombiano', value: 'COP' },
-    { label: 'USD - Dólar Estadounidense', value: 'USD' },
-    { label: 'EUR - Euro', value: 'EUR' }
-  ]
 
   const financesSnapshot = ref({ profile: '', currency: 'COP' })
 
@@ -161,8 +247,8 @@
     { immediate: true, deep: true }
   )
 
-  const isFinancesDirty = computed(() =>
-    financialProfileForm.value !== financesSnapshot.value.profile
+  const isFinancesDirty = computed(
+    () => financialProfileForm.value !== financesSnapshot.value.profile
   )
 
   const isSavingFinances = ref(false)
@@ -176,7 +262,10 @@
         usage: finances.value?.usage ?? ''
       })
       if (success) {
-        financesSnapshot.value = { profile: financialProfileForm.value, currency: financialCurrencyForm.value }
+        financesSnapshot.value = {
+          profile: financialProfileForm.value,
+          currency: financialCurrencyForm.value
+        }
         successToast('Finanzas actualizadas', 'Tu perfil financiero fue guardado correctamente.')
       } else {
         errorToast('No se pudo guardar', 'Intenta de nuevo en unos segundos.')
@@ -204,9 +293,10 @@
     { immediate: true, deep: true }
   )
 
-  const isNotificationsDirty = computed(() =>
-    notificationsEnabledForm.value !== notificationsSnapshot.value.enabled ||
-    budgetAlertThresholdForm.value !== notificationsSnapshot.value.threshold
+  const isNotificationsDirty = computed(
+    () =>
+      notificationsEnabledForm.value !== notificationsSnapshot.value.enabled ||
+      budgetAlertThresholdForm.value !== notificationsSnapshot.value.threshold
   )
 
   const handleSaveNotifications = async () => {
@@ -215,7 +305,10 @@
       updateBudgetDefaults({ budgetAlertThreshold: budgetAlertThresholdForm.value })
     ])
     if (r1.success && r2.success) {
-      notificationsSnapshot.value = { enabled: notificationsEnabledForm.value, threshold: budgetAlertThresholdForm.value }
+      notificationsSnapshot.value = {
+        enabled: notificationsEnabledForm.value,
+        threshold: budgetAlertThresholdForm.value
+      }
       successToast('Notificaciones guardadas', 'Tus preferencias de alertas fueron actualizadas.')
     }
   }
@@ -254,22 +347,33 @@
 
   const planLabel = computed(() => {
     switch (accountType.value) {
-      case 'TRIAL': return 'Pro Trial'
-      case 'FREE': return 'Gratis'
-      case 'PLUS': return 'Plus'
-      case 'PRO': return 'Pro'
-      case 'PARTNER': return 'Partner'
-      default: return 'Gratis'
+      case 'TRIAL':
+        return 'Pro Trial'
+      case 'FREE':
+        return 'Gratis'
+      case 'PLUS':
+        return 'Plus'
+      case 'PRO':
+        return 'Pro'
+      case 'PARTNER':
+        return 'Partner'
+      default:
+        return 'Gratis'
     }
   })
 
   const planVariant = computed(() => {
     switch (accountType.value) {
-      case 'TRIAL': return trialIsUrgent.value ? 'danger' : 'warning'
-      case 'PLUS': return 'secondary'
-      case 'PRO': return 'primary'
-      case 'PARTNER': return 'success'
-      default: return 'neutral'
+      case 'TRIAL':
+        return trialIsUrgent.value ? 'danger' : 'warning'
+      case 'PLUS':
+        return 'secondary'
+      case 'PRO':
+        return 'primary'
+      case 'PARTNER':
+        return 'success'
+      default:
+        return 'default'
     }
   })
 
@@ -289,16 +393,18 @@
 
   const activePlanName = computed(() => {
     switch (accountType.value) {
-      case 'PLUS': return 'plus'
+      case 'PLUS':
+        return 'plus'
       case 'PRO':
       case 'TRIAL':
-      case 'PARTNER': return 'pro'
-      default: return 'free'
+      case 'PARTNER':
+        return 'pro'
+      default:
+        return 'free'
     }
   })
 
-  const isActivePlan = (plan: PlanData) =>
-    plan.name.toLowerCase() === activePlanName.value
+  const isActivePlan = (plan: PlanData) => plan.name.toLowerCase() === activePlanName.value
 
   const planPrice = (plan: PlanData) =>
     plan.price === 0 ? 'Gratis' : formatCurrency(plan.price, plan.currency as Currency)
@@ -337,7 +443,9 @@
           <span
             class="material-symbols-outlined settings-panel__nav-icon"
             :class="{ 'settings-panel__nav-icon--active': activeTab === tab.id && !tab.disabled }"
-          >{{ tab.icon }}</span>
+          >
+            {{ tab.icon }}
+          </span>
           <Text size="sm" :weight="activeTab === tab.id ? 'semibold' : 'normal'">
             {{ tab.label }}
           </Text>
@@ -347,12 +455,13 @@
 
       <!-- Right content -->
       <div class="settings-panel__body">
-
         <!-- [1] Perfil -->
         <template v-if="activeTab === 'profile'">
           <div class="settings-section">
             <div class="settings-section__header">
-              <span class="material-symbols-outlined settings-section__icon settings-section__icon--primary">
+              <span
+                class="material-symbols-outlined settings-section__icon settings-section__icon--primary"
+              >
                 person
               </span>
               <div>
@@ -369,6 +478,7 @@
                     :src="avatarUrl"
                     class="settings-card__avatar-img"
                     alt="avatar"
+                    @error="onAvatarError"
                   />
                   <span v-else class="settings-card__avatar-initials">{{ avatarInitials }}</span>
                 </div>
@@ -401,14 +511,78 @@
               </div>
 
               <div class="settings-card__field">
+                <Text size="sm" weight="medium" class="settings-card__label">Handle</Text>
+                <div class="settings-card__handle-row">
+                  <div class="settings-card__handle-input-wrap">
+                    <span class="settings-card__handle-at">@</span>
+                    <input
+                      v-model="handleForm"
+                      type="text"
+                      class="settings-card__input settings-card__input--handle"
+                      placeholder="tu_handle"
+                      maxlength="20"
+                    />
+                    <span
+                      v-if="handleStatus === 'checking'"
+                      class="material-symbols-outlined settings-card__handle-icon settings-card__handle-icon--checking"
+                    >
+                      sync
+                    </span>
+                    <span
+                      v-else-if="handleStatus === 'available'"
+                      class="material-symbols-outlined settings-card__handle-icon settings-card__handle-icon--ok"
+                    >
+                      check_circle
+                    </span>
+                    <span
+                      v-else-if="handleStatus === 'taken' || handleStatus === 'invalid'"
+                      class="material-symbols-outlined settings-card__handle-icon settings-card__handle-icon--error"
+                    >
+                      cancel
+                    </span>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    :disabled="
+                      isSavingHandle ||
+                      !isHandleDirty ||
+                      handleStatus === 'taken' ||
+                      handleStatus === 'invalid' ||
+                      handleStatus === 'checking'
+                    "
+                    :loading="isSavingHandle"
+                    @click="handleSaveHandle"
+                  >
+                    Guardar
+                  </Button>
+                </div>
+                <Text
+                  v-if="handleStatus === 'taken'"
+                  size="xs"
+                  color="error"
+                  class="settings-card__handle-hint"
+                >
+                  Este handle ya está en uso.
+                </Text>
+                <Text
+                  v-else-if="handleStatus === 'invalid'"
+                  size="xs"
+                  color="error"
+                  class="settings-card__handle-hint"
+                >
+                  Solo letras minúsculas, números y guiones bajos (3-20 caracteres).
+                </Text>
+                <Text v-else size="xs" color="muted" class="settings-card__handle-hint">
+                  Tu handle único para que otros te encuentren.
+                </Text>
+              </div>
+
+              <div class="settings-card__field">
                 <Text size="sm" weight="medium" class="settings-card__label">Teléfono</Text>
                 <div class="settings-card__phone-row">
                   <div class="settings-card__dial-col">
-                    <Select
-                      v-model="dialCodeForm"
-                      name="dialCode"
-                      :options="dialCodeOptions"
-                    />
+                    <Select v-model="dialCodeForm" name="dialCode" :options="dialCodeOptions" />
                   </div>
                   <div class="settings-card__phone-input-wrap">
                     <input
@@ -419,18 +593,16 @@
                     />
                     <span
                       class="material-symbols-outlined settings-card__phone-status-icon"
-                      :class="isPhoneVerified ? 'settings-card__phone-status-icon--verified' : 'settings-card__phone-status-icon--unverified'"
+                      :class="
+                        isPhoneVerified
+                          ? 'settings-card__phone-status-icon--verified'
+                          : 'settings-card__phone-status-icon--unverified'
+                      "
                     >
                       {{ isPhoneVerified ? 'check_circle' : 'cancel' }}
                     </span>
                   </div>
-                  <Button
-                    v-if="!isPhoneVerified"
-                    variant="secondary"
-                    size="sm"
-                    icon="sms"
-                    disabled
-                  >
+                  <Button v-if="!isPhoneVerified" variant="secondary" size="sm" icon="sms" disabled>
                     Verificar
                   </Button>
                 </div>
@@ -438,15 +610,17 @@
 
               <div class="settings-card__field">
                 <Text size="sm" weight="medium" class="settings-card__label">Sexo</Text>
-                <Select
-                  v-model="genderForm"
-                  name="gender"
-                  :options="genderOptions"
-                />
+                <Select v-model="genderForm" name="gender" :options="genderOptions" />
               </div>
 
               <div class="settings-card__actions">
-                <Button variant="primary" size="sm" :disabled="isSavingProfile || !isProfileDirty" :loading="isSavingProfile" @click="handleSaveProfile">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  :disabled="isSavingProfile || !isProfileDirty"
+                  :loading="isSavingProfile"
+                  @click="handleSaveProfile"
+                >
                   Guardar perfil
                 </Button>
               </div>
@@ -456,7 +630,9 @@
           <!-- Finanzas subsection -->
           <div class="settings-section settings-section--divided">
             <div class="settings-section__header">
-              <span class="material-symbols-outlined settings-section__icon settings-section__icon--warning">
+              <span
+                class="material-symbols-outlined settings-section__icon settings-section__icon--warning"
+              >
                 account_balance_wallet
               </span>
               <div>
@@ -484,11 +660,18 @@
               </div>
 
               <AlertBanner variant="warning" icon="lock">
-                La moneda se configuró al crear tu cuenta. Por ahora no puedes cambiarla desde aquí — próximamente habilitaremos esta opción.
+                La moneda se configuró al crear tu cuenta. Por ahora no puedes cambiarla desde aquí
+                — próximamente habilitaremos esta opción.
               </AlertBanner>
 
               <div class="settings-card__actions">
-                <Button variant="primary" size="sm" :disabled="isSavingFinances || !isFinancesDirty" :loading="isSavingFinances" @click="handleSaveFinances">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  :disabled="isSavingFinances || !isFinancesDirty"
+                  :loading="isSavingFinances"
+                  @click="handleSaveFinances"
+                >
                   Guardar finanzas
                 </Button>
               </div>
@@ -501,20 +684,19 @@
           <!-- Plan -->
           <div class="settings-section">
             <div class="settings-section__header">
-              <span class="material-symbols-outlined settings-section__icon settings-section__icon--primary">
+              <span
+                class="material-symbols-outlined settings-section__icon settings-section__icon--primary"
+              >
                 workspace_premium
               </span>
               <div class="plan-header__info">
                 <Heading level="h2" size="lg" weight="bold">Plan</Heading>
                 <Text size="xs" color="muted">Tu suscripción y beneficios</Text>
               </div>
-              <span class="plan-badge" :class="`plan-badge--${planVariant}`">
-                {{ planLabel }}
-              </span>
+              <Badge :variant="planVariant">{{ planLabel }}</Badge>
             </div>
 
             <div class="settings-section__body">
-
               <!-- Trial countdown -->
               <div
                 v-if="isTrial"
@@ -581,7 +763,7 @@
                   >
                     <div class="plan-card__header">
                       <Text size="sm" weight="semibold">{{ plan.name }}</Text>
-                      <span v-if="isActivePlan(plan)" class="plan-card__badge">Tu plan</span>
+                      <Badge v-if="isActivePlan(plan)" variant="primary" size="xs">Tu plan</Badge>
                     </div>
                     <div class="plan-card__price">
                       <span class="plan-card__price-value">{{ planPrice(plan) }}</span>
@@ -604,7 +786,10 @@
               </div>
 
               <!-- Manage subscription -->
-              <div v-if="accountType !== 'PARTNER'" class="settings-card__actions settings-card__actions--start">
+              <div
+                v-if="accountType !== 'PARTNER'"
+                class="settings-card__actions settings-card__actions--start"
+              >
                 <Button
                   :variant="showUpgrade ? 'primary' : 'secondary'"
                   size="sm"
@@ -613,7 +798,6 @@
                   Gestionar suscripción
                 </Button>
               </div>
-
             </div>
           </div>
         </template>
@@ -646,9 +830,7 @@
                 <Text size="sm" weight="medium" class="settings-card__label">
                   Umbral de alerta de presupuesto
                 </Text>
-                <Text size="sm" weight="bold" color="primary">
-                  {{ budgetAlertThresholdForm }}%
-                </Text>
+                <Text size="sm" weight="bold" color="primary">{{ budgetAlertThresholdForm }}%</Text>
               </div>
               <input
                 v-model.number="budgetAlertThresholdForm"
@@ -700,7 +882,6 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -708,7 +889,7 @@
 
 <style scoped lang="postcss">
   .settings-page {
-    @apply space-y-4;
+    @apply space-y-4 px-4 py-2;
   }
 
   .settings-page__header {
@@ -720,7 +901,7 @@
   }
 
   .settings-page__skeleton {
-    @apply animate-pulse rounded-xl bg-slate-100 h-32 w-full;
+    @apply h-32 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-700;
   }
 
   .settings-page__skeleton--short {
@@ -729,19 +910,19 @@
 
   /* Unified panel */
   .settings-panel {
-    @apply flex rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-sm;
+    @apply flex overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm;
     @apply dark:border-neutral-700 dark:bg-neutral-900;
   }
 
   /* Left nav */
   .settings-panel__nav {
-    @apply flex flex-col gap-0.5 w-52 shrink-0 p-2;
+    @apply flex w-52 shrink-0 flex-col gap-0.5 p-2;
     @apply border-r border-neutral-200 bg-neutral-50;
     @apply dark:border-neutral-700 dark:bg-neutral-800/50;
   }
 
   .settings-panel__nav-item {
-    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 cursor-pointer transition-colors text-left w-full;
+    @apply flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors;
     @apply text-neutral-600 hover:bg-neutral-200/60 hover:text-neutral-900;
     @apply dark:text-neutral-400 dark:hover:bg-neutral-700/40 dark:hover:text-neutral-100;
   }
@@ -757,13 +938,13 @@
   }
 
   .settings-panel__nav-soon {
-    @apply ml-auto text-[10px] font-medium rounded-full px-1.5 py-0.5;
+    @apply ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-medium;
     @apply bg-neutral-200 text-neutral-500;
     @apply dark:bg-neutral-700 dark:text-neutral-400;
   }
 
   .settings-panel__nav-icon {
-    @apply text-xl shrink-0 text-neutral-400 transition-colors;
+    @apply shrink-0 text-xl text-neutral-400 transition-colors;
   }
 
   .settings-panel__nav-icon--active {
@@ -772,7 +953,7 @@
 
   /* Right content */
   .settings-panel__body {
-    @apply flex-1 min-w-0;
+    @apply min-w-0 flex-1;
   }
 
   /* Sections */
@@ -789,7 +970,7 @@
   }
 
   .settings-section__icon {
-    @apply text-neutral-400 text-xl shrink-0;
+    @apply shrink-0 text-xl text-neutral-400;
   }
 
   .settings-section__icon--primary {
@@ -799,7 +980,6 @@
   .settings-section__icon--warning {
     @apply text-warning-600;
   }
-
 
   .settings-section__body {
     @apply space-y-4 px-6 py-5;
@@ -868,7 +1048,7 @@
   }
 
   .settings-card__phone-status-icon {
-    @apply absolute right-2.5 top-1/2 -translate-y-1/2 text-base leading-none pointer-events-none;
+    @apply pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-base leading-none;
   }
 
   .settings-card__phone-status-icon--verified {
@@ -916,38 +1096,9 @@
     @apply flex-1;
   }
 
-  /* Plan badge */
-  .plan-badge {
-    @apply rounded-full px-3 py-1 text-xs font-semibold;
-  }
-
-  .plan-badge--warning {
-    @apply bg-warning-100 text-warning-700;
-  }
-
-  .plan-badge--danger {
-    @apply bg-danger-100 text-danger-700;
-  }
-
-  .plan-badge--primary {
-    @apply bg-primary-100 text-primary-700;
-  }
-
-  .plan-badge--secondary {
-    @apply bg-secondary-100 text-secondary-700;
-  }
-
-  .plan-badge--success {
-    @apply bg-success-100 text-success-700;
-  }
-
-  .plan-badge--neutral {
-    @apply bg-neutral-100 text-neutral-600;
-  }
-
   /* Trial countdown banner */
   .trial-banner {
-    @apply rounded-xl border p-4 space-y-3;
+    @apply space-y-3 rounded-xl border p-4;
   }
 
   .trial-banner--normal {
@@ -971,7 +1122,7 @@
   }
 
   .trial-banner__days-number {
-    @apply text-3xl font-extrabold text-warning-700 leading-none;
+    @apply text-3xl font-extrabold leading-none text-warning-700;
   }
 
   .trial-banner--urgent .trial-banner__days-number {
@@ -1010,7 +1161,7 @@
   }
 
   .plan-card {
-    @apply rounded-xl border border-neutral-200 p-4 space-y-3;
+    @apply space-y-3 rounded-xl border border-neutral-200 p-4;
     @apply dark:border-neutral-700 dark:bg-neutral-800/40;
   }
 
@@ -1020,18 +1171,12 @@
   }
 
   .plan-card--skeleton {
-    @apply animate-pulse bg-neutral-100 h-44;
+    @apply h-44 animate-pulse bg-neutral-100;
     @apply dark:bg-neutral-800;
   }
 
   .plan-card__header {
     @apply flex items-center justify-between gap-2;
-  }
-
-  .plan-card__badge {
-    @apply shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold;
-    @apply bg-primary-100 text-primary-700;
-    @apply dark:bg-primary-900/40 dark:text-primary-300;
   }
 
   .plan-card__price {
@@ -1051,7 +1196,47 @@
   }
 
   .plan-card__feature-icon {
-    @apply text-sm shrink-0 text-success-500 mt-0.5;
+    @apply mt-0.5 shrink-0 text-sm text-success-500;
   }
 
+  .settings-card__handle-row {
+    @apply flex items-center gap-2;
+  }
+
+  .settings-card__handle-input-wrap {
+    @apply relative flex flex-1 items-center rounded-lg border border-neutral-300 bg-white px-3 py-2;
+    @apply focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500;
+    @apply dark:border-neutral-600 dark:bg-neutral-800;
+  }
+
+  .settings-card__handle-at {
+    @apply mr-1 font-semibold text-primary-500;
+  }
+
+  .settings-card__input--handle {
+    @apply flex-1 bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-400;
+    @apply dark:text-neutral-100;
+    border: none;
+    padding: 0;
+  }
+
+  .settings-card__handle-icon {
+    @apply ml-2 text-base;
+  }
+
+  .settings-card__handle-icon--checking {
+    @apply animate-spin text-neutral-400;
+  }
+
+  .settings-card__handle-icon--ok {
+    @apply text-success-500;
+  }
+
+  .settings-card__handle-icon--error {
+    @apply text-danger-500;
+  }
+
+  .settings-card__handle-hint {
+    @apply mt-1;
+  }
 </style>

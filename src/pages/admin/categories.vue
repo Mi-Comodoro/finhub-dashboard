@@ -8,7 +8,7 @@
   import Input from '@/components/molecules/input/Input.vue'
   import SearchInput from '@/components/molecules/input/SearchInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import type { CategoriesData } from '@/types/api'
@@ -16,7 +16,10 @@
   definePageMeta({
     layout: 'dashboard',
     ssr: false,
-    middleware: ['auth', 'admin']
+    middleware: ['auth', 'admin'],
+    title: 'Categorías',
+    breadcrumb: 'Categorías',
+    parents: ['Admin']
   })
 
   const { fetchCategories, createCategory, updateCategory, categories, isLoading } =
@@ -64,7 +67,9 @@
   const ITEMS_PER_PAGE = 15
   const currentPage = ref(1)
 
-  const totalPages = computed(() => Math.max(1, Math.ceil(filteredCategories.value.length / ITEMS_PER_PAGE)))
+  const totalPages = computed(() =>
+    Math.max(1, Math.ceil(filteredCategories.value.length / ITEMS_PER_PAGE))
+  )
 
   const paginatedCategories = computed(() => {
     const start = (currentPage.value - 1) * ITEMS_PER_PAGE
@@ -207,9 +212,7 @@
         <Heading level="h1" size="2xl" weight="extrabold">Categorías</Heading>
         <Text size="xs" color="muted">Gestión de categorías del sistema</Text>
       </div>
-      <Button size="sm" variant="primary" icon="add" @click="openCreate">
-        Nueva categoría
-      </Button>
+      <Button size="sm" variant="primary" icon="add" @click="openCreate">Nueva categoría</Button>
     </div>
 
     <section class="admin-categories-page__table-section">
@@ -418,7 +421,8 @@
         </div>
         <Text size="sm" color="muted">
           ¿Estás seguro de que deseas eliminar
-          <strong>{{ categoryToDelete?.name }}</strong>? Esta acción no se puede deshacer.
+          <strong>{{ categoryToDelete?.name }}</strong>
+          ? Esta acción no se puede deshacer.
         </Text>
         <div class="cat-modal__actions">
           <Button size="sm" variant="ghost" @click="cancelDelete">Cancelar</Button>

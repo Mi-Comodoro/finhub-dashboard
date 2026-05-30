@@ -132,10 +132,8 @@ export const goalsFieldsSchema = (
     }
   },
   layout: [
-    {
-      type: 'grid',
-      columns: 2,
-      fields: ['name', 'accountId', 'reason', 'targetDate', 'targetAmount']
-    }
+    { type: 'row', fields: ['name'] },
+    { type: 'grid', columns: 2, fields: ['accountId', 'reason'] },
+    { type: 'grid', columns: 2, fields: ['targetDate', 'targetAmount'] }
   ]
 })

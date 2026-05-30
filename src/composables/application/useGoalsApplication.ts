@@ -6,7 +6,7 @@ import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useGoalsStore } from '@/stores/goals.store'
 import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
-import type { GoalsData } from '~/types/api'
+import type { GoalsData, PlannedSaving, Transaction } from '~/types/api'
 
 import { usePlannedIncomeApplication } from './usePlannedIncomeApplication'
 
@@ -180,6 +180,28 @@ export const useGoalsApplication = () => {
     }
   }
 
+  const fetchGoalContributions = async (
+    goalId: string
+  ): Promise<{ success: boolean; result: Transaction[] }> => {
+    try {
+      return await savingsApi.getGoalContributions(goalId)
+    } catch (error) {
+      console.error('Error fetching goal contributions:', error)
+      return { success: false, result: [] }
+    }
+  }
+
+  const fetchGoalSummary = async (
+    goalId: string
+  ): Promise<{ success: boolean; result: { totalSavings: number; totalInterest: number } }> => {
+    try {
+      return await savingsApi.getGoalSummary(goalId)
+    } catch (error) {
+      console.error('Error fetching goal summary:', error)
+      return { success: false, result: { totalSavings: 0, totalInterest: 0 } }
+    }
+  }
+
   const addContribution = async (
     goalId: string,
     data: {
@@ -187,10 +209,10 @@ export const useGoalsApplication = () => {
       date: string
       note?: string
     }
-  ): Promise<{ success: boolean }> => {
+  ): Promise<{ success: boolean; contribution?: PlannedSaving }> => {
     try {
       const response = await savingsApi.createContribution(goalId, data)
-      return response
+      return { success: response.success, contribution: response.result }
     } catch (error) {
       console.error('Error adding contribution:', error)
       return { success: false }
@@ -215,10 +237,26 @@ export const useGoalsApplication = () => {
     return { success: !savingsAllocationsStore.error }
   }
 
+  const addGoalInterest = async (goalId: string, amount: number): Promise<{ success: boolean }> => {
+    try {
+      const response = await savingsApi.registerGoalInterest(
+        goalId,
+        amount,
+        new Date().toISOString()
+      )
+      return { success: response.success }
+    } catch (error) {
+      console.error('Error registering goal interest:', error)
+      return { success: false }
+    }
+  }
+
   return {
     fetchGoals,
     fetchGoalDetail,
     fetchGoalHistory,
+    fetchGoalContributions,
+    fetchGoalSummary,
     addSavingGoal,
     loadGoalsData,
     loadSavingAllocations,
@@ -228,6 +266,7 @@ export const useGoalsApplication = () => {
     editGoal,
     removeGoal,
     addContribution,
+    addGoalInterest,
     fetchAccounts,
     fetchSavingAllocations,
     goals,

@@ -4,7 +4,11 @@
    * Organism-level component for displaying user profile header
    */
 
-  import { Badge, Card, Icon, StatusIndicator, UserAvatar } from '@/components/atoms'
+  import UserAvatar from '@/components/atoms/avatar/UserAvatar.vue'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Card from '@/components/atoms/card/Card.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import StatusIndicator from '@/components/atoms/status-indicator/StatusIndicator.vue'
 
   import type { ProfileHeaderProps } from './types/profile-header.types'
 

@@ -7,12 +7,12 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 días
 export const useOnboardingPlan = () => {
   const planCookie = useCookie<PlanType | null>(COOKIE_NAME, {
     maxAge: COOKIE_MAX_AGE,
-    default: () => null,
+    default: () => null
   })
 
   const refCookie = useCookie<string | null>(REF_COOKIE_NAME, {
     maxAge: COOKIE_MAX_AGE,
-    default: () => null,
+    default: () => null
   })
 
   const setPlan = (plan: PlanType) => {

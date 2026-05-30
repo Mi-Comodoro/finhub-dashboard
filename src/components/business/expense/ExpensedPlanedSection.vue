@@ -1,9 +1,10 @@
 <script setup lang="ts">
   import { useDebounceFn } from '@vueuse/core'
 
-  import type { Column, RowData } from '@/components/organisms'
+  import type { Column, RowData } from '@/components/organisms/datatable/types'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { useExpenseSectionApplication } from '@/composables/application/useExpenseSectionApplication'
+  import { useFeedback } from '@/composables/useFeedBack'
 
   const emit = defineEmits(['open-form', 'edit', 'view', 'remove', 'mark-as-payed'])
 
@@ -19,6 +20,7 @@
   const { setBudget, fetchExpenses, setSearch, setBucket, setPage, expenses, filters, meta } =
     useExpenseSectionApplication()
   const { completeExpense } = useExpenseApplication()
+  const { error: errorToast } = useFeedback()
 
   // 🔍 search local (UI)
   const search = ref('')
@@ -75,6 +77,7 @@
     try {
       const { success } = await completeExpense(row.id as string)
       if (success) emit('mark-as-payed', row)
+      else errorToast('Error al pagar', 'No se pudo marcar el gasto como pagado.')
     } finally {
       markingAsPaidId.value = null
     }

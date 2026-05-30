@@ -77,19 +77,3 @@ export interface CardProps extends BaseUIProps {
   as?: 'div' | 'section' | 'article'
   variant?: 'default' | 'elevated' | 'outline' | 'primary'
 }
-
-export interface MetricCardProps extends BaseUIProps {
-  title: string
-  value?: number | string
-  subtitle?: string
-  variant?: 'income' | 'expense' | 'available' | 'neutral' | 'undefined'
-  size?: Extract<ComponentSize, 'sm' | 'md' | 'lg'>
-  icon?: string
-  iconClass?: string
-  percentage?: number
-  percentageText?: string
-  currency?: boolean
-  currencyCode?: string
-  decimals?: number
-  hiddenValue?: boolean
-}

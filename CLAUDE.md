@@ -3,12 +3,24 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Entorno de desarrollo
+
 - **Node.js requerido: v22.12.0+** (los bindings nativos de oxc-parser requieren >=22.12.0)
 - **Package manager: pnpm** (no npm ni yarn)
-- ESLint falla silenciosamente o no resuelve plugins
-  correctamente con versiones anteriores a Node 22.
+- ESLint falla silenciosamente o no resuelve plugins correctamente con versiones anteriores a Node 22.
 - Verificar versión activa: `node --version`
 - Cambiar con nvm: `nvm use` (lee .nvmrc automáticamente)
+
+## Stack y versiones actuales
+
+| Tecnología    | Versión  |
+|---------------|----------|
+| Nuxt          | 4.3.1    |
+| Vue           | 3.x      |
+| Pinia         | 3.0.4    |
+| TailwindCSS   | 3.4.17   |
+| TypeScript    | 5.8.3    |
+| Node.js       | ≥22.12.0 |
+| pnpm          | 11.1.2   |
 
 ## Commands
 
@@ -237,25 +249,51 @@ Empty State (estándar):
 
 Gestor de paquetes: pnpm (no npm)
 
-## Nuxt UI
+## Design System Components
 
-Integrado como librería de presentación.
-Regla: solo render y feedback visual — nunca toca lógica de negocio.
+> ⚠️ **`@nuxt/ui` NO está instalado en este proyecto.** No usar ningún componente `U*` (UBadge, USlideover, UProgress, UPopover, UButton, UIcon, etc.). Están referenciados en código viejo pero fallan en runtime.
 
-### Componentes permitidos
+### Componentes propios del proyecto
 
-UIcon, UButton, UBadge, UModal, USlideover, UTooltip, UPopover,
-useToast(), USkeleton, UProgress, UAvatar, UTabs, UAccordion, UAlert
+**Badge** — indicadores de estado, etiquetas:
+```vue
+<Badge variant="danger" size="sm">Vencido</Badge>
+<Badge variant="success">Activo</Badge>
+<Badge variant="default" :rounded="false">Neutro</Badge>
+```
+Variantes: `default` · `primary` · `secondary` · `success` · `warning` · `danger` · `info`
+Sizes: `xs` · `sm` · `md` · `lg`
 
-### Prohibido hasta E6
+**ModalWizard** — reemplaza `USlideover` y `UModal`:
+```vue
+<ModalWizard :show="showPanel">
+  <div class="my-panel">
+    <CardInfo title="Título" icon="icon_name" ... />
+    <!-- contenido -->
+    <Button variant="ghost" size="sm" @click="showPanel = false">Cerrar</Button>
+  </div>
+</ModalWizard>
+```
 
-UForm, UFormField, UInput, USelect, UCheckbox, URadio, UTextarea
-Motivo: Form.vue con schema es el estándar vigente (ADR-006)
+**ProgressBar** — reemplaza `UProgress`:
+```vue
+<ProgressBar :value="75" :max="100" variant="primary" />
+```
+
+**Button** — botones de acción:
+```vue
+<Button variant="primary" size="sm" @click="handleAction">Guardar</Button>
+<Button variant="ghost" size="sm" @click="closePanel">Cerrar</Button>
+```
 
 ### Iconos
 
-UIcon con Iconify — Material Icons eliminado.
-Ejemplo: `<UIcon name="i-material-symbols-savings" />`
+**Material Symbols Outlined** (via Google Fonts CDN — ya configurado en `nuxt.config.ts`):
+```html
+<span class="material-symbols-outlined">savings</span>
+<span class="material-symbols-outlined">person</span>
+```
+No usar `@heroicons/vue` — actualmente sin imports en el proyecto.
 
 ## CardInfo
 
@@ -403,6 +441,44 @@ const getUser = async (id: string) => {
 - Better IDE autocomplete and tooling
 - Clear separation between code and content
 
+## Flujo de ramas (Sprint 12)
+
+```
+main        ← producción (nunca tocar directamente)
+develop     ← rama de integración
+  └── feature/<módulo>-<descripción>   ← trabajo activo
+  └── fix/<descripción>
+  └── docs/<descripción>
+```
+
+**Reglas:**
+- Crear feature branches desde `develop`, nunca desde `main`.
+- Hacer PR de feature → develop. Nunca push directo a develop o main.
+- Convención de nombres: `feature/groups-detail`, `fix/modal-handler`, `docs/update-claude-md`.
+
+## Variables de entorno requeridas
+
+Agregar al `.env` local (y mantener `.env.example` actualizado):
+
+```bash
+NODE_ENV=development
+
+# Backend (BFF y API)
+NUXT_PUBLIC_API_BASE=http://localhost:3005/api/v1
+NUXT_PUBLIC_WS_BASE=http://localhost:3005
+
+# Firebase (autenticación Google)
+FB_API_KEY=
+FB_AUTH_DOMAIN=
+FB_PROJECT_ID=
+FB_STORAGE_BUCKET=
+FB_MESSAGING_SENDER_ID=
+FB_APP_ID=
+FB_MEASUREMENT_ID=
+```
+
+> ⚠️ `.env.example` tiene `API_URL` que ya no existe — usar `NUXT_PUBLIC_API_BASE` y `NUXT_PUBLIC_WS_BASE`.
+
 ## Important Files
 
 **Source of truth for architecture:**
@@ -438,20 +514,29 @@ import { CHART_COLORS } from '@/utils/design-tokens'
 
 ## What NOT to Do
 
-- Never use `$fetch` outside `composables/api/`
-- Never put business logic in components, pages, or stores
-- Never skip the application layer (pages must call application, not stores)
-- Never put business components in `components/business/` root
-- Never use Tailwind classes directly in templates (use @apply)
-- Never use Chart.js (use ECharts)
-- Never skip `ClientOnly` wrapper for VChart
-- Never modify existing component public APIs without checking usage
-- Never use Spanish for variable names, function names, constants, types, or classes (only UI text allowed in Spanish)
-- Never create a sidebar panel without wrapping it in `<SidebarPage>`
-- Never use `Number(optional)` without `?? 0` fallback
-- Never duplicate `formatMonthsToGoal` or `getProgressPercentage` — import from `utils/goal-formatters`
-- Never change the icon of CardInfo based on create/edit mode
-- Never use UForm, UInput, USelect in forms — use Form.vue with schema (ADR-006, until E6)
+- ❌ Never use `$fetch` outside `composables/api/`
+- ❌ Never put business logic in components, pages, or stores
+- ❌ Never skip the application layer (pages must call application, not stores)
+- ❌ Never put business components in `components/business/` root
+- ❌ Never use Tailwind classes directly in templates (use @apply)
+- ❌ Never use Chart.js (use ECharts)
+- ❌ Never skip `ClientOnly` wrapper for VChart
+- ❌ Never modify existing component public APIs without checking usage
+- ❌ Never use Spanish for variable names, function names, constants, types, or classes (only UI text allowed in Spanish)
+- ❌ Never create a sidebar panel without wrapping it in `<SidebarPage>`
+- ❌ Never use `Number(optional)` without `?? 0` fallback
+- ❌ Never duplicate `formatMonthsToGoal` or `getProgressPercentage` — import from `utils/goal-formatters`
+- ❌ Never change the icon of CardInfo based on create/edit mode
+- ❌ Never use UForm, UInput, USelect in forms — use Form.vue with schema (ADR-006)
+- ❌ **Never use any `U*` components** — `@nuxt/ui` no está instalado. Fallan en runtime. Usar: `Badge`, `ModalWizard`, `ProgressBar`, `Button`
+- ❌ Never use `UBadge` → usar `Badge` con `variant` apropiado
+- ❌ Never use `USlideover` / `UModal` → usar `ModalWizard :show="bool"`
+- ❌ Never use `UProgress` → usar `ProgressBar`
+- ❌ Never use `USkeleton` → usar `@apply animate-pulse rounded-xl bg-slate-100 h-[N] w-full`
+- ❌ Never use `UIcon` con Iconify — usar `<span class="material-symbols-outlined">icon_name</span>`
+- ❌ Never use `@heroicons/vue` — sin imports en el proyecto, probablemente dead dependency
+- ❌ Never push directo a `develop` o `main`
+- ❌ Never usar ad-hoc empty states — usar `<EmptyStateIllustration type="..." />`
 
 ## Common Patterns
 
@@ -531,19 +616,24 @@ NEVER use native `confirm()`. Always use `ModalWizard` with reactive state:
 
 ## Project Status (update each session)
 
-| Module       | Frontend | Backend |
-|--------------|----------|---------|
-| Auth         | ✅ 100%  | ✅ 100% |
-| Dashboard    | ✅ 100%  | ✅ 100% |
-| Budgets      | ✅ 100%  | ✅ 100% |
-| Savings      | ✅ 100%  | ✅ 100% |
-| Profile      | ✅ 100%  | ✅ 100% |
-| Transactions | ✅ 100%  | ✅ 100% |
-| Expenses     | ✅ 100%  | ✅ 100% |
-| Income       | ✅ 100%  | ✅ 100% |
-| Settings     | ✅ 100%  | ⚠️ endpoints pending |
-| Reports      | ❌ 0%    | ❌ 0%   |
+| Módulo          | Frontend     | Backend      |
+|-----------------|--------------|--------------|
+| Auth            | ✅ 100%      | ✅ 100%      |
+| Dashboard       | ✅ 100%      | ✅ 100%      |
+| Budgets         | ✅ 100%      | ✅ 100%      |
+| Savings         | ✅ 100%      | ✅ 100%      |
+| Profile         | ✅ 100%      | ✅ 100%      |
+| Transactions    | ✅ 100%      | ✅ 100%      |
+| Expenses        | ✅ 100%      | ✅ 100%      |
+| Income          | ✅ 100%      | ✅ 100%      |
+| Groups          | ✅ 100%      | ✅ 100%      |
+| Admin           | ✅ 100%      | ✅ 100%      |
+| Settings        | ✅ 100%      | ⚠️ parcial   |
+| Reports         | ❌ 0%        | ❌ 0%        |
 
 Health Score: 98%
-Pending technical debt: Tailwind @apply migration — 22 business components
+Deuda técnica pendiente:
+- Tailwind @apply migration — 22 business components
+- 5 páginas admin con empty states ad-hoc (en vez de EmptyStateIllustration)
+- `.env.example` desactualizado (tiene `API_URL` obsoleto, faltan `NUXT_PUBLIC_*`)
 

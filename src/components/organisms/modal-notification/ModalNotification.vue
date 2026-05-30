@@ -6,7 +6,10 @@
 <script setup lang="ts">
   import { ref, watch } from 'vue'
 
-  import { Button, Heading, IconBadge, Text } from '@/components/atoms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import IconBadge from '@/components/atoms/icons/IconBadge.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
 
   import type {
     ModalNotificationProps,

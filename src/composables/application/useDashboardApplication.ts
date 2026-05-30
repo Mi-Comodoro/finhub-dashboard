@@ -16,15 +16,14 @@ export const useDashboardApplication = () => {
    */
   const loadDashboardData = async (budgetId: string) => {
     try {
-      // Configurar el filtro de budget en expenses
       expensesStore.setBudget(budgetId)
       const { useExpenseApplication } = await import('./useExpenseApplication')
       const { useTransactionApplication } = await import('./useTransactionApplication')
-      // Cargar datos en paralelo
       const { fetchExpenses } = useExpenseApplication()
-      const { fetchByBudget } = useTransactionApplication()
+      const { fetchByBudget, fetchTotals } = useTransactionApplication()
       await Promise.all([
         fetchByBudget(budgetId, { limit: 100 }),
+        fetchTotals(budgetId),
         fetchExpenses(),
         plannedSavingStore.fetchByBudget(budgetId)
       ])
@@ -36,21 +35,34 @@ export const useDashboardApplication = () => {
     }
   }
 
-  // Datos expuestos del dashboard
   const currency = computed(() => financesStore.defaultCurrency)
   const totalExpenses = computed(() => expensesStore.totalPaid)
+  const totalCommittedExpenses = computed(() => expensesStore.totalCommitted)
   const expenses = computed(() => expensesStore.expenses)
   const totalSavingGenerated = computed(() => plannedSavingStore.totalSavingGenerated)
-  const totalIncomeReceived = computed(() => transactionStore.totalIncomeReceived)
+  const totalSavingTarget = computed(() => plannedSavingStore.totalSavingTarget)
+  const totalSavingFromPlan = computed(() => plannedSavingStore.totalSavingFromPlan)
+  const totalTransactionSavings = computed(
+    () => transactionStore.totals?.savings ?? transactionStore.totalSavings
+  )
+  const totalIncomeReceived = computed(
+    () => transactionStore.totals?.income ?? transactionStore.totalIncomeReceived
+  )
   const totalPlanned = computed(() => expensesStore.totalPlanned + expensesStore.totalPaid)
-  const totalExpensesPaid = computed(() => transactionStore.totalExpensesPaid)
+  const totalExpensesPaid = computed(
+    () => transactionStore.totals?.expense ?? transactionStore.totalExpensesPaid
+  )
 
   return {
     loadDashboardData,
     currency,
     totalExpenses,
+    totalCommittedExpenses,
     expenses,
     totalSavingGenerated,
+    totalSavingTarget,
+    totalSavingFromPlan,
+    totalTransactionSavings,
     totalIncomeReceived,
     totalPlanned,
     totalExpensesPaid

@@ -1,4 +1,10 @@
-import type { GoalHistory, GoalsData, SavingAllocationData } from '@/types/api/'
+import type {
+  GoalHistory,
+  GoalsData,
+  PlannedSaving,
+  SavingAllocationData,
+  Transaction
+} from '@/types/api'
 import type { PlannedSavingSummary } from '~/types/domain'
 
 export function useSavingsApi() {
@@ -56,21 +62,65 @@ export function useSavingsApi() {
       note?: string
     }
   ) =>
-    $fetch<{ success: boolean }>(`/api/savings/goals/${goalId}/contributions`, {
+    $fetch<{ success: boolean; result: PlannedSaving }>(
+      `/api/savings/goals/${goalId}/contributions`,
+      {
+        method: 'POST',
+        body: { amount: data.amount, date: data.date, notes: data.note }
+      }
+    )
+
+  const updateGoalStatus = async (id: string, status: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/savings/goals/${id}/status`, {
+      method: 'PATCH',
+      body: { status }
+    })
+
+  const getGoalContributions = async (goalId: string) =>
+    $fetch<{ success: boolean; result: Transaction[] }>(
+      `/api/savings/goals/${goalId}/contributions`,
+      {
+        method: 'GET'
+      }
+    )
+
+  const getGoalSummary = async (goalId: string) =>
+    $fetch<{ success: boolean; result: { totalSavings: number; totalInterest: number } }>(
+      `/api/savings/goals/${goalId}/summary`,
+      { method: 'GET' }
+    )
+
+  const registerGoalInterest = async (goalId: string, amount: number, date: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/savings/goals/${goalId}/interest`, {
       method: 'POST',
-      body: data
+      body: { amount, date }
     })
 
   const createPlannedSaving = async (data: {
     amount: number
     budgetId: string
-    plannedIncomeId: string
-    status: 'pending'
+    plannedIncomeId?: string
+    savingGoalId?: string
   }) =>
     $fetch<{ success: boolean; result: PlannedSavingSummary }>('/api/savings/planned', {
       method: 'POST',
       body: data
     })
+
+  const assignGoalToPlannedSaving = async (id: string, savingGoalId: string) =>
+    $fetch<{ success: boolean; result: PlannedSavingSummary }>(`/api/savings/planned/${id}/goal`, {
+      method: 'PATCH',
+      body: { savingGoalId }
+    })
+
+  const replaceAllocations = async (
+    budgetId: string,
+    distributions: Array<{ goalId: string; percentage: number }>
+  ) =>
+    $fetch<{ success: boolean; result: SavingAllocationData[] }>(
+      `/api/savings/allocations/${budgetId}`,
+      { method: 'PATCH', body: { distributions } }
+    )
 
   return {
     getPlannedSavingsByBudget,
@@ -80,10 +130,16 @@ export function useSavingsApi() {
     createGoal,
     getGoals,
     updateGoal,
+    updateGoalStatus,
     deleteGoal,
     getGoal,
     getGoalHistory,
     createContribution,
-    createPlannedSaving
+    getGoalContributions,
+    getGoalSummary,
+    registerGoalInterest,
+    createPlannedSaving,
+    assignGoalToPlannedSaving,
+    replaceAllocations
   }
 }

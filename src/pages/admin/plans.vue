@@ -9,7 +9,7 @@
   import MoneyInput from '@/components/molecules/input/MoneyInput.vue'
   import SearchInput from '@/components/molecules/input/SearchInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { usePlansApplication } from '@/composables/application/usePlansApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import type { PlanData } from '@/types/api'
@@ -17,11 +17,13 @@
   definePageMeta({
     layout: 'dashboard',
     ssr: false,
-    middleware: ['auth', 'admin']
+    middleware: ['auth', 'admin'],
+    title: 'Planes',
+    breadcrumb: 'Planes',
+    parents: ['Admin']
   })
 
-  const { fetchPlans, createPlan, updatePlan, deletePlan, plans, isLoading } =
-    usePlansApplication()
+  const { fetchPlans, createPlan, updatePlan, deletePlan, plans, isLoading } = usePlansApplication()
 
   const { success: successToast, error: errorToast } = useFeedback()
 
@@ -227,9 +229,7 @@
         <Heading level="h1" size="2xl" weight="extrabold">Planes</Heading>
         <Text size="xs" color="muted">Gestión de planes del sistema</Text>
       </div>
-      <Button size="sm" variant="primary" icon="add" @click="openCreate">
-        Nuevo plan
-      </Button>
+      <Button size="sm" variant="primary" icon="add" @click="openCreate">Nuevo plan</Button>
     </div>
 
     <section class="admin-plans-page__table-section">
@@ -283,11 +283,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="plan in paginatedPlans"
-              :key="plan.id"
-              class="admin-plans-page__tr"
-            >
+            <tr v-for="plan in paginatedPlans" :key="plan.id" class="admin-plans-page__tr">
               <td class="admin-plans-page__td">
                 <Text size="sm" weight="medium">{{ plan.name }}</Text>
               </td>
@@ -406,9 +402,7 @@
                 :model-value="featureInput"
                 @update:model-value="val => (featureInput = String(val))"
               />
-              <Button type="button" size="sm" variant="primary" @click="addFeature">
-                Agregar
-              </Button>
+              <Button type="button" size="sm" variant="primary" @click="addFeature">Agregar</Button>
             </div>
             <ul v-if="form.features.length > 0" class="plans-modal__feature-list">
               <li
@@ -489,7 +483,8 @@
         </div>
         <Text size="sm" color="muted">
           ¿Estás seguro de que deseas eliminar
-          <strong>{{ planToDelete?.name }}</strong>? Esta acción no se puede deshacer.
+          <strong>{{ planToDelete?.name }}</strong>
+          ? Esta acción no se puede deshacer.
         </Text>
         <div class="plans-modal__actions">
           <Button size="sm" variant="danger" :disabled="isLoading" @click="handleDelete">

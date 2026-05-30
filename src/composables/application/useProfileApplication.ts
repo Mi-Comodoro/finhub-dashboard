@@ -1,9 +1,6 @@
 import { useUserApi } from '@/composables/api/useUserApi'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useUserStore } from '@/stores/user.store'
-import type { Currency } from '@/utils/currency'
-
-
 interface UserUpdate {
   displayName?: string
   email?: string
@@ -83,6 +80,10 @@ export const useProfileApplication = () => {
     return userStore.photo
   })
 
+  const onAvatarError = () => {
+    userStore.rejectPhoto = true
+  }
+
   const avatarInitials = computed<string>(() => {
     const name = userStore.name ?? ''
     return name
@@ -118,6 +119,7 @@ export const useProfileApplication = () => {
     user,
     finances,
     avatarUrl,
-    avatarInitials
+    avatarInitials,
+    onAvatarError
   }
 }

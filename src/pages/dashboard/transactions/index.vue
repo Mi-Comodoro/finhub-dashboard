@@ -1,13 +1,14 @@
 <script setup lang="ts">
-  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
-  import { QuickTransactionForm, TransactionForm } from '@/components/business'
-  import type { Column } from '@/components/organisms'
-  import { ModalWizard } from '@/components/organisms'
+  import EmptyState from '@/components/atoms/empty-state/EmptyState.vue'
+  import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
+  import TransactionForm from '@/components/business/transaction/forms/TransactionForm.vue'
+  import type { Column } from '@/components/organisms/datatable/types'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'
   import { useTransactionMetricsPresenter } from '@/composables/presenters/useTransactionMetricsPresenter'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import DateUtils from '@/utils/date'
   import { translate } from '@/utils/translateToUI'
   import type { TransactionSummary } from '~/types/domain'
@@ -33,13 +34,17 @@
   const {
     transactions,
     pagination,
+    totals,
+    isLoading,
     currency,
     financeId,
     budgetSelected,
     budgetPlans,
+    currentMonthBudget,
     budgetOptions,
     categoryOptions,
     fetchTransaction,
+    fetchTotals,
     loadInitialData,
     deleteTransaction
   } = useTransactionApplication()
@@ -85,11 +90,11 @@
       id: row.id as string,
       data: {
         type: row.type,
-        amount: row.amount,
-        transactionDate: row.transactionDate,
+        amount: Number(row.amount),
+        transactionDate: new Date(row.transactionDate),
         source: row.source,
-        categoryId: row.category?.id,
-        description: row.description
+        categoryId: row.category?.id ?? '',
+        description: row.description ?? ''
       }
     }
     showForm.value = true
@@ -119,13 +124,18 @@
   const loadTransactions = async (resetPage = false) => {
     if (!budgetSelect.value) return
     if (resetPage) filters.resetPage()
-    await fetchTransaction(budgetSelect.value, filters.activeFilters.value)
+    const fetchPage = fetchTransaction(budgetSelect.value, filters.activeFilters.value)
+    if (resetPage) {
+      await Promise.all([fetchPage, fetchTotals(budgetSelect.value, filters.filterParams.value)])
+    } else {
+      await fetchPage
+    }
   }
 
   // --- Composables ---
   const filters = useTransactionFiltersPresenter(loadTransactions)
   const metrics = useTransactionMetricsPresenter(
-    transactions,
+    totals,
     pagination,
     filters.currentPage,
     filters.pageSize
@@ -157,7 +167,15 @@
     const accountName = getAccountName(transaction.accountId, transaction.account)
 
     if (fromAccountName) {
-      return { label: fromAccountName, detail: 'Cuenta origen' }
+      const detail =
+        transaction.type === 'income'
+          ? 'Fuente del ingreso'
+          : transaction.type === 'expense'
+            ? 'Cuenta de pago'
+            : transaction.type === 'savings'
+              ? 'Cuenta de débito'
+              : 'Cuenta origen'
+      return { label: fromAccountName, detail }
     }
 
     if (transaction.type === 'income') {
@@ -183,11 +201,17 @@
     const accountName = getAccountName(transaction.accountId, transaction.account)
 
     if (toAccountName) {
-      return { label: toAccountName, detail: 'Cuenta destino' }
+      const detail =
+        transaction.type === 'income'
+          ? 'Cuenta de depósito'
+          : transaction.type === 'savings'
+            ? 'Cuenta de ahorro'
+            : 'Cuenta de destino'
+      return { label: toAccountName, detail }
     }
 
     if (transaction.type === 'income') {
-      if (accountName) return { label: accountName, detail: 'Cuenta destino' }
+      if (accountName) return { label: accountName, detail: 'Cuenta de depósito' }
       return { label: 'Presupuesto', detail: 'Destino del ingreso' }
     }
 
@@ -230,7 +254,14 @@
     const amount = formatCurrency(item.amount, currency.value)
     if (item.type === 'income') return { text: `+${amount}`, colorClass: 'text-success-700' }
     if (item.type === 'expense') return { text: `-${amount}`, colorClass: 'text-danger-700' }
-    return { text: `-${amount}`, colorClass: 'text-warning-700' }
+    return { text: amount, colorClass: 'text-warning-700' }
+  }
+
+  const getCategoryBadgeVariant = (categoryType?: string) => {
+    if (categoryType === 'income') return 'primary'
+    if (categoryType === 'expense') return 'danger'
+    if (categoryType === 'savings') return 'warning'
+    return 'default'
   }
 
   // --- Init ---
@@ -239,9 +270,14 @@
     await loadGoalsData()
 
     const queryBudgetId = route.query.budgetId as string | undefined
-    budgetSelect.value = queryBudgetId || budgetSelected.value?.id || budgetPlans.value[0]?.id || ''
+    budgetSelect.value =
+      queryBudgetId ||
+      currentMonthBudget.value?.id ||
+      budgetSelected.value?.id ||
+      budgetPlans.value[0]?.id ||
+      ''
 
-    await loadTransactions()
+    await loadTransactions(true)
   })
 
   watch(budgetSelect, () => {
@@ -255,9 +291,12 @@
   <div class="transactions-page">
     <div class="transactions-page__header">
       <div>
-        <Heading level="h1" size="2xl" weight="extrabold" class="transactions-page__title">
-          Transacciones
-        </Heading>
+        <div class="transactions-page__title-row">
+          <Heading level="h1" size="2xl" weight="extrabold">Transacciones</Heading>
+          <Badge v-if="pagination?.total" variant="default" class="transactions-page__count-badge">
+            {{ pagination.total }}
+          </Badge>
+        </div>
         <Text size="xs" color="muted">Historial completo de movimientos</Text>
       </div>
       <div class="transactions-page__header-actions">
@@ -269,141 +308,156 @@
       </div>
     </div>
 
-    <TransactionMetricsBar
-      :total-income="metrics.totalIncome.value"
-      :total-expense="metrics.totalExpense.value"
-      :total-savings="metrics.totalSavings.value"
-      :count-income="metrics.countByType('income')"
-      :count-expense="metrics.countByType('expense')"
-      :count-savings="metrics.countByType('savings')"
-      :currency="currency"
-    />
+    <div v-if="!isLoading && budgetPlans.length === 0" class="transactions-page__empty">
+      <EmptyState
+        title="No hay presupuesto activo"
+        description="Crea un presupuesto para este mes para comenzar a registrar tus movimientos"
+        illustration="no-transactions"
+      />
+    </div>
 
-    <TransactionFiltersBar
-      v-model:filter-cat="filters.filterCat.value"
-      v-model:filter-date-from="filters.filterDateFrom.value"
-      v-model:filter-date-to="filters.filterDateTo.value"
-      v-model:page-size="filters.pageSize.value"
-      :category-options="categoryOptions"
-      :type-buttons="filters.typeButtons"
-      :active-type-btn="filters.activeTypeBtn.value"
-      :page-size-options="filters.pageSizeOptions"
-      @set-type="filters.setTypeBtn"
-      @clear-filters="filters.clearFilters"
-    />
+    <template v-else>
+      <TransactionMetricsBar
+        :total-income="metrics.totalIncome.value"
+        :total-expense="metrics.totalExpense.value"
+        :total-savings="metrics.totalSavings.value"
+        :count-income="metrics.countByType('income')"
+        :count-expense="metrics.countByType('expense')"
+        :count-savings="metrics.countByType('savings')"
+        :currency="currency"
+      />
 
-    <DataTable :columns="columns" :data="result ?? []">
-      <template #cell-amount="{ row }">
-        <Text
-          size="xs"
-          weight="bold"
-          class="transactions-page__amount"
-          :class="getFormattedAmount(row).colorClass"
-        >
-          {{ getFormattedAmount(row).text }}
-        </Text>
-      </template>
+      <TransactionFiltersBar
+        v-model:filter-cat="filters.filterCat.value"
+        v-model:filter-date-from="filters.filterDateFrom.value"
+        v-model:filter-date-to="filters.filterDateTo.value"
+        v-model:page-size="filters.pageSize.value"
+        :category-options="categoryOptions"
+        :type-buttons="filters.typeButtons"
+        :active-type-btn="filters.activeTypeBtn.value"
+        :page-size-options="filters.pageSizeOptions"
+        @set-type="filters.setTypeBtn"
+        @clear-filters="filters.clearFilters"
+      />
 
-      <template #cell-flow="{ row }">
-        <div class="transactions-page__flow">
-          <div class="transactions-page__endpoint">
-            <span class="transactions-page__endpoint-label">{{ row.origin.label }}</span>
-            <span v-if="row.origin.detail" class="transactions-page__endpoint-detail">
-              {{ row.origin.detail }}
+      <DataTable :columns="columns" :data="result ?? []">
+        <template #cell-amount="{ row }">
+          <Text
+            size="xs"
+            weight="bold"
+            class="transactions-page__amount"
+            :class="getFormattedAmount(row).colorClass"
+          >
+            {{ getFormattedAmount(row).text }}
+          </Text>
+        </template>
+
+        <template #cell-flow="{ row }">
+          <div class="transactions-page__flow">
+            <div class="transactions-page__endpoint">
+              <span class="transactions-page__endpoint-label">{{ row.origin.label }}</span>
+              <span v-if="row.origin.detail" class="transactions-page__endpoint-detail">
+                {{ row.origin.detail }}
+              </span>
+            </div>
+            <span class="transactions-page__flow-icon material-symbols-outlined">
+              arrow_forward
             </span>
+            <div class="transactions-page__endpoint">
+              <span class="transactions-page__endpoint-label">{{ row.destination.label }}</span>
+              <span v-if="row.destination.detail" class="transactions-page__endpoint-detail">
+                {{ row.destination.detail }}
+              </span>
+            </div>
+            <Badge v-if="!row.plannedIncomeId && row.type === 'income'" size="xs">
+              No planificado
+            </Badge>
           </div>
-          <span class="transactions-page__flow-icon material-symbols-outlined">arrow_forward</span>
-          <div class="transactions-page__endpoint">
-            <span class="transactions-page__endpoint-label">{{ row.destination.label }}</span>
-            <span v-if="row.destination.detail" class="transactions-page__endpoint-detail">
-              {{ row.destination.detail }}
-            </span>
-          </div>
-          <Badge v-if="!row.plannedIncomeId && row.type === 'income'" size="xs">
-            No planificado
+        </template>
+
+        <template #cell-type="{ value }">
+          <Badge
+            :variant="value === 'income' ? 'success' : value === 'expense' ? 'danger' : 'warning'"
+          >
+            {{ translate[value] ?? value }}
           </Badge>
-        </div>
-      </template>
+        </template>
 
-      <template #cell-type="{ value }">
-        <Badge
-          :variant="value === 'income' ? 'success' : value === 'expense' ? 'danger' : 'warning'"
-        >
-          {{ translate[value] ?? value }}
-        </Badge>
-      </template>
+        <template #cell-category="{ row, value }">
+          {{ row.type === 'income' || row.type === 'savings' ? '—' : value?.name || '—' }}
+        </template>
 
-      <template #cell-category="{ row, value }">
-        {{ row.type === 'income' || row.type === 'savings' ? 'N/A' : value?.name }}
-      </template>
+        <template #cell-actions="{ row }">
+          <div class="transactions-page__actions">
+            <Button
+              variant="primary"
+              size="sm"
+              icon="visibility"
+              icon-only
+              @click="openDetailsModal(row)"
+            />
 
-      <template #cell-actions="{ row }">
-        <div class="transactions-page__actions">
-          <Button
-            variant="primary"
-            size="sm"
-            icon="visibility"
-            icon-only
-            @click="openDetailsModal(row)"
-          />
+            <Button
+              variant="secondary"
+              size="sm"
+              icon="edit"
+              icon-only
+              @click="handleEditTransaction(row)"
+            />
 
-          <Button
-            variant="secondary"
-            size="sm"
-            icon="edit"
-            icon-only
-            @click="handleEditTransaction(row)"
-          />
-
-          <Button
-            variant="danger"
-            size="sm"
-            icon="delete"
-            icon-only
-            @click="handleDeleteTransaction(row)"
-          />
-        </div>
-      </template>
-
-      <template #empty>
-        <div class="transactions-page__empty">
-          <EmptyStateIllustration type="no-transactions" class="transactions-page__empty-illustration" />
-          <Text size="sm" color="muted">No hay transacciones para estos filtros</Text>
-          <Button variant="ghost" size="sm" @click="filters.clearFilters">Limpiar filtros</Button>
-        </div>
-      </template>
-
-      <template #footer>
-        <div v-if="metrics.showPagination.value" class="transactions-page__footer">
-          <div class="transactions-page__footer-info">
-            <Text size="xs" color="muted">{{ metrics.countLabel.value }}</Text>
-            <Select
-              v-model="filters.pageSize.value"
-              name="pageSize"
-              :options="filters.pageSizeOptions"
+            <Button
+              variant="danger"
+              size="sm"
+              icon="delete"
+              icon-only
+              @click="handleDeleteTransaction(row)"
             />
           </div>
-          <div class="transactions-page__footer-actions">
-            <Button
-              size="sm"
-              variant="outline"
-              :disabled="filters.currentPage.value === 1"
-              @click="filters.goToPage(filters.currentPage.value - 1)"
-            >
-              Anterior
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              :disabled="filters.currentPage.value >= metrics.totalPages.value"
-              @click="filters.goToPage(filters.currentPage.value + 1)"
-            >
-              Siguiente
-            </Button>
+        </template>
+
+        <template #empty>
+          <EmptyState
+            title="No hay transacciones"
+            description="No hay transacciones para estos filtros"
+            illustration="no-transactions"
+            size="sm"
+          >
+            <Button variant="ghost" size="sm" @click="filters.clearFilters">Limpiar filtros</Button>
+          </EmptyState>
+        </template>
+
+        <template #footer>
+          <div v-if="metrics.showPagination.value" class="transactions-page__footer">
+            <div class="transactions-page__footer-info">
+              <Text size="xs" color="muted">{{ metrics.countLabel.value }}</Text>
+              <Select
+                v-model="filters.pageSize.value"
+                name="pageSize"
+                :options="filters.pageSizeOptions"
+              />
+            </div>
+            <div class="transactions-page__footer-actions">
+              <Button
+                size="sm"
+                variant="outline"
+                :disabled="filters.currentPage.value === 1"
+                @click="filters.goToPage(filters.currentPage.value - 1)"
+              >
+                Anterior
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                :disabled="filters.currentPage.value >= metrics.totalPages.value"
+                @click="filters.goToPage(filters.currentPage.value + 1)"
+              >
+                Siguiente
+              </Button>
+            </div>
           </div>
-        </div>
-      </template>
-    </DataTable>
+        </template>
+      </DataTable>
+    </template>
 
     <ModalWizard v-model:show="showForm">
       <TransactionForm
@@ -424,12 +478,9 @@
         <Text size="sm" color="muted">
           ¿Estás seguro de eliminar esta transacción de
           <strong>
-            {{
-              transactionToDelete
-                ? formatCurrency(transactionToDelete.amount, currency)
-                : ''
-            }}
-          </strong>? Esta acción no se puede deshacer.
+            {{ transactionToDelete ? formatCurrency(transactionToDelete.amount, currency) : '' }}
+          </strong>
+          ? Esta acción no se puede deshacer.
         </Text>
         <div class="delete-confirmation__actions">
           <Button variant="ghost" size="sm" @click="showDeleteModal = false">Cancelar</Button>
@@ -442,7 +493,7 @@
       <div v-if="selectedTransaction" class="transaction-detail">
         <div class="transaction-detail__header">
           <div>
-            <Heading level="h2" size="lg" weight="extrabold">Detalle de Transaccion</Heading>
+            <Heading level="h2" size="lg" weight="extrabold">Detalle de Transacción</Heading>
             <Text size="xs" color="muted">
               {{ DateUtils.formatDate(selectedTransaction.transactionDate) }}
             </Text>
@@ -488,14 +539,19 @@
         <div class="transaction-detail__grid">
           <div class="transaction-detail__field">
             <Text size="xs" color="muted">Fuente</Text>
-            <Text size="xs">{{ formatText(selectedTransaction.source) || 'N/A' }}</Text>
+            <Text size="xs">{{ formatText(selectedTransaction.source) || '—' }}</Text>
           </div>
           <div class="transaction-detail__field">
-            <Text size="xs" color="muted">Categoria</Text>
-            <Text size="xs">{{ selectedTransaction.category?.name || 'N/A' }}</Text>
+            <Text size="xs" color="muted">Categoría</Text>
+            <div v-if="selectedTransaction.category" class="transaction-detail__category">
+              <Badge :variant="getCategoryBadgeVariant(selectedTransaction.category.type)">
+                {{ selectedTransaction.category.name }}
+              </Badge>
+            </div>
+            <Text v-else size="xs">—</Text>
           </div>
           <div class="transaction-detail__field">
-            <Text size="xs" color="muted">Planificacion</Text>
+            <Text size="xs" color="muted">Planificación</Text>
             <Text size="xs">
               {{
                 selectedTransaction.plannedIncomeId || selectedTransaction.plannedExpenseId
@@ -511,12 +567,12 @@
         </div>
 
         <div class="transaction-detail__description">
-          <Text size="xs" color="muted">Descripcion</Text>
-          <Text size="xs">{{ selectedTransaction.description || 'Sin descripcion' }}</Text>
+          <Text size="xs" color="muted">Descripción</Text>
+          <Text size="xs">{{ selectedTransaction.description || 'Sin descripción' }}</Text>
         </div>
 
         <div class="transaction-detail__actions">
-          <Button variant="outline" size="sm" @click="closeDetailsModal">Cerrar</Button>
+          <Button variant="ghost" size="sm" @click="closeDetailsModal">Cerrar</Button>
           <Button
             variant="primary"
             size="sm"
@@ -540,12 +596,20 @@
     @apply flex items-center justify-between;
   }
 
+  .transactions-page__title-row {
+    @apply mb-1 flex items-center gap-2;
+  }
+
+  .transactions-page__count-badge {
+    @apply self-center;
+  }
+
   .transactions-page__header-actions {
     @apply flex items-center gap-2;
   }
 
-  .transactions-page__title {
-    @apply mb-1;
+  .transactions-page__empty {
+    @apply py-12;
   }
 
   .transactions-page__actions {
@@ -569,27 +633,19 @@
   }
 
   .transactions-page__endpoint-label {
-    @apply max-w-36 truncate text-sm font-semibold text-slate-900;
+    @apply max-w-36 truncate text-sm font-semibold text-slate-900 dark:text-neutral-100;
   }
 
   .transactions-page__endpoint-detail {
-    @apply max-w-36 truncate text-xs text-slate-500;
+    @apply max-w-36 truncate text-xs text-slate-500 dark:text-neutral-400;
   }
 
   .transactions-page__flow-icon {
-    @apply text-base text-slate-400;
-  }
-
-  .transactions-page__empty {
-    @apply flex flex-col items-center gap-2 py-10 text-center;
-  }
-
-  .transactions-page__empty-illustration {
-    @apply max-w-[140px];
+    @apply text-base text-slate-400 dark:text-neutral-500;
   }
 
   .transactions-page__footer {
-    @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5;
+    @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5 dark:border-neutral-700;
   }
 
   .transactions-page__footer-info {
@@ -609,7 +665,7 @@
   }
 
   .transaction-detail__amount {
-    @apply flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-4;
+    @apply flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .transaction-detail__flow {
@@ -617,11 +673,11 @@
   }
 
   .transaction-detail__endpoint {
-    @apply min-h-24 rounded-lg border border-slate-200 p-4;
+    @apply min-h-24 rounded-lg border border-slate-200 p-4 dark:border-neutral-700;
   }
 
   .transaction-detail__flow-icon {
-    @apply text-xl text-slate-400;
+    @apply text-xl text-slate-400 dark:text-neutral-500;
   }
 
   .transaction-detail__grid {
@@ -630,7 +686,11 @@
 
   .transaction-detail__field,
   .transaction-detail__description {
-    @apply rounded-lg border border-slate-100 p-3;
+    @apply rounded-lg border border-slate-100 p-3 dark:border-neutral-700;
+  }
+
+  .transaction-detail__category {
+    @apply mt-1;
   }
 
   .transaction-detail__actions {

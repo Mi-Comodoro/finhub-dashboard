@@ -14,8 +14,18 @@ export interface WeeklyGroup {
 }
 
 const MONTH_NAMES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre'
 ]
 
 export function useAnalyticsCashFlowApplication() {
@@ -54,18 +64,26 @@ export function useAnalyticsCashFlowApplication() {
     return success && result ? result.transactions : []
   }
 
-  const groupTransactionsByWeek = (transactions: TransactionSummary[]): WeeklyGroup[] => {
+  const groupTransactionsByWeek = (
+    transactions: TransactionSummary[],
+    year: number,
+    month: number
+  ): WeeklyGroup[] => {
+    const daysInMonth = new Date(year, month, 0).getDate()
+    const totalWeeks = Math.ceil(daysInMonth / 7)
     const weeks: Record<string, { income: number; expense: number; savings: number }> = {}
+    for (let w = 1; w <= totalWeeks; w++) {
+      weeks[`Sem ${w}`] = { income: 0, expense: 0, savings: 0 }
+    }
 
     for (const t of transactions) {
       const date = new Date(t.transactionDate)
       const weekNum = Math.ceil(date.getDate() / 7)
       const key = `Sem ${weekNum}`
-      if (!weeks[key]) weeks[key] = { income: 0, expense: 0, savings: 0 }
       const amount = Number(t.amount)
-      if (t.type === 'income') weeks[key].income += amount
-      if (t.type === 'expense') weeks[key].expense += amount
-      if (t.type === 'savings') weeks[key].savings += amount
+      if (t.type === 'income') weeks[key]!.income += amount
+      if (t.type === 'expense') weeks[key]!.expense += amount
+      if (t.type === 'savings') weeks[key]!.savings += amount
     }
 
     return Object.entries(weeks)

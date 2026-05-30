@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue'
 
-  import { OnboardingStepIntro, ProgressBar } from '@/components/molecules'
-  import { BudgetStrategyForm, FinancialGoalsForm } from '@/components/organisms'
+  import OnboardingStepIntro from '@/components/molecules/onboarding-step-intro/OnboardingStepIntro.vue'
+  import ProgressBar from '@/components/molecules/progress-bar/ProgressBar.vue'
+  import BudgetStrategyForm from '@/components/organisms/forms/BudgetStrategyForm.vue'
+  import FinancialGoalsForm from '@/components/organisms/forms/FinancialGoalsForm.vue'
   import { ON_BOARDING_CONFIG } from '~/common/constants'
   import type { OnboardingFormData } from '~/types/ui'
 
@@ -134,6 +136,11 @@
     }
   }
 
+  const handleSkip = () => {
+    sessionStorage.removeItem(ONBOARDING_KEY)
+    emit('skip')
+  }
+
   // Exponer método para uso externo
   defineExpose({
     tryComplete
@@ -210,6 +217,9 @@
 </script>
 <template>
   <div class="onboarding-wizard">
+    <div class="onboarding-wizard__skip-row">
+      <Button variant="ghost" size="sm" icon="close" @click="handleSkip">Omitir</Button>
+    </div>
     <ProgressBar
       :current-step="currentStep"
       :total-steps="totalSteps"
@@ -313,6 +323,11 @@
   .onboarding-wizard {
     @apply w-full;
   }
+
+  .onboarding-wizard__skip-row {
+    @apply mb-2 flex justify-end;
+  }
+
   .onboarding-wizard__step {
     @apply box-content flex w-full flex-col flex-wrap gap-1 text-wrap;
   }

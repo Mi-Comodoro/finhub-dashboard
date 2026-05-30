@@ -16,7 +16,10 @@ export default defineEventHandler(async event => {
       headers: { authorization: `Bearer ${token}` },
       method: 'POST',
       body,
-      onResponseError: ({ response }) => validateError(event, response.status)
+      onResponseError: ({ response }) => {
+        const msg = (response._data as { message?: string })?.message
+        validateError(event, response.status, msg)
+      }
     }
   )
 

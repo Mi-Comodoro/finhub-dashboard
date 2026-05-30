@@ -19,7 +19,7 @@ export const useAnalyticsPeriod = () => {
     { label: 'Septiembre', value: 9 },
     { label: 'Octubre', value: 10 },
     { label: 'Noviembre', value: 11 },
-    { label: 'Diciembre', value: 12 },
+    { label: 'Diciembre', value: 12 }
   ])
 
   const periodLabel = computed(() => {

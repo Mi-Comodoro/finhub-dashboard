@@ -1,9 +1,11 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
+  import { computed, ref, watch } from 'vue'
 
-  import { Button, Heading, Text } from '@/components/atoms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import type { GoalsData } from '@/types/api'
-  import { type Currency,formatCurrency } from '@/utils/currency'
+  import { type Currency, formatCurrency } from '@/utils/currency'
 
   import type { SurplusAction } from './types/budget-surplus.types'
 
@@ -35,6 +37,14 @@
     props.availableGoals.filter(g => g.isActive && g.status !== 'COMPLETED')
   )
 
+  watch(
+    () => props.surplus,
+    () => {
+      selectedAction.value = null
+      selectedGoalId.value = null
+    }
+  )
+
   const handleConfirm = () => {
     if (!selectedAction.value) return
     emit('confirm', selectedAction.value, selectedGoalId.value ?? undefined)
@@ -49,9 +59,7 @@
 <template>
   <div class="surplus-modal">
     <div class="surplus-modal__header">
-      <Heading level="h1" size="xl" weight="extrabold" color="black">
-        Excedente disponible
-      </Heading>
+      <Heading level="h1" size="xl" weight="extrabold" color="black">Excedente disponible</Heading>
       <Text size="xs" color="muted">¿Qué deseas hacer con este saldo?</Text>
     </div>
 
@@ -100,20 +108,6 @@
           <Text size="xs" color="muted">El saldo quedará disponible para el próximo período</Text>
         </div>
       </button>
-
-      <!-- Opción: Ignorar -->
-      <button
-        class="surplus-modal__option"
-        :class="{ 'surplus-modal__option--selected': selectedAction === 'ignore' }"
-        type="button"
-        @click="selectAction('ignore')"
-      >
-        <span class="material-symbols-outlined surplus-modal__option-icon">not_interested</span>
-        <div class="surplus-modal__option-content">
-          <Text size="sm" weight="bold">Ignorar</Text>
-          <Text size="xs" color="muted">Cerrar el presupuesto sin acción adicional</Text>
-        </div>
-      </button>
     </div>
 
     <div class="surplus-modal__actions">
@@ -156,6 +150,7 @@
 
   .surplus-modal__option {
     @apply flex cursor-pointer items-center gap-3 rounded-xl border-2 border-neutral-200 p-4 text-left transition-all;
+    @apply dark:border-neutral-600;
   }
 
   .surplus-modal__option:hover {

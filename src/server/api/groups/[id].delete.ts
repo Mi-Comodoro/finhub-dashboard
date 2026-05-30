@@ -10,14 +10,11 @@ export default defineEventHandler(async event => {
   if (!token) throw createError({ statusCode: 401, message: 'No autenticado' })
   if (!id) throw createError({ statusCode: 400, message: 'ID requerido' })
 
-  const { success } = await $fetch<{ success: boolean }>(
-    `${config.public.apiBase}/groups/${id}`,
-    {
-      headers: { authorization: `Bearer ${token}` },
-      method: 'DELETE',
-      onResponseError: ({ response }) => validateError(event, response.status)
-    }
-  )
+  const { success } = await $fetch<{ success: boolean }>(`${config.public.apiBase}/groups/${id}`, {
+    headers: { authorization: `Bearer ${token}` },
+    method: 'DELETE',
+    onResponseError: ({ response }) => validateError(event, response.status)
+  })
 
   return { success }
 })

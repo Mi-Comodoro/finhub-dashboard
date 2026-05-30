@@ -29,7 +29,7 @@
   const props = withDefaults(defineProps<TextProps>(), {
     size: 'base',
     weight: 'normal',
-    color: 'black',
+    color: 'default',
     align: 'left',
     italic: false,
     uppercase: false,
@@ -57,15 +57,16 @@
   }
 
   const colorClasses = {
+    default: 'text-neutral-900 dark:text-neutral-100',
     primary: 'text-primary-600 dark:text-white',
     secondary: 'text-secondary-600 dark:text-slate-300',
     muted: 'text-slate-600 dark:text-slate-400',
     accent: 'text-primary-600 dark:text-teal-400',
     success: 'text-green-600 dark:text-green-400',
-    warning: 'text-yellow-900 dark:text-yellow-400',
+    warning: 'text-yellow-600 dark:text-yellow-400',
     error: 'text-red-600 dark:text-red-400',
     white: 'text-white',
-    black: 'text-black',
+    black: 'text-black dark:text-neutral-100',
     inherit: 'text-inherit'
   }
 

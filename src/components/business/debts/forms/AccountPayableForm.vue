@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Form } from '@/components/organisms/forms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import type { AccountPayable, CreateAccountPayableDto } from '~/types/accounts-payable.types'
 
   import { accountPayableFieldsSchema } from './schema/account-payable.fields.schema'

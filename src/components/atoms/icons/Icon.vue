@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import type { IconProps } from '@/components/atoms'
+  import type { IconProps } from '@/components/atoms/types/atoms.types'
 
   interface LocalIconProps extends IconProps {
     name: string

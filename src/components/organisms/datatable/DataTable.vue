@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import type { Column, DataCell, RowData } from '@/components/organisms'
+  import type DataCell from '@/components/organisms/datatable/DataCell.vue'
+  import type { Column, RowData } from '@/components/organisms/datatable/types'
 
   defineProps<{
     columns: Column[]
@@ -9,11 +10,13 @@
 </script>
 
 <template>
-  <div class="w-full overflow-hidden border bg-white">
+  <div class="w-full overflow-hidden border bg-white dark:border-neutral-700 dark:bg-neutral-800">
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <!-- HEADER -->
-        <thead class="bg-gray-200 text-xs uppercase text-gray-700">
+        <thead
+          class="bg-gray-200 text-xs uppercase text-gray-700 dark:bg-neutral-700 dark:text-neutral-300"
+        >
           <tr>
             <th
               v-for="col in columns"
@@ -35,7 +38,10 @@
         <tbody>
           <!-- LOADING -->
           <tr v-if="loading">
-            <td :colspan="columns.length + ($slots.actions ? 1 : 0)" class="p-6 text-center">
+            <td
+              :colspan="columns.length + ($slots.actions ? 1 : 0)"
+              class="p-6 text-center dark:text-neutral-300"
+            >
               <slot name="loading">Cargando...</slot>
             </td>
           </tr>
@@ -44,7 +50,7 @@
           <tr
             v-for="row in data"
             :key="row.id as string"
-            class="border-t transition hover:bg-gray-50"
+            class="border-t transition hover:bg-gray-50 dark:border-neutral-700 dark:hover:bg-neutral-700"
           >
             <td
               v-for="col in columns"
@@ -74,7 +80,7 @@
           <tr v-if="!loading && !data.length">
             <td
               :colspan="columns.length + ($slots.actions ? 1 : 0)"
-              class="p-6 text-center text-gray-400"
+              class="p-6 text-center text-gray-400 dark:text-neutral-500"
             >
               <slot name="empty">No hay datos</slot>
             </td>

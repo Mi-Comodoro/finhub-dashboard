@@ -1,21 +1,62 @@
 export type GroupType = 'SHARED' | 'FAMILIAR' | 'TRAVEL'
-export type GroupRole = 'OWNER' | 'EDITOR' | 'VIEWER'
+export type GroupStatus = 'Planificando' | 'Activo' | 'Cerrado'
+export type MemberRole = 'ORGANIZER' | 'CO_ORGANIZER' | 'MEMBER' | 'VIEWER'
+export type MemberStatus = 'active' | 'invited' | 'external'
+export type ExpenseStatus = 'planned' | 'paid' | 'cxp'
 
 export interface GroupMember {
-  userId: string
-  name?: string
-  email?: string
-  role: GroupRole
+  id?: string
+  userId?: string | null
+  handle?: string | null
+  externalName?: string | null
+  role: MemberRole
+  memberStatus: MemberStatus
+  isActive: boolean
 }
 
 export interface Group {
   id: string
   name: string
   type: GroupType
+  status: GroupStatus
   maxMembers: number
   ownerId: string
+  goal?: number | null
+  destination?: string | null
+  estimatedDate?: string | null
   members: GroupMember[]
   createdAt: string
+}
+
+export interface ContributionMember {
+  userId: string | null
+  handle: string | null
+  externalName: string | null
+  role: MemberRole
+  memberStatus: MemberStatus
+  totalAmount: number
+  percentage: number
+  budgetLabel: string | null
+}
+
+export interface ContributionSummary {
+  goal: number | null
+  totalContributed: number
+  members: ContributionMember[]
+}
+
+export interface GroupExpense {
+  id: string
+  groupId: string
+  description: string
+  amount: number
+  dueDate: string
+  responsibleUserId: string
+  status: ExpenseStatus
+  transactionId: string | null
+  cxpId: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CreateGroupDto {
@@ -32,5 +73,12 @@ export interface UpdateGroupDto {
 
 export interface AddMemberDto {
   userId: string
-  role?: GroupRole
+  role?: MemberRole
+}
+
+export interface CreateGroupExpenseDto {
+  description: string
+  amount: number
+  dueDate: string
+  responsibleUserId: string
 }

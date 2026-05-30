@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { CardProps } from '@/components/atoms'
+  import type { CardProps } from '@/components/atoms/types/atoms.types'
 
   withDefaults(defineProps<CardProps>(), {
     as: 'div',
@@ -17,6 +17,7 @@
 <style lang="postcss" scoped>
   .card {
     @apply rounded-lg border border-neutral-200 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .card--primary {

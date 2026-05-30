@@ -1,30 +1,27 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from 'vue'
 
-  import {
-    Badge,
-    Button,
-    type ButtonSize,
-    type ButtonVariant,
-    Heading,
-    Icon,
-    Text
-  } from '@/components/atoms'
-  import {
-    BudgetClosedBanner,
-    BudgetDistribution,
-    BudgetEditForm,
-    BudgetIncome,
-    BudgetInsights,
-    ExpensePlannedForm,
-    ExpensePlannedSection,
-    IncomeForm,
-    PlannedSavingList,
-    SavingDistributionForm,
-    Tips,
-    TransactionList
-  } from '@/components/business'
-  import { ModalWizard } from '@/components/organisms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import type { ButtonSize, ButtonVariant } from '@/components/atoms/button/types/button.types'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import BudgetClosedBanner from '@/components/business/budget/BudgetClosedBanner.vue'
+  import BudgetDistribution from '@/components/business/budget/BudgetDistribution.vue'
+  import BudgetEditForm from '@/components/business/budget/forms/BudgetEditForm.vue'
+  import BudgetIncome from '@/components/business/budget/income/BudgetIncome.vue'
+  import BudgetInsights from '@/components/business/budget/insight/BudgetInsights.vue'
+  import ExpensePlannedSection from '@/components/business/expense/ExpensedPlanedSection.vue'
+  import ExpensePlannedForm from '@/components/business/expense/forms/ExpensePlannedForm.vue'
+  import IncomeForm from '@/components/business/income/forms/IncomeForm.vue'
+  import SavingDistributionForm from '@/components/business/savings/forms/SavingDistributionForm.vue'
+  import PlannedSavingList from '@/components/business/savings/PlannedSavingList.vue'
+  import Tips from '@/components/business/tips/Tips.vue'
+  import TransactionList from '@/components/business/transactions/TransactionList.vue'
+  import ConfirmDeleteModal from '@/components/organisms/confirm-delete/ConfirmDeleteModal.vue'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
+  import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
   import { useBudgetTransferApplication } from '@/composables/application/useBudgetTransferApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
@@ -33,7 +30,7 @@
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useApiHandler } from '@/composables/useApiHandler'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
   import { replaceUnderscoresWithSpaces } from '@/utils/strings'
@@ -50,7 +47,7 @@
   const { loadBudgetDetail, budgetSelected, expectedIncome, defaultCurrency } =
     useBudgetDetailApplication()
   const { deleteExpense } = useExpenseApplication()
-  const { fetchByBudget: fetchTransactions } = useTransactionApplication()
+  const { fetchByBudget: fetchTransactions, fetchTotals } = useTransactionApplication()
   const { fetchByBudget: fetchPlannedSavings } = usePlannedSavingApplication()
   const { success: successToast } = useFeedback()
   const { handleError } = useApiHandler()
@@ -65,7 +62,12 @@
     if (!success && error) handleError(error)
 
     if (budgetId) {
-      await Promise.all([fetchTransactions(budgetId), fetchPlannedSavings(budgetId), fetchGoals()])
+      await Promise.all([
+        fetchTransactions(budgetId),
+        fetchTotals(budgetId),
+        fetchPlannedSavings(budgetId),
+        fetchGoals()
+      ])
     }
   })
 
@@ -129,6 +131,8 @@
   const showForm = ref(false)
   const showIncomeModal = ref(false)
   const showEditModal = ref(false)
+  const showDeleteConfirm = ref(false)
+  const expenseToDelete = ref<{ id: string; name: string } | null>(null)
   const editingExpense = ref<{ id: string; data: Record<string, unknown> } | null>(null)
   const formMode = ref<'create' | 'edit' | 'view'>('create')
 
@@ -161,8 +165,18 @@
     formMode.value = 'create'
   }
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = async () => {
+    const isEdit = formMode.value === 'edit'
+    successToast(
+      isEdit ? 'Gasto actualizado' : 'Gasto registrado',
+      isEdit
+        ? 'El gasto planificado fue actualizado correctamente.'
+        : 'El gasto fue agregado al presupuesto.'
+    )
     closeForm()
+    if (budgetId) {
+      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+    }
   }
 
   const showSavingDistributionForm = ref(false)
@@ -171,8 +185,11 @@
     showSavingDistributionForm.value = false
   }
 
-  const handleMarkExpenseAsPaid = (_row: { id: string }) => {
+  const handleMarkExpenseAsPaid = async (_row: { id: string }) => {
     successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
+    if (budgetId) {
+      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+    }
   }
 
   const handleEditExpense = (row: Record<string, unknown>) => {
@@ -209,14 +226,18 @@
     showForm.value = true
   }
 
-  const handleDeleteExpense = async (row: { id: string; name: string }) => {
-    const confirmed = confirm(`¿Estás seguro de eliminar el gasto "${row.name}"?`)
-    if (!confirmed) return
+  const handleDeleteExpense = (row: { id: string; name: string }) => {
+    expenseToDelete.value = row
+    showDeleteConfirm.value = true
+  }
 
-    const { success } = await deleteExpense(row.id)
+  const confirmDeleteExpense = async () => {
+    if (!expenseToDelete.value) return
+    const { success } = await deleteExpense(expenseToDelete.value.id)
     if (success) {
       successToast('Gasto eliminado', 'El gasto planificado fue eliminado correctamente.')
     }
+    expenseToDelete.value = null
   }
   const statusConfig = {
     isActive: () => planStatus.value === 'ACTIVE',
@@ -346,14 +367,16 @@
       </div>
 
       <div class="budget-detail__sidebar">
-        <Tips icon="show_chart" title="Optimizacion Inteligente">
-          El ahorro del {{ plan?.limits?.savings || 0 }}% del
-          <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
-          , se activará automáticamente cuando confirmes tu primer ingreso.
-        </Tips>
-        <BudgetIncome :budget-id="budgetId" />
-        <BudgetDistribution />
-        <TransactionList :budget-id="budgetId" />
+        <SidebarPage>
+          <Tips icon="show_chart" title="Optimizacion Inteligente">
+            El ahorro del {{ plan?.limits?.savings || 0 }}% del
+            <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
+            , se activará automáticamente cuando confirmes tu primer ingreso.
+          </Tips>
+          <BudgetIncome :budget-id="budgetId" />
+          <BudgetDistribution />
+          <TransactionList :budget-id="budgetId" />
+        </SidebarPage>
       </div>
     </div>
 
@@ -377,6 +400,7 @@
       <IncomeForm
         :budget-id="budgetId"
         :show-savings-plan-step="true"
+        :savings-plan-required="true"
         :budget-savings-percentage="plan?.limits?.savings ?? 20"
         :currency="defaultCurrency"
         @on-close="showIncomeModal = false"
@@ -390,6 +414,12 @@
         @on-close="handleEditClose"
       />
     </ModalWizard>
+
+    <ConfirmDeleteModal
+      v-model:show="showDeleteConfirm"
+      :title="`¿Eliminar '${expenseToDelete?.name}'?`"
+      @confirm="confirmDeleteExpense"
+    />
   </div>
   <div v-else class="budget-detail__empty">
     <Icon name="search_off" class="budget-detail__empty-icon" size="2xl" />
@@ -453,15 +483,33 @@
   }
 
   .budget-detail__layout {
-    @apply grid w-full grid-cols-12 gap-4 px-4;
+    @apply flex flex-col gap-6 px-4 lg:flex-row lg:items-start;
   }
 
   .budget-detail__main {
-    @apply col-span-8 flex flex-col gap-4;
+    @apply flex min-w-0 flex-1 flex-col gap-4;
   }
 
   .budget-detail__sidebar {
-    @apply col-span-4 flex flex-col gap-4;
+    @apply w-full lg:sticky lg:top-4 lg:w-80 lg:shrink-0 lg:self-start;
+  }
+
+  .budget-detail__sidebar :deep(.sidebar-page) {
+    @apply gap-3;
+  }
+
+  /* Compact Card atoms in sidebar */
+  .budget-detail__sidebar :deep(.card) {
+    @apply p-3;
+  }
+
+  /* Compact SectionCard (BudgetDistribution, TransactionList) in sidebar */
+  .budget-detail__sidebar :deep(.section-card__header) {
+    @apply p-3;
+  }
+
+  .budget-detail__sidebar :deep(.section-card__body) {
+    @apply p-3;
   }
 
   .budget-detail__empty {
@@ -469,7 +517,7 @@
   }
 
   .budget-detail__empty-icon {
-    @apply text-slate-400 dark:text-slate-600;
+    @apply text-slate-400 dark:text-neutral-500;
   }
 
   .budget-detail__empty-button {

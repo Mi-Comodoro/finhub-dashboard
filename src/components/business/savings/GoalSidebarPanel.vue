@@ -1,13 +1,14 @@
 <script setup lang="ts">
-  import { format } from 'date-fns'
-  import { es } from 'date-fns/locale'
-
-  import { Badge, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import GoalProgressBar from '@/components/business/savings/GoalProgressBar.vue'
-  import { CardInfo } from '@/components/molecules'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import type { AccountData, GoalHistory, GoalsData } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
+  import DateUtils from '@/utils/date'
   import { GOAL_STATUS_LABELS, type GoalStatus } from '@/utils/goals.utils'
   import type { Currency } from '~/components/organisms/forms/types'
 
@@ -17,8 +18,11 @@
     account?: AccountData | null
     progressPercentage?: number
     savedAmount?: number
+    totalDeposited?: number
+    totalInterest?: number
     currency?: string
     estimatedTimeToGoal?: string
+    loading?: boolean
   }
 
   const props = withDefaults(defineProps<GoalSidebarPanelProps>(), {
@@ -27,8 +31,11 @@
     account: null,
     progressPercentage: 0,
     savedAmount: 0,
+    totalDeposited: 0,
+    totalInterest: 0,
     currency: '',
-    estimatedTimeToGoal: ''
+    estimatedTimeToGoal: '',
+    loading: false
   })
 
   const statusLabel = computed(() => {
@@ -43,15 +50,22 @@
 
   const deadlineLabel = computed(() => {
     if (!props.goal.targetDate) return 'Sin plazo'
-    return format(new Date(props.goal.targetDate), 'dd MMM yyyy', { locale: es })
+    return DateUtils.formatDate(String(props.goal.targetDate), 'numeric')
   })
 
   const targetAmountLabel = computed(() => {
     return formatCurrency(props.goal.targetAmount ?? 0, props.currency as Currency)
   })
 
-  const formatDate = (date: string) => {
-    return format(new Date(date), 'dd MMM yyyy, HH:mm', { locale: es })
+  const formatTimestamp = (date: string) => DateUtils.formatDate(date, 'numeric')
+
+  const formatDateOnly = (dateString: string): string => {
+    try {
+      const result = DateUtils.formatDate(dateString, 'numeric')
+      return result === '---' || result === 'Fecha inválida' ? '—' : result
+    } catch {
+      return '—'
+    }
   }
 
   const FIELD_LABELS: Record<string, string> = {
@@ -69,22 +83,53 @@
     const percentFields = ['interestRate', 'percentage']
     if (moneyFields.includes(field))
       return formatCurrency(Number(value) || 0, props.currency as Currency)
-    if (dateFields.includes(field)) return formatDate(value as string)
+    if (dateFields.includes(field)) {
+      if (!value || value === 'null' || value === 'undefined') return '—'
+      return formatDateOnly(String(value))
+    }
     if (percentFields.includes(field)) return `${value}%`
+    if (field === 'status') return GOAL_STATUS_LABELS[value as GoalStatus] ?? String(value ?? '—')
     return String(value ?? '—')
   }
 </script>
 
 <template>
   <SidebarPage>
+    <!-- Skeleton -->
+    <template v-if="loading">
+      <!-- Resumen skeleton -->
+      <div class="goal-sidebar-panel__section">
+        <div class="goal-sidebar-panel__skeleton-header" />
+        <div class="goal-sidebar-panel__skeleton-progress" />
+        <div class="goal-sidebar-panel__skeleton-rows">
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--full" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--wide" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--full" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--medium" />
+          <div class="goal-sidebar-panel__skeleton-divider" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--full" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--wide" />
+          <div class="goal-sidebar-panel__skeleton-row goal-sidebar-panel__skeleton-row--full" />
+        </div>
+      </div>
+
+      <!-- Historial skeleton -->
+      <div class="goal-sidebar-panel__section">
+        <div class="goal-sidebar-panel__skeleton-header" />
+        <div class="goal-sidebar-panel__skeleton-history">
+          <div v-for="i in 3" :key="i" class="goal-sidebar-panel__skeleton-history-item" />
+        </div>
+      </div>
+    </template>
+
     <!-- Sección 1: Resumen -->
-    <div class="goal-sidebar-panel__section">
+    <div v-if="!loading" class="goal-sidebar-panel__section">
       <CardInfo
         title="Resumen de Meta"
         sub-title="Estado actual"
-        title-size="xl"
+        title-size="base"
         weight="extrabold"
-        level="h1"
+        level="h3"
         color="black"
         sub-title-size="xs"
         sub-title-color="muted"
@@ -118,46 +163,36 @@
           <Text size="xs" class="goal-sidebar-panel__label">Tiempo</Text>
           <Text size="xs">{{ estimatedTimeToGoal }}</Text>
         </div>
-      </div>
-    </div>
-
-    <!-- Sección 3: Tips -->
-    <div class="goal-sidebar-panel__section">
-      <CardInfo
-        title="Tips"
-        sub-title="Información útil"
-        title-size="xl"
-        weight="extrabold"
-        level="h1"
-        color="black"
-        sub-title-size="xs"
-        sub-title-color="muted"
-        icon="lightbulb"
-        icon-variant="primary"
-        icon-size="md"
-      />
-
-      <div class="goal-sidebar-panel__tips">
-        <Text size="xs" color="muted">
-          El interés se calcula día a día con interés compuesto. Tu capital crece un poco cada día
-          que permanece depositado. En vistas de 3 meses o más, los aportes futuros son estimados
-          basados en tu último aporte registrado.
-        </Text>
-        <Text size="xs" color="muted">
-          Las proyecciones son estimadas y pueden variar según las actualizaciones de tasa de
-          interés por parte de las entidades financieras.
-        </Text>
+        <div class="goal-sidebar-panel__divider" />
+        <div class="goal-sidebar-panel__row">
+          <Text size="xs" class="goal-sidebar-panel__label">Total Aportes</Text>
+          <Text size="xs" weight="medium">
+            {{ formatCurrency(totalDeposited, currency as Currency) }}
+          </Text>
+        </div>
+        <div class="goal-sidebar-panel__row">
+          <Text size="xs" class="goal-sidebar-panel__label">Total Intereses</Text>
+          <Text size="xs" weight="medium" class="goal-sidebar-panel__interest">
+            {{ formatCurrency(totalInterest, currency as Currency) }}
+          </Text>
+        </div>
+        <div class="goal-sidebar-panel__row goal-sidebar-panel__row--highlight">
+          <Text size="xs" weight="semibold">Total Abonado</Text>
+          <Text size="xs" weight="bold">
+            {{ formatCurrency(totalDeposited + totalInterest, currency as Currency) }}
+          </Text>
+        </div>
       </div>
     </div>
 
     <!-- Sección 2: Historial -->
-    <div class="goal-sidebar-panel__section">
+    <div v-if="!loading" class="goal-sidebar-panel__section">
       <CardInfo
         title="Historial"
         sub-title="Cambios registrados"
-        title-size="xl"
+        title-size="base"
         weight="extrabold"
-        level="h1"
+        level="h3"
         color="black"
         sub-title-size="xs"
         sub-title-color="muted"
@@ -169,17 +204,26 @@
       <div v-if="history.length > 0" class="goal-sidebar-panel__history-list">
         <div v-for="item in history" :key="item.id" class="goal-sidebar-panel__history-item">
           <span class="goal-sidebar-panel__history-bullet">●</span>
-          <span class="goal-sidebar-panel__history-date">{{ formatDate(item.changedAt) }}</span>
-          <span class="goal-sidebar-panel__history-text">
-            <strong>{{ FIELD_LABELS[item.field] ?? item.field }}:</strong>
-            {{ formatHistoryValue(item.field, item.oldValue) }} →
-            {{ formatHistoryValue(item.field, item.newValue) }}
-          </span>
+          <div class="goal-sidebar-panel__history-content">
+            <span class="goal-sidebar-panel__history-date">
+              {{ formatTimestamp(item.changedAt) }}
+            </span>
+            <span class="goal-sidebar-panel__history-text">
+              <strong>{{ FIELD_LABELS[item.field] ?? item.field }}:</strong>
+              {{ formatHistoryValue(item.field, item.oldValue) }} →
+              {{ formatHistoryValue(item.field, item.newValue) }}
+            </span>
+          </div>
         </div>
       </div>
-      <Text v-else size="sm" color="muted" class="goal-sidebar-panel__empty">
-        Sin cambios registrados
-      </Text>
+      <div v-else class="goal-sidebar-panel__empty">
+        <EmptyStateIllustration
+          type="no-transactions"
+          class="goal-sidebar-panel__empty-illustration"
+        />
+        <Heading level="h3" size="sm" weight="semibold">Sin cambios registrados</Heading>
+        <Text size="xs" color="muted">El historial de cambios aparecerá aquí.</Text>
+      </div>
     </div>
   </SidebarPage>
 </template>
@@ -187,6 +231,7 @@
 <style scoped lang="postcss">
   .goal-sidebar-panel__section {
     @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goal-sidebar-panel__details {
@@ -199,33 +244,93 @@
 
   .goal-sidebar-panel__label {
     @apply text-neutral-500;
+    @apply dark:text-neutral-400;
+  }
+
+  .goal-sidebar-panel__divider {
+    @apply border-t border-neutral-100;
+    @apply dark:border-neutral-700;
+  }
+
+  .goal-sidebar-panel__interest {
+    @apply text-warning-600 dark:text-warning-400;
+  }
+
+  .goal-sidebar-panel__row--highlight {
+    @apply rounded-md bg-primary-50 px-2 py-1;
+    @apply dark:bg-primary-900/30;
   }
 
   .goal-sidebar-panel__history-list {
-    @apply flex flex-col gap-3;
+    @apply flex flex-col gap-2;
   }
 
   .goal-sidebar-panel__history-item {
-    @apply flex items-start gap-2 text-sm;
+    @apply flex items-start gap-1.5 text-xs;
   }
 
   .goal-sidebar-panel__history-bullet {
-    @apply text-primary-500;
+    @apply mt-0.5 shrink-0 text-[8px] text-primary-400;
+  }
+
+  .goal-sidebar-panel__history-content {
+    @apply flex flex-col gap-0.5;
   }
 
   .goal-sidebar-panel__history-date {
-    @apply text-neutral-500 dark:text-neutral-400;
+    @apply text-[10px] text-neutral-400 dark:text-neutral-500;
   }
 
   .goal-sidebar-panel__history-text {
-    @apply flex-1 text-neutral-700 dark:text-neutral-200;
+    @apply leading-snug text-neutral-600 dark:text-neutral-300;
   }
 
   .goal-sidebar-panel__empty {
-    @apply text-center;
+    @apply flex flex-col items-center gap-3 py-6 text-center;
   }
 
-  .goal-sidebar-panel__tips {
-    @apply flex flex-col gap-3;
+  .goal-sidebar-panel__empty-illustration {
+    @apply mx-auto h-24 w-24;
+  }
+
+  /* Skeleton */
+  .goal-sidebar-panel__skeleton-header {
+    @apply h-10 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-sidebar-panel__skeleton-progress {
+    @apply h-5 w-full animate-pulse rounded-full bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-sidebar-panel__skeleton-rows {
+    @apply flex flex-col gap-2;
+  }
+
+  .goal-sidebar-panel__skeleton-row {
+    @apply h-5 animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
+  }
+
+  .goal-sidebar-panel__skeleton-row--full {
+    @apply w-full;
+  }
+
+  .goal-sidebar-panel__skeleton-row--wide {
+    @apply w-4/5;
+  }
+
+  .goal-sidebar-panel__skeleton-row--medium {
+    @apply w-3/5;
+  }
+
+  .goal-sidebar-panel__skeleton-divider {
+    @apply border-t border-neutral-100 dark:border-neutral-700;
+  }
+
+  .goal-sidebar-panel__skeleton-history {
+    @apply flex flex-col gap-2;
+  }
+
+  .goal-sidebar-panel__skeleton-history-item {
+    @apply h-8 w-full animate-pulse rounded-md bg-slate-100 dark:bg-neutral-700;
   }
 </style>

@@ -1,7 +1,13 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from 'vue'
 
-  import { AlertBanner, Badge, Heading, Icon, Text } from '@/components/atoms'
+  import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
   import { useFinancesStore } from '@/stores/finances.store'
   import DateUtils from '@/utils/date'
@@ -25,16 +31,29 @@
     markAsCompleted,
     fetchByBudget,
     savingProgress,
-    savingsAmount
+    savingsAmount,
+    assignGoal
   } = useSavingPlannedApplication()
+
+  const { goals, fetchGoals } = useGoalsApplication()
   const { show } = useToast()
+
+  const currency = computed(() => financesStore.defaultCurrency)
+  const assigningItemId = ref<string | null>(null)
+  const openGoalPickerFor = ref<string | null>(null)
+
+  const toggleGoalPicker = (itemId: string) => {
+    openGoalPickerFor.value = openGoalPickerFor.value === itemId ? null : itemId
+  }
+  const closeGoalPicker = () => {
+    openGoalPickerFor.value = null
+  }
 
   // ------------------------------------------------------------------
   // Datos y lógica de agrupación
   // ------------------------------------------------------------------
   const items = computed(() => savingsPending.value ?? [])
 
-  const currency = computed(() => financesStore.defaultCurrency)
   const itemsByGroup = computed(() => {
     const groups: Record<string, PlannedSavingSummary[]> = {}
     for (const item of items.value) {
@@ -121,9 +140,22 @@
       })
     }
   }
+  const assignGoalToItem = async (itemId: string, savingGoalId: string) => {
+    assigningItemId.value = itemId
+    const { success } = await assignGoal(itemId, savingGoalId)
+    assigningItemId.value = null
+    if (success) {
+      show({
+        type: 'success',
+        title: 'Meta asignada',
+        description: 'El ahorro fue vinculado a la meta correctamente.'
+      })
+    }
+  }
+
   const loadItems = async () => {
     if (!props.budgetId) return
-    await fetchByBudget(props.budgetId)
+    await Promise.all([fetchByBudget(props.budgetId), fetchGoals()])
     initCollapsedState()
   }
 
@@ -174,8 +206,11 @@
 
     <!-- Sin datos -->
     <div v-else-if="items.length === 0" class="planned-saving-list__empty">
-      <Icon name="savings" size="2xl" class="planned-saving-list__empty-icon" />
-      <Heading level="h3" size="lg" color="muted">No hay ahorros planeados</Heading>
+      <EmptyStateIllustration
+        type="no-transactions"
+        class="planned-saving-list__empty-illustration"
+      />
+      <Heading level="h3" size="lg" weight="semibold">No hay ahorros planeados</Heading>
       <Text size="sm" color="muted">
         Cuando existan programaciones de ahorro para este presupuesto, aparecerán aquí.
       </Text>
@@ -219,7 +254,7 @@
                 <!-- Izquierda: ícono + nombre + cuenta -->
                 <div class="planned-saving-list__item-info">
                   <Icon
-                    :name="item.savingGoal?.reason as string"
+                    :name="item.savingGoal?.reason || 'savings'"
                     size="2xl"
                     :class-name="getIconClasses(item.savingGoal?.reason)"
                   />
@@ -230,11 +265,57 @@
                       weight="extrabold"
                       class="planned-saving-list__item-name"
                     >
-                      {{ (item.savingGoal?.name || 'Meta sin nombre').toUpperCase() }}
+                      {{ (item.savingGoal?.name || 'Sin meta asignada').toUpperCase() }}
                     </Heading>
                     <Text size="xs" color="muted" class="planned-saving-list__item-account">
                       {{ item.account?.name ?? 'Cuenta no definida' }}
                     </Text>
+                    <!-- Selector de meta para ahorros sin meta vinculada -->
+                    <div
+                      v-if="!item.savingGoalId && goals.length > 0"
+                      class="planned-saving-list__goal-picker"
+                    >
+                      <button
+                        class="planned-saving-list__assign-btn"
+                        @click.stop="toggleGoalPicker(item.id)"
+                      >
+                        <span class="material-symbols-outlined planned-saving-list__assign-icon">
+                          add_link
+                        </span>
+                        Asignar meta
+                      </button>
+                      <template v-if="openGoalPickerFor === item.id">
+                        <div
+                          class="planned-saving-list__goal-overlay"
+                          @click.stop="closeGoalPicker"
+                        />
+                        <div class="planned-saving-list__goal-panel">
+                          <Text
+                            size="xs"
+                            color="muted"
+                            class="planned-saving-list__goal-panel-title"
+                          >
+                            Selecciona una meta
+                          </Text>
+                          <button
+                            v-for="goal in goals"
+                            :key="goal.id"
+                            class="planned-saving-list__goal-option"
+                            :disabled="assigningItemId === item.id"
+                            @click.stop="assignGoalToItem(item.id, goal.id).then(closeGoalPicker)"
+                          >
+                            <span
+                              class="material-symbols-outlined planned-saving-list__goal-option-icon"
+                            >
+                              {{ goal.reason }}
+                            </span>
+                            <span class="planned-saving-list__goal-option-name">
+                              {{ goal.name }}
+                            </span>
+                          </button>
+                        </div>
+                      </template>
+                    </div>
                   </div>
                 </div>
 
@@ -302,11 +383,11 @@
   }
 
   .planned-saving-list__empty {
-    @apply flex flex-col items-center gap-3 py-10 text-center;
+    @apply flex flex-col items-center gap-3 py-12 text-center;
   }
 
-  .planned-saving-list__empty-icon {
-    @apply text-slate-300;
+  .planned-saving-list__empty-illustration {
+    @apply mx-auto h-32 w-32;
   }
 
   .planned-saving-list__groups {
@@ -315,10 +396,12 @@
 
   .planned-saving-list__group {
     @apply rounded-md border border-slate-200 bg-white;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .planned-saving-list__group-header {
     @apply flex cursor-pointer items-center justify-between gap-2 p-4 transition-colors hover:bg-slate-50;
+    @apply dark:hover:bg-neutral-700/50;
   }
 
   .planned-saving-list__group-title {
@@ -343,6 +426,7 @@
 
   .planned-saving-list__group-content {
     @apply border-t border-slate-100 p-4 pt-2;
+    @apply dark:border-neutral-700;
   }
 
   .planned-saving-list__items {
@@ -351,6 +435,7 @@
 
   .planned-saving-list__item {
     @apply flex items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-b-0 last:pb-0;
+    @apply dark:border-neutral-700;
   }
 
   .planned-saving-list__item-info {
@@ -391,6 +476,44 @@
 
   .planned-saving-list__item-buttons {
     @apply flex gap-2;
+  }
+
+  .planned-saving-list__assign-btn {
+    @apply mt-1 flex items-center gap-1 text-xs font-medium text-primary-600 transition-colors hover:text-primary-800;
+  }
+
+  .planned-saving-list__assign-icon {
+    @apply text-sm;
+  }
+
+  .planned-saving-list__goal-picker {
+    @apply relative;
+  }
+
+  .planned-saving-list__goal-overlay {
+    @apply fixed inset-0 z-10;
+  }
+
+  .planned-saving-list__goal-panel {
+    @apply absolute left-0 top-full z-20 mt-1 w-56 rounded-lg border border-neutral-200 bg-white p-2 shadow-lg;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .planned-saving-list__goal-panel-title {
+    @apply block px-2 py-1 text-xs font-semibold uppercase text-neutral-400;
+  }
+
+  .planned-saving-list__goal-option {
+    @apply flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 disabled:cursor-wait disabled:opacity-50;
+    @apply dark:text-neutral-300 dark:hover:bg-neutral-700;
+  }
+
+  .planned-saving-list__goal-option-icon {
+    @apply text-base text-neutral-500;
+  }
+
+  .planned-saving-list__goal-option-name {
+    @apply truncate;
   }
 
   /* Animación suave para el colapso */

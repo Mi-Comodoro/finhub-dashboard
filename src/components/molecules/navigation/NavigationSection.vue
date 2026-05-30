@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Text } from '@/components/atoms'
+  import Text from '@/components/atoms/typography/Text.vue'
 
   import NavigationItem from './NavigationItem.vue'
   import type { NavigationSectionProps } from './types/navigation-section.types'
@@ -15,7 +15,7 @@
 </script>
 
 <template>
-  <div :class="['mb-2', className]">
+  <div :class="['mb-1 2xl:mb-2', className]">
     <Text
       v-if="!collapsed"
       as="span"
@@ -35,6 +35,8 @@
           :is-active="item.isActive"
           :on-click="item.onClick"
           :collapsed="collapsed"
+          :class-name="item.className"
+          :badge="item.badge"
           @navigate="emit('navigate')"
         />
       </li>

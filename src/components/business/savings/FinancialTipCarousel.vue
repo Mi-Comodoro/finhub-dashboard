@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-  import { Tips } from '@/components/business/tips'
+  import Tips from '@/components/business/tips/Tips.vue'
 
   interface FinancialTip {
     id: string

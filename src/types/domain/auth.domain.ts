@@ -4,7 +4,7 @@
  * These types represent what the business cares about, not API responses
  */
 
-export type UserRole = 'admin' | 'user'
+export type UserRole = 'admin' | 'super_admin' | 'user'
 
 export interface User {
   readonly id: string

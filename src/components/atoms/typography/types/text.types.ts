@@ -1,6 +1,7 @@
 export type TextSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl'
 export type TextWeight = 'light' | 'normal' | 'medium' | 'semibold' | 'bold'
 export type TextColor =
+  | 'default'
   | 'primary'
   | 'secondary'
   | 'muted'

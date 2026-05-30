@@ -290,10 +290,13 @@ export function buildProjection(input: ProjectionInput): SavingPoint[] {
   const contributions: Array<{ amount: number; date: Date }> = []
 
   for (const s of savings) {
-    if (s.status === 'skipped') continue
-    const rawDate = s.completedAt ?? s.date
+    if (s.status !== 'completed') continue
+    const rawDate = s.date ?? s.completedAt
     if (!rawDate) continue
-    const parsed = new Date(rawDate)
+    // Parse only the date portion as local noon to avoid UTC→local day shift.
+    // "2026-04-24T00:00:00.000Z" in UTC-5 would become April 23 — this prevents that.
+    const datePart = String(rawDate).substring(0, 10)
+    const parsed = new Date(`${datePart}T12:00:00`)
     if (isNaN(parsed.getTime())) continue
     const amount = Number(s.amount)
     if (!amount || amount <= 0) continue
@@ -341,10 +344,12 @@ export function buildProjection(input: ProjectionInput): SavingPoint[] {
 
   const previousContributions = contributions.filter(c => c.date <= lastDayPreviousMonth)
 
+  // targetDate = startOfCurrentMonth so daysElapsed includes the full last day of the prior month,
+  // matching the convention that a deposit earns interest on its own day.
   const accumulated = calculateAccumulatedBalance({
     contributions: previousContributions,
     annualRate,
-    targetDate: lastDayPreviousMonth
+    targetDate: startOfCurrentMonth
   })
 
   // =========================
@@ -467,7 +472,7 @@ export function buildProjection(input: ProjectionInput): SavingPoint[] {
   // =========================
   if (view === '1m') {
     return dailySeries.slice(0, 30).map(point => ({
-      label: `Día ${String(point.date.getDate())}`,
+      label: `${point.date.getDate()} ${monthNames[point.date.getMonth()]}`,
       withInterest: Math.round(point.withInterest),
       withoutInterest: Math.round(point.withoutInterest)
     }))

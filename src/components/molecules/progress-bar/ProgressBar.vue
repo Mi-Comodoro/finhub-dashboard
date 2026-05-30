@@ -129,16 +129,16 @@
   }
 
   .step-counter {
-    @apply text-sm font-semibold uppercase text-neutral-500;
+    @apply text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400;
   }
 
   .percentage-label {
-    @apply text-sm font-medium text-neutral-500;
+    @apply text-sm font-medium text-neutral-500 dark:text-neutral-400;
   }
 
   /* Progress Bar Track */
   .progress-bar-track {
-    @apply relative overflow-hidden rounded-full bg-neutral-200;
+    @apply relative overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700;
   }
 
   /* Main Fill */

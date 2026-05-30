@@ -2,6 +2,7 @@
   import { ref, toRaw, watch } from 'vue'
 
   import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
+  import CardRadio from '@/components/atoms/card-radio/CardRadio.vue'
   import RadioButton from '@/components/atoms/radio/RadioButton.vue'
   import Label from '@/components/atoms/typography/Label.vue'
   import DatePickerInput from '@/components/molecules/date-picker/DatePickerInput.vue'
@@ -10,6 +11,20 @@
   import { useFinancesStore } from '@/stores/finances.store'
   import { ON_BOARDING_CONFIG, SOURCE_INCOMES_OPTIONS } from '~/common/constants'
   import type { BudgetFrequency } from '~/types/domain'
+
+  // Fix typing mismatch when passing options array to CardRadio in template
+  const FREQUENCY_OPTIONS: { label: string; value: string; icon: string }[] = [
+    {
+      label: 'Mensual',
+      value: 'monthly',
+      icon: 'calendar_month'
+    },
+    {
+      label: 'Quincenal',
+      value: 'biweekly',
+      icon: 'date_range'
+    }
+  ]
 
   const { incomes } = ON_BOARDING_CONFIG
 
@@ -175,7 +190,9 @@
 <template>
   <div class="form-wrapper">
     <form class="form-income" @submit.prevent="handleSubmit">
-      <AlertBanner :title="incomes.banner" variant="warning" icon="info" />
+      <AlertBanner variant="warning" icon="info">
+        {{ incomes.banner }}
+      </AlertBanner>
 
       <!-- ============================================
            INGRESO PRINCIPAL
@@ -188,26 +205,17 @@
           <Label variant="form" size="sm" weight="bold" color="black" require>
             ¿Con qué frecuencia recibes este ingreso?
           </Label>
-
-          <RadioButton
-            v-model="formModel.incomes[0].frequency"
-            name="frequency0"
-            variant="card"
-            direction="row"
-            class="w-full"
-            :options="[
-              {
-                label: 'Mensual',
-                value: 'monthly',
-                icon: 'calendar_month'
-              },
-              {
-                label: 'Quincenal',
-                value: 'biweekly',
-                icon: 'date_range'
-              }
-            ]"
-          />
+          <div class="flex w-full flex-row gap-4">
+            <CardRadio
+              v-for="opt in FREQUENCY_OPTIONS"
+              :key="String(opt.value)"
+              v-model="formModel.incomes[0].frequency"
+              :value="String(opt.value)"
+              :label="opt.label"
+              :icon="opt.icon"
+              size="md"
+            />
+          </div>
         </div>
 
         <!-- FECHAS INGRESO PRINCIPAL -->
@@ -303,26 +311,17 @@
           <Label variant="form" size="sm" weight="bold" color="black" require>
             ¿Con qué frecuencia recibes este ingreso?
           </Label>
-
-          <RadioButton
-            v-model="formModel.incomes[1].frequency"
-            name="frequency1"
-            variant="card"
-            direction="row"
-            class="w-full"
-            :options="[
-              {
-                label: 'Mensual',
-                value: 'monthly',
-                icon: 'calendar_month'
-              },
-              {
-                label: 'Quincenal',
-                value: 'biweekly',
-                icon: 'date_range'
-              }
-            ]"
-          />
+          <div class="flex w-full flex-row gap-4">
+            <CardRadio
+              v-for="opt in FREQUENCY_OPTIONS"
+              :key="String(opt.value)"
+              v-model="formModel.incomes[1].frequency"
+              :value="String(opt.value)"
+              :label="opt.label"
+              :icon="opt.icon"
+              size="md"
+            />
+          </div>
         </div>
 
         <!-- FECHAS INGRESO ADICIONAL -->
@@ -389,10 +388,9 @@
           />
         </div>
 
-        <AlertBanner
-          title="Si tienes más ingresos, no te preocupes puedes agregarlos más adelante"
-          variant="warning"
-        />
+        <AlertBanner variant="warning">
+          Si tienes más ingresos, no te preocupes puedes agregarlos más adelante"
+        </AlertBanner>
       </div>
     </form>
   </div>
@@ -409,7 +407,7 @@
     @apply space-y-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4;
   }
   .form-income__section-title {
-    @apply text-base font-semibold text-neutral-900;
+    @apply text-sm font-semibold uppercase text-neutral-900;
   }
   .form-income__frequency {
     @apply space-y-2;

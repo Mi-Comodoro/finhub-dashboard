@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, useSlots, watch } from 'vue'
 
-  import { Label } from '@/components/atoms'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   import type { InputProps, InputSize } from './types/input.types'
 
@@ -187,6 +187,7 @@
 <style lang="postcss" scoped>
   .input {
     @apply w-full rounded-md border bg-white text-neutral-900 transition-all duration-200 placeholder:text-neutral-400 focus:outline-none;
+    @apply dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500;
   }
 
   /* tamaños */
@@ -203,6 +204,7 @@
   /* normal */
   .input--normal {
     @apply border-neutral-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500;
+    @apply dark:border-neutral-600 dark:focus:border-teal-400 dark:focus:ring-teal-400;
   }
 
   /* error */
@@ -227,6 +229,7 @@
   /* estados */
   .input--disabled {
     @apply cursor-not-allowed bg-neutral-100 text-neutral-400;
+    @apply dark:bg-neutral-800 dark:text-neutral-500;
   }
 
   .input--readonly {
@@ -256,6 +259,7 @@
 
   .input-prefix {
     @apply absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500;
+    @apply dark:text-neutral-400;
   }
 
   .input--with-prefix {

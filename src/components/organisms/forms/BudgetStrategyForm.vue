@@ -6,7 +6,8 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from 'vue'
 
-  import { Button, Icon } from '@/components/atoms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Icon from '@/components/atoms/icons/Icon.vue'
 
   const props = defineProps<{
     totalIncome?: number

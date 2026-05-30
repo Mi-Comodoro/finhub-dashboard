@@ -5,6 +5,9 @@ import { formatMonthsToGoal as formatMonths } from '@/utils/goal-formatters'
 
 interface UseGoalDetailPresenterParams {
   goal: Ref<GoalsData | null>
+  /** Sum of savings deposits only (excludes registered interest) */
+  principalSaved: Ref<number>
+  /** principalSaved + registered interest — used for progress and pending calculation */
   totalSavedForGoal: Ref<number>
   estimatedInterest: Ref<number>
   projectionMonthsToGoal: Ref<number | null>
@@ -14,25 +17,20 @@ interface UseGoalDetailPresenterParams {
 export function useGoalDetailPresenter(params: UseGoalDetailPresenterParams) {
   const {
     goal,
+    principalSaved,
     totalSavedForGoal,
     estimatedInterest,
     projectionMonthsToGoal,
     accountInterestRate
   } = params
 
-  const totalDeposited = computed(() => totalSavedForGoal.value)
+  const totalDeposited = computed(() => principalSaved.value)
 
   const estimatedInterestValue = computed(() => estimatedInterest.value)
 
   const pendingAmount = computed(() => {
     const target = goal.value?.targetAmount ?? 0
-    return Math.max(0, target - totalDeposited.value)
-  })
-
-  const progressPercentage = computed(() => {
-    const target = goal.value?.targetAmount ?? 0
-    if (target === 0) return 0
-    return Math.min(100, Math.round((totalDeposited.value / target) * 100))
+    return Math.max(0, target - totalSavedForGoal.value)
   })
 
   const estimatedTimeToGoal = computed(() => formatMonths(projectionMonthsToGoal.value))
@@ -46,7 +44,6 @@ export function useGoalDetailPresenter(params: UseGoalDetailPresenterParams) {
     totalDeposited,
     estimatedInterest: estimatedInterestValue,
     pendingAmount,
-    progressPercentage,
     estimatedTimeToGoal,
     interestRateLabel
   }

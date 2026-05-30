@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Icon } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
   import { useTheme } from '@/composables/useTheme'
 
   interface ThemeToggleProps {
@@ -26,7 +26,7 @@
       'relative flex cursor-pointer items-center justify-center rounded-md p-1 text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white',
       className
     ]"
-    aria-label="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+    :aria-label="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
     @click="toggleTheme"
   >
     <Icon

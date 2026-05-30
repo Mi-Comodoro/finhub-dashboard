@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-  import { Button } from '@/components/atoms'
-  import { CardInfo } from '@/components/molecules'
+  import Button from '@/components/atoms/button/Button.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
 
   import type { CardSummaryProps } from './types/card-summary.types'
 

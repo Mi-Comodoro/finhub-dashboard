@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 
-import type { TransactionFilters, TransactionState, TransactionSummary } from '~/types/domain'
+import type {
+  TransactionFilters,
+  TransactionState,
+  TransactionSummary,
+  TransactionTotals
+} from '~/types/domain'
 
 export const useTransactionStore = defineStore('transaction', {
   state: (): TransactionState => ({
@@ -15,6 +20,7 @@ export const useTransactionStore = defineStore('transaction', {
       limit: 20
     },
     pagination: null,
+    totals: null,
     isLoading: false,
     error: null
   }),
@@ -40,7 +46,7 @@ export const useTransactionStore = defineStore('transaction', {
     totalSavings(state): number {
       if (!state.items) return 0
       return state.items
-        .filter(t => t.type === 'savings')
+        .filter(t => t.type === 'savings' || t.type === 'interest')
         .reduce((acc, t) => acc + (t.amount ?? 0), 0)
     },
 
@@ -65,7 +71,7 @@ export const useTransactionStore = defineStore('transaction', {
     },
 
     setFilters(filters: Partial<TransactionFilters>) {
-      this.filters = { ...this.filters, ...filters, page: 1 } // reset página al filtrar
+      this.filters = { ...this.filters, ...filters }
     },
 
     clearFilters() {
@@ -78,6 +84,10 @@ export const useTransactionStore = defineStore('transaction', {
 
     setPagination(pagination: TransactionState['pagination']) {
       this.pagination = pagination
+    },
+
+    setTotals(totals: TransactionTotals | null) {
+      this.totals = totals
     },
 
     setError(error: TransactionState['error']) {

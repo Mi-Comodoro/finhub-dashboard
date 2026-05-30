@@ -57,50 +57,62 @@ export const FAQ_ITEMS: FaqItem[] = [
 export const GLOSSARY_TERMS: GlossaryTerm[] = [
   {
     term: 'Ahorro programado',
-    definition: 'Monto reservado mensualmente antes de gastar. Se descuenta del ingreso al inicio del período y se distribuye entre las metas de ahorro activas.'
+    definition:
+      'Monto reservado mensualmente antes de gastar. Se descuenta del ingreso al inicio del período y se distribuye entre las metas de ahorro activas.'
   },
   {
     term: 'Balance financiero',
-    definition: 'Diferencia entre ingresos y gastos del período. Un balance positivo indica que los ingresos superan los gastos; uno negativo, que se gastó más de lo que se recibió.'
+    definition:
+      'Diferencia entre ingresos y gastos del período. Un balance positivo indica que los ingresos superan los gastos; uno negativo, que se gastó más de lo que se recibió.'
   },
   {
     term: 'Gasto planificado',
-    definition: 'Gasto conocido de antemano (arriendo, servicios públicos, cuotas, etc.) que se agenda en el presupuesto antes de que ocurra.'
+    definition:
+      'Gasto conocido de antemano (arriendo, servicios públicos, cuotas, etc.) que se agenda en el presupuesto antes de que ocurra.'
   },
   {
     term: 'Gasto real',
-    definition: 'Total de transacciones de tipo gasto registradas en un período. Refleja el dinero efectivamente gastado, sin importar si estaba planificado o no.'
+    definition:
+      'Total de transacciones de tipo gasto registradas en un período. Refleja el dinero efectivamente gastado, sin importar si estaba planificado o no.'
   },
   {
     term: 'Ingreso',
-    definition: 'Dinero recibido en el período (salario, freelance, bonificaciones, etc.). Los ingresos planificados se configuran en el presupuesto; los reales se marcan como recibidos al ocurrir.'
+    definition:
+      'Dinero recibido en el período (salario, freelance, bonificaciones, etc.). Los ingresos planificados se configuran en el presupuesto; los reales se marcan como recibidos al ocurrir.'
   },
   {
     term: 'Interés compuesto',
-    definition: 'Interés que se calcula sobre el capital más los intereses acumulados en períodos anteriores. Hace que el ahorro crezca de forma exponencial con el tiempo.'
+    definition:
+      'Interés que se calcula sobre el capital más los intereses acumulados en períodos anteriores. Hace que el ahorro crezca de forma exponencial con el tiempo.'
   },
   {
     term: 'Libre Sin Comprometer',
-    definition: 'Saldo restante después de separar el ahorro programado. Es el dinero disponible para gastar libremente durante el mes sin afectar las metas de ahorro.'
+    definition:
+      'Saldo restante después de separar el ahorro programado. Es el dinero disponible para gastar libremente durante el mes sin afectar las metas de ahorro.'
   },
   {
     term: 'Meta de ahorro',
-    definition: 'Objetivo financiero definido con un nombre, monto objetivo y fecha límite. La plataforma calcula los aportes mensuales necesarios para alcanzarla a tiempo.'
+    definition:
+      'Objetivo financiero definido con un nombre, monto objetivo y fecha límite. La plataforma calcula los aportes mensuales necesarios para alcanzarla a tiempo.'
   },
   {
     term: 'Porcentaje de ahorro',
-    definition: 'Fracción del ingreso total destinada al ahorro cada mes, expresada en porcentaje. Se configura en el presupuesto y determina el monto de ahorro programado.'
+    definition:
+      'Fracción del ingreso total destinada al ahorro cada mes, expresada en porcentaje. Se configura en el presupuesto y determina el monto de ahorro programado.'
   },
   {
     term: 'Presupuesto',
-    definition: 'Plan mensual que organiza ingresos, ahorros y gastos. Define cuánto se puede gastar en cada categoría y cuánto se debe ahorrar durante el período.'
+    definition:
+      'Plan mensual que organiza ingresos, ahorros y gastos. Define cuánto se puede gastar en cada categoría y cuánto se debe ahorrar durante el período.'
   },
   {
     term: 'Puntaje de salud financiera',
-    definition: 'Score del 0 al 100 que mide qué tan bien se está ejecutando el plan financiero. Evalúa el cumplimiento del ahorro, el control de gastos y la consistencia mensual.'
+    definition:
+      'Score del 0 al 100 que mide qué tan bien se está ejecutando el plan financiero. Evalúa el cumplimiento del ahorro, el control de gastos y la consistencia mensual.'
   },
   {
     term: 'Tasa de interés',
-    definition: 'Porcentaje anual que genera rendimiento sobre el saldo de una cuenta de ahorro. Se usa para proyectar el crecimiento de las metas con interés compuesto.'
+    definition:
+      'Porcentaje anual que genera rendimiento sobre el saldo de una cuenta de ahorro. Se usa para proyectar el crecimiento de las metas con interés compuesto.'
   }
 ]

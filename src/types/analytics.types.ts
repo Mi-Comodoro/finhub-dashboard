@@ -12,6 +12,7 @@ export interface NetPositionResponse {
 
 export interface DebtProjectionResponse {
   simplified?: boolean
+  hasPaymentHistory: boolean
   projection: Array<{
     month: string
     projectedBalance: number

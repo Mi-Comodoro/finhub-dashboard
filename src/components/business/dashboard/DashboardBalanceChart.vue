@@ -2,7 +2,8 @@
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
 
-  import { Card, Heading } from '@/components/atoms'
+  import Card from '@/components/atoms/card/Card.vue'
+  import Heading from '@/components/atoms/typography/Heading.vue'
   import type { Currency } from '@/utils/currency'
   import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
@@ -78,7 +79,7 @@
           type: 'bar',
           data: [props.expectedIncome, props.estimatedSavings, props.plannedExpenses],
           itemStyle: {
-            color: CHART_COLORS.needs
+            color: CHART_COLORS.planned
           }
         },
         {
@@ -86,7 +87,7 @@
           type: 'bar',
           data: [props.receivedIncome, props.generatedSavings, props.paidExpenses],
           itemStyle: {
-            color: CHART_COLORS.savings
+            color: '#14b8a6'
           }
         }
       ]

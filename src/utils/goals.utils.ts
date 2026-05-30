@@ -14,7 +14,7 @@ export function getGoalTerm(targetDate?: Date | null): GoalTerm {
 
 export const GOAL_STATUS_LABELS: Record<GoalStatus, string> = {
   SCHEDULED: 'Programada',
-  IN_PROGRESS: 'En Progreso',
+  IN_PROGRESS: 'Activa',
   COMPLETED: 'Completada',
   PAUSED: 'Pausada'
 }

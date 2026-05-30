@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import { ModalWizard } from '@/components/organisms'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useTravelExpense } from '@/composables/application/useTravelExpense'
   import { useCurrency } from '@/composables/useCurrency'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import type { GroupMember } from '@/types/groups.types'
 
   import TravelExpenseForm from './forms/TravelExpenseForm.vue'
@@ -47,7 +47,11 @@
   }
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    new Date(dateStr).toLocaleDateString('es-CO', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
 
   // Debt summary
   const iOwe = computed(() => {
@@ -81,7 +85,11 @@
     <div class="travel-section__header">
       <div>
         <Heading level="h3" size="lg" weight="semibold">Gastos del viaje</Heading>
-        <Text size="xs" color="muted">{{ expenses.length }} gasto{{ expenses.length !== 1 ? 's' : '' }} registrado{{ expenses.length !== 1 ? 's' : '' }}</Text>
+        <Text size="xs" color="muted">
+          {{ expenses.length }} gasto{{ expenses.length !== 1 ? 's' : '' }} registrado{{
+            expenses.length !== 1 ? 's' : ''
+          }}
+        </Text>
       </div>
       <Button variant="primary" size="sm" icon="add" @click="showAddModal = true">
         Agregar gasto
@@ -213,7 +221,7 @@
   }
 
   .travel-section__skeleton {
-    @apply animate-pulse rounded-xl bg-slate-100 h-24 w-full;
+    @apply h-24 w-full animate-pulse rounded-xl bg-slate-100;
   }
 
   .travel-section__empty {
@@ -242,11 +250,11 @@
   }
 
   .travel-section__expense-meta {
-    @apply flex items-center gap-2 shrink-0;
+    @apply flex shrink-0 items-center gap-2;
   }
 
   .travel-section__delete-btn {
-    @apply text-neutral-400 hover:text-danger-500 transition-colors;
+    @apply text-neutral-400 transition-colors hover:text-danger-500;
   }
 
   .travel-section__delete-btn span {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Form } from '@/components/organisms/forms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { replaceUnderscoresWithSpaces } from '@/utils/strings'
 
@@ -83,9 +83,7 @@
             <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" size="sm">
-              Guardar cambios
-            </Button>
+            <Button type="submit" variant="primary" size="sm">Guardar cambios</Button>
           </div>
         </template>
       </Form>

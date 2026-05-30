@@ -49,8 +49,13 @@ export function useAccountsPayableApplication() {
   }
 
   const registerPayment = async (id: string, dto: RegisterPaymentDto) => {
-    await api.registerPayment(id, dto)
-    await refreshAll()
+    try {
+      await api.registerPayment(id, dto)
+      await refreshAll()
+      return { success: true }
+    } catch {
+      return { success: false }
+    }
   }
 
   const ratioStatus = computed<{

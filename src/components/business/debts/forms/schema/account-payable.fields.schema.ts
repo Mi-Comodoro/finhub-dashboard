@@ -53,7 +53,9 @@ export const accountPayableFieldsSchema = (): FormSchema => ({
   ]
 })
 
-export const paymentFieldsSchema = (): FormSchema => ({
+export const paymentFieldsSchema = (
+  categoryOptions: { label: string; value: string; disabled?: boolean }[]
+): FormSchema => ({
   fields: {
     amount: {
       type: 'money',
@@ -65,6 +67,12 @@ export const paymentFieldsSchema = (): FormSchema => ({
       label: 'Fecha del pago',
       required: true
     },
+    categoryId: {
+      type: 'select',
+      label: 'Categoría del gasto',
+      required: true,
+      options: categoryOptions
+    },
     notes: {
       type: 'textarea',
       label: 'Notas (opcional)',
@@ -73,6 +81,7 @@ export const paymentFieldsSchema = (): FormSchema => ({
   },
   layout: [
     { type: 'grid', columns: 2, fields: ['amount', 'paymentDate'] },
+    { type: 'row', fields: ['categoryId'] },
     { type: 'row', fields: ['notes'] }
   ]
 })

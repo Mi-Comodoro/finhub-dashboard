@@ -15,7 +15,8 @@
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
 
-  import { Text } from '@/components/atoms'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import { useTheme } from '@/composables/useTheme'
   import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
@@ -63,13 +64,15 @@
     labels: undefined
   })
 
+  const { isDark } = useTheme()
+  const chartAxisColor = computed(() => (isDark.value ? '#94a3b8' : '#64748b'))
+  const chartGridColor = computed(() => (isDark.value ? '#334155' : '#e2e8f0'))
+  const chartLegendColor = computed(() => (isDark.value ? '#94a3b8' : '#374151'))
+
   const yMin = computed(() => {
     const firstPoint = props.interestData[0] ?? 0
     if (firstPoint === 0) return 0
-    // Iniciar en 95% del saldo para ver el crecimiento con detalle
-    const balance = props.currentBalance ?? 0
-    if (balance === 0) return 0
-    return Math.floor((balance * 0.95) / 100_000) * 100_000
+    return Math.floor((firstPoint * 0.95) / 100_000) * 100_000
   })
 
   const hasData = computed(() => props.interestData.length > 0)
@@ -139,21 +142,25 @@
     legend: {
       data: ['Solo aportes', 'Con interés compuesto'],
       bottom: 0,
-      textStyle: { fontSize: 11 }
+      textStyle: { fontSize: 11, color: chartLegendColor.value }
     },
     grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
     xAxis: {
       type: 'category',
       data: xLabels.value,
-      axisTick: { show: false }
+      axisTick: { show: false },
+      axisLabel: {
+        interval: props.granularity === 'daily' ? 6 : 'auto',
+        color: chartAxisColor.value
+      }
     },
     yAxis: {
       type: 'value',
       min: yMin.value,
-      splitLine: { lineStyle: { color: '#e2e8f0', type: 'dashed' } },
+      splitLine: { lineStyle: { color: chartGridColor.value, type: 'dashed' } },
       axisLabel: {
+        color: chartAxisColor.value,
         formatter: (v: number) => {
-          // Custom formatter without currency code
           const abs = Math.abs(v)
           const sign = v < 0 ? '-' : ''
           if (abs >= 1_000_000) {

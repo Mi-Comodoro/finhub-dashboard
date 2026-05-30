@@ -30,8 +30,24 @@
     <!-- X mark overlay -->
     <circle cx="148" cy="118" r="22" class="empty-illustration__surface-base" />
     <circle cx="148" cy="118" r="18" class="empty-illustration__danger-muted" />
-    <line x1="140" y1="110" x2="156" y2="126" stroke-width="3" stroke-linecap="round" class="empty-illustration__danger-stroke" />
-    <line x1="156" y1="110" x2="140" y2="126" stroke-width="3" stroke-linecap="round" class="empty-illustration__danger-stroke" />
+    <line
+      x1="140"
+      y1="110"
+      x2="156"
+      y2="126"
+      stroke-width="3"
+      stroke-linecap="round"
+      class="empty-illustration__danger-stroke"
+    />
+    <line
+      x1="156"
+      y1="110"
+      x2="140"
+      y2="126"
+      stroke-width="3"
+      stroke-linecap="round"
+      class="empty-illustration__danger-stroke"
+    />
   </svg>
 
   <!-- No Goals -->
@@ -51,12 +67,43 @@
     <!-- Center dot -->
     <circle cx="100" cy="78" r="8" class="empty-illustration__secondary" />
     <!-- Arrow shaft -->
-    <line x1="60" y1="120" x2="95" y2="82" stroke-width="3" stroke-linecap="round" class="empty-illustration__primary-stroke" />
+    <line
+      x1="60"
+      y1="120"
+      x2="95"
+      y2="82"
+      stroke-width="3"
+      stroke-linecap="round"
+      class="empty-illustration__primary-stroke"
+    />
     <!-- Arrow head -->
-    <polyline points="85,80 95,82 93,92" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" class="empty-illustration__primary-stroke-poly" />
+    <polyline
+      points="85,80 95,82 93,92"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="none"
+      class="empty-illustration__primary-stroke-poly"
+    />
     <!-- Plus on center -->
-    <line x1="100" y1="75" x2="100" y2="81" stroke-width="2" stroke-linecap="round" class="empty-illustration__surface-stroke" />
-    <line x1="97" y1="78" x2="103" y2="78" stroke-width="2" stroke-linecap="round" class="empty-illustration__surface-stroke" />
+    <line
+      x1="100"
+      y1="75"
+      x2="100"
+      y2="81"
+      stroke-width="2"
+      stroke-linecap="round"
+      class="empty-illustration__surface-stroke"
+    />
+    <line
+      x1="97"
+      y1="78"
+      x2="103"
+      y2="78"
+      stroke-width="2"
+      stroke-linecap="round"
+      class="empty-illustration__surface-stroke"
+    />
   </svg>
 
   <!-- No Budget -->
@@ -78,9 +125,35 @@
     <rect x="64" y="82" width="56" height="5" rx="2.5" class="empty-illustration__muted-light" />
     <rect x="64" y="94" width="64" height="5" rx="2.5" class="empty-illustration__muted" />
     <!-- Dashed box (empty budget section) -->
-    <rect x="64" y="108" width="72" height="22" rx="4" stroke-dasharray="4 3" stroke-width="1.5" fill="none" class="empty-illustration__muted-dash" />
-    <line x1="100" y1="115" x2="100" y2="123" stroke-width="1.5" stroke-linecap="round" class="empty-illustration__muted-stroke" />
-    <line x1="96" y1="119" x2="104" y2="119" stroke-width="1.5" stroke-linecap="round" class="empty-illustration__muted-stroke" />
+    <rect
+      x="64"
+      y="108"
+      width="72"
+      height="22"
+      rx="4"
+      stroke-dasharray="4 3"
+      stroke-width="1.5"
+      fill="none"
+      class="empty-illustration__muted-dash"
+    />
+    <line
+      x1="100"
+      y1="115"
+      x2="100"
+      y2="123"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      class="empty-illustration__muted-stroke"
+    />
+    <line
+      x1="96"
+      y1="119"
+      x2="104"
+      y2="119"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      class="empty-illustration__muted-stroke"
+    />
   </svg>
 
   <!-- Help -->

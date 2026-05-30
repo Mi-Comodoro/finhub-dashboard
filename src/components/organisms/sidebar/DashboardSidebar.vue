@@ -1,57 +1,96 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { AppLogo, AppVersion, Button } from '@/components/atoms'
-  import { NavigationSection } from '@/components/molecules'
+  import AppLogo from '@/components/atoms/brand/AppLogo.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import AppVersion from '@/components/atoms/version/AppVersion.vue'
+  import NavigationSection from '@/components/molecules/navigation/NavigationSection.vue'
   import { useSidebarMode } from '@/composables/ui/useSidebarMode'
   import { useSidebar } from '@/composables/useSidebar'
   import { useAuthStore } from '@/stores/auth.store'
+  import { useFriendshipsStore } from '@/stores/friendships.store'
 
   import type { MenuItem } from './types/dashboard-sidebar.types'
 
   const route = useRoute()
   const authStore = useAuthStore()
+  const friendshipsStore = useFriendshipsStore()
 
   const { isCollapsed, toggleCollapse, close } = useSidebar()
   const { isAdminMode, toggle } = useSidebarMode()
 
+  const pendingRequestsCount = computed(() => friendshipsStore.pendingCount)
+
   const emit = defineEmits<{
     navigate: []
   }>()
+
+  // Sync cookie with the current route so that navigating directly to /admin
+  // (or refreshing there) always shows the admin nav, not the user nav.
+  watch(
+    () => route.path,
+    path => {
+      const shouldBeAdmin = path.startsWith('/admin')
+      if (shouldBeAdmin !== isAdminMode.value) toggle()
+    },
+    { immediate: true }
+  )
 
   const handleNavigate = () => {
     close()
     emit('navigate')
   }
 
-  const userMenuItems: Omit<MenuItem, 'isActive'>[] = [
+  const handleToggle = () => {
+    const target = isAdminMode.value ? '/dashboard' : '/admin'
+    toggle()
+    navigateTo(target)
+  }
+
+  const userMenuItems = computed<Omit<MenuItem, 'isActive'>[]>(() => [
     { name: 'Dashboard', icon: 'dashboard_2', path: '/dashboard' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
+    {
+      name: 'Grupos',
+      icon: 'group',
+      path: '/dashboard/groups',
+      badge: pendingRequestsCount.value || undefined
+    },
     { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
     { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' },
-    { name: 'Cuentas por Pagar', icon: 'credit_score', path: '/dashboard/debts' },
-    { name: 'Cuentas por Cobrar', icon: 'payments', path: '/dashboard/receivables' },
-    { name: 'Grupos', icon: 'group', path: '/dashboard/groups' }
-  ]
+    { name: 'Cuentas', icon: 'account_balance', path: '/dashboard/accounts' },
+    { name: 'Módulos', icon: 'view_module', className: 'nav-item--disabled' }
+  ])
 
   const settingsItems: Omit<MenuItem, 'isActive'>[] = [
     { name: 'Configuración', icon: 'settings', path: '/dashboard/settings' }
   ]
 
-  const adminNavItems: Omit<MenuItem, 'isActive'>[] = [
-    { name: 'Dashboard Admin', icon: 'space_dashboard', path: '/admin' },
-    { name: 'Usuarios', icon: 'people', path: '/admin/users' },
-    { name: 'Planes', icon: 'card_membership', path: '/admin/plans' },
-    { name: 'Categorías', icon: 'category', path: '/admin/categories' }
-  ]
+  const isAdmin = computed(
+    () => authStore.user?.role === 'admin' || authStore.user?.role === 'super_admin'
+  )
+  const isSuperAdmin = computed(() => authStore.user?.role === 'super_admin')
 
-  const isAdmin = computed(() => authStore.user?.role === 'admin')
+  const adminNavItems = computed<Omit<MenuItem, 'isActive'>[]>(() => {
+    const items: Omit<MenuItem, 'isActive'>[] = [
+      { name: 'Dashboard Admin', icon: 'space_dashboard', path: '/admin' },
+      { name: 'Usuarios', icon: 'people', path: '/admin/users' },
+      { name: 'Planes', icon: 'card_membership', path: '/admin/plans' },
+      { name: 'Categorías', icon: 'category', path: '/admin/categories' },
+      { name: 'Comunicaciones', icon: 'campaign', path: '/admin/communications' },
+      { name: 'Configuración', icon: 'settings', path: '/admin/config' }
+    ]
+    if (isSuperAdmin.value) {
+      items.push({ name: 'Auditoría', icon: 'shield', path: '/admin/audit' })
+    }
+    return items
+  })
 
   const mainMenuItems = computed<MenuItem[]>(() =>
-    userMenuItems.map(item => ({
+    userMenuItems.value.map(item => ({
       ...item,
-      isActive: isActiveRoute(item.path ?? '', route.path)
+      isActive: item.path ? isActiveRoute(item.path, route.path) : false
     }))
   )
 
@@ -63,7 +102,7 @@
   )
 
   const adminMenuItems = computed<MenuItem[]>(() =>
-    adminNavItems.map(item => ({
+    adminNavItems.value.map(item => ({
       ...item,
       isActive: isActiveRoute(item.path ?? '', route.path)
     }))
@@ -72,14 +111,12 @@
   const isActiveRoute = (itemPath: string, currentPath: string): boolean => {
     if (currentPath === itemPath) return true
 
-    if (
-      itemPath === '/dashboard' &&
-      (currentPath === '/dashboard/' || currentPath === '/dashboard')
-    ) {
-      return true
+    // Root paths only match themselves (with or without trailing slash)
+    if (itemPath === '/dashboard' || itemPath === '/admin') {
+      return currentPath === itemPath + '/'
     }
 
-    if (itemPath !== '/dashboard' && currentPath.startsWith(itemPath)) {
+    if (currentPath.startsWith(itemPath)) {
       const remainder = currentPath.slice(itemPath.length)
       return remainder === '' || remainder.startsWith('/')
     }
@@ -130,13 +167,13 @@
           :aria-checked="isAdminMode"
           class="mode-switch"
           :class="{ 'mode-switch--on': isAdminMode }"
-          @click="toggle"
+          @click="handleToggle"
         >
           <span class="mode-switch__thumb" />
         </button>
       </div>
       <div class="dashboard-sidebar__toggle">
-        <AppVersion v-if="!isCollapsed" class="ml-1 font-bold text-primary-900" size="xs" />
+        <AppVersion v-if="!isCollapsed" class="dashboard-sidebar__version" size="xs" />
         <Button
           :icon="isCollapsed ? 'chevron_right' : 'chevron_left'"
           variant="primary"
@@ -157,7 +194,7 @@
     @apply z-10 max-h-[56px] border-neutral-200 px-4 py-2 dark:border-neutral-700;
   }
   .dashboard-sidebar__nav {
-    @apply flex-1 gap-2 p-4;
+    @apply flex-1 gap-2 px-3 py-2 2xl:px-4 2xl:py-4;
   }
   .dashboard-sidebar__nav-group {
     @apply flex flex-col gap-2;
@@ -185,6 +222,10 @@
   }
   .mode-switch--on .mode-switch__thumb {
     @apply translate-x-5;
+  }
+
+  .dashboard-sidebar__version {
+    @apply ml-1 font-bold text-primary-900 dark:text-primary-400;
   }
 
   .sidebar-mode-enter-active,

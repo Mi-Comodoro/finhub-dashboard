@@ -1,18 +1,25 @@
 <script setup lang="ts">
-  import { Badge, Button, Text } from '@/components/atoms'
-  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
-  import { AccountSavingForm, GoalsForm } from '@/components/business'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import type { BadgeVariant } from '@/components/atoms/badge/types/badge.types'
+  import Button from '@/components/atoms/button/Button.vue'
+  import EmptyState from '@/components/atoms/empty-state/EmptyState.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import AccountSavingForm from '@/components/business/account/forms/AccountSavingForm.vue'
   import FinancialTipCarousel from '@/components/business/savings/FinancialTipCarousel.vue'
-  import { CardInfo } from '@/components/molecules'
-  import { ModalWizard } from '@/components/organisms'
+  import GoalsForm from '@/components/business/savings/forms/GoalsForm.vue'
+  import SavingDistributionEditForm from '@/components/business/savings/forms/SavingDistributionEditForm.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
+  import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
+  import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
   import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useFinancesApplication } from '@/composables/application/useFinancesApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
+  import { useSavingDistributionApplication } from '@/composables/application/useSavingDistributionApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
   import { useCommon } from '@/composables/useCommon'
-  import type { CompoundingFrequency, GoalsData, PlannedSaving } from '@/types/api'
+  import type { CompoundingFrequency, GoalsData, Transaction } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
   import { FINANCIAL_TIPS } from '@/utils/financial-tips'
   import { getProgressPercentage as getProgressPercentageUtil } from '@/utils/goal-formatters'
@@ -30,7 +37,7 @@
   const {
     loadGoalsData,
     loadSavingAllocations,
-    fetchGoalDetail,
+    fetchGoalContributions,
     error: goalsError,
     goals,
     removeGoal
@@ -58,14 +65,14 @@
   const { budgetStatus } = useCommon()
   const { currency } = useFinancesApplication()
 
-  const goalSavingsMap = ref<Record<string, PlannedSaving[]>>({})
+  const goalTransactionsMap = ref<Record<string, Transaction[]>>({})
 
   const getSavedAmountForGoal = (goalId: string): number => {
-    const savings = goalSavingsMap.value[goalId]
-    if (!savings) return 0
-    return savings
-      .filter(item => item.status === 'completed')
-      .reduce((acc, item) => acc + (item.amount ?? 0), 0)
+    const txns = goalTransactionsMap.value[goalId]
+    const txTotal = txns ? txns.reduce((acc, t) => acc + (t.amount ?? 0), 0) : 0
+    const goal = goals.value.find(g => g.id === goalId)
+    const psTotal = goal?.totalSaved ?? 0
+    return Math.max(txTotal, psTotal)
   }
 
   const getProgressPercentage = (goalId: string, targetAmount: number | null): number => {
@@ -165,11 +172,9 @@
       await loadSavingAllocations(currentBudgetId.value)
     }
     if (goals.value.length > 0) {
-      const results = await Promise.all(goals.value.map(g => fetchGoalDetail(g.id)))
-      goalSavingsMap.value = Object.fromEntries(
-        results
-          .filter(r => r.success && r.result != null)
-          .map(r => [r.result!.id, r.result!.plannedSavings ?? []])
+      const results = await Promise.all(goals.value.map(g => fetchGoalContributions(g.id)))
+      goalTransactionsMap.value = Object.fromEntries(
+        goals.value.map((g, i) => [g.id, results[i]?.result ?? []])
       )
     }
   })
@@ -231,50 +236,63 @@
   }
 
   const reasonTextMap: Record<string, string> = {
-    emergency: 'text-red-600',
-    elderly: 'text-amber-600',
-    home: 'text-orange-600',
-    school: 'text-blue-600',
-    flight: 'text-sky-600',
-    medical_services: 'text-rose-600',
-    payments: 'text-green-600',
-    trending_up: 'text-emerald-600',
-    directions_car: 'text-indigo-600',
-    shopping_cart: 'text-purple-600'
+    emergency: 'text-red-600 dark:text-red-400',
+    elderly: 'text-amber-600 dark:text-amber-400',
+    home: 'text-orange-600 dark:text-orange-400',
+    school: 'text-blue-600 dark:text-blue-400',
+    flight: 'text-sky-600 dark:text-sky-400',
+    medical_services: 'text-rose-600 dark:text-rose-400',
+    payments: 'text-green-600 dark:text-green-400',
+    trending_up: 'text-emerald-600 dark:text-emerald-400',
+    directions_car: 'text-indigo-600 dark:text-indigo-400',
+    shopping_cart: 'text-purple-600 dark:text-purple-400'
   }
 
   // 2. Mapa para el color de fondo (Contenedor)
   const reasonBgMap: Record<string, string> = {
-    emergency: 'bg-red-100',
-    elderly: 'bg-amber-100',
-    home: 'bg-orange-100',
-    school: 'bg-blue-100',
-    flight: 'bg-sky-100',
-    medical_services: 'bg-rose-100',
-    payments: 'bg-green-100',
-    trending_up: 'bg-emerald-100',
-    directions_car: 'bg-indigo-100',
-    shopping_cart: 'bg-purple-100'
+    emergency: 'bg-red-100 dark:bg-red-900/30',
+    elderly: 'bg-amber-100 dark:bg-amber-900/30',
+    home: 'bg-orange-100 dark:bg-orange-900/30',
+    school: 'bg-blue-100 dark:bg-blue-900/30',
+    flight: 'bg-sky-100 dark:bg-sky-900/30',
+    medical_services: 'bg-rose-100 dark:bg-rose-900/30',
+    payments: 'bg-green-100 dark:bg-green-900/30',
+    trending_up: 'bg-emerald-100 dark:bg-emerald-900/30',
+    directions_car: 'bg-indigo-100 dark:bg-indigo-900/30',
+    shopping_cart: 'bg-purple-100 dark:bg-purple-900/30'
   }
 
-  const getFrequencyClass = (frequency: CompoundingFrequency) => {
-    const classes: Record<CompoundingFrequency, string> = {
-      daily: ' !text-green-600', // Diario (Alta actividad)
-      monthly: '!text-secondary-600', // Mensual (Estándar)
-      annually: '!bg-ghost-100 !text-ghost-600' // Anual (Largo plazo)
+  function frequencyVariant(frequency: CompoundingFrequency): BadgeVariant {
+    const map: Record<CompoundingFrequency, BadgeVariant> = {
+      daily: 'success',
+      monthly: 'secondary',
+      annually: 'default'
     }
-    return classes[frequency] || 'bg-gray-100 text-gray-600'
+    return map[frequency] ?? 'default'
   }
-  const getLevelRateClass = (level: string) => {
-    if (level === 'Alta') return '!bg-green-200 !text-green-700'
-    if (level === 'Media') return '!bg-secondary-700 !text-secondary-200'
-    if (level === 'Baja') return '!bg-yellow-500 !text-neutral-900'
-    if (level === 'Muy Baja') return '!bg-red-700 !text-red-200'
 
-    return 'bg-gray-200 text-gray-500'
+  function rateVariant(level: string): BadgeVariant {
+    const map: Record<string, BadgeVariant> = {
+      Alta: 'success',
+      Media: 'secondary',
+      Baja: 'warning',
+      'Muy Baja': 'danger'
+    }
+    return map[level] ?? 'default'
   }
   const isAccountExits = computed(() => accounts.value?.length >= 1)
   const isGoalsExists = computed(() => goalsProgress.value >= 1)
+
+  const { getAllocationItems } = useSavingDistributionApplication()
+  const distributionItems = getAllocationItems(currentBudgetId)
+  const distributionTotal = computed(() =>
+    distributionItems.value.reduce((acc, item) => acc + item.percentage, 0)
+  )
+
+  const goalsWithoutDistribution = computed(() => {
+    const distributedIds = new Set(distributionItems.value.map(i => i.goalId))
+    return goals.value.filter(g => !distributedIds.has(g.id))
+  })
 
   const showSavingDistributionForm = ref(false)
   const createSavingDistributionForm = () => {
@@ -282,6 +300,29 @@
   }
   const closeSavingDistributionForm = () => {
     showSavingDistributionForm.value = false
+  }
+
+  const showDistributionEditForm = ref(false)
+  const openDistributionEditForm = () => {
+    showDistributionEditForm.value = true
+  }
+  const closeDistributionEditForm = () => {
+    showDistributionEditForm.value = false
+  }
+  const onDistributionEditSuccess = () => {
+    show({
+      title: 'Distribución actualizada',
+      description: 'La plantilla de ahorro se actualizó correctamente',
+      type: 'success'
+    })
+    closeDistributionEditForm()
+  }
+  const onDistributionEditError = () => {
+    show({
+      title: '¡Ups! Algo falló',
+      description: 'No se pudo actualizar la distribución. Intenta de nuevo.',
+      type: 'error'
+    })
   }
   type ExistingGoal = GoalsData & { id: string }
   const editingGoal = ref<ExistingGoal | null>(null)
@@ -348,6 +389,7 @@
         iconName: goal.reason,
         iconTextClass: reasonTextMap[goal.reason],
         iconBgClass: reasonBgMap[goal.reason],
+        variant: 'custom' as const,
         amount: savedAmount > 0 ? savedAmount : null,
         targetAmount: goal.targetAmount ?? undefined,
         targetDate: goal.targetDate ? String(goal.targetDate) : '',
@@ -362,23 +404,46 @@
 <template>
   <div class="goals-page">
     <div class="goals-page__header">
-      <div class="goals-page__header-text">
-        <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
-          Define tus Propositos
-        </Heading>
-        <Text size="xs" color="muted">
-          Organiza tu futuro financiero creando propósitos específicos.
-        </Text>
+      <div class="goals-page__header-top">
+        <div class="goals-page__header-text">
+          <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
+            Define tus Propositos
+          </Heading>
+          <Text size="xs" color="muted">
+            Organiza tu futuro financiero creando propósitos específicos.
+          </Text>
+        </div>
+
+        <div class="goals-page__header-buttons">
+          <Button
+            v-if="isSavingsAllocationCompleted"
+            size="sm"
+            icon="tune"
+            variant="secondary"
+            @click="openDistributionEditForm"
+          >
+            Reajustar distribución
+          </Button>
+          <Button
+            size="sm"
+            icon="add_task"
+            variant="primary"
+            :disabled="!isAccountCreated"
+            @click="createGoalsForm"
+          >
+            Nueva Meta
+          </Button>
+        </div>
       </div>
-      <div class="goals-page__header-actions">
-        <!-- Filtros de plazo -->
+
+      <div class="goals-page__header-controls">
         <div class="goals-page__filters">
           <button
             v-for="f in [
               { value: 'all', label: 'Todas' },
-              { value: 'short', label: 'Corto plazo' },
-              { value: 'medium', label: 'Mediano plazo' },
-              { value: 'long', label: 'Largo plazo' }
+              { value: 'short', label: 'Corto' },
+              { value: 'medium', label: 'Mediano' },
+              { value: 'long', label: 'Largo' }
             ]"
             :key="f.value"
             :class="[
@@ -391,7 +456,6 @@
           </button>
         </div>
 
-        <!-- Toggle vista -->
         <div class="goals-page__view-toggle">
           <Button
             variant="ghost"
@@ -410,16 +474,6 @@
             @click="viewMode = 'table'"
           />
         </div>
-
-        <Button
-          size="sm"
-          icon="add_task"
-          variant="primary"
-          :disabled="!isAccountCreated"
-          :onclick="createGoalsForm"
-        >
-          Nueva Meta
-        </Button>
       </div>
     </div>
     <AllocationSummary />
@@ -455,243 +509,308 @@
         </div>
 
         <!-- Vista tabla -->
-        <table v-else class="goals-page__table">
-          <thead>
-            <tr>
-              <th>Meta</th>
-              <th>Cuenta</th>
-              <th>Estado</th>
-              <th>Plazo</th>
-              <th>Progreso</th>
-              <th>Objetivo</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="goal in filteredGoals"
-              :key="goal.id"
-              class="goals-page__table-row"
-              @click="goToDetail(goal.id)"
-            >
-              <td>{{ goal.name }}</td>
-              <td>{{ goal.accountName }}</td>
-              <td>
-                <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="sm">
-                  {{ GOAL_STATUS_LABELS[(goal.status as GoalStatus) ?? 'SCHEDULED'] }}
-                </Badge>
-              </td>
-              <td>{{ GOAL_TERM_LABELS[getGoalTerm(goal.targetDate)] }}</td>
-              <td>
-                <div class="goals-page__progress-cell">
-                  <div class="goals-page__progress-bar">
-                    <div
-                      class="goals-page__progress-fill"
-                      :style="{
-                        width: `${getProgressPercentage(goal.id, goal.targetAmount ?? 0)}%`
-                      }"
-                    ></div>
+        <div v-else class="goals-page__table-wrapper">
+          <table class="goals-page__table">
+            <thead>
+              <tr>
+                <th class="goals-page__table-col--name">Meta</th>
+                <th class="goals-page__table-col--secondary">Cuenta</th>
+                <th>Estado</th>
+                <th class="goals-page__table-col--secondary">Plazo</th>
+                <th>Progreso</th>
+                <th>Objetivo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="goal in filteredGoals"
+                :key="goal.id"
+                class="goals-page__table-row"
+                @click="goToDetail(goal.id)"
+              >
+                <td class="goals-page__table-col--name">{{ goal.name }}</td>
+                <td class="goals-page__table-col--secondary">{{ goal.accountName }}</td>
+                <td>
+                  <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="xs">
+                    {{ GOAL_STATUS_LABELS[(goal.status as GoalStatus) ?? 'SCHEDULED'] }}
+                  </Badge>
+                </td>
+                <td class="goals-page__table-col--secondary">
+                  {{ GOAL_TERM_LABELS[getGoalTerm(goal.targetDate)] }}
+                </td>
+                <td>
+                  <div class="goals-page__progress-cell">
+                    <div class="goals-page__progress-bar">
+                      <div
+                        class="goals-page__progress-fill"
+                        :style="{
+                          width: `${getProgressPercentage(goal.id, goal.targetAmount ?? 0)}%`
+                        }"
+                      ></div>
+                    </div>
+                    <span class="goals-page__progress-text">
+                      {{ getProgressPercentage(goal.id, goal.targetAmount ?? 0) }}%
+                    </span>
                   </div>
-                  <span class="goals-page__progress-text">
-                    {{ getProgressPercentage(goal.id, goal.targetAmount ?? 0) }}%
-                  </span>
-                </div>
-              </td>
-              <td>{{ goal.targetAmount ? formatCurrency(goal.targetAmount, currency) : '—' }}</td>
-              <td>
-                <div class="goals-page__table-actions">
-                  <Button
-                    variant="ghost"
-                    icon="edit"
-                    icon-only
-                    size="sm"
-                    @click.stop="editGoal(goal as ExistingGoal)"
-                  />
-                  <Button
-                    variant="ghost"
-                    icon="delete"
-                    icon-only
-                    size="sm"
-                    @click.stop="openDeleteModal(goal.id)"
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div v-else class="goals-page__empty-section">
-        <div class="goals-page__empty-content">
-          <EmptyStateIllustration type="no-goals" class="goals-page__empty-icon" />
-          <Heading level="h3" color="muted">Aún no tienes metas</Heading>
-          <Text size="sm" color="muted" class="goals-page__empty-text">
-            Primero crea tus cuentas para poder definir tus metas financieras y comenzar a organizar
-            tus finanzas de manera efectiva.
-          </Text>
+                </td>
+                <td>{{ goal.targetAmount ? formatCurrency(goal.targetAmount, currency) : '—' }}</td>
+                <td>
+                  <div class="goals-page__table-actions">
+                    <Button
+                      variant="ghost"
+                      icon="edit"
+                      icon-only
+                      size="sm"
+                      @click.stop="editGoal(goal as ExistingGoal)"
+                    />
+                    <Button
+                      variant="ghost"
+                      icon="delete"
+                      icon-only
+                      size="sm"
+                      @click.stop="openDeleteModal(goal.id)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
+      <EmptyState
+        v-else
+        title="Aún no tienes metas"
+        description="Primero crea tus cuentas para poder definir tus metas financieras y comenzar a organizar tus finanzas de manera efectiva."
+        illustration="no-goals"
+        class="goals-page__empty-section"
+      />
 
       <div class="goals-page__sidebar">
-        <!--  -->
-        <div v-if="budgetStatus !== 'ACTIVE'">
-          <div v-for="(step, index) in steps" :key="index" class="goals-page__tip-step">
-            <Tips
-              v-if="step.condition"
-              :title="step.title"
-              :icon="step.icon"
-              :description="step.description"
-              :action-label="step.actionLabel"
-              :event="step.event"
-            />
-          </div>
-        </div>
-
-        <div v-if="budgetStatus !== 'ACTIVE'">
-          <FinancialProgressCard
-            :title="'Setup'"
-            title-color="white"
-            :subtitle="'Configura tu estrategia'"
-            sub-title-color="white"
-            icon-name="settings_slow_motion"
-            icon-text-class="text-primary-600"
-            currency-text-class="text-primary-600"
-            show-alert
-            class="goals-page__setup-card"
-          >
-            <template #body>
-              <SetupProgressCard
-                :accounts-count="accounts.length"
-                :goals-count="goalsProgress"
-                :distribution-percentage="allocationProgress"
-              >
-                <template #action>
-                  <div v-if="canActive" class="goals-page__setup-action">
-                    <Text color="white" size="xs">
-                      ¡Todo listo para comenzar! Ya definiste tu ahorro y organización inicial.
-                      Ahora es momento de planificar tus gastos.
-                    </Text>
-                    <div class="goals-page__setup-button">
-                      <Button
-                        icon="rocket_launch"
-                        size="sm"
-                        variant="ghost"
-                        @click="activateBudget"
-                      >
-                        Activar
-                      </Button>
-                    </div>
-                  </div>
-                </template>
-              </SetupProgressCard>
-            </template>
-          </FinancialProgressCard>
-        </div>
-
-        <div class="goals-page__accounts-wrapper">
-          <div v-if="isAccountExits" class="goals-page__accounts-section">
-            <div class="goals-page__accounts-header">
-              <CardInfo
-                title="Mis Cuentas"
-                level="h2"
-                weight="extrabold"
-                sub-title="Gestiona tus cuentas"
-                sub-title-size="sm"
-                sub-title-color="muted"
-              />
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                icon="add"
-                icon-only
-                @click="createAccountSavings"
+        <SidebarPage>
+          <!--  -->
+          <div v-if="budgetStatus !== 'ACTIVE'">
+            <div v-for="(step, index) in steps" :key="index" class="goals-page__tip-step">
+              <Tips
+                v-if="step.condition"
+                :title="step.title"
+                :icon="step.icon"
+                :description="step.description"
+                :action-label="step.actionLabel"
+                :event="step.event"
               />
             </div>
-            <div class="goals-page__accounts-list">
-              <Card v-for="(account, index) in accounts" :key="index" class-name="!p-2">
-                <div class="goals-page__account-card">
-                  <div class="goals-page__account-info">
-                    <div class="goals-page__account-badge-wrapper">
-                      <div class="goals-page__account-badge-wrapper">
-                        <Badge
-                          :rounded="false"
-                          class="goals-page__account-badge"
-                          :class-name="
-                            getLevelRateClass(getRateCategory(account.interestRate).level)
-                          "
-                        >
-                          {{ getInitials(account.name) }}
-                        </Badge>
-                        <CardInfo
-                          level="h3"
-                          title-size="sm"
-                          weight="extrabold"
-                          :title="account.name"
-                          :sub-title="
-                            account.description ||
-                            getRateCategory(account.interestRate ?? 0).description
-                          "
-                          sub-title-size="xs"
-                          sub-title-color="muted"
-                        />
-                      </div>
-                      <div class="goals-page__account-edit">
+          </div>
+
+          <div v-if="budgetStatus !== 'ACTIVE'">
+            <FinancialProgressCard
+              :title="'Setup'"
+              title-color="white"
+              :subtitle="'Configura tu estrategia'"
+              sub-title-color="white"
+              icon-name="settings_slow_motion"
+              icon-text-class="text-primary-600"
+              currency-text-class="text-primary-600"
+              show-alert
+              class="goals-page__setup-card"
+            >
+              <template #body>
+                <SetupProgressCard
+                  :accounts-count="accounts.length"
+                  :goals-count="goalsProgress"
+                  :distribution-percentage="allocationProgress"
+                >
+                  <template #action>
+                    <div v-if="canActive" class="goals-page__setup-action">
+                      <Text color="white" size="xs">
+                        ¡Todo listo para comenzar! Ya definiste tu ahorro y organización inicial.
+                        Ahora es momento de planificar tus gastos.
+                      </Text>
+                      <div class="goals-page__setup-button">
                         <Button
-                          icon="edit"
-                          variant="ghost"
+                          icon="rocket_launch"
                           size="sm"
-                          icon-only
-                          @click="editAccount(account)"
-                        />
+                          variant="ghost"
+                          @click="activateBudget"
+                        >
+                          Activar
+                        </Button>
                       </div>
                     </div>
+                  </template>
+                </SetupProgressCard>
+              </template>
+            </FinancialProgressCard>
+          </div>
 
-                    <div class="goals-page__account-stats">
-                      <span
-                        class="goals-page__account-frequency"
-                        :class="getFrequencyClass(account.compoundingFrequency)"
-                      >
+          <div class="goals-page__accounts-wrapper">
+            <div v-if="isAccountExits" class="goals-page__accounts-section">
+              <div class="goals-page__accounts-header">
+                <CardInfo
+                  title="Mis Cuentas"
+                  level="h2"
+                  weight="extrabold"
+                  sub-title="Gestiona tus cuentas"
+                  sub-title-size="sm"
+                  sub-title-color="muted"
+                />
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  icon="add"
+                  icon-only
+                  @click="createAccountSavings"
+                />
+              </div>
+              <div class="goals-page__accounts-list">
+                <div
+                  v-for="(account, index) in accounts"
+                  :key="index"
+                  class="goals-page__account-row"
+                >
+                  <Badge
+                    :rounded="false"
+                    class="goals-page__account-badge"
+                    :variant="rateVariant(getRateCategory(account.interestRate).level)"
+                  >
+                    {{ getInitials(account.name) }}
+                  </Badge>
+                  <div class="goals-page__account-name">
+                    <span class="goals-page__account-name-text">{{ account.name }}</span>
+                    <div class="goals-page__account-meta">
+                      <Badge :variant="frequencyVariant(account.compoundingFrequency)" size="xs">
                         {{ frequencyMap(account.compoundingFrequency) }}
-                      </span>
+                      </Badge>
                       <Text size="xs">{{ account.interestRate.toFixed(2) }}%EA</Text>
                     </div>
                   </div>
+                  <Button
+                    icon="edit"
+                    variant="ghost"
+                    size="sm"
+                    icon-only
+                    @click="editAccount(account)"
+                  />
                 </div>
-              </Card>
+              </div>
+            </div>
+
+            <div
+              v-else
+              class="goals-page__accounts-empty"
+              :class="[
+                {
+                  'goals-page__accounts-empty--bordered': !isAccountExits
+                }
+              ]"
+            >
+              <div class="goals-page__accounts-empty-content">
+                <IconBadge icon="account_balance" size="md" />
+                <Heading
+                  level="h1"
+                  size="sm"
+                  weight="extrabold"
+                  color="primary"
+                  class="goals-page__accounts-empty-title"
+                >
+                  No se han creado cuentas
+                </Heading>
+
+                <Text size="xs" color="muted" class="goals-page__accounts-empty-text">
+                  A continuacion crea las cuentas que vas a asociar a tus metas de ahorro
+                </Text>
+                <Button type="submit" size="sm" variant="ghost" @click="createAccountSavings">
+                  Agregar
+                </Button>
+              </div>
             </div>
           </div>
 
-          <div
-            v-else
-            class="goals-page__accounts-empty"
-            :class="[
-              {
-                'goals-page__accounts-empty--bordered': !isAccountExits
-              }
-            ]"
-          >
-            <div class="goals-page__accounts-empty-content">
-              <IconBadge icon="account_balance" size="md" />
-              <Heading
-                level="h1"
-                size="sm"
-                weight="extrabold"
-                color="primary"
-                class="goals-page__accounts-empty-title"
+          <!-- Distribución de Ahorro -->
+          <div class="goals-page__distribution">
+            <CardInfo
+              title="Distribución de Ahorro"
+              level="h2"
+              weight="extrabold"
+              title-size="sm"
+              sub-title="Cuánto del ahorro mensual va a cada meta"
+              sub-title-size="xs"
+              sub-title-color="muted"
+            />
+
+            <!-- Empty state -->
+            <div v-if="distributionItems.length === 0" class="goals-page__distribution-empty">
+              <span class="material-symbols-outlined goals-page__distribution-empty-icon">
+                pie_chart
+              </span>
+              <p class="goals-page__distribution-empty-title">Aún no tienes metas</p>
+              <p class="goals-page__distribution-empty-desc">
+                Crea una meta para empezar a distribuir tu ahorro.
+              </p>
+            </div>
+
+            <!-- Distribution list + total + button -->
+            <template v-else>
+              <div class="goals-page__distribution-list">
+                <div
+                  v-for="item in distributionItems"
+                  :key="item.goalId"
+                  class="goals-page__distribution-row"
+                >
+                  <span class="goals-page__distribution-name">{{ item.goalName }}</span>
+                  <span class="goals-page__distribution-pct">{{ item.percentage }}%</span>
+                  <div class="goals-page__distribution-track">
+                    <div
+                      class="goals-page__distribution-fill"
+                      :style="{ width: `${item.percentage}%` }"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="goals-page__distribution-total"
+                :class="{
+                  'goals-page__distribution-total--complete': distributionTotal === 100,
+                  'goals-page__distribution-total--warning': distributionTotal !== 100
+                }"
               >
-                No se han creado cuentas
-              </Heading>
+                <span class="material-symbols-outlined goals-page__distribution-total-icon">
+                  {{ distributionTotal === 100 ? 'check_circle' : 'warning' }}
+                </span>
+                <span class="goals-page__distribution-total-text">
+                  {{
+                    distributionTotal === 100
+                      ? '100% asignado'
+                      : `Distribución incompleta · ${distributionTotal}% asignado`
+                  }}
+                </span>
+              </div>
 
-              <Text size="xs" color="muted" class="goals-page__accounts-empty-text">
-                A continuacion crea las cuentas que vas a asociar a tus metas de ahorro
-              </Text>
-              <Button type="submit" size="sm" variant="ghost" @click="createAccountSavings">
-                Agregar
+              <div
+                v-if="goalsWithoutDistribution.length > 0"
+                class="goals-page__distribution-new-warning"
+              >
+                <span class="material-symbols-outlined goals-page__distribution-new-warning-icon">
+                  info
+                </span>
+                <span class="goals-page__distribution-new-warning-text">
+                  {{
+                    goalsWithoutDistribution.length === 1
+                      ? '1 meta nueva sin distribución asignada'
+                      : `${goalsWithoutDistribution.length} metas nuevas sin distribución asignada`
+                  }}
+                </span>
+              </div>
+
+              <Button size="sm" variant="ghost" icon="edit" @click="openDistributionEditForm">
+                Editar distribución
               </Button>
-            </div>
+            </template>
           </div>
-        </div>
+        </SidebarPage>
       </div>
     </div>
     <ModalWizard v-model:show="showGoalsForm">
@@ -718,6 +837,16 @@
       />
     </ModalWizard>
 
+    <ModalWizard v-model:show="showDistributionEditForm">
+      <SavingDistributionEditForm
+        v-if="currentBudgetId"
+        :budget-id="currentBudgetId"
+        @on-close="closeDistributionEditForm"
+        @on-success="onDistributionEditSuccess"
+        @on-error="onDistributionEditError"
+      />
+    </ModalWizard>
+
     <!-- Modal de confirmación eliminar -->
     <ModalWizard v-model:show="showDeleteModal">
       <div class="goals-page__delete-modal">
@@ -738,15 +867,23 @@
   }
 
   .goals-page__header {
-    @apply flex flex-col gap-4 md:flex-row md:items-center md:justify-between;
+    @apply flex flex-col gap-2;
+  }
+
+  .goals-page__header-top {
+    @apply flex items-start justify-between gap-4;
   }
 
   .goals-page__header-text {
-    @apply md:pr-4 xl:pr-0;
+    @apply flex flex-col gap-0.5;
   }
 
-  .goals-page__header-actions {
-    @apply flex flex-wrap items-center gap-2;
+  .goals-page__header-buttons {
+    @apply flex shrink-0 items-center gap-2;
+  }
+
+  .goals-page__header-controls {
+    @apply flex items-center justify-between gap-2;
   }
 
   /* Filtros */
@@ -756,6 +893,7 @@
 
   .goals-page__filter-chip {
     @apply rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 transition-all hover:border-primary-500 hover:bg-primary-50;
+    @apply dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:border-primary-500 dark:hover:bg-primary-900/20;
   }
 
   .goals-page__filter-chip--active {
@@ -765,10 +903,11 @@
   /* Toggle vista */
   .goals-page__view-toggle {
     @apply flex gap-1 rounded-lg border border-neutral-200 bg-neutral-50 p-1;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-page__view-btn--active {
-    @apply !bg-primary-500 !text-white;
+    @apply !bg-primary-900 !text-white;
   }
 
   .goals-page__title {
@@ -776,11 +915,11 @@
   }
 
   .goals-page__grid {
-    @apply grid w-full grid-cols-12 gap-4;
+    @apply flex flex-col gap-6 lg:flex-row lg:items-start;
   }
 
   .goals-page__goals-section {
-    @apply col-span-8 flex flex-col gap-4;
+    @apply flex min-w-0 flex-1 flex-col gap-4;
   }
 
   .goals-page__goals-cards {
@@ -796,24 +935,33 @@
   }
 
   /* Tabla */
+  .goals-page__table-wrapper {
+    @apply overflow-x-auto rounded-lg shadow-sm;
+  }
+
   .goals-page__table {
-    @apply w-full border-collapse overflow-hidden rounded-lg bg-white shadow-sm;
+    @apply w-full min-w-[570px] table-fixed border-collapse bg-white;
+    @apply dark:bg-neutral-800;
   }
 
   .goals-page__table thead {
     @apply bg-neutral-100;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__table th {
     @apply px-4 py-3 text-left text-xs font-semibold text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
   .goals-page__table td {
     @apply border-t border-neutral-200 px-4 py-3 text-sm text-neutral-800;
+    @apply dark:border-neutral-700 dark:text-neutral-200;
   }
 
   .goals-page__table tbody tr:hover {
     @apply bg-neutral-50;
+    @apply dark:bg-neutral-700/50;
   }
 
   .goals-page__table-row {
@@ -824,12 +972,21 @@
     @apply flex gap-1;
   }
 
+  .goals-page__table-col--secondary {
+    @apply hidden 2xl:table-cell;
+  }
+
+  .goals-page__table-col--name {
+    @apply w-[160px] truncate;
+  }
+
   .goals-page__progress-cell {
     @apply flex items-center gap-2;
   }
 
   .goals-page__progress-bar {
-    @apply h-2 w-24 overflow-hidden rounded-full bg-neutral-200;
+    @apply h-2 w-16 overflow-hidden rounded-full bg-neutral-200 xl:w-24;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__progress-fill {
@@ -838,6 +995,7 @@
 
   .goals-page__progress-text {
     @apply text-xs font-medium text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .goals-page__achievement-card {
@@ -877,23 +1035,17 @@
   }
 
   .goals-page__empty-section {
-    @apply col-span-8 flex flex-col items-center gap-4 rounded-md bg-slate-200;
-  }
-
-  .goals-page__empty-content {
-    @apply flex h-full flex-col items-center gap-4 py-52;
-  }
-
-  .goals-page__empty-icon {
-    @apply w-32;
-  }
-
-  .goals-page__empty-text {
-    @apply w-96 text-center;
+    @apply min-w-0 flex-1 rounded-md bg-slate-200;
+    @apply dark:bg-neutral-700;
   }
 
   .goals-page__sidebar {
-    @apply col-span-4 flex flex-col gap-4;
+    @apply w-full lg:sticky lg:top-4 lg:w-80 lg:shrink-0 lg:self-start;
+  }
+
+  /* Compact Card atoms in sidebar */
+  .goals-page__sidebar :deep(.card) {
+    @apply p-3;
   }
 
   .goals-page__tip-step {
@@ -913,51 +1065,51 @@
   }
 
   .goals-page__accounts-wrapper {
-    @apply rounded-md bg-white px-2 py-3;
+    @apply rounded-lg border border-neutral-100 bg-white p-3;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .goals-page__accounts-section {
-    @apply flex max-h-[335px] min-h-[335px] flex-col space-y-4 p-2;
+    @apply flex flex-col gap-2;
   }
 
   .goals-page__accounts-header {
-    @apply flex justify-between;
+    @apply flex items-center justify-between;
   }
 
   .goals-page__accounts-list {
-    @apply flex max-h-80 flex-col space-y-2 overflow-y-auto rounded-md;
+    @apply flex max-h-48 flex-col gap-1.5 overflow-y-auto;
   }
 
-  .goals-page__account-card {
-    @apply flex w-full flex-col;
-  }
-
-  .goals-page__account-info {
-    @apply flex flex-col items-start gap-2;
-  }
-
-  .goals-page__account-badge-wrapper {
-    @apply flex w-full items-center gap-2;
+  .goals-page__account-row {
+    @apply flex items-center gap-2 rounded-md border border-neutral-100 bg-neutral-50 px-2 py-1.5;
+    @apply dark:border-neutral-700 dark:bg-neutral-700/50;
   }
 
   .goals-page__account-badge {
-    @apply !py-3;
+    @apply shrink-0 !py-1.5;
   }
 
-  .goals-page__account-stats {
-    @apply ml-auto flex items-center gap-2;
+  .goals-page__account-name {
+    @apply flex min-w-0 flex-1 flex-col gap-0.5;
   }
 
-  .goals-page__account-frequency {
-    @apply rounded-md px-2 py-0.5 text-xs font-semibold;
+  .goals-page__account-name-text {
+    @apply truncate text-xs font-semibold text-neutral-800;
+    @apply dark:text-neutral-200;
+  }
+
+  .goals-page__account-meta {
+    @apply flex items-center gap-1.5;
   }
 
   .goals-page__accounts-empty {
-    @apply flex max-h-[335px] min-h-[335px] flex-col items-center justify-center p-2;
+    @apply flex flex-col items-center justify-center gap-3 py-4;
   }
 
   .goals-page__accounts-empty--bordered {
-    @apply border border-dashed border-neutral-400 bg-neutral-100;
+    @apply rounded-md border border-dashed border-neutral-400 bg-neutral-100;
+    @apply dark:border-neutral-600 dark:bg-neutral-700/50;
   }
 
   .goals-page__accounts-empty-content {
@@ -981,7 +1133,89 @@
     @apply flex justify-end gap-2;
   }
 
-  goals-page__account-edit {
-    @apply place-items-end;
+  /* Distribución de ahorro */
+  .goals-page__distribution {
+    @apply flex flex-col gap-3 rounded-lg border border-neutral-100 bg-white p-3;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .goals-page__distribution-empty {
+    @apply flex flex-col items-center gap-1.5 py-3 text-center;
+  }
+
+  .goals-page__distribution-empty-icon {
+    @apply text-2xl text-neutral-300;
+  }
+
+  .goals-page__distribution-empty-title {
+    @apply text-xs font-semibold text-neutral-600;
+    @apply dark:text-neutral-400;
+  }
+
+  .goals-page__distribution-empty-desc {
+    @apply max-w-[180px] text-xs text-neutral-400;
+  }
+
+  .goals-page__distribution-list {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .goals-page__distribution-row {
+    @apply grid items-center gap-2;
+    grid-template-columns: minmax(0, 1fr) 2.5rem minmax(0, 2fr);
+  }
+
+  .goals-page__distribution-name {
+    @apply truncate text-xs text-neutral-700;
+    @apply dark:text-neutral-300;
+  }
+
+  .goals-page__distribution-pct {
+    @apply text-right text-xs font-semibold text-neutral-900;
+    @apply dark:text-neutral-100;
+  }
+
+  .goals-page__distribution-track {
+    @apply h-1.5 overflow-hidden rounded-full bg-neutral-100;
+    @apply dark:bg-neutral-700;
+  }
+
+  .goals-page__distribution-fill {
+    @apply h-full rounded-full bg-primary-500 transition-all duration-500;
+  }
+
+  .goals-page__distribution-total {
+    @apply flex items-center gap-1.5 rounded-md px-2 py-1.5 transition-colors;
+  }
+
+  .goals-page__distribution-total--complete {
+    @apply bg-success-50 text-success-700;
+    @apply dark:bg-success-900/20 dark:text-success-400;
+  }
+
+  .goals-page__distribution-total--warning {
+    @apply bg-warning-50 text-warning-700;
+    @apply dark:bg-warning-900/20 dark:text-warning-400;
+  }
+
+  .goals-page__distribution-total-icon {
+    @apply shrink-0 text-sm leading-none;
+  }
+
+  .goals-page__distribution-total-text {
+    @apply text-xs font-medium;
+  }
+
+  .goals-page__distribution-new-warning {
+    @apply flex items-center gap-1.5 rounded-md bg-primary-50 px-2 py-1.5 text-primary-700;
+    @apply dark:bg-primary-900/20 dark:text-primary-300;
+  }
+
+  .goals-page__distribution-new-warning-icon {
+    @apply shrink-0 text-sm leading-none;
+  }
+
+  .goals-page__distribution-new-warning-text {
+    @apply text-xs font-medium;
   }
 </style>

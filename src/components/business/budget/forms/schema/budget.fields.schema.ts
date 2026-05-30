@@ -66,6 +66,6 @@ export const budgetFieldsSchema = (
     { type: 'row', fields: ['name'] },
     { type: 'grid', columns: 2, fields: ['month', 'year'] },
     { type: 'row', fields: ['strategy'] },
-    { type: 'grid', columns: 3, fields: ['needsLimit', 'wantsLimit', 'savingsLimit'] }
+    { type: 'grid', columns: 1, fields: ['needsLimit', 'wantsLimit', 'savingsLimit'] }
   ]
 })

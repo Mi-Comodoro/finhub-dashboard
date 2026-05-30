@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Label } from '@/components/atoms'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   defineOptions({ inheritAttrs: false })
 
@@ -22,14 +22,7 @@
 
 <template>
   <div class="percentage-input">
-    <Label
-      v-if="label"
-      variant="form"
-      size="sm"
-      weight="bold"
-      color="black"
-      :required="required"
-    >
+    <Label v-if="label" variant="form" size="sm" weight="bold" color="black" :required="required">
       {{ label }}
     </Label>
 
@@ -44,7 +37,9 @@
         :value="modelValue ?? ''"
         :placeholder="placeholder"
         :required="required"
-        @input="$emit('update:modelValue', parseFloat(($event.target as HTMLInputElement).value) || 0)"
+        @input="
+          $emit('update:modelValue', parseFloat(($event.target as HTMLInputElement).value) || 0)
+        "
       />
       <span class="percentage-input__suffix">%EA</span>
     </div>

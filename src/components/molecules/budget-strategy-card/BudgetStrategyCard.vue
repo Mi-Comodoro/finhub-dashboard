@@ -9,7 +9,7 @@
    * Displays budget strategy options with visual allocation breakdown
    */
 
-  import { Badge } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
 
   import type { BudgetAllocation } from '../charts'
   import type { BudgetStrategyCardProps } from './types/budget-strategy-card.types'

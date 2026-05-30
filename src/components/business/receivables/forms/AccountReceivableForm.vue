@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import { Form } from '@/components/organisms/forms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useAccountsReceivableApplication } from '@/composables/application/useAccountsReceivableApplication'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
   import type { CreateAccountReceivableDto } from '@/types/accounts-receivable.types'
 
   import { accountReceivableFieldsSchema } from './schema/account-receivable.fields.schema'
@@ -37,9 +37,7 @@
     try {
       const normalized = {
         ...data,
-        ...(data.dueDate
-          ? { dueDate: new Date(data.dueDate as string | Date).toISOString() }
-          : {})
+        ...(data.dueDate ? { dueDate: new Date(data.dueDate as string | Date).toISOString() } : {})
       }
       const dto = buildDto(normalized)
 

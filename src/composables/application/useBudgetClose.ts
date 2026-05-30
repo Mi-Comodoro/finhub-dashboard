@@ -2,7 +2,7 @@ import type { FetchError } from 'ofetch'
 import { ref } from 'vue'
 
 import { useBudgetApi } from '@/composables/api/useBudgetApi'
-import { useFeedback } from '@/composables/useFeedback'
+import { useFeedback } from '@/composables/useFeedBack'
 
 export type SurplusAction = 'transfer_to_goal' | 'carry_forward' | 'ignore'
 
@@ -16,10 +16,7 @@ export const useBudgetClose = () => {
   const surplus = ref(0)
   const isClosing = ref(false)
 
-  const initiateClosure = async (
-    budget: { id: string },
-    libresincomprometer: number
-  ) => {
+  const initiateClosure = async (budget: { id: string }, libresincomprometer: number) => {
     pendingClose.value = budget.id
 
     if (libresincomprometer > 0) {

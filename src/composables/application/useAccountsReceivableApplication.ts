@@ -3,7 +3,10 @@ import { storeToRefs } from 'pinia'
 import { useAccountsReceivableApi } from '~/composables/api/useAccountsReceivableApi'
 import { useFinancesApplication } from '~/composables/application/useFinancesApplication'
 import { useAccountsReceivableStore } from '~/stores/accounts-receivable.store'
-import type { CreateAccountReceivableDto, RegisterCollectionDto } from '~/types/accounts-receivable.types'
+import type {
+  CreateAccountReceivableDto,
+  RegisterCollectionDto
+} from '~/types/accounts-receivable.types'
 import { CHART_COLORS } from '~/utils/design-tokens'
 
 export const useAccountsReceivableApplication = () => {

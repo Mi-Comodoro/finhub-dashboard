@@ -18,6 +18,9 @@ export interface GoalsData {
    * Not present in GET /goals list response
    */
   plannedSavings?: PlannedSaving[]
+  /** Sum of completed PlannedSavings — populated in GET /goals list */
+  totalSaved?: number
+  lastInterestDate?: Date | null
   createdAt?: Date
   updatedAt?: Date
 }

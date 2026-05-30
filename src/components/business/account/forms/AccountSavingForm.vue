@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { Form } from '@/components/organisms'
-  import { AlertBanner } from '~/components/atoms'
+  import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useAccountSavingsApplication } from '~/composables/application/useAccountSavingsApplication'
   import type { CompoundingFrequency } from '~/types/api'
 

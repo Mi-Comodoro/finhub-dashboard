@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { Form } from '@/components/organisms'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useAccountSavingsApplication } from '@/composables/application/useAccountSavingsApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import type { GoalsData } from '~/types/api'
@@ -109,9 +109,15 @@
         success = result.success
       }
 
-      emit('onClose', success)
+      if (success) {
+        emit('onSuccess')
+      } else {
+        emit('onError')
+      }
+      emit('onClose')
     } catch (error) {
-      emit('onClose', false)
+      emit('onError')
+      emit('onClose')
       console.error('Error in handleSubmit:', error)
     } finally {
       isSubmitting.value = false
@@ -137,14 +143,10 @@
       icon-variant="primary"
     />
 
-    <div class="goals-form__alert">
-      <AlertBanner
-        :title="currentTip?.title ?? 'Selecciona un motivo'"
-        :variant="currentTip?.variant ?? 'warning'"
-        icon="info"
-      >
+    <div v-if="currentTip" class="goals-form__alert">
+      <AlertBanner :title="currentTip.title" :variant="currentTip.variant" icon="info">
         <Text size="xs" class="goals-form__alert-text">
-          {{ currentTip?.description ?? 'El motivo que elijas determinará las recomendaciones.' }}
+          {{ currentTip.description }}
         </Text>
       </AlertBanner>
     </div>
@@ -157,7 +159,9 @@
               Cancelar
             </Button>
             <Button type="submit" variant="primary" size="sm">
-              {{ isSubmitting ? 'Guardando...' : mode === 'edit' ? 'Actualizar' : 'Guardar Meta' }}
+              {{
+                isSubmitting ? 'Guardando...' : mode === 'edit' ? 'Actualizar Meta' : 'Crear Meta'
+              }}
             </Button>
           </div>
         </template>
@@ -169,6 +173,7 @@
 <style lang="postcss" scoped>
   .goals-form {
     @apply flex h-full w-full flex-col gap-2 rounded-md bg-white;
+    @apply dark:bg-neutral-800;
   }
 
   .goals-form__alert {

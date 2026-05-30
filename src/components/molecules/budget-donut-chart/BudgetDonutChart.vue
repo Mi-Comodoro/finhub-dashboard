@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { PieChart } from 'echarts/charts'
-  import { GraphicComponent,LegendComponent, TooltipComponent } from 'echarts/components'
+  import { GraphicComponent, LegendComponent, TooltipComponent } from 'echarts/components'
   import { use } from 'echarts/core'
   import { CanvasRenderer } from 'echarts/renderers'
   import VueECharts from 'vue-echarts'

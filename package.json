@@ -15,12 +15,13 @@
   "homepage": "https://github.com/migueljalvarez/finhub-dashboard#readme",
   "scripts": {
     "dev": "nuxt dev",
-    "build": "cross-env NODE_OPTIONS=--no-deprecation nuxt build",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=12288\" nuxt build",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"**/*.{js,ts,vue,json,css,scss}\""
+    "format": "prettier --write \"**/*.{js,ts,vue,json,css,scss}\"",
+    "prepare": "husky"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
@@ -36,6 +37,7 @@
     "libphonenumber-js": "^1.12.41",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.4",
+    "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.5.0",
     "vue-echarts": "^8.0.1"
   },
@@ -51,6 +53,8 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-vue": "^10.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
     "postcss": "^8.5.6",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
@@ -59,10 +63,15 @@
     "vue-eslint-parser": "^10.2.0",
     "vue-tsc": "^2.2.12"
   },
+  "lint-staged": {
+    "*.{ts,vue}": "eslint --fix",
+    "*.{js,ts,vue,json,css}": "prettier --write"
+  },
   "overrides": {
     "serialize-javascript": "^7.0.3"
   },
   "engines": {
     "node": ">=22.12 <23"
-  }
+  },
+  "packageManager": "pnpm@11.1.2+sha512.415a1cc25974731e75455c1468371be74c5aa5fb7621b50d4056d222451609f11412f23fd602e6169f1e060466641f798597e1be961a10688836a67b16569499"
 }

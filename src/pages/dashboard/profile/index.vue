@@ -6,20 +6,19 @@
 
   import { computed, ref, watch } from 'vue'
 
-  import { Badge } from '@/components/atoms'
-  import {
-    EditableInfoCard,
-    EditSectionActions,
-    Input,
-    ProfileInfoItem,
-    Select
-  } from '@/components/molecules'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import EditSectionActions from '@/components/molecules/edit-section-actions/EditSectionActions.vue'
+  import EditableInfoCard from '@/components/molecules/editable-info-card/EditableInfoCard.vue'
+  import Input from '@/components/molecules/input/Input.vue'
+  import ProfileInfoItem from '@/components/molecules/profile-info-item/ProfileInfoItem.vue'
+  import Select from '@/components/molecules/select/Select.vue'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import DateUtils from '@/utils/date'
   definePageMeta({
     layout: 'dashboard',
-    middleware: 'dashboard'
+    middleware: 'dashboard',
+    breadcrumb: 'Perfil'
   })
 
   // Application layer
@@ -226,7 +225,7 @@
 
   // Reactive title
   useHead({
-    title: 'Profile - Mi Comodoro'
+    title: 'Perfil - FinHub'
   })
   const endDate = computed(() =>
     user.value.trialEndsAt ? new Date(user.value.trialEndsAt) : new Date()
@@ -417,8 +416,7 @@
 
 <style scoped lang="postcss">
   .profile-page {
-    @apply min-h-screen bg-slate-50;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    @apply min-h-screen bg-neutral-50 dark:bg-neutral-900;
   }
 
   .profile-page__container {

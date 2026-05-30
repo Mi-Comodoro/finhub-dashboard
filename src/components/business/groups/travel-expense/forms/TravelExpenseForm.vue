@@ -1,6 +1,9 @@
 <script setup lang="ts">
-  import { CardRadio } from '@/components/atoms'
-  import { DatePickerInput, Input, MoneyInput, Select } from '@/components/molecules'
+  import CardRadio from '@/components/atoms/card-radio/CardRadio.vue'
+  import DatePickerInput from '@/components/molecules/date-picker/DatePickerInput.vue'
+  import Input from '@/components/molecules/input/Input.vue'
+  import MoneyInput from '@/components/molecules/input/MoneyInput.vue'
+  import Select from '@/components/molecules/select/Select.vue'
   import { useTravelExpense } from '@/composables/application/useTravelExpense'
   import { useCurrency } from '@/composables/useCurrency'
   import type { GroupMember } from '@/types/groups.types'
@@ -56,9 +59,7 @@
     return `Cada miembro paga ${format(share)}`
   })
 
-  const customSum = computed(() =>
-    memberSplits.value.reduce((acc, m) => acc + (m.amount ?? 0), 0)
-  )
+  const customSum = computed(() => memberSplits.value.reduce((acc, m) => acc + (m.amount ?? 0), 0))
 
   const percentageSum = computed(() =>
     memberSplits.value.reduce((acc, m) => acc + (m.percentage ?? 0), 0)
@@ -120,9 +121,10 @@
     if (isSubmitting.value || !validate()) return
     isSubmitting.value = true
     try {
-      const dateStr = expenseDate.value instanceof Date
-        ? (expenseDate.value.toISOString().split('T')[0] ?? expenseDate.value.toISOString())
-        : String(expenseDate.value)
+      const dateStr =
+        expenseDate.value instanceof Date
+          ? (expenseDate.value.toISOString().split('T')[0] ?? expenseDate.value.toISOString())
+          : String(expenseDate.value)
 
       const assignments =
         splitType.value === 'CUSTOM'
@@ -137,7 +139,6 @@
         expenseDate: dateStr,
         splitType: splitType.value,
         groupId: props.groupId,
-        paidBy: paidBy.value,
         assignments
       })
 
@@ -177,12 +178,7 @@
 
       <!-- Amount + PaidBy -->
       <div class="travel-expense-form__row">
-        <MoneyInput
-          v-model="amount"
-          label="Monto total"
-          prefix="COP"
-          :required="true"
-        />
+        <MoneyInput v-model="amount" label="Monto total" prefix="COP" :required="true" />
         <Select
           v-model="paidBy"
           name="paidBy"
@@ -238,7 +234,11 @@
           <Text size="xs" color="muted">Suma:</Text>
           <Text
             size="xs"
-            :class="Math.abs(customSum - amount) < 0.01 ? 'travel-expense-form__sum--ok' : 'travel-expense-form__sum--error'"
+            :class="
+              Math.abs(customSum - amount) < 0.01
+                ? 'travel-expense-form__sum--ok'
+                : 'travel-expense-form__sum--error'
+            "
           >
             {{ format(customSum) }} / {{ format(amount) }}
           </Text>
@@ -254,20 +254,18 @@
         >
           <Text size="sm" class="travel-expense-form__member-name">{{ member.name }}</Text>
           <div class="travel-expense-form__member-input">
-            <Input
-              v-model="member.percentage"
-              type="number"
-              label=""
-              placeholder="0"
-              prefix="%"
-            />
+            <Input v-model="member.percentage" type="number" label="" placeholder="0" prefix="%" />
           </div>
         </div>
         <div class="travel-expense-form__sum-row">
           <Text size="xs" color="muted">Total %:</Text>
           <Text
             size="xs"
-            :class="Math.abs(percentageSum - 100) < 0.01 ? 'travel-expense-form__sum--ok' : 'travel-expense-form__sum--error'"
+            :class="
+              Math.abs(percentageSum - 100) < 0.01
+                ? 'travel-expense-form__sum--ok'
+                : 'travel-expense-form__sum--error'
+            "
           >
             {{ percentageSum.toFixed(1) }}%
           </Text>
@@ -315,14 +313,17 @@
 
   .travel-expense-form__preview {
     @apply flex items-center gap-1 rounded-lg bg-primary-50 px-3 py-2;
+    @apply dark:bg-primary-900;
   }
 
   .travel-expense-form__preview-icon {
     @apply text-base text-primary-600;
+    @apply dark:text-primary-400;
   }
 
   .travel-expense-form__members {
     @apply flex flex-col gap-2 rounded-lg border border-neutral-200 p-3;
+    @apply dark:border-neutral-600;
   }
 
   .travel-expense-form__member-row {
@@ -339,6 +340,7 @@
 
   .travel-expense-form__sum-row {
     @apply mt-1 flex items-center justify-between border-t border-neutral-100 pt-2;
+    @apply dark:border-neutral-700;
   }
 
   .travel-expense-form__sum--ok {
@@ -351,6 +353,7 @@
 
   .travel-expense-form__error {
     @apply rounded-lg bg-danger-50 px-3 py-2;
+    @apply dark:bg-danger-900;
   }
 
   .travel-expense-form__actions {

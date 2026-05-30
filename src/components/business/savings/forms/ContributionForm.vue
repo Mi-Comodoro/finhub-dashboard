@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { Button } from '@/components/atoms'
-  import { CardInfo } from '@/components/molecules'
-  import { Form } from '@/components/organisms'
+  import Button from '@/components/atoms/button/Button.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
+  import Form from '@/components/organisms/forms/Form.vue'
+  import { useToast } from '@/components/organisms/toast/useToast'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
 
   import { contributionFieldsSchema } from './schema/contribution.fields.schema'
@@ -13,9 +14,12 @@
   const props = withDefaults(defineProps<ContributionFormProps>(), {
     goalId: ''
   })
-  const emit = defineEmits(['onClose'])
+  const emit = defineEmits<{
+    onClose: []
+  }>()
 
   const { addContribution } = useGoalsApplication()
+  const { show: showToast } = useToast()
 
   const formSchema = contributionFieldsSchema()
 
@@ -35,16 +39,18 @@
       return
     }
 
-    try {
-      const rawDate = data.date as Date | string
-      const { success } = await addContribution(props.goalId, {
-        amount: Number(data.amount) || 0,
-        date: (rawDate instanceof Date ? rawDate : new Date(rawDate)).toISOString(),
-        note: (data.note as string) || undefined
-      })
-      if (success) emit('onClose')
-    } catch (error) {
-      console.error('Error creating contribution:', error)
+    const rawDate = data.date as Date | string
+    const { success } = await addContribution(props.goalId, {
+      amount: Number(data.amount) || 0,
+      date: (rawDate instanceof Date ? rawDate : new Date(rawDate)).toISOString(),
+      note: (data.note as string) || undefined
+    })
+
+    if (success) {
+      showToast({ title: 'Aporte registrado', type: 'success' })
+      emit('onClose')
+    } else {
+      showToast({ title: 'Error al registrar el aporte', type: 'error' })
     }
   }
 </script>

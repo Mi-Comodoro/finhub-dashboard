@@ -1,86 +1,200 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
-  import { Badge, Heading, Text } from '@/components/atoms'
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { formatCurrency } from '@/utils/currency'
 
-  interface Bill {
+  interface Reminder {
+    id?: string
     name: string
     daysUntilDue: number
     amount: number
+    isEssential?: boolean
+    type?: 'planned_expense' | 'accounts_payable'
   }
 
   interface Props {
-    bills?: Bill[]
+    bills?: Reminder[]
     currencyCode?: string
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    bills: undefined,
+    bills: () => [],
     currencyCode: 'COP'
   })
 
-  const mockBills: Bill[] = [
-    { name: 'Tarjeta Bancolombia', daysUntilDue: 2, amount: 450000 },
-    { name: 'Préstamo vehículo', daysUntilDue: 8, amount: 1200000 },
-    { name: 'Netflix + Spotify', daysUntilDue: 18, amount: 85000 }
-  ]
+  const emit = defineEmits<{
+    (e: 'view' | 'pay', item: Reminder): void
+  }>()
 
-  const displayBills = computed(() =>
-    props.bills && props.bills.length > 0 ? props.bills : mockBills
-  )
-
+  const displayBills = computed(() => props.bills ?? [])
   const totalCommitted = computed(() => displayBills.value.reduce((sum, b) => sum + b.amount, 0))
 
-  type UrgencyVariant = 'danger' | 'warning' | 'primary'
+  type UrgencyLevel = 'overdue' | 'critical' | 'soon' | 'ok' | 'low'
 
-  function getUrgency(days: number): {
-    variant: UrgencyVariant
-    label: string
-    dotClass: string
-  } {
-    if (days <= 3)
-      return { variant: 'danger', label: 'Urgente', dotClass: 'bills-card__dot--urgent' }
-    if (days <= 7)
-      return { variant: 'warning', label: 'Esta semana', dotClass: 'bills-card__dot--soon' }
-    return { variant: 'primary', label: 'Al día', dotClass: 'bills-card__dot--ok' }
+  function getUrgencyLevel(days: number, isEssential: boolean): UrgencyLevel {
+    if (days <= 0) return 'overdue'
+    if (days <= 3 && isEssential) return 'critical'
+    if (days <= 3 || (days <= 7 && isEssential)) return 'soon'
+    if (days <= 7) return 'ok'
+    return 'low'
+  }
+
+  function getItemClass(days: number, isEssential: boolean): string {
+    const map: Record<UrgencyLevel, string> = {
+      overdue: 'bills-card__item--overdue',
+      critical: 'bills-card__item--critical',
+      soon: 'bills-card__item--soon',
+      ok: 'bills-card__item--ok',
+      low: 'bills-card__item--low'
+    }
+    return map[getUrgencyLevel(days, isEssential)]
+  }
+
+  function getDotClass(days: number, isEssential: boolean): string {
+    const map: Record<UrgencyLevel, string> = {
+      overdue: 'bills-card__dot--overdue',
+      critical: 'bills-card__dot--critical',
+      soon: 'bills-card__dot--soon',
+      ok: 'bills-card__dot--ok',
+      low: 'bills-card__dot--low'
+    }
+    return map[getUrgencyLevel(days, isEssential)]
+  }
+
+  function getDaysClass(days: number, isEssential: boolean): string {
+    const level = getUrgencyLevel(days, isEssential)
+    if (level === 'overdue' || level === 'critical') return 'bills-card__item-days--urgent'
+    if (level === 'soon') return 'bills-card__item-days--soon'
+    return 'bills-card__item-days--ok'
+  }
+
+  type BadgeVariant = 'danger' | 'warning' | 'secondary'
+
+  function getPriorityBadge(
+    isEssential: boolean,
+    days: number
+  ): { label: string; variant: BadgeVariant } {
+    if (!isEssential) return { label: 'Opcional', variant: 'secondary' }
+    const level = getUrgencyLevel(days, isEssential)
+    if (level === 'overdue' || level === 'critical')
+      return { label: 'Obligatorio', variant: 'danger' }
+    return { label: 'Obligatorio', variant: 'warning' }
+  }
+
+  function getDaysLabel(days: number): string {
+    if (days < 0) return `Venció hace ${Math.abs(days)} días`
+    if (days === 0) return 'Vence hoy'
+    return `Vence en ${days} días`
   }
 </script>
 
 <template>
   <div class="bills-card">
     <div class="bills-card__header">
-      <Heading level="h3" size="sm" weight="semibold">Próximos vencimientos</Heading>
-      <Badge variant="warning" size="xs">Próximamente</Badge>
+      <CardInfo
+        title="Recordatorios"
+        sub-title="Gastos y deudas por vencer"
+        icon="alarm"
+        icon-variant="secondary"
+        icon-size="md"
+        title-size="sm"
+        weight="semibold"
+        level="h3"
+        sub-title-size="xs"
+        sub-title-color="muted"
+      />
     </div>
 
-    <div class="bills-card__list">
-      <div v-for="bill in displayBills" :key="bill.name" class="bills-card__item">
-        <span class="bills-card__dot" :class="getUrgency(bill.daysUntilDue).dotClass" />
+    <div v-if="displayBills.length > 0" class="bills-card__list">
+      <div
+        v-for="bill in displayBills"
+        :key="`${bill.type}-${bill.id ?? bill.name}`"
+        class="bills-card__item"
+        :class="getItemClass(bill.daysUntilDue, bill.isEssential ?? false)"
+      >
+        <span
+          class="bills-card__dot"
+          :class="getDotClass(bill.daysUntilDue, bill.isEssential ?? false)"
+        />
+
         <div class="bills-card__item-info">
           <p class="bills-card__item-name">{{ bill.name }}</p>
-          <p class="bills-card__item-days">
-            {{ bill.daysUntilDue <= 0 ? 'Vence hoy' : `Vence en ${bill.daysUntilDue} días` }}
-          </p>
+          <p class="bills-card__item-amount">{{ formatCurrency(bill.amount, currencyCode) }}</p>
         </div>
+
         <div class="bills-card__item-right">
-          <Text size="sm" weight="semibold">{{ formatCurrency(bill.amount, currencyCode) }}</Text>
-          <Badge :variant="getUrgency(bill.daysUntilDue).variant" size="xs">
-            {{ getUrgency(bill.daysUntilDue).label }}
-          </Badge>
+          <div class="bills-card__item-meta">
+            <span
+              class="bills-card__item-days"
+              :class="getDaysClass(bill.daysUntilDue, bill.isEssential ?? false)"
+            >
+              {{ getDaysLabel(bill.daysUntilDue) }}
+            </span>
+            <Badge
+              :variant="getPriorityBadge(bill.isEssential ?? false, bill.daysUntilDue).variant"
+              size="xs"
+            >
+              {{ getPriorityBadge(bill.isEssential ?? false, bill.daysUntilDue).label }}
+            </Badge>
+          </div>
+          <div class="bills-card__item-actions">
+            <Button size="sm" variant="ghost" @click="emit('view', bill)">Ver</Button>
+            <Button size="sm" variant="primary" @click="emit('pay', bill)">Pagar</Button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="bills-card__footer">
+    <div v-else class="bills-card__empty">
+      <EmptyStateIllustration type="no-transactions" class="bills-card__empty-illustration" />
+      <Text size="sm" color="muted">No tienes pagos pendientes por recordar</Text>
+    </div>
+
+    <div class="bills-card__legend">
+      <p class="bills-card__legend-title">Cómo leer esta sección</p>
+      <div class="bills-card__legend-body">
+        <div class="bills-card__legend-group">
+          <div class="bills-card__legend-item">
+            <span class="bills-card__legend-dot bills-card__dot--overdue" />
+            <span>Vencido</span>
+          </div>
+          <div class="bills-card__legend-item">
+            <span class="bills-card__legend-dot bills-card__dot--critical" />
+            <span>Urgente (≤ 3 días)</span>
+          </div>
+          <div class="bills-card__legend-item">
+            <span class="bills-card__legend-dot bills-card__dot--soon" />
+            <span>Esta semana</span>
+          </div>
+          <div class="bills-card__legend-item">
+            <span class="bills-card__legend-dot bills-card__dot--low" />
+            <span>Próximo</span>
+          </div>
+        </div>
+        <div class="bills-card__legend-divider" />
+        <div class="bills-card__legend-group">
+          <div class="bills-card__legend-item">
+            <Badge variant="danger" size="xs">Obligatorio</Badge>
+            <span>No se puede diferir</span>
+          </div>
+          <div class="bills-card__legend-item">
+            <Badge variant="secondary" size="xs">Opcional</Badge>
+            <span>Puede esperar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="displayBills.length > 0" class="bills-card__footer">
       <div class="bills-card__footer-row">
-        <Text size="xs" color="muted">Total comprometido este mes</Text>
+        <Text size="xs" color="muted">Total comprometido</Text>
         <Text size="sm" weight="bold">{{ formatCurrency(totalCommitted, currencyCode) }}</Text>
       </div>
-    </div>
-
-    <div class="bills-card__action">
-      <Text size="xs" color="muted">Módulo de deudas y facturas en desarrollo</Text>
     </div>
   </div>
 </template>
@@ -88,6 +202,7 @@
 <style scoped lang="postcss">
   .bills-card {
     @apply flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .bills-card__header {
@@ -99,14 +214,43 @@
   }
 
   .bills-card__item {
-    @apply flex items-center gap-3 rounded-md bg-slate-50 p-2.5;
+    @apply grid grid-cols-[auto_1fr_auto] items-start gap-x-3 gap-y-0 rounded-md p-3 transition-colors;
+  }
+
+  .bills-card__item--overdue {
+    @apply border-l-2 border-danger-400 bg-danger-50 pl-2.5;
+    @apply dark:bg-danger-900/20;
+  }
+
+  .bills-card__item--critical {
+    @apply bg-danger-50;
+    @apply dark:bg-danger-900/20;
+  }
+
+  .bills-card__item--soon {
+    @apply bg-warning-50;
+    @apply dark:bg-warning-900/20;
+  }
+
+  .bills-card__item--ok {
+    @apply bg-slate-50;
+    @apply dark:bg-neutral-700/40;
+  }
+
+  .bills-card__item--low {
+    @apply bg-slate-50;
+    @apply dark:bg-neutral-700/40;
   }
 
   .bills-card__dot {
-    @apply h-2.5 w-2.5 shrink-0 rounded-full;
+    @apply mt-1.5 h-2 w-2 shrink-0 rounded-full;
   }
 
-  .bills-card__dot--urgent {
+  .bills-card__dot--overdue {
+    @apply bg-danger-600;
+  }
+
+  .bills-card__dot--critical {
     @apply bg-danger-500;
   }
 
@@ -118,21 +262,83 @@
     @apply bg-primary-500;
   }
 
+  .bills-card__dot--low {
+    @apply bg-slate-400;
+  }
+
   .bills-card__item-info {
-    @apply min-w-0 flex-1;
+    @apply flex min-w-0 flex-col gap-0.5;
   }
 
   .bills-card__item-name {
     @apply truncate text-sm font-medium text-neutral-700;
+    @apply dark:text-neutral-300;
   }
 
-  .bills-card__item-days {
-    @apply text-xs text-slate-500;
+  .bills-card__item-amount {
+    @apply text-sm font-semibold text-neutral-900;
+    @apply dark:text-neutral-100;
   }
 
   .bills-card__item-right {
-    @apply flex flex-col items-end gap-1;
+    @apply flex flex-col items-end gap-1.5;
   }
+
+  .bills-card__item-meta {
+    @apply flex items-center gap-1.5;
+  }
+
+  .bills-card__item-days {
+    @apply text-xs font-medium;
+  }
+
+  .bills-card__item-days--urgent {
+    @apply text-danger-600;
+  }
+
+  .bills-card__item-days--soon {
+    @apply text-warning-600;
+  }
+
+  .bills-card__item-days--ok {
+    @apply text-slate-500;
+  }
+
+  .bills-card__item-actions {
+    @apply flex gap-1;
+  }
+
+  /* Legend */
+
+  .bills-card__legend {
+    @apply rounded-lg border border-slate-100 bg-slate-50 p-3;
+  }
+
+  .bills-card__legend-title {
+    @apply mb-2 text-xs font-semibold text-slate-500;
+  }
+
+  .bills-card__legend-body {
+    @apply flex flex-col gap-2;
+  }
+
+  .bills-card__legend-group {
+    @apply flex flex-wrap gap-x-4 gap-y-1;
+  }
+
+  .bills-card__legend-item {
+    @apply flex items-center gap-1.5 text-xs text-slate-500;
+  }
+
+  .bills-card__legend-dot {
+    @apply h-2 w-2 shrink-0 rounded-full;
+  }
+
+  .bills-card__legend-divider {
+    @apply border-t border-slate-200;
+  }
+
+  /* Footer */
 
   .bills-card__footer {
     @apply border-t border-slate-100 pt-3;
@@ -142,7 +348,11 @@
     @apply flex items-center justify-between;
   }
 
-  .bills-card__action {
-    @apply pt-1;
+  .bills-card__empty {
+    @apply flex flex-col items-center gap-2 py-4 text-center;
+  }
+
+  .bills-card__empty-illustration {
+    @apply mx-auto h-16 w-16;
   }
 </style>

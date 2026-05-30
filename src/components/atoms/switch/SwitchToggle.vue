@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { Icon, Label } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   const props = defineProps<{
     modelValue: boolean
@@ -33,7 +34,7 @@
         :aria-checked="modelValue"
         :class="[
           'relative inline-flex h-6 w-11 items-center rounded-full transition',
-          modelValue ? 'bg-primary-500' : 'bg-gray-300'
+          modelValue ? 'bg-primary-500' : 'bg-gray-300 dark:bg-neutral-600'
         ]"
         @click="toggle"
       >

@@ -37,11 +37,21 @@ export interface TransactionPagination {
   totalPages: number
 }
 
+export interface TransactionTotals {
+  income: number
+  expense: number
+  savings: number
+  countIncome: number
+  countExpense: number
+  countSavings: number
+}
+
 export interface TransactionState {
   items: TransactionSummary[] | null
   budgetId: string
   filters: TransactionFilters
   pagination: TransactionPagination | null
+  totals: TransactionTotals | null
   isLoading: boolean
   error: StoreError | null
 }

@@ -1,0 +1,57 @@
+name: Deploy Nuxt SSR — Production
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: [self-hosted, Linux, X64]
+    environment: production
+
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Compilar Nuxt SSR
+        env:
+          NUXT_PUBLIC_API_BASE: ${{ secrets.NUXT_PUBLIC_API_BASE }}
+          FB_API_KEY: ${{ secrets.FB_API_KEY }}
+          FB_AUTH_DOMAIN: ${{ secrets.FB_AUTH_DOMAIN }}
+          FB_PROJECT_ID: ${{ secrets.FB_PROJECT_ID }}
+          FB_STORAGE_BUCKET: ${{ secrets.FB_STORAGE_BUCKET }}
+          FB_MESSAGING_SENDER_ID: ${{ secrets.FB_MESSAGING_SENDER_ID }}
+          FB_APP_ID: ${{ secrets.FB_APP_ID }}
+          FB_MEASUREMENT_ID: ${{ secrets.FB_MEASUREMENT_ID }}
+        run: pnpm build
+
+      - name: Crear directorio destino
+        run: mkdir -p /var/www/intranet/micomodoro-app
+
+      - name: Limpiar deploy anterior
+        run: rm -rf /var/www/intranet/micomodoro-app/.output
+
+      - name: Copiar build compilado
+        run: cp -r .output /var/www/intranet/micomodoro-app/
+
+      - name: Copiar configuracion PM2
+        run: cp ecosystem.config.js /var/www/intranet/micomodoro-app/
+
+      - name: Reiniciar aplicacion con PM2
+        run: |
+          cd /var/www/intranet/micomodoro-app
+          pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
+          pm2 save

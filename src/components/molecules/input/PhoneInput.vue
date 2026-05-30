@@ -3,7 +3,7 @@
   import { parsePhoneNumberFromString } from 'libphonenumber-js'
   import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
-  import { CountryFlag } from '@/components/atoms'
+  import CountryFlag from '@/components/atoms/country-flag/CountryFlag.vue'
 
   interface CountryOption {
     label: string
@@ -150,18 +150,18 @@
 
     <!-- Wrapper UNIFICADO -->
     <div
-      class="flex items-stretch rounded-md border bg-white transition-all duration-200"
+      class="flex items-stretch rounded-md border bg-white transition-all duration-200 dark:bg-neutral-900"
       :class="[
         error || internalError
           ? 'border-red-500 focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500'
-          : 'border-gray-300 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 hover:border-gray-300'
+          : 'border-gray-300 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 hover:border-gray-300 dark:border-neutral-600'
       ]"
     >
       <!-- Prefijo (país) -->
       <div class="custom-select relative flex items-center pl-3 pr-2">
         <button
           type="button"
-          class="flex items-center gap-2 text-sm text-gray-500 focus:outline-none"
+          class="flex items-center gap-2 text-sm text-gray-500 focus:outline-none dark:text-neutral-400"
           @click="toggleDropdown"
         >
           <CountryFlag :country-code="selectedCountry.flagCode" :size="16" />
@@ -179,12 +179,12 @@
         <Transition name="dropdown">
           <ul
             v-if="isOpen"
-            class="absolute left-0 z-20 mt-1 max-h-60 min-w-[220px] overflow-auto rounded-md border border-gray-300 bg-white py-1 shadow-lg"
+            class="absolute left-0 z-20 mt-1 max-h-60 min-w-[220px] overflow-auto rounded-md border border-gray-300 bg-white py-1 shadow-lg dark:border-neutral-600 dark:bg-neutral-800"
           >
             <li
               v-for="option in countryCodes"
               :key="option.value"
-              class="flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+              class="flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
               :class="{
                 'bg-primary-50 font-medium text-primary-700': option.value === selectedCode
               }"

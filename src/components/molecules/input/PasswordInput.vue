@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue'
 
-  import { Icon, Label } from '@/components/atoms'
+  import Icon from '@/components/atoms/icons/Icon.vue'
+  import Label from '@/components/atoms/typography/Label.vue'
 
   import type { InputSize, PasswordInputProps } from './types/input.types'
 
@@ -143,6 +144,7 @@
 
   .password-input__field {
     @apply flex items-center justify-between rounded-md border border-neutral-300 bg-white transition-all duration-200;
+    @apply dark:border-neutral-700 dark:bg-neutral-900;
   }
 
   .password-input__field:hover {
@@ -163,10 +165,12 @@
 
   .password-input__field--disabled {
     @apply cursor-not-allowed bg-neutral-100;
+    @apply dark:bg-neutral-800;
   }
 
   .password-input__input {
     @apply flex-1 border-none bg-transparent text-neutral-900 outline-none placeholder:text-neutral-400;
+    @apply dark:text-neutral-100 dark:placeholder:text-neutral-500;
   }
 
   .password-input__input--sm {
@@ -187,14 +191,17 @@
 
   .password-input__icon {
     @apply flex items-center justify-center border-none bg-transparent pr-3 text-neutral-400 outline-none transition-colors hover:text-neutral-600 focus:outline-none;
+    @apply dark:text-neutral-500 dark:hover:text-neutral-300;
   }
 
   .password-input__icon.outline {
     @apply text-neutral-400;
+    @apply dark:text-neutral-500;
   }
 
   .password-input__icon.filled {
     @apply text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   .password-input__error {

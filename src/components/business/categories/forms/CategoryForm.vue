@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue'
 
-  import { CardInfo } from '@/components/molecules'
-  import { Form } from '@/components/organisms'
+  import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
+  import Form from '@/components/organisms/forms/Form.vue'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
-  import { useFeedback } from '@/composables/useFeedback'
+  import { useFeedback } from '@/composables/useFeedBack'
 
   import { categoryFieldsSchema } from './schema/category.fields.schema'
 

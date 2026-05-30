@@ -2,7 +2,7 @@
 
 import type { RouteLocationNormalized } from 'vue-router'
 
-import type { BreadcrumbItem, BreadcrumbOptions } from '@/components/molecules'
+import type { BreadcrumbItem, BreadcrumbOptions } from '@/components/molecules/breadcrumbs/types'
 
 interface RouteMetaWithBreadcrumb {
   title?: string

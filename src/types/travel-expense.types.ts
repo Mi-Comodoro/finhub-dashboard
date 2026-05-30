@@ -26,7 +26,6 @@ export interface CreateTravelExpenseDto {
   expenseDate: string
   splitType: SplitType
   groupId: string
-  paidBy?: string
   assignments?: {
     userId: string
     amount?: number

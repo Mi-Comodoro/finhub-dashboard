@@ -6,7 +6,12 @@ export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4
   },
-  compatibilityDate: '2026-02-09', // fecha actualizada
+  compatibilityDate: '2026-05-26',
+
+  routeRules: {
+    '/dashboard/debts': { redirect: '/dashboard/accounts' },
+    '/dashboard/receivables': { redirect: '/dashboard/accounts' }
+  },
 
   app: {
     head: {
@@ -19,6 +24,7 @@ export default defineNuxtConfig({
         }
       ],
       link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' },
         {
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200'
@@ -47,7 +53,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3005/api/v1'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3005/api/v1',
+      wsBase: process.env.NUXT_PUBLIC_WS_BASE || 'http://localhost:3005'
     },
     FB_API_KEY: process.env.FB_API_KEY,
     FB_AUTH_DOMAIN: process.env.FB_AUTH_DOMAIN,
@@ -120,18 +127,14 @@ export default defineNuxtConfig({
         'firebase/auth',
         'vue',
         '@vue/runtime-core',
-        'country-flag-icons/string/3x2', // ← mantenlo
-        '@heroicons/vue/20/solid', // ← mantenlo
-        'libphonenumber-js' // ← mantenlo
-      ],
-      force: true
+        'country-flag-icons/string/3x2',
+        '@heroicons/vue/20/solid',
+        'libphonenumber-js'
+      ]
     },
 
     css: {
-      devSourcemap: process.env.NODE_ENV !== 'production',
-      preprocessorOptions: {
-        scss: { additionalData: '' }
-      }
+      devSourcemap: process.env.NODE_ENV !== 'production'
     },
 
     build: {

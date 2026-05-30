@@ -39,6 +39,16 @@ export function useTransactionFiltersPresenter(onFilter: (resetPage?: boolean) =
     })
   )
 
+  // Filtros sin paginación — para consultas de totales
+  const filterParams = computed(
+    (): Partial<TransactionFilters> => ({
+      type: filterType.value || undefined,
+      categoryId: filterCat.value || undefined,
+      dateFrom: filterDateFrom.value?.toISOString() ?? undefined,
+      dateTo: filterDateTo.value?.toISOString() ?? undefined
+    })
+  )
+
   const hasActiveFilters = computed(
     () => !!(filterType.value || filterCat.value || filterDateFrom.value || filterDateTo.value)
   )
@@ -84,6 +94,7 @@ export function useTransactionFiltersPresenter(onFilter: (resetPage?: boolean) =
     pageSize,
     // computed
     activeFilters,
+    filterParams,
     hasActiveFilters,
     // opciones
     pageSizeOptions,

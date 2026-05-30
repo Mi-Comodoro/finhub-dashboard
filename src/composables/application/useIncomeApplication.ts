@@ -196,10 +196,7 @@ export const useIncomeApplication = () => {
         status: 'pending'
       })
 
-      await Promise.all([
-        fetchPlannedIncomes(),
-        plannedSavingStore.fetchByBudget(income.budgetId)
-      ])
+      await Promise.all([fetchPlannedIncomes(), plannedSavingStore.fetchByBudget(income.budgetId)])
 
       return { success: true }
     } catch (err) {

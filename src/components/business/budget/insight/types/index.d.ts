@@ -1,4 +1,5 @@
-import type { HeadingColor, TextColor } from '~/components/atoms'
+import type { HeadingColor } from '@/components/atoms/typography/types/heading.types'
+import type { TextColor } from '@/components/atoms/typography/types/text.types'
 
 export type BudgetInsightsVariant =
   | 'primary'

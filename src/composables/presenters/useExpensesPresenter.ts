@@ -15,13 +15,13 @@ interface ExpenseInput {
 const BUCKET_LABELS: Record<string, string> = {
   need: 'Necesidades',
   want: 'Gustos',
-  saving: 'Ahorro',
+  saving: 'Ahorro'
 }
 
 const BUCKET_COLORS: Record<string, string> = {
   need: CHART_COLORS.needs,
   want: CHART_COLORS.wants,
-  saving: CHART_COLORS.savings,
+  saving: CHART_COLORS.savings
 }
 
 const CATEGORY_PALETTE = [
@@ -34,7 +34,7 @@ const CATEGORY_PALETTE = [
   '#ec4899',
   '#6366f1',
   '#84cc16',
-  '#14b8a6',
+  '#14b8a6'
 ]
 
 export function useExpensesPresenter() {
@@ -51,7 +51,7 @@ export function useExpensesPresenter() {
     return Object.entries(grouped).map(([type, total]) => ({
       name: getBucketLabel(type),
       value: total,
-      itemStyle: { color: getBucketColor(type) },
+      itemStyle: { color: getBucketColor(type) }
     }))
   }
 
@@ -66,7 +66,7 @@ export function useExpensesPresenter() {
       .map(([name, total], index) => ({
         name,
         value: total,
-        itemStyle: { color: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length]! },
+        itemStyle: { color: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length]! }
       }))
   }
 

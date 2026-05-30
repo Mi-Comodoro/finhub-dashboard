@@ -78,7 +78,7 @@
   }
 
   .filters-bar__separator {
-    @apply hidden h-5 w-px bg-slate-200 sm:block;
+    @apply hidden h-5 w-px bg-slate-200 dark:bg-neutral-600 sm:block;
   }
 
   .filters-bar__clear-button {

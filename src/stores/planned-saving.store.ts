@@ -17,13 +17,31 @@ export const usePlannedSavingStore = defineStore('plannedSaving', {
     completedItems: state => state.items?.filter(item => item.status === 'completed') ?? [],
     totalSavingGenerated(state): number {
       if (!state.items) return 0
-      return state.items.reduce((acc, i) => acc + Number(i.amount ?? 0), 0)
+      return state.items
+        .filter(i => i.status === 'completed')
+        .reduce((acc, i) => acc + Number(i.amount ?? 0), 0)
     },
 
     totalSavingPending(state): number {
       if (!state.items) return 0
       return state.items
         .filter(i => i.status === 'pending')
+        .reduce((acc, i) => acc + Number(i.amount ?? 0), 0)
+    },
+
+    // Sum of all planned savings excluding skipped (pending + completed)
+    totalSavingTarget(state): number {
+      if (!state.items) return 0
+      return state.items
+        .filter(i => i.status !== 'skipped')
+        .reduce((acc, i) => acc + Number(i.amount ?? 0), 0)
+    },
+
+    // Sum of savings generated from planned income only (excludes spontaneous)
+    totalSavingFromPlan(state): number {
+      if (!state.items) return 0
+      return state.items
+        .filter(i => i.status !== 'skipped' && i.plannedIncomeId)
         .reduce((acc, i) => acc + Number(i.amount ?? 0), 0)
     }
   },
@@ -80,6 +98,27 @@ export const usePlannedSavingStore = defineStore('plannedSaving', {
         this.handleError(err as FetchError)
 
         return { success: false, result: null }
+      } finally {
+        this.setLoading(false)
+      }
+    },
+
+    async assignGoal(itemId: string, savingGoalId: string) {
+      const { assignGoalToPlannedSaving } = useSavingsApi()
+      try {
+        this.setLoading(true)
+
+        const { success } = await assignGoalToPlannedSaving(itemId, savingGoalId)
+
+        if (success) {
+          await this.fetchByBudget(this.budgetId)
+        }
+
+        return { success }
+      } catch (err) {
+        this.handleError(err as FetchError)
+
+        return { success: false }
       } finally {
         this.setLoading(false)
       }

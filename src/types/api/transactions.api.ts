@@ -1,4 +1,4 @@
-export type TransactionType = 'income' | 'expense' | 'savings'
+export type TransactionType = 'income' | 'expense' | 'savings' | 'interest'
 export interface Transaction {
   id?: string
   amount: number
@@ -12,7 +12,8 @@ export interface Transaction {
   billId?: string
   plannedExpenseId?: string
   plannedIncomeId?: string
-  accountId?: string // ← faltaba, lo usás en savings
+  accountId?: string
+  savingGoalId?: string
 
   // tipo
   type: TransactionType

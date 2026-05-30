@@ -1,8 +1,15 @@
-import type { AddMemberDto, CreateGroupDto, Group, UpdateGroupDto } from '@/types/groups.types'
+import type {
+  AddMemberDto,
+  ContributionSummary,
+  CreateGroupDto,
+  CreateGroupExpenseDto,
+  Group,
+  GroupExpense,
+  UpdateGroupDto
+} from '@/types/groups.types'
 
 export function useGroupsApi() {
-  const getGroups = async () =>
-    $fetch<{ success: boolean; result: Group[] }>('/api/groups')
+  const getGroups = async () => $fetch<{ success: boolean; result: Group[] }>('/api/groups')
 
   const getGroup = async (id: string) =>
     $fetch<{ success: boolean; result: Group }>(`/api/groups/${id}`)
@@ -30,5 +37,44 @@ export function useGroupsApi() {
       method: 'DELETE'
     })
 
-  return { getGroups, getGroup, createGroup, updateGroup, deleteGroup, addMember, removeMember }
+  const getContributions = async (groupId: string) =>
+    $fetch<{ success: boolean; result: ContributionSummary }>(
+      `/api/groups/${groupId}/contributions`
+    )
+
+  const getExpenses = async (groupId: string) =>
+    $fetch<{ success: boolean; result: GroupExpense[] }>(`/api/groups/${groupId}/expenses`)
+
+  const createExpense = async (groupId: string, data: CreateGroupExpenseDto) =>
+    $fetch<{ success: boolean; result: GroupExpense }>(`/api/groups/${groupId}/expenses`, {
+      method: 'POST',
+      body: data
+    })
+
+  const payExpense = async (groupId: string, expenseId: string) =>
+    $fetch<{ success: boolean; result: GroupExpense }>(
+      `/api/groups/${groupId}/expenses/${expenseId}/pay`,
+      { method: 'PATCH' }
+    )
+
+  const markCxp = async (groupId: string, expenseId: string) =>
+    $fetch<{ success: boolean; result: GroupExpense }>(
+      `/api/groups/${groupId}/expenses/${expenseId}/pending`,
+      { method: 'PATCH' }
+    )
+
+  return {
+    getGroups,
+    getGroup,
+    createGroup,
+    updateGroup,
+    deleteGroup,
+    addMember,
+    removeMember,
+    getContributions,
+    getExpenses,
+    createExpense,
+    payExpense,
+    markCxp
+  }
 }

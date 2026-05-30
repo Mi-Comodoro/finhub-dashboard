@@ -1,6 +1,6 @@
 <script setup lang="ts">
   // Initialize theme on app mount
-  import { ModalNotification } from '@/components/organisms/modal-notification'
+  import ModalNotification from '@/components/organisms/modal-notification/ModalNotification.vue'
   import { useModalStore } from '@/stores/modal.store'
   import { useTheme } from '~/composables/useTheme'
   const modalStore = useModalStore()
@@ -13,7 +13,9 @@
 </script>
 
 <template>
-  <div class="min-h-screen bg-neutral-50 transition-colors duration-200 dark:bg-neutral-900">
+  <div
+    class="h-screen w-full flex-1 items-center justify-center bg-neutral-50 transition-colors duration-200 dark:bg-neutral-900"
+  >
     <ModalNotification
       :show="modalStore.state.show"
       :type="modalStore.state.type"

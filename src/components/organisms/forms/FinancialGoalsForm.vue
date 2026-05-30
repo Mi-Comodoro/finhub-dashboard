@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import { onMounted, ref, watch } from 'vue'
 
-  import { Label } from '@/components/atoms'
-  import { Input, NumberInput, Select } from '@/components/molecules'
+  import Label from '@/components/atoms/typography/Label.vue'
+  import Input from '@/components/molecules/input/Input.vue'
+  import NumberInput from '@/components/molecules/input/NumberInput.vue'
+  import Select from '@/components/molecules/select/Select.vue'
   import { FINANCIAL_PROFILE_OPTIONS } from '~/common/constants'
 
   import type {
