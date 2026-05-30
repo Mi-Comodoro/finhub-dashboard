@@ -4,12 +4,14 @@ type AccountType = 'TRIAL' | 'FREE' | 'PREMIUM'
 type OnboardingStatus = 'PENDING' | 'COMPLETED'
 type AuthResponseData = {
   token: string
+  refreshToken: string
   accountType: AccountType
   expiresAt: number
   onboarding: OnboardingStatus
 }
 export interface RefreshResponse {
   token: string
+  refreshToken: string
   expiresAt: number
 }
 export interface AuthResponse {
