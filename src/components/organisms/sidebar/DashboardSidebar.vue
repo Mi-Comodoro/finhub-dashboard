@@ -67,14 +67,25 @@
     { name: 'Configuración', icon: 'settings', path: '/dashboard/settings' }
   ]
 
-  const adminNavItems: Omit<MenuItem, 'isActive'>[] = [
-    { name: 'Dashboard Admin', icon: 'space_dashboard', path: '/admin' },
-    { name: 'Usuarios', icon: 'people', path: '/admin/users' },
-    { name: 'Planes', icon: 'card_membership', path: '/admin/plans' },
-    { name: 'Categorías', icon: 'category', path: '/admin/categories' }
-  ]
+  const isAdmin = computed(
+    () => authStore.user?.role === 'admin' || authStore.user?.role === 'super_admin'
+  )
+  const isSuperAdmin = computed(() => authStore.user?.role === 'super_admin')
 
-  const isAdmin = computed(() => authStore.user?.role === 'admin')
+  const adminNavItems = computed<Omit<MenuItem, 'isActive'>[]>(() => {
+    const items: Omit<MenuItem, 'isActive'>[] = [
+      { name: 'Dashboard Admin', icon: 'space_dashboard', path: '/admin' },
+      { name: 'Usuarios', icon: 'people', path: '/admin/users' },
+      { name: 'Planes', icon: 'card_membership', path: '/admin/plans' },
+      { name: 'Categorías', icon: 'category', path: '/admin/categories' },
+      { name: 'Comunicaciones', icon: 'campaign', path: '/admin/communications' },
+      { name: 'Configuración', icon: 'settings', path: '/admin/config' }
+    ]
+    if (isSuperAdmin.value) {
+      items.push({ name: 'Auditoría', icon: 'shield', path: '/admin/audit' })
+    }
+    return items
+  })
 
   const mainMenuItems = computed<MenuItem[]>(() =>
     userMenuItems.value.map(item => ({
@@ -91,7 +102,7 @@
   )
 
   const adminMenuItems = computed<MenuItem[]>(() =>
-    adminNavItems.map(item => ({
+    adminNavItems.value.map(item => ({
       ...item,
       isActive: isActiveRoute(item.path ?? '', route.path)
     }))

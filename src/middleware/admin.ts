@@ -9,7 +9,7 @@ export default defineNuxtRouteMiddleware(() => {
   }
 
   const { user } = useAuthStore()
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'super_admin') {
     return navigateTo('/dashboard')
   }
 })
