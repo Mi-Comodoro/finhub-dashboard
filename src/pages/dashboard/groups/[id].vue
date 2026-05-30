@@ -217,6 +217,11 @@
     showPayModal.value = true
   }
 
+  const closePayModal = () => {
+    showPayModal.value = false
+    expenseToPayId.value = null
+  }
+
   const handlePay = async () => {
     if (!expenseToPayId.value) return
     const { success, data } = await payExpense(groupId.value, expenseToPayId.value)
@@ -227,8 +232,7 @@
     } else {
       errorToast('Error', 'No se pudo registrar el pago.')
     }
-    showPayModal.value = false
-    expenseToPayId.value = null
+    closePayModal()
   }
 
   const handleMarkCxp = async (expenseId: string) => {
@@ -604,16 +608,7 @@
           <Text size="lg" weight="bold">{{ formatCurrency(expenseToPay.amount, 'COP') }}</Text>
         </div>
         <div class="group-detail__modal-actions">
-          <Button
-            variant="ghost"
-            size="sm"
-            @click="
-              showPayModal = false
-              expenseToPayId = null
-            "
-          >
-            Cancelar
-          </Button>
+          <Button variant="ghost" size="sm" @click="closePayModal">Cancelar</Button>
           <Button variant="primary" size="sm" @click="handlePay">Confirmar pago</Button>
         </div>
       </div>
