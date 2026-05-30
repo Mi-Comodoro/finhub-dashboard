@@ -389,11 +389,11 @@
 
 <style lang="postcss" scoped>
   .quick-transaction-form {
-    @apply flex h-full w-full flex-col gap-6;
+    @apply flex min-h-0 w-full flex-1 flex-col gap-6;
   }
 
   .quick-transaction-form__content {
-    @apply w-full;
+    @apply flex min-h-0 flex-1 flex-col;
   }
 
   .quick-transaction-form__actions {
