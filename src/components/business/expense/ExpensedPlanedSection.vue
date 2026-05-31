@@ -149,6 +149,8 @@
     { key: 'dueDate', label: 'Fecha', type: 'date' },
     { key: 'status', label: 'Estado', type: 'badge' }
   ]
+
+  defineExpose({ refresh: fetchExpenses })
 </script>
 
 <template>

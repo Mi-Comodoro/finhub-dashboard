@@ -187,6 +187,7 @@
   }
 
   const { activeBills, importBillsToBudget } = useBillsApplication()
+  const expenseSectionRef = ref<{ refresh: () => void } | null>(null)
   const showBillImport = ref(false)
   const selectedBillIds = ref<string[]>([])
 
@@ -203,6 +204,7 @@
     showBillImport.value = false
     if (success) {
       successToast('Facturas importadas', `Se crearon ${imported} gastos planificados.`)
+      expenseSectionRef.value?.refresh()
     }
   }
 
@@ -378,6 +380,7 @@
         <BudgetInsights :budget-status="planStatus" />
         <PlannedSavingList :budget-id="budgetId" />
         <ExpensePlannedSection
+          ref="expenseSectionRef"
           :budget-id="budgetId"
           @open-form="openForm"
           @open-bill-import="openBillImport"
