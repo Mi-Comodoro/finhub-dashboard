@@ -22,6 +22,7 @@
   import ConfirmDeleteModal from '@/components/organisms/confirm-delete/ConfirmDeleteModal.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
+  import { useExpenseApi } from '@/composables/api/useExpenseApi'
   import { useBillsApplication } from '@/composables/application/useBillsApplication'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
   import { useBudgetTransferApplication } from '@/composables/application/useBudgetTransferApplication'
@@ -187,13 +188,27 @@
   }
 
   const { activeBills, importBillsToBudget } = useBillsApplication()
+  const { findAllExpenses } = useExpenseApi()
   const expenseSectionRef = ref<{ refresh: () => void } | null>(null)
   const showBillImport = ref(false)
   const selectedBillIds = ref<string[]>([])
+  const alreadyImportedBillIds = ref<Set<string>>(new Set())
 
-  const openBillImport = () => {
+  const billsAvailableToImport = computed(() =>
+    (activeBills.value ?? []).filter(b => !alreadyImportedBillIds.value.has(b.id))
+  )
+
+  const openBillImport = async () => {
     selectedBillIds.value = []
+    alreadyImportedBillIds.value = new Set()
     showBillImport.value = true
+    try {
+      const res = await findAllExpenses({ budgetId, limit: 500, page: 1 })
+      const ids = (res.result?.data ?? []).filter(e => e.billsId).map(e => e.billsId as string)
+      alreadyImportedBillIds.value = new Set(ids)
+    } catch {
+      // si falla el fetch, mostramos todas las facturas activas
+    }
   }
 
   const handleImportBills = async () => {
@@ -453,8 +468,12 @@
           Selecciona las facturas activas que deseas agregar como gastos planificados.
         </Text>
 
-        <div v-if="activeBills?.length" class="bill-import-modal__list">
-          <label v-for="bill in activeBills" :key="bill.id" class="bill-import-modal__item">
+        <div v-if="billsAvailableToImport.length" class="bill-import-modal__list">
+          <label
+            v-for="bill in billsAvailableToImport"
+            :key="bill.id"
+            class="bill-import-modal__item"
+          >
             <input
               v-model="selectedBillIds"
               type="checkbox"
@@ -467,7 +486,9 @@
             </div>
           </label>
         </div>
-        <Text v-else size="sm" color="muted">No hay facturas activas para importar.</Text>
+        <Text v-else size="sm" color="muted">
+          Todas las facturas activas ya están en este presupuesto.
+        </Text>
 
         <div class="bill-import-modal__actions">
           <Button variant="ghost" size="sm" @click="showBillImport = false">Cancelar</Button>
