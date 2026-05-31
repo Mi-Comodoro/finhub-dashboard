@@ -60,6 +60,6 @@
     @apply h-auto max-h-[90vh] w-full max-w-[650px] overflow-hidden p-8;
   }
   .modal-wizard__content {
-    @apply flex min-h-0 w-full flex-1 flex-col gap-6;
+    @apply flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto;
   }
 </style>
