@@ -3,12 +3,16 @@
   import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
   import { useNotificationsStore } from '@/stores/notifications.store'
 
+  const DROPDOWN_LIMIT = 8
+
   const router = useRouter()
   const notificationsStore = useNotificationsStore()
   const { handleMarkAllRead, handleMarkRead } = useNotificationsApplication()
 
   const notifications = computed(() => notificationsStore.notifications)
   const unreadCount = computed(() => notificationsStore.unreadCount)
+  const visibleNotifications = computed(() => notifications.value.slice(0, DROPDOWN_LIMIT))
+  const hiddenCount = computed(() => Math.max(0, notifications.value.length - DROPDOWN_LIMIT))
 
   const showDropdown = ref(false)
   const dropdownRef = ref<HTMLElement | null>(null)
@@ -71,7 +75,7 @@
 
 <template>
   <div ref="dropdownRef" class="notification-center">
-    <span class="notification-center__trigger" title="Notificaciones" @click="toggleDropdown">
+    <span class="notification-center__trigger" title="Notificaciones" @click.stop="toggleDropdown">
       <Icon name="notifications_none" size="md" />
       <span
         v-if="unreadCount > 0"
@@ -115,7 +119,7 @@
           </div>
 
           <button
-            v-for="notification in notifications.slice(0, 5)"
+            v-for="notification in visibleNotifications"
             :key="notification.id"
             :class="[
               'notification-center__dropdown-item',
@@ -144,11 +148,11 @@
           </button>
 
           <button
-            v-if="notifications.length > 5"
+            v-if="hiddenCount > 0"
             class="notification-center__see-all-bottom"
             @click="goToAll"
           >
-            Ver las {{ notifications.length - 5 }} restantes
+            Ver {{ hiddenCount }} más
           </button>
         </div>
       </div>
@@ -213,15 +217,15 @@
   }
 
   .notification-center__see-all-bottom {
-    @apply w-full py-2 text-center text-xs text-primary-600 hover:bg-neutral-50 dark:text-primary-400 dark:hover:bg-neutral-700;
+    @apply w-full py-2.5 text-center text-xs font-medium text-primary-600 hover:bg-neutral-50 dark:text-primary-400 dark:hover:bg-neutral-600;
   }
 
   .notification-center__dropdown-list {
-    @apply max-h-64 overflow-y-auto;
+    @apply max-h-80 overflow-y-auto;
   }
 
   .notification-center__dropdown-empty {
-    @apply px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400;
+    @apply flex flex-col items-center gap-2 px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400;
   }
 
   .notification-center__dropdown-item {

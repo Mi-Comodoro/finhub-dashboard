@@ -2,7 +2,6 @@
   import { useFriendshipsApi } from '@/composables/api/useFriendshipsApi'
   import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
   import { useFeedback } from '@/composables/useFeedBack'
-  import { useNotificationsStore } from '@/stores/notifications.store'
   import type { AppNotification } from '@/types/notifications.types'
 
   definePageMeta({
@@ -13,15 +12,23 @@
     breadcrumb: 'Notificaciones'
   })
 
-  const notificationsStore = useNotificationsStore()
-  const { loadNotifications, handleMarkAllRead, handleMarkRead } = useNotificationsApplication()
+  const PAGE_SIZE = 15
+
+  const { loadNotificationsPaginated, handleMarkRead, handleDeleteNotification, handleDeleteAll } =
+    useNotificationsApplication()
   const { acceptRequest, rejectRequest } = useFriendshipsApi()
   const { success: successToast, error: errorToast } = useFeedback()
 
-  const notifications = computed(() => notificationsStore.notifications)
-  const unreadCount = computed(() => notificationsStore.unreadCount)
+  const items = ref<AppNotification[]>([])
+  const total = ref(0)
+  const currentPage = ref(1)
   const isLoading = ref(true)
   const pendingAction = ref<string | null>(null)
+  const selectedNotification = ref<AppNotification | null>(null)
+  const showModal = ref(false)
+
+  const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)))
+  const unreadCount = computed(() => items.value.filter(n => !n.isRead).length)
 
   const TYPE_CONFIG: Record<string, { icon: string; label: string }> = {
     announcement: { icon: 'campaign', label: 'Anuncio' },
@@ -41,13 +48,68 @@
       minute: '2-digit'
     }).format(new Date(iso))
 
-  const markRead = async (n: AppNotification) => {
-    if (!n.isRead) await handleMarkRead(n.id)
+  const getShortMessage = (n: AppNotification) => {
+    if (n.type === 'announcement') return n.payload.title ?? 'Nuevo anuncio'
+    const action: Record<string, string> = {
+      friend_request: 'quiere ser tu amigo',
+      friend_accepted: 'aceptó tu solicitud de amistad',
+      friend_rejected: 'rechazó tu solicitud de amistad'
+    }
+    if (n.payload.senderHandle) return `@${n.payload.senderHandle} ${action[n.type] ?? ''}`
+    return n.payload.senderDisplayName ?? 'Notificación'
   }
 
-  const markAllRead = async () => {
-    await handleMarkAllRead()
-    successToast('Listo', 'Todas las notificaciones marcadas como leídas')
+  const fetchPage = async (page: number) => {
+    isLoading.value = true
+    const { items: data, total: count } = await loadNotificationsPaginated(page, PAGE_SIZE)
+    items.value = data
+    total.value = count
+    currentPage.value = page
+    isLoading.value = false
+  }
+
+  const openNotification = async (n: AppNotification) => {
+    selectedNotification.value = n
+    showModal.value = true
+    if (!n.isRead) {
+      await handleMarkRead(n.id)
+      const found = items.value.find(item => item.id === n.id)
+      if (found) found.isRead = true
+    }
+  }
+
+  const closeModal = () => {
+    showModal.value = false
+    selectedNotification.value = null
+    pendingAction.value = null
+  }
+
+  const deleteOne = async (n: AppNotification) => {
+    const { success } = await handleDeleteNotification(n.id)
+    if (success) {
+      successToast('Eliminada', 'Notificación eliminada')
+      if (items.value.length === 1 && currentPage.value > 1) {
+        await fetchPage(currentPage.value - 1)
+      } else {
+        await fetchPage(currentPage.value)
+      }
+      if (selectedNotification.value?.id === n.id) closeModal()
+    } else {
+      errorToast('Error', 'No se pudo eliminar la notificación')
+    }
+  }
+
+  const deleteAll = async () => {
+    const { success } = await handleDeleteAll()
+    if (success) {
+      items.value = []
+      total.value = 0
+      currentPage.value = 1
+      closeModal()
+      successToast('Listo', 'Todas las notificaciones eliminadas')
+    } else {
+      errorToast('Error', 'No se pudieron eliminar las notificaciones')
+    }
   }
 
   const onAccept = async (n: AppNotification) => {
@@ -57,7 +119,8 @@
       await acceptRequest(n.payload.senderId)
       await handleMarkRead(n.id)
       successToast('Solicitud aceptada', `Ahora son amigos con @${n.payload.senderHandle}`)
-      await loadNotifications()
+      closeModal()
+      await fetchPage(currentPage.value)
     } catch {
       errorToast('Error', 'No se pudo aceptar la solicitud')
     } finally {
@@ -72,7 +135,8 @@
       await rejectRequest(n.payload.senderId)
       await handleMarkRead(n.id)
       successToast('Solicitud rechazada', `Rechazaste la solicitud de @${n.payload.senderHandle}`)
-      await loadNotifications()
+      closeModal()
+      await fetchPage(currentPage.value)
     } catch {
       errorToast('Error', 'No se pudo rechazar la solicitud')
     } finally {
@@ -80,33 +144,34 @@
     }
   }
 
-  onMounted(async () => {
-    await loadNotifications()
-    isLoading.value = false
-  })
+  onMounted(() => fetchPage(1))
 </script>
 
 <template>
   <div class="notifications-page">
+    <!-- Header -->
     <div class="notifications-page__header">
       <div>
         <Heading level="h1" size="2xl" weight="extrabold">Notificaciones</Heading>
         <Text size="xs" color="muted">
-          {{ unreadCount > 0 ? `${unreadCount} sin leer` : 'Todo al día' }}
+          <template v-if="total > 0">
+            {{ total }} notificaciones{{ unreadCount > 0 ? ` · ${unreadCount} sin leer` : '' }}
+          </template>
+          <template v-else>Todo al día</template>
         </Text>
       </div>
-      <Button v-if="unreadCount > 0" variant="ghost" size="sm" @click="markAllRead">
-        Marcar todas como leídas
+      <Button v-if="total > 0" variant="ghost" size="sm" icon="delete_sweep" @click="deleteAll">
+        Eliminar todas
       </Button>
     </div>
 
     <!-- Skeleton -->
     <div v-if="isLoading" class="notifications-page__list">
-      <div v-for="n in 4" :key="n" class="notifications-page__skeleton" />
+      <div v-for="n in 5" :key="n" class="notifications-page__skeleton" />
     </div>
 
     <!-- Empty -->
-    <div v-else-if="!notifications.length" class="notifications-page__empty">
+    <div v-else-if="!items.length" class="notifications-page__empty">
       <span class="material-symbols-outlined notifications-page__empty-icon">
         notifications_none
       </span>
@@ -116,14 +181,15 @@
 
     <!-- List -->
     <div v-else class="notifications-page__list">
-      <div
-        v-for="notification in notifications"
+      <button
+        v-for="notification in items"
         :key="notification.id"
         :class="[
           'notifications-page__item',
           !notification.isRead && 'notifications-page__item--unread'
         ]"
-        @click="markRead(notification)"
+        type="button"
+        @click="openNotification(notification)"
       >
         <!-- Icon -->
         <div
@@ -140,79 +206,137 @@
         <!-- Content -->
         <div class="notifications-page__content">
           <div class="notifications-page__item-header">
-            <span class="notifications-page__type">
-              {{ getConfig(notification.type).label }}
-            </span>
-            <span
-              v-if="!notification.isRead"
-              class="notifications-page__unread-dot"
-              aria-label="Sin leer"
-            />
+            <span class="notifications-page__type">{{ getConfig(notification.type).label }}</span>
+            <span v-if="!notification.isRead" class="notifications-page__unread-dot" />
           </div>
+          <p class="notifications-page__message">{{ getShortMessage(notification) }}</p>
+        </div>
 
-          <!-- Announcement -->
-          <template v-if="notification.type === 'announcement'">
-            <p class="notifications-page__title">{{ notification.payload.title }}</p>
-            <p class="notifications-page__body">{{ notification.payload.body }}</p>
+        <!-- Meta -->
+        <div class="notifications-page__meta">
+          <span class="notifications-page__date">{{ formatDate(notification.createdAt) }}</span>
+          <button
+            class="notifications-page__delete-btn"
+            type="button"
+            @click.stop="deleteOne(notification)"
+          >
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </button>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="notifications-page__pagination">
+      <Button
+        variant="ghost"
+        size="sm"
+        icon="chevron_left"
+        :disabled="currentPage === 1"
+        @click="fetchPage(currentPage - 1)"
+      >
+        Anterior
+      </Button>
+      <span class="notifications-page__page-info">{{ currentPage }} / {{ totalPages }}</span>
+      <Button
+        variant="ghost"
+        size="sm"
+        icon="chevron_right"
+        icon-position="right"
+        :disabled="currentPage === totalPages"
+        @click="fetchPage(currentPage + 1)"
+      >
+        Siguiente
+      </Button>
+    </div>
+
+    <!-- Detail Modal -->
+    <ModalWizard :show="showModal">
+      <div v-if="selectedNotification" class="notif-modal">
+        <!-- Fixed header -->
+        <div class="notif-modal__header">
+          <div
+            :class="[
+              'notif-modal__icon-wrap',
+              `notif-modal__icon-wrap--${selectedNotification.type.split('_')[0]}`
+            ]"
+          >
+            <span class="material-symbols-outlined notif-modal__icon">
+              {{ getConfig(selectedNotification.type).icon }}
+            </span>
+          </div>
+          <div class="notif-modal__header-text">
+            <span class="notif-modal__type">{{ getConfig(selectedNotification.type).label }}</span>
+            <span class="notif-modal__date">{{ formatDate(selectedNotification.createdAt) }}</span>
+          </div>
+        </div>
+
+        <!-- Scrollable body -->
+        <div class="notif-modal__body-area">
+          <template v-if="selectedNotification.type === 'announcement'">
+            <p class="notif-modal__title">{{ selectedNotification.payload.title }}</p>
+            <p class="notif-modal__body">{{ selectedNotification.payload.body }}</p>
           </template>
 
-          <!-- Friend request -->
-          <template v-else-if="notification.type === 'friend_request'">
-            <p class="notifications-page__title">
-              <strong>@{{ notification.payload.senderHandle }}</strong>
+          <template v-else-if="selectedNotification.type === 'friend_request'">
+            <p class="notif-modal__title">
+              <strong>@{{ selectedNotification.payload.senderHandle }}</strong>
               quiere ser tu amigo
             </p>
-            <div class="notifications-page__actions" @click.stop>
+            <div class="notif-modal__actions">
               <Button
                 variant="primary"
                 size="sm"
-                :disabled="pendingAction === notification.id"
-                @click="onAccept(notification)"
+                :disabled="pendingAction === selectedNotification.id"
+                @click="onAccept(selectedNotification)"
               >
                 Aceptar
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                :disabled="pendingAction === notification.id"
-                @click="onReject(notification)"
+                :disabled="pendingAction === selectedNotification.id"
+                @click="onReject(selectedNotification)"
               >
                 Rechazar
               </Button>
             </div>
           </template>
 
-          <!-- Friend accepted -->
-          <template v-else-if="notification.type === 'friend_accepted'">
-            <p class="notifications-page__title">
-              <strong>@{{ notification.payload.senderHandle }}</strong>
+          <template v-else-if="selectedNotification.type === 'friend_accepted'">
+            <p class="notif-modal__title">
+              <strong>@{{ selectedNotification.payload.senderHandle }}</strong>
               aceptó tu solicitud de amistad
             </p>
           </template>
 
-          <!-- Friend rejected -->
-          <template v-else-if="notification.type === 'friend_rejected'">
-            <p class="notifications-page__title">
-              <strong>@{{ notification.payload.senderHandle }}</strong>
+          <template v-else-if="selectedNotification.type === 'friend_rejected'">
+            <p class="notif-modal__title">
+              <strong>@{{ selectedNotification.payload.senderHandle }}</strong>
               rechazó tu solicitud de amistad
             </p>
           </template>
 
-          <!-- Fallback -->
           <template v-else>
-            <p class="notifications-page__title">
+            <p class="notif-modal__title">
               {{
-                notification.payload.senderDisplayName ??
-                notification.payload.senderHandle ??
+                selectedNotification.payload.senderDisplayName ??
+                selectedNotification.payload.senderHandle ??
                 'Notificación'
               }}
             </p>
           </template>
+        </div>
 
-          <span class="notifications-page__date">{{ formatDate(notification.createdAt) }}</span>
+        <!-- Fixed footer -->
+        <div class="notif-modal__footer">
+          <Button variant="ghost" size="sm" @click="closeModal">Cerrar</Button>
+          <Button variant="ghost" size="sm" icon="delete" @click="deleteOne(selectedNotification)">
+            Eliminar
+          </Button>
         </div>
       </div>
-    </div>
+    </ModalWizard>
   </div>
 </template>
 
@@ -230,7 +354,7 @@
   }
 
   .notifications-page__skeleton {
-    @apply h-20 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-800;
+    @apply h-14 w-full animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-800;
   }
 
   .notifications-page__empty {
@@ -241,9 +365,9 @@
     @apply text-6xl text-neutral-300 dark:text-neutral-600;
   }
 
-  /* Item */
+  /* Compact item */
   .notifications-page__item {
-    @apply flex cursor-pointer gap-4 rounded-xl border border-neutral-200 bg-white p-4 transition-colors hover:bg-neutral-50;
+    @apply flex w-full cursor-pointer items-center gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-left transition-colors hover:bg-neutral-50;
     @apply dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700;
   }
 
@@ -253,7 +377,7 @@
 
   /* Icon */
   .notifications-page__icon-wrap {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full;
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full;
   }
 
   .notifications-page__icon-wrap--announcement {
@@ -265,7 +389,7 @@
   }
 
   .notifications-page__icon {
-    @apply text-xl;
+    @apply text-lg;
   }
 
   .notifications-page__icon-wrap--announcement .notifications-page__icon {
@@ -278,11 +402,11 @@
 
   /* Content */
   .notifications-page__content {
-    @apply flex flex-1 flex-col gap-1;
+    @apply flex min-w-0 flex-1 flex-col gap-0.5;
   }
 
   .notifications-page__item-header {
-    @apply flex items-center gap-2;
+    @apply flex items-center gap-1.5;
   }
 
   .notifications-page__type {
@@ -290,22 +414,104 @@
   }
 
   .notifications-page__unread-dot {
-    @apply h-2 w-2 rounded-full bg-primary-500;
+    @apply h-1.5 w-1.5 rounded-full bg-primary-500;
   }
 
-  .notifications-page__title {
-    @apply text-sm text-neutral-900 dark:text-neutral-100;
+  .notifications-page__message {
+    @apply truncate text-sm text-neutral-800 dark:text-neutral-200;
   }
 
-  .notifications-page__body {
-    @apply text-sm leading-relaxed text-neutral-600 dark:text-neutral-400;
+  /* Meta */
+  .notifications-page__meta {
+    @apply flex shrink-0 flex-col items-end gap-1;
   }
 
   .notifications-page__date {
-    @apply mt-1 text-xs text-neutral-400 dark:text-neutral-500;
+    @apply whitespace-nowrap text-xs text-neutral-400 dark:text-neutral-500;
   }
 
-  .notifications-page__actions {
-    @apply mt-2 flex gap-2;
+  .notifications-page__delete-btn {
+    @apply flex h-6 w-6 items-center justify-center rounded text-neutral-300 transition-colors hover:bg-danger-50 hover:text-danger-500;
+    @apply dark:text-neutral-600 dark:hover:bg-danger-900/20 dark:hover:text-danger-400;
+  }
+
+  .notifications-page__delete-btn .material-symbols-outlined {
+    @apply text-base;
+  }
+
+  /* Pagination */
+  .notifications-page__pagination {
+    @apply flex items-center justify-center gap-4 py-2;
+  }
+
+  .notifications-page__page-info {
+    @apply text-sm text-neutral-500 dark:text-neutral-400;
+  }
+
+  /* Detail modal — header y footer fijos, body con scroll */
+  .notif-modal {
+    @apply flex flex-col;
+    min-height: 360px;
+    max-height: calc(90vh - 8rem);
+  }
+
+  .notif-modal__header {
+    @apply flex shrink-0 items-center gap-3 pb-4;
+  }
+
+  .notif-modal__icon-wrap {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full;
+  }
+
+  .notif-modal__icon-wrap--announcement {
+    @apply bg-secondary-100 dark:bg-secondary-900/30;
+  }
+
+  .notif-modal__icon-wrap--friend {
+    @apply bg-success-100 dark:bg-success-900/30;
+  }
+
+  .notif-modal__icon {
+    @apply text-xl;
+  }
+
+  .notif-modal__icon-wrap--announcement .notif-modal__icon {
+    @apply text-secondary-600 dark:text-secondary-400;
+  }
+
+  .notif-modal__icon-wrap--friend .notif-modal__icon {
+    @apply text-success-600 dark:text-success-400;
+  }
+
+  .notif-modal__header-text {
+    @apply flex flex-col gap-0.5;
+  }
+
+  .notif-modal__type {
+    @apply text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400;
+  }
+
+  .notif-modal__date {
+    @apply text-xs text-neutral-400 dark:text-neutral-500;
+  }
+
+  .notif-modal__body-area {
+    @apply flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-2;
+  }
+
+  .notif-modal__title {
+    @apply text-sm leading-relaxed text-neutral-900 dark:text-neutral-100;
+  }
+
+  .notif-modal__body {
+    @apply whitespace-pre-wrap text-sm leading-relaxed text-neutral-600 dark:text-neutral-400;
+  }
+
+  .notif-modal__actions {
+    @apply flex gap-2 pt-1;
+  }
+
+  .notif-modal__footer {
+    @apply flex shrink-0 items-center justify-between border-t border-neutral-100 pt-4 dark:border-neutral-700;
   }
 </style>
