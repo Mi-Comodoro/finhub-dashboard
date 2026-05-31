@@ -1,9 +1,15 @@
-export type NotificationType = 'friend_request' | 'friend_accepted' | 'friend_rejected'
+export type NotificationType =
+  | 'friend_request'
+  | 'friend_accepted'
+  | 'friend_rejected'
+  | 'announcement'
 
 export interface NotificationPayload {
   senderId?: string
   senderHandle?: string
   senderDisplayName?: string
+  title?: string
+  body?: string
 }
 
 export interface AppNotification {

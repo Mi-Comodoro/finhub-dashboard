@@ -3,21 +3,30 @@ import { io, type Socket } from 'socket.io-client'
 import { useNotificationsStore } from '@/stores/notifications.store'
 import type { AppNotification } from '@/types/notifications.types'
 
-const NOTIFICATION_LABELS: Record<string, { title: string; message: (handle?: string) => string }> =
-  {
-    friend_request: {
-      title: 'Nueva solicitud de amistad',
-      message: handle => (handle ? `@${handle} quiere ser tu amigo` : 'Tienes una nueva solicitud')
-    },
-    friend_accepted: {
-      title: 'Solicitud aceptada',
-      message: handle => (handle ? `@${handle} aceptó tu solicitud` : 'Tu solicitud fue aceptada')
-    },
-    friend_rejected: {
-      title: 'Solicitud rechazada',
-      message: handle => (handle ? `@${handle} rechazó tu solicitud` : 'Tu solicitud fue rechazada')
-    }
+const NOTIFICATION_LABELS: Record<
+  string,
+  { title: string; message: (payload: AppNotification['payload']) => string }
+> = {
+  friend_request: {
+    title: 'Nueva solicitud de amistad',
+    message: p =>
+      p.senderHandle ? `@${p.senderHandle} quiere ser tu amigo` : 'Tienes una nueva solicitud'
+  },
+  friend_accepted: {
+    title: 'Solicitud aceptada',
+    message: p =>
+      p.senderHandle ? `@${p.senderHandle} aceptó tu solicitud` : 'Tu solicitud fue aceptada'
+  },
+  friend_rejected: {
+    title: 'Solicitud rechazada',
+    message: p =>
+      p.senderHandle ? `@${p.senderHandle} rechazó tu solicitud` : 'Tu solicitud fue rechazada'
+  },
+  announcement: {
+    title: 'Nuevo anuncio',
+    message: p => p.title ?? 'Tienes un nuevo anuncio'
   }
+}
 
 let socket: Socket | null = null
 
@@ -43,7 +52,7 @@ export const useNotificationsSocket = () => {
         notificationsStore.addNotification(notification)
         const label = NOTIFICATION_LABELS[notification.type]
         if (label) {
-          successToast(label.title, label.message(notification.payload.senderHandle))
+          successToast(label.title, label.message(notification.payload))
         }
       })
 

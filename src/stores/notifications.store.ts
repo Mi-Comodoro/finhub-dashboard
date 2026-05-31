@@ -22,6 +22,12 @@ export const useNotificationsStore = defineStore('notifications', {
     },
     markAllRead() {
       this.notifications.forEach(n => (n.isRead = true))
+    },
+    removeNotification(id: string) {
+      this.notifications = this.notifications.filter(n => n.id !== id)
+    },
+    clearAll() {
+      this.notifications = []
     }
   }
 })

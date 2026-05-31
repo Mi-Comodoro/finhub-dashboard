@@ -10,19 +10,13 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 401, message: 'No autenticado' })
   }
 
-  const query = getQuery(event)
-  const page = query.page ?? 1
-  const limit = query.limit ?? 50
-
-  const { success, data } = await $fetch<{
-    success: boolean
-    data: { items: unknown[]; total: number }
-  }>(`${config.public.apiBase}/notifications?page=${page}&limit=${limit}`, {
+  await $fetch(`${config.public.apiBase}/notifications/all`, {
+    method: 'DELETE',
     headers: { authorization: `Bearer ${token}` },
     onResponseError: ({ response }) => {
       validateError(event, response.status)
     }
   })
 
-  return { success, result: data?.items ?? [], total: data?.total ?? 0 }
+  return { success: true }
 })
