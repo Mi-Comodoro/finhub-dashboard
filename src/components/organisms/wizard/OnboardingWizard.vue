@@ -17,7 +17,7 @@
   //   const selectedPlan = getPlan()
   //   Use `selectedPlan` to pre-select the plan card in the new step.
 
-  const ONBOARDING_KEY = 'finhub_onboarding_draft'
+  const ONBOARDING_KEY = 'mi_comodoro_onboarding_draft'
 
   const emit = defineEmits<OnboardingWizardEmits>()
   // Computed properties
