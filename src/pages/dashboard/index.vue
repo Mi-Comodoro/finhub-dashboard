@@ -499,7 +499,7 @@
     </div>
 
     <ModalWizard :show="openOnboarding" class="dashboard-page__modal">
-      <OnboardingWizard @completed="handleCompleteSetup" @skip="openOnboarding = false" />
+      <OnboardingWizard @completed="handleCompleteSetup" />
     </ModalWizard>
 
     <ModalWizard v-model:show="showQuickModal">

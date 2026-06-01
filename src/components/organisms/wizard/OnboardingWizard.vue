@@ -25,6 +25,7 @@
   const wizardData = reactive<OnboardingFormData>({
     personalInfo: {
       displayName: '',
+      handle: '',
       email: '',
       phone: '',
       gender: 'prefer_not_to_say' as 'male' | 'female' | 'prefer_not_to_say'
@@ -104,9 +105,11 @@
     wizardData.incomes = data
   }
 
-  // Función para validar si todos los datos están completos
   const isDataComplete = () => {
-    const hasPersonalInfo = wizardData.personalInfo.phone.trim() !== ''
+    const hasPersonalInfo =
+      wizardData.personalInfo.phone.trim() !== '' &&
+      wizardData.personalInfo.handle.trim().length >= 3 &&
+      /^[a-z][a-z0-9_]*$/.test(wizardData.personalInfo.handle)
 
     const hasFinances =
       wizardData.finances.currency.trim() !== '' && wizardData.finances.profile.trim() !== ''
@@ -129,22 +132,13 @@
 
   // Método que puede ser llamado externamente para intentar completar el wizard
   const tryComplete = () => {
-    // La completación se activa en el último step (cuando se tienen todos los datos)
     if (currentStep.value === totalSteps.value && isDataComplete()) {
-      sessionStorage.removeItem(ONBOARDING_KEY) // Limpiar draft al completar
+      sessionStorage.removeItem(ONBOARDING_KEY)
       emit('completed', { ...wizardData })
     }
   }
 
-  const handleSkip = () => {
-    sessionStorage.removeItem(ONBOARDING_KEY)
-    emit('skip')
-  }
-
-  // Exponer método para uso externo
-  defineExpose({
-    tryComplete
-  })
+  defineExpose({ tryComplete })
   const currentStep = ref(1)
   const firstStep = ref(1)
   const totalSteps = ref(ON_BOARDING_CONFIG.stages.length)
@@ -217,9 +211,6 @@
 </script>
 <template>
   <div class="onboarding-wizard">
-    <div class="onboarding-wizard__skip-row">
-      <Button variant="ghost" size="sm" icon="close" @click="handleSkip">Omitir</Button>
-    </div>
     <ProgressBar
       :current-step="currentStep"
       :total-steps="totalSteps"
@@ -322,10 +313,6 @@
 <style scoped lang="postcss">
   .onboarding-wizard {
     @apply w-full;
-  }
-
-  .onboarding-wizard__skip-row {
-    @apply mb-2 flex justify-end;
   }
 
   .onboarding-wizard__step {
