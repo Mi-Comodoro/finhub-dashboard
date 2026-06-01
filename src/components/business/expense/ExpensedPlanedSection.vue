@@ -6,7 +6,14 @@
   import { useExpenseSectionApplication } from '@/composables/application/useExpenseSectionApplication'
   import { useFeedback } from '@/composables/useFeedBack'
 
-  const emit = defineEmits(['open-form', 'edit', 'view', 'remove', 'mark-as-payed'])
+  const emit = defineEmits([
+    'open-form',
+    'open-bill-import',
+    'edit',
+    'view',
+    'remove',
+    'mark-as-payed'
+  ])
 
   const props = withDefaults(
     defineProps<{
@@ -70,6 +77,7 @@
   const view = (row: RowData) => emit('view', row)
   const remove = (row: RowData) => emit('remove', row)
   const openForm = () => emit('open-form')
+  const openBillImport = () => emit('open-bill-import')
 
   const markAsPayed = async (row: RowData) => {
     if (markingAsPaidId.value) return
@@ -141,6 +149,8 @@
     { key: 'dueDate', label: 'Fecha', type: 'date' },
     { key: 'status', label: 'Estado', type: 'badge' }
   ]
+
+  defineExpose({ refresh: fetchExpenses })
 </script>
 
 <template>
@@ -148,7 +158,9 @@
     <template #action>
       <div class="flex gap-2">
         <Button variant="secondary" size="sm" icon="add" @click="openForm">Añadir Gastos</Button>
-        <Button variant="secondary" size="sm" icon="add" @click="openForm">Añadir Facturas</Button>
+        <Button variant="secondary" size="sm" icon="sync" @click="openBillImport">
+          Importar Facturas
+        </Button>
       </div>
     </template>
     <template #default>
@@ -169,6 +181,19 @@
 
         <!-- 📊 TABLE -->
         <DataTable :columns="columns" :data="expenses" :pagination="meta" @page-change="setPage">
+          <template #cell-name="{ value, row }">
+            <span class="expense-section__name-cell">
+              {{ value }}
+              <span
+                v-if="row.billsId"
+                class="material-symbols-outlined expense-section__bill-icon"
+                title="Importado de factura recurrente"
+              >
+                sync
+              </span>
+            </span>
+          </template>
+
           <template #cell-category="{ value }">
             <Badge size="xs">{{ value }}</Badge>
           </template>
@@ -242,5 +267,13 @@
 
   .expense-section__actions {
     @apply flex w-full justify-end gap-4;
+  }
+
+  .expense-section__name-cell {
+    @apply flex items-center gap-1 font-semibold;
+  }
+
+  .expense-section__bill-icon {
+    @apply text-xs text-primary-500;
   }
 </style>
