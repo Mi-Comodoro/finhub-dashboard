@@ -46,7 +46,7 @@
   const route = useRoute()
   const router = useRouter()
 
-  const { loadBudgetDetail, budgetSelected, expectedIncome, defaultCurrency } =
+  const { loadBudgetDetail, refreshSpentAmounts, budgetSelected, expectedIncome, defaultCurrency } =
     useBudgetDetailApplication()
   const { deleteExpense } = useExpenseApplication()
   const { fetchByBudget: fetchTransactions, fetchTotals } = useTransactionApplication()
@@ -226,7 +226,11 @@
   const handleMarkExpenseAsPaid = async (_row: { id: string }) => {
     successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
     if (budgetId) {
-      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+      await Promise.all([
+        fetchTransactions(budgetId),
+        fetchTotals(budgetId),
+        refreshSpentAmounts(budgetId)
+      ])
     }
   }
 
