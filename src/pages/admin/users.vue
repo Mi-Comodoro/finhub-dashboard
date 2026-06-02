@@ -174,7 +174,7 @@
             name="user-search"
             :model-value="searchQuery"
             placeholder="Buscar por nombre o email..."
-            @update:model-value="(val: string | number | boolean) => (searchQuery = String(val))"
+            @update:model-value="searchQuery = String($event)"
           />
         </div>
         <div class="admin-users-page__filter-selects">
@@ -182,13 +182,13 @@
             name="filter-role"
             :model-value="filterRole"
             :options="roleFilterOptions"
-            @update:model-value="(val: string | number | boolean) => (filterRole = String(val))"
+            @update:model-value="filterRole = String($event)"
           />
           <Select
             name="filter-status"
             :model-value="filterStatus"
             :options="statusFilterOptions"
-            @update:model-value="(val: string | number | boolean) => (filterStatus = String(val))"
+            @update:model-value="filterStatus = String($event)"
           />
         </div>
       </div>

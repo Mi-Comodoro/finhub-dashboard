@@ -518,6 +518,11 @@
     showExpenseDetailModal.value = true
   }
 
+  const closeEditExpenseModal = () => {
+    showEditExpenseModal.value = false
+    expenseToEditId.value = null
+  }
+
   const openEditExpense = (expenseId: string) => {
     expenseToEditId.value = expenseId
     showEditExpenseModal.value = true
@@ -564,6 +569,11 @@
     if (result.success && result.data) budgetProgress.value = result.data
     isLoadingBudgetProgress.value = false
     successToast('Gasto vinculado', 'El gasto fue vinculado al grupo correctamente.')
+  }
+
+  const handleExpensePlannedLinked = async () => {
+    showCreateExpenseInModal.value = false
+    await handleExpenseLinked()
   }
 
   const handleGoalSaved = async () => {
@@ -1431,10 +1441,7 @@
           :expense-id="expenseToEditId"
           :initial-data="expenseToEditInitialData"
           @on-success="handleExpenseUpdated"
-          @on-close="
-            showEditExpenseModal = false
-            expenseToEditId = null
-          "
+          @on-close="closeEditExpenseModal"
         />
       </div>
     </ModalWizard>
@@ -1486,10 +1493,7 @@
           <ExpensePlannedForm
             :budget-id="currentBudget.id"
             :group-id="groupId"
-            @success="
-              handleExpenseLinked()
-              showCreateExpenseInModal = false
-            "
+            @success="handleExpensePlannedLinked"
             @close="showCreateExpenseInModal = false"
           />
         </template>

@@ -38,6 +38,11 @@
       .toUpperCase()
   })
 
+  const openProfile = () => {
+    isOpen.value = false
+    showProfile.value = true
+  }
+
   const handleLogout = async () => {
     isOpen.value = false
     await logout()
@@ -74,13 +79,7 @@
 
       <div class="user-avatar-dropdown__divider" />
 
-      <button
-        class="user-avatar-dropdown__item"
-        @click="
-          isOpen = false
-          showProfile = true
-        "
-      >
+      <button class="user-avatar-dropdown__item" @click="openProfile">
         <span class="material-symbols-outlined user-avatar-dropdown__item-icon">
           person_outline
         </span>
