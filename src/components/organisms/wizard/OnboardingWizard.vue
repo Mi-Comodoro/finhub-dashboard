@@ -6,6 +6,7 @@
   import BudgetStrategyForm from '@/components/organisms/forms/BudgetStrategyForm.vue'
   import FinancialGoalsForm from '@/components/organisms/forms/FinancialGoalsForm.vue'
   import { ON_BOARDING_CONFIG } from '~/common/constants'
+  import { useUserStore } from '~/stores/user.store'
   import type { OnboardingFormData } from '~/types/ui'
 
   import type { UsageValue } from '../forms/types/budget-strategy-form.types'
@@ -19,7 +20,24 @@
 
   const ONBOARDING_KEY = 'mi_comodoro_onboarding_draft'
 
+  const props = withDefaults(defineProps<{ skipPersonalInfo?: boolean }>(), {
+    skipPersonalInfo: false
+  })
+
   const emit = defineEmits<OnboardingWizardEmits>()
+
+  function suggestHandle(name: string): string {
+    return name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '')
+      .replace(/^[^a-z]+/, '')
+      .slice(0, 20)
+  }
+
+  const userStore = useUserStore()
   // Computed properties
 
   const wizardData = reactive<OnboardingFormData>({
@@ -64,6 +82,17 @@
     }
   })
 
+  if (props.skipPersonalInfo) {
+    const displayName = userStore.displayName ?? userStore.name ?? ''
+    wizardData.personalInfo = {
+      displayName,
+      handle: userStore.handle ?? suggestHandle(displayName),
+      email: userStore.email ?? '',
+      phone: userStore.phone ?? '',
+      gender: (userStore.gender ?? 'prefer_not_to_say') as 'male' | 'female' | 'prefer_not_to_say'
+    }
+  }
+
   /* ---------------------------------------------
    * PERSISTENCIA EN SESSIONSTORAGE
    * --------------------------------------------- */
@@ -74,8 +103,10 @@
         ...income,
         paymentsDates: income.paymentsDates
           ? Array.isArray(income.paymentsDates)
-            ? income.paymentsDates.map((d: string | null) => (d ? new Date(d) : null))
-            : new Date(income.paymentsDates)
+            ? ((income.paymentsDates as unknown as (string | null)[]).map(d =>
+                d ? new Date(d) : null
+              ) as [Date | null, Date | null])
+            : new Date(income.paymentsDates as unknown as string)
           : null
       }))
     }
@@ -125,7 +156,8 @@
         wizardData.budget.strategy === 'BALANCED')
 
     const hasValidIncomes =
-      wizardData.incomes.incomes[0].amount > 0 && wizardData.incomes.incomes[0].source.trim() !== ''
+      (wizardData.incomes.incomes[0]?.amount ?? 0) > 0 &&
+      (wizardData.incomes.incomes[0]?.source ?? '').trim() !== ''
 
     return hasPersonalInfo && hasFinances && hasBudget && hasValidIncomes
   }
@@ -139,8 +171,8 @@
   }
 
   defineExpose({ tryComplete })
-  const currentStep = ref(1)
-  const firstStep = ref(1)
+  const currentStep = ref(props.skipPersonalInfo ? 2 : 1)
+  const firstStep = ref(props.skipPersonalInfo ? 2 : 1)
   const totalSteps = ref(ON_BOARDING_CONFIG.stages.length)
   const stepProgress = computed(() => (currentStep.value / totalSteps.value) * 100)
 
@@ -186,10 +218,22 @@
         // Restaurar cada campo individualmente para mantener reactividad
         const parsed = parseDraft(savedData)
         Object.assign(wizardData, parsed)
-        currentStep.value = step ?? 1
+        currentStep.value = props.skipPersonalInfo ? Math.max(step ?? 2, 2) : (step ?? 1)
       }
     } catch {
       sessionStorage.removeItem(ONBOARDING_KEY)
+    }
+
+    // Re-prefill personalInfo if skipPersonalInfo (sessionStorage could overwrite it)
+    if (props.skipPersonalInfo) {
+      const displayName = userStore.displayName ?? userStore.name ?? ''
+      wizardData.personalInfo = {
+        displayName,
+        handle: userStore.handle ?? suggestHandle(displayName),
+        email: userStore.email ?? '',
+        phone: userStore.phone ?? '',
+        gender: (userStore.gender ?? 'prefer_not_to_say') as 'male' | 'female' | 'prefer_not_to_say'
+      }
     }
   })
 

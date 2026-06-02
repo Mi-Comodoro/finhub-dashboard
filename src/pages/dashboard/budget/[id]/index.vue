@@ -24,6 +24,7 @@
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useExpenseApi } from '@/composables/api/useExpenseApi'
   import { useBillsApplication } from '@/composables/application/useBillsApplication'
+  import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
   import { useBudgetTransferApplication } from '@/composables/application/useBudgetTransferApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
@@ -56,6 +57,7 @@
   const { lastUpdate } = usePlannedIncomeApplication()
   const { fetchGoals, goals } = useGoalsApplication()
   const { transferToBudget, transferToGoal } = useBudgetTransferApplication()
+  const { setDefaultBudget } = useBudgetActions()
 
   const budgetId = route.params['id'] as string
 
@@ -115,6 +117,14 @@
       icon: 'rocket_launch',
       condition: statusConfig.canActivate(),
       click: budgetStart
+    },
+    {
+      name: 'Predeterminado',
+      size: 'sm',
+      variant: 'primary',
+      icon: 'star',
+      condition: planStatus.value === 'ACTIVE' && !plan.value?.isDefault,
+      click: () => setDefaultBudget(budgetId)
     },
     {
       name: 'Eliminar',
@@ -348,6 +358,10 @@
                 {{ displayStatus }}
               </Badge>
               <Badge variant="secondary" size="xs">{{ strategyInfo?.label }}</Badge>
+              <Badge v-if="plan.isDefault" variant="primary" size="xs">
+                <Icon name="star" size="xs" />
+                Predeterminado
+              </Badge>
               <Badge v-if="plan.isShared" variant="warning" size="xs">
                 <Icon name="group" size="xs" />
                 Compartido

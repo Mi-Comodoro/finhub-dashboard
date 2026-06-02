@@ -405,9 +405,11 @@
   }
   .form-income__section {
     @apply space-y-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
   .form-income__section-title {
     @apply text-sm font-semibold uppercase text-neutral-900;
+    @apply dark:text-neutral-100;
   }
   .form-income__frequency {
     @apply space-y-2;

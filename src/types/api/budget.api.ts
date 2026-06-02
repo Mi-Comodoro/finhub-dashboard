@@ -74,6 +74,7 @@ export type BackendCurrentBudgetData = {
   month: string
   year: number
   isShared: boolean
+  isDefault: boolean
   status: string
   needsLimit: number
   wantsLimit: number
@@ -97,6 +98,7 @@ export type SingleBudget = {
   month: string
   year: number
   isShared: boolean
+  isDefault: boolean
   limits: {
     needs: number
     wants: number

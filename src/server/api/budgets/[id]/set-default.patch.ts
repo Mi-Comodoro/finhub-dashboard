@@ -17,7 +17,7 @@ export default defineEventHandler(async event => {
   }
 
   const { success, data } = await $fetch<BackendCurrentBudget>(
-    `${config.public.apiBase}/budgets/${id}/active`,
+    `${config.public.apiBase}/budgets/${id}/set-default`,
     {
       headers: { authorization: `Bearer ${token}` },
       method: 'PATCH',

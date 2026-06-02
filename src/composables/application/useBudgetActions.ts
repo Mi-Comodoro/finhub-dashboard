@@ -48,6 +48,7 @@ const mapCurrentBudgetToPlan = (result: SingleBudget): CurrentBudgetPlan => ({
   month: result.month,
   year: result.year,
   isShared: result.isShared,
+  isDefault: result.isDefault ?? false,
   limits: result.limits,
   financesId: result.financesId,
   status: result.status,
@@ -247,6 +248,23 @@ export function useBudgetActions() {
     return { success }
   }
 
+  const setDefaultBudget = async (budgetId: string): Promise<{ success: boolean }> => {
+    budgetStore.setLoading(true)
+    budgetStore.setError(null)
+    try {
+      const response = (await budgetApi.setDefaultBudget(budgetId)) as CurrentBudget
+      if (!response.success || !response.result) return { success: false }
+      budgetStore.updateBudgetPlan(mapCurrentBudgetToPlan(response.result))
+      return { success: true }
+    } catch (err) {
+      console.error('❌ Error setting default budget:', err)
+      budgetStore.setError(createErrorMessage(err as FetchError))
+      return { success: false }
+    } finally {
+      budgetStore.setLoading(false)
+    }
+  }
+
   return {
     fetchCurrentBudget,
     fetchBudgets,
@@ -256,6 +274,7 @@ export function useBudgetActions() {
     handleCreate,
     handleClone,
     handleUpdate,
-    handleDelete
+    handleDelete,
+    setDefaultBudget
   }
 }
