@@ -1,9 +1,12 @@
 <script setup lang="ts">
+  import ModalNotification from '@/components/organisms/modal-notification/ModalNotification.vue'
+  import { useModalStore } from '@/stores/modal.store'
   import { usePageLoading } from '~/composables/usePageLoading'
   import { useTheme } from '~/composables/useTheme'
 
   const { initTheme } = useTheme()
   const isPageLoading = usePageLoading()
+  const modalStore = useModalStore()
 
   onMounted(() => {
     initTheme()
@@ -12,6 +15,12 @@
 
 <template>
   <div>
+    <ModalNotification
+      :show="modalStore.state.show"
+      :type="modalStore.state.type"
+      :options="modalStore.state.options"
+      @update:show="modalStore.state.show = $event"
+    />
     <Transition name="page-loading-fade">
       <div v-if="isPageLoading" class="page-loading">
         <div class="page-loading__spinner" />

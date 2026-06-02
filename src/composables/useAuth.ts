@@ -7,6 +7,7 @@ import { useUserApi } from '@/composables/api/useUserApi'
 import { useSessionWatcher } from '@/composables/useSessionWatcher'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinancesStore } from '@/stores/finances.store'
+import { useModalStore } from '@/stores/modal.store'
 import { useUserStore } from '@/stores/user.store'
 import type { FirebasePlugin } from '@/types/firebase'
 
@@ -232,6 +233,30 @@ export const useAuth = () => {
     } as User
   }
 
+  const triggerSessionExpiredModal = () => {
+    if (!import.meta.client) return
+    stopWatcher()
+    const modalStore = useModalStore()
+    if (modalStore.state.show) return
+    modalStore.showModal('warning', {
+      title: 'Sesión expirada',
+      message: 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
+      actionLabel: 'Aceptar',
+      onAction: () => {
+        authStore.clearAuth()
+        userStore.clearUser()
+        financesStore.clearFinances()
+        navigateTo('/')
+      },
+      onClose: () => {
+        authStore.clearAuth()
+        userStore.clearUser()
+        financesStore.clearFinances()
+        navigateTo('/')
+      }
+    })
+  }
+
   const observeAuth = async (): Promise<void> => {
     if (import.meta.server) return
 
@@ -253,6 +278,7 @@ export const useAuth = () => {
     logout,
     observeAuth,
     populateSessionFromServer,
+    triggerSessionExpiredModal,
     user,
     error
   }
