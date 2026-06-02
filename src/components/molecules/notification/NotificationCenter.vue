@@ -29,7 +29,8 @@
     friend_request: 'Solicitud de amistad',
     friend_accepted: 'Solicitud aceptada',
     friend_rejected: 'Solicitud rechazada',
-    announcement: 'Anuncio'
+    announcement: 'Anuncio',
+    group_trip_invitation: 'Invitación a viaje'
   }
 
   const toggleDropdown = () => {

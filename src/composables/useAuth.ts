@@ -7,6 +7,7 @@ import { useUserApi } from '@/composables/api/useUserApi'
 import { useSessionWatcher } from '@/composables/useSessionWatcher'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinancesStore } from '@/stores/finances.store'
+import { useModalStore } from '@/stores/modal.store'
 import { useUserStore } from '@/stores/user.store'
 import type { FirebasePlugin } from '@/types/firebase'
 
@@ -110,6 +111,51 @@ export const useAuth = () => {
     }
   }
 
+  const signup = async (data: {
+    email: string
+    password: string
+    name: string
+    displayName?: string
+    handle?: string
+    phone?: string
+    gender?: string
+    country?: string
+  }): Promise<{ onboardingStatus: string; success: boolean }> => {
+    error.value = ''
+
+    try {
+      const { success, result: res } = await authApi.signup(data)
+
+      if (!success || !res) {
+        error.value = 'Error al crear la cuenta'
+        return { success: false, onboardingStatus: 'PENDING' }
+      }
+
+      authStore.setAccountType(res.accountType)
+
+      const onboardingStatus = await populateSessionFromServer(res.expiresAt)
+
+      if (data.handle) {
+        userStore.handle = data.handle
+      }
+
+      if (res.expiresAt) {
+        startWatcher(res.expiresAt)
+      }
+
+      user.value = createFirebaseUser(authStore.user)
+
+      return { success: true, onboardingStatus }
+    } catch (err) {
+      const raw = err as { data?: { message?: string }; message?: string } | null
+      error.value =
+        raw?.data?.message ??
+        (err instanceof Error ? err.message : null) ??
+        'Error al crear la cuenta'
+      return { success: false, onboardingStatus: 'PENDING' }
+    }
+  }
+
   const loginWithGoogle = async (): Promise<{ onboardingStatus: string; success: boolean }> => {
     error.value = ''
 
@@ -187,6 +233,30 @@ export const useAuth = () => {
     } as User
   }
 
+  const triggerSessionExpiredModal = () => {
+    if (!import.meta.client) return
+    stopWatcher()
+    const modalStore = useModalStore()
+    if (modalStore.state.show) return
+    modalStore.showModal('warning', {
+      title: 'Sesión expirada',
+      message: 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
+      actionLabel: 'Aceptar',
+      onAction: () => {
+        authStore.clearAuth()
+        userStore.clearUser()
+        financesStore.clearFinances()
+        navigateTo('/')
+      },
+      onClose: () => {
+        authStore.clearAuth()
+        userStore.clearUser()
+        financesStore.clearFinances()
+        navigateTo('/')
+      }
+    })
+  }
+
   const observeAuth = async (): Promise<void> => {
     if (import.meta.server) return
 
@@ -203,10 +273,12 @@ export const useAuth = () => {
   return {
     isAuthenticated,
     login,
+    signup,
     loginWithGoogle,
     logout,
     observeAuth,
     populateSessionFromServer,
+    triggerSessionExpiredModal,
     user,
     error
   }

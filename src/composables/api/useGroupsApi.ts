@@ -4,8 +4,14 @@ import type {
   CreateGroupDto,
   CreateGroupExpenseDto,
   Group,
+  GroupBudgetProgress,
   GroupExpense,
-  UpdateGroupDto
+  GroupMember,
+  InviteWithContextDto,
+  RespondGroupInvitationDto,
+  RespondInvitationResult,
+  UpdateGroupDto,
+  UpdateGroupExpenseDto
 } from '@/types/groups.types'
 
 export function useGroupsApi() {
@@ -63,6 +69,29 @@ export function useGroupsApi() {
       { method: 'PATCH' }
     )
 
+  const updateExpense = async (groupId: string, expenseId: string, data: UpdateGroupExpenseDto) =>
+    $fetch<{ success: boolean; result: GroupExpense }>(
+      `/api/groups/${groupId}/expenses/${expenseId}`,
+      { method: 'PATCH', body: data }
+    )
+
+  const getGroupBudgetProgress = async (groupId: string) =>
+    $fetch<{ success: boolean; result: GroupBudgetProgress }>(
+      `/api/groups/${groupId}/budget-progress`
+    )
+
+  const inviteWithContext = async (groupId: string, data: InviteWithContextDto) =>
+    $fetch<{ success: boolean; result: GroupMember }>(`/api/groups/${groupId}/invite-context`, {
+      method: 'POST',
+      body: data
+    })
+
+  const respondToInvitation = async (groupId: string, data: RespondGroupInvitationDto) =>
+    $fetch<{ success: boolean; result: RespondInvitationResult }>(
+      `/api/groups/${groupId}/respond-invitation`,
+      { method: 'POST', body: data }
+    )
+
   return {
     getGroups,
     getGroup,
@@ -75,6 +104,10 @@ export function useGroupsApi() {
     getExpenses,
     createExpense,
     payExpense,
-    markCxp
+    markCxp,
+    updateExpense,
+    getGroupBudgetProgress,
+    inviteWithContext,
+    respondToInvitation
   }
 }

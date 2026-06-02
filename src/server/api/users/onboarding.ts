@@ -18,6 +18,7 @@ export default defineEventHandler(async event => {
       body: {
         userInfo: {
           displayName: body.personalInfo.displayName,
+          handle: body.personalInfo.handle,
           email: body.personalInfo.email,
           phone: body.personalInfo.phone,
           gender: body.personalInfo.gender

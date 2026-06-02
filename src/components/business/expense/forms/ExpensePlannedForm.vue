@@ -15,6 +15,7 @@
     defineProps<{
       budgetId?: string
       expenseId?: string
+      groupId?: string
       initialData?: Partial<ExpenseData> & { category?: string; bucket?: string; status?: string }
       mode?: 'create' | 'edit' | 'view'
       currency?: Currency
@@ -22,6 +23,7 @@
     {
       budgetId: '',
       expenseId: undefined,
+      groupId: undefined,
       initialData: undefined,
       mode: 'create',
       currency: 'COP'
@@ -76,7 +78,8 @@
           ...data,
           ...(isoDate ? { dueDate: isoDate as unknown as Date } : {}),
           budgetId: props.budgetId,
-          status: 'PLANNED'
+          status: 'PLANNED',
+          ...(props.groupId ? { groupId: props.groupId } : {})
         }
         const { success } = await addExpense(buildData)
         if (success) {
@@ -145,7 +148,7 @@
           <span class="expense-planned-form__view-value">
             {{
               initialData?.dueDate
-                ? new Date(initialData.dueDate as string).toLocaleDateString('es-CO')
+                ? new Date(initialData.dueDate as unknown as string).toLocaleDateString('es-CO')
                 : '—'
             }}
           </span>

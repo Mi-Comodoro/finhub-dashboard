@@ -75,6 +75,11 @@ export function useBudgetApi() {
       body: dto
     })
 
+  const setDefaultBudget = async (budgetId: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/${budgetId}/set-default`, {
+      method: 'PATCH'
+    })
+
   return {
     getBudgets,
     getCurrentBudget,
@@ -85,6 +90,7 @@ export function useBudgetApi() {
     enableBudget,
     closeBudget,
     cloneBudget,
-    transferBalance
+    transferBalance,
+    setDefaultBudget
   }
 }

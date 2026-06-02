@@ -3,7 +3,6 @@
 
   import Button from '@/components/atoms/button/Button.vue'
   import GoogleIcon from '@/components/atoms/icons/GoogleIcon.vue'
-  import Link from '@/components/atoms/typography/Link.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import Input from '@/components/molecules/input/Input.vue'
@@ -164,17 +163,6 @@
           Iniciar Sesion
         </Button>
       </form>
-
-      <Text size="sm" color="muted" class="text-center">
-        No tienes una cuenta?
-        <Link
-          href="#"
-          size="sm"
-          class="font-semibold text-teal-600 transition-colors duration-200 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
-        >
-          Registrate
-        </Link>
-      </Text>
     </div>
   </div>
 </template>
