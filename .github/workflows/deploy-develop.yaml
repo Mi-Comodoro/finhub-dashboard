@@ -29,6 +29,7 @@ jobs:
       - name: Compilar Nuxt SSR
         env:
           NUXT_PUBLIC_API_BASE: ${{ secrets.NUXT_PUBLIC_API_BASE }}
+          NUXT_PUBLIC_WS_BASE: ${{ secrets.NUXT_PUBLIC_WS_BASE }}
           FB_API_KEY: ${{ secrets.FB_API_KEY }}
           FB_AUTH_DOMAIN: ${{ secrets.FB_AUTH_DOMAIN }}
           FB_PROJECT_ID: ${{ secrets.FB_PROJECT_ID }}
