@@ -6,8 +6,16 @@ export function useApiHandler() {
 
   const handleError = (error: { status: number; title: string; message: string }) => {
     if (error?.status === 401) {
-      authStore.clearAuth()
-      return router.push('/')
+      modalStore.showModal('warning', {
+        title: 'Sesión expirada',
+        message: 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
+        actionLabel: 'Aceptar',
+        onAction: () => {
+          authStore.clearAuth()
+          router.push('/')
+        }
+      })
+      return
     }
 
     modalStore.showModal('error', {

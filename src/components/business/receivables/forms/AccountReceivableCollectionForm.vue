@@ -39,7 +39,7 @@
   const initialData = { collectionDate: new Date(), categoryId: '' }
 
   const toDateString = (val: unknown): string => {
-    if (val instanceof Date) return val.toISOString().split('T')[0]
+    if (val instanceof Date) return val.toISOString().split('T')[0] ?? ''
     return String(val)
   }
 
@@ -149,14 +149,16 @@
 
   .collection-form__balance {
     @apply rounded-lg bg-primary-50 p-4;
+    @apply dark:border dark:border-primary-800 dark:bg-primary-900/30;
   }
 
   .collection-form__budget-info {
     @apply flex items-center gap-2 rounded-lg bg-primary-50 px-3 py-2;
+    @apply dark:border dark:border-primary-800 dark:bg-primary-900/30;
   }
 
   .collection-form__budget-icon {
-    @apply text-sm text-primary-600;
+    @apply text-sm text-primary-600 dark:text-primary-400;
   }
 
   .collection-form__actions {

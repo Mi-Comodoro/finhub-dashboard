@@ -18,8 +18,8 @@ export const collectionFieldsSchema = (
     },
     categoryId: {
       type: 'select',
-      label: 'Categoría del ingreso',
-      required: true,
+      label: 'Categoría del ingreso (opcional)',
+      required: false,
       options: categoryOptions
     },
     notes: {

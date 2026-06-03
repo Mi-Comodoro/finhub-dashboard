@@ -164,6 +164,20 @@ export const useBudgetStore = defineStore('budget', {
       this.error = null
     },
 
+    updateBudgetPlan(updated: CurrentBudgetPlan) {
+      const index = this.budgetPlans.findIndex(p => p.id === updated.id)
+      if (index !== -1) {
+        this.budgetPlans[index] = updated
+      }
+      if (this.currentBudgetPlan?.id === updated.id) {
+        this.currentBudgetPlan = updated
+      }
+      if (this.budgetSelected?.id === updated.id) {
+        this.budgetSelected = updated
+      }
+      this.error = null
+    },
+
     clearBudgetData() {
       this.budgets = []
       this.budgetPlans = []

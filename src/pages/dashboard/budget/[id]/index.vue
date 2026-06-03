@@ -22,6 +22,9 @@
   import ConfirmDeleteModal from '@/components/organisms/confirm-delete/ConfirmDeleteModal.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
+  import { useExpenseApi } from '@/composables/api/useExpenseApi'
+  import { useBillsApplication } from '@/composables/application/useBillsApplication'
+  import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
   import { useBudgetTransferApplication } from '@/composables/application/useBudgetTransferApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
@@ -44,7 +47,7 @@
   const route = useRoute()
   const router = useRouter()
 
-  const { loadBudgetDetail, budgetSelected, expectedIncome, defaultCurrency } =
+  const { loadBudgetDetail, refreshSpentAmounts, budgetSelected, expectedIncome, defaultCurrency } =
     useBudgetDetailApplication()
   const { deleteExpense } = useExpenseApplication()
   const { fetchByBudget: fetchTransactions, fetchTotals } = useTransactionApplication()
@@ -54,6 +57,7 @@
   const { lastUpdate } = usePlannedIncomeApplication()
   const { fetchGoals, goals } = useGoalsApplication()
   const { transferToBudget, transferToGoal } = useBudgetTransferApplication()
+  const { setDefaultBudget } = useBudgetActions()
 
   const budgetId = route.params['id'] as string
 
@@ -113,6 +117,14 @@
       icon: 'rocket_launch',
       condition: statusConfig.canActivate(),
       click: budgetStart
+    },
+    {
+      name: 'Predeterminado',
+      size: 'sm',
+      variant: 'primary',
+      icon: 'star',
+      condition: planStatus.value === 'ACTIVE' && !plan.value?.isDefault,
+      click: () => setDefaultBudget(budgetId)
     },
     {
       name: 'Eliminar',
@@ -185,10 +197,50 @@
     showSavingDistributionForm.value = false
   }
 
+  const { activeBills, importBillsToBudget } = useBillsApplication()
+  const { findAllExpenses } = useExpenseApi()
+  const expenseSectionRef = ref<{ refresh: () => void } | null>(null)
+  const showBillImport = ref(false)
+  const selectedBillIds = ref<string[]>([])
+  const alreadyImportedBillIds = ref<Set<string>>(new Set())
+
+  const billsAvailableToImport = computed(() =>
+    (activeBills.value ?? []).filter(b => !alreadyImportedBillIds.value.has(b.id))
+  )
+
+  const openBillImport = async () => {
+    selectedBillIds.value = []
+    alreadyImportedBillIds.value = new Set()
+    showBillImport.value = true
+    try {
+      const res = await findAllExpenses({ budgetId, limit: 500, page: 1 })
+      const ids = (res.result?.data ?? []).filter(e => e.billsId).map(e => e.billsId as string)
+      alreadyImportedBillIds.value = new Set(ids)
+    } catch {
+      // si falla el fetch, mostramos todas las facturas activas
+    }
+  }
+
+  const handleImportBills = async () => {
+    if (!selectedBillIds.value.length) return
+    const { success, imported } = await importBillsToBudget(budgetId, {
+      billIds: selectedBillIds.value
+    })
+    showBillImport.value = false
+    if (success) {
+      successToast('Facturas importadas', `Se crearon ${imported} gastos planificados.`)
+      expenseSectionRef.value?.refresh()
+    }
+  }
+
   const handleMarkExpenseAsPaid = async (_row: { id: string }) => {
     successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
     if (budgetId) {
-      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+      await Promise.all([
+        fetchTransactions(budgetId),
+        fetchTotals(budgetId),
+        refreshSpentAmounts(budgetId)
+      ])
     }
   }
 
@@ -306,6 +358,10 @@
                 {{ displayStatus }}
               </Badge>
               <Badge variant="secondary" size="xs">{{ strategyInfo?.label }}</Badge>
+              <Badge v-if="plan.isDefault" variant="primary" size="xs">
+                <Icon name="star" size="xs" />
+                Predeterminado
+              </Badge>
               <Badge v-if="plan.isShared" variant="warning" size="xs">
                 <Icon name="group" size="xs" />
                 Compartido
@@ -357,8 +413,10 @@
         <BudgetInsights :budget-status="planStatus" />
         <PlannedSavingList :budget-id="budgetId" />
         <ExpensePlannedSection
+          ref="expenseSectionRef"
           :budget-id="budgetId"
           @open-form="openForm"
+          @open-bill-import="openBillImport"
           @mark-as-payed="handleMarkExpenseAsPaid"
           @edit="handleEditExpense"
           @view="handleViewExpense"
@@ -420,6 +478,50 @@
       :title="`¿Eliminar '${expenseToDelete?.name}'?`"
       @confirm="confirmDeleteExpense"
     />
+
+    <ModalWizard :show="showBillImport" @close="showBillImport = false">
+      <div class="bill-import-modal">
+        <Heading level="h2" size="lg" weight="semibold">Importar Facturas</Heading>
+        <Text size="sm" color="muted">
+          Selecciona las facturas activas que deseas agregar como gastos planificados.
+        </Text>
+
+        <div v-if="billsAvailableToImport.length" class="bill-import-modal__list">
+          <label
+            v-for="bill in billsAvailableToImport"
+            :key="bill.id"
+            class="bill-import-modal__item"
+          >
+            <input
+              v-model="selectedBillIds"
+              type="checkbox"
+              :value="bill.id"
+              class="bill-import-modal__checkbox"
+            />
+            <div class="bill-import-modal__info">
+              <span class="bill-import-modal__name">{{ bill.name }}</span>
+              <span class="bill-import-modal__day">Día {{ bill.billingDay }}</span>
+            </div>
+          </label>
+        </div>
+        <Text v-else size="sm" color="muted">
+          Todas las facturas activas ya están en este presupuesto.
+        </Text>
+
+        <div class="bill-import-modal__actions">
+          <Button variant="ghost" size="sm" @click="showBillImport = false">Cancelar</Button>
+          <Button
+            variant="primary"
+            size="sm"
+            icon="sync"
+            :disabled="!selectedBillIds.length"
+            @click="handleImportBills"
+          >
+            Importar ({{ selectedBillIds.length }})
+          </Button>
+        </div>
+      </div>
+    </ModalWizard>
   </div>
   <div v-else class="budget-detail__empty">
     <Icon name="search_off" class="budget-detail__empty-icon" size="2xl" />
@@ -542,5 +644,38 @@
   .coming-soon-card__description {
     @apply text-neutral-500;
     @apply dark:text-neutral-400;
+  }
+
+  .bill-import-modal {
+    @apply flex flex-col gap-4 p-2;
+  }
+
+  .bill-import-modal__list {
+    @apply flex max-h-64 flex-col gap-2 overflow-y-auto;
+  }
+
+  .bill-import-modal__item {
+    @apply flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 p-3 hover:bg-neutral-50;
+    @apply dark:border-neutral-700 dark:hover:bg-neutral-700;
+  }
+
+  .bill-import-modal__checkbox {
+    @apply h-4 w-4 accent-primary-600;
+  }
+
+  .bill-import-modal__info {
+    @apply flex flex-1 items-center justify-between;
+  }
+
+  .bill-import-modal__name {
+    @apply text-sm font-medium text-neutral-900 dark:text-white;
+  }
+
+  .bill-import-modal__day {
+    @apply text-xs text-neutral-500 dark:text-neutral-400;
+  }
+
+  .bill-import-modal__actions {
+    @apply flex justify-end gap-2 border-t border-neutral-200 pt-4 dark:border-neutral-700;
   }
 </style>
