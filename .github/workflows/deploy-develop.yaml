@@ -76,6 +76,8 @@ jobs:
           cp ecosystem.config.js /var/www/intranet/micomodoro-app/
 
       - name: Reiniciar aplicacion con PM2
+        env:
+          NUXT_PUBLIC_WS_BASE: ${{ secrets.NUXT_PUBLIC_WS_BASE }}
         run: |
           cd /var/www/intranet/micomodoro-app
           export PM2_HOME=/home/jarvis/.pm2
