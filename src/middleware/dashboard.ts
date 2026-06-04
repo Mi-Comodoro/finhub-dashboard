@@ -29,4 +29,8 @@ export default defineNuxtRouteMiddleware(to => {
     }
     return navigateTo('/')
   }
+
+  if (!authStore.isOnboardingCompleted && to.path !== '/dashboard') {
+    return navigateTo('/dashboard')
+  }
 })

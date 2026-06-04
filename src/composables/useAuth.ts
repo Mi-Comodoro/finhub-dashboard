@@ -6,6 +6,7 @@ import { useAuthApi } from '@/composables/api/useAuthApi'
 import { useUserApi } from '@/composables/api/useUserApi'
 import { useSessionWatcher } from '@/composables/useSessionWatcher'
 import { useAuthStore } from '@/stores/auth.store'
+import { useBudgetStore } from '@/stores/budget.store'
 import { useFinancesStore } from '@/stores/finances.store'
 import { useModalStore } from '@/stores/modal.store'
 import { useUserStore } from '@/stores/user.store'
@@ -18,6 +19,7 @@ export const useAuth = () => {
   const authStore = useAuthStore()
   const userStore = useUserStore()
   const financesStore = useFinancesStore()
+  const budgetStore = useBudgetStore()
   const { startWatcher, stopWatcher } = useSessionWatcher()
   const authApi = useAuthApi()
   const userApi = useUserApi()
@@ -233,6 +235,18 @@ export const useAuth = () => {
     } as User
   }
 
+  const clearAllState = async () => {
+    authStore.clearAuth()
+    userStore.clearUser()
+    financesStore.clearFinances()
+    budgetStore.clearBudgetData()
+    try {
+      await authApi.logout()
+    } catch {
+      /* cookie puede estar inválida ya */
+    }
+  }
+
   const triggerSessionExpiredModal = () => {
     if (!import.meta.client) return
     stopWatcher()
@@ -242,16 +256,12 @@ export const useAuth = () => {
       title: 'Sesión expirada',
       message: 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
       actionLabel: 'Aceptar',
-      onAction: () => {
-        authStore.clearAuth()
-        userStore.clearUser()
-        financesStore.clearFinances()
+      onAction: async () => {
+        await clearAllState()
         navigateTo('/')
       },
-      onClose: () => {
-        authStore.clearAuth()
-        userStore.clearUser()
-        financesStore.clearFinances()
+      onClose: async () => {
+        await clearAllState()
         navigateTo('/')
       }
     })
