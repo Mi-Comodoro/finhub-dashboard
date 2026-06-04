@@ -253,7 +253,8 @@
         dueDate: row.dueDate,
         categoryId: row.categoryId,
         isEssential: row.isEssential,
-        notes: row.notes
+        notes: row.notes,
+        customBucketId: row.customBucketId ?? null
       }
     }
     formMode.value = 'edit'
@@ -271,7 +272,8 @@
         bucket: row.bucket,
         status: row.status,
         isEssential: row.isEssential,
-        notes: row.notes
+        notes: row.notes,
+        customBucketId: row.customBucketId ?? null
       }
     }
     formMode.value = 'view'
@@ -445,6 +447,7 @@
         :initial-data="editingExpense?.data"
         :currency="defaultCurrency"
         :mode="formMode"
+        :custom-buckets="plan?.customBuckets ?? []"
         @success="handleFormSuccess"
         @close="closeForm"
       />

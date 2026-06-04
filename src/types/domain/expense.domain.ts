@@ -9,4 +9,5 @@ export type ExpenseData = {
   notes?: string
   billsdId?: string | null
   groupId?: string | null
+  customBucketId?: string | null
 }

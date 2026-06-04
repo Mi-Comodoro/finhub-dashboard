@@ -22,6 +22,7 @@ export type BackendUserMe = {
       isPhoneVerified: boolean
       country: string
       role?: string
+      timezone?: string
     }
     finances: {
       id: string
@@ -51,6 +52,7 @@ export type UserMe = {
       country: string
       createdAt?: Date
       role?: string
+      timezone?: string
     }
     finances: {
       id: string

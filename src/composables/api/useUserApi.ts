@@ -6,6 +6,7 @@ interface UserProfileUpdate {
   phone?: string
   gender?: string
   country?: string
+  timezone?: string
 }
 
 export const useUserApi = () => {

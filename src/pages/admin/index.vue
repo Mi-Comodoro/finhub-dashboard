@@ -9,6 +9,7 @@
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAdminApplication } from '@/composables/application/useAdminApplication'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { AdminUser, GrowthPeriod } from '@/types/domain'
 
   const AdminUserGrowthChart = defineAsyncComponent(
@@ -39,6 +40,8 @@
     fetchUserDetail,
     clearSelectedUser
   } = useAdminApplication()
+
+  const { formatDate } = useTimezone()
 
   const showUserPanel = ref(false)
   const selectedPeriod = ref<GrowthPeriod>('30d')
@@ -111,15 +114,6 @@
   const selectPeriod = async (period: GrowthPeriod) => {
     selectedPeriod.value = period
     await fetchUserGrowth(period)
-  }
-
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
   }
 
   onMounted(async () => {

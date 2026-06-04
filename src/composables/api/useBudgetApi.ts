@@ -80,6 +80,11 @@ export function useBudgetApi() {
       method: 'PATCH'
     })
 
+  const deleteCustomBucket = async (budgetId: string, bucketId: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/${budgetId}/buckets/${bucketId}`, {
+      method: 'DELETE'
+    })
+
   return {
     getBudgets,
     getCurrentBudget,
@@ -91,6 +96,7 @@ export function useBudgetApi() {
     closeBudget,
     cloneBudget,
     transferBalance,
-    setDefaultBudget
+    setDefaultBudget,
+    deleteCustomBucket
   }
 }

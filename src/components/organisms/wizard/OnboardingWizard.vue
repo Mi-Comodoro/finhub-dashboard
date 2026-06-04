@@ -1,6 +1,9 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue'
 
+  import Badge from '@/components/atoms/badge/Badge.vue'
+  import Button from '@/components/atoms/button/Button.vue'
+  import Text from '@/components/atoms/typography/Text.vue'
   import OnboardingStepIntro from '@/components/molecules/onboarding-step-intro/OnboardingStepIntro.vue'
   import ProgressBar from '@/components/molecules/progress-bar/ProgressBar.vue'
   import BudgetStrategyForm from '@/components/organisms/forms/BudgetStrategyForm.vue'
@@ -38,6 +41,11 @@
   }
 
   const userStore = useUserStore()
+
+  const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const selectedTimezone = ref(detectedTimezone)
+  const showTimezoneSelector = ref(false)
+
   // Computed properties
 
   const wizardData = reactive<OnboardingFormData>({
@@ -59,7 +67,8 @@
         needs: 0,
         wants: 0,
         savings: 0
-      }
+      },
+      customBuckets: []
     },
     incomes: {
       incomes: [
@@ -113,8 +122,12 @@
     return data
   }
 
+  watch(selectedTimezone, val => {
+    wizardData.personalInfo = { ...wizardData.personalInfo, timezone: val }
+  })
+
   const onboardingBasicData = (data: OnboardingFormData['personalInfo']) => {
-    wizardData.personalInfo = data
+    wizardData.personalInfo = { ...data, timezone: selectedTimezone.value }
   }
 
   const onboardingFinancialGoalsData = (data: FinancesData) => {
@@ -128,7 +141,8 @@
   const budgetStrategyData = (data: OnboardingFormData['budget']) => {
     wizardData.budget = {
       ...data,
-      usage: data.usage
+      usage: data.usage,
+      customBuckets: data.customBuckets ?? []
     }
   }
 
@@ -145,14 +159,18 @@
     const hasFinances =
       wizardData.finances.currency.trim() !== '' && wizardData.finances.profile.trim() !== ''
 
+    const customBucketsTotal = (wizardData.budget.customBuckets ?? []).reduce(
+      (sum, b) => sum + (b.percentage ?? 0),
+      0
+    )
+    const allocationsTotal =
+      Object.values(wizardData.budget.customAllocations).reduce((sum, value) => sum + value, 0) +
+      customBucketsTotal
+
     const hasBudget =
       wizardData.budget.usage &&
       wizardData.budget.usage.trim() !== '' &&
-      ((wizardData.budget.strategy === 'CUSTOM' &&
-        Object.values(wizardData.budget.customAllocations).reduce(
-          (sum, value) => sum + value,
-          0
-        ) === 100) ||
+      ((wizardData.budget.strategy === 'CUSTOM' && allocationsTotal === 100) ||
         wizardData.budget.strategy === 'BALANCED')
 
     const hasValidIncomes =
@@ -271,6 +289,31 @@
       />
 
       <BasicFormData @update:model-value="onboardingBasicData" @valid="enableNextButton" />
+
+      <div class="onboarding-tz">
+        <Text size="xs" color="muted">Zona horaria detectada</Text>
+        <div class="onboarding-tz__row">
+          <Badge variant="primary" size="sm">{{ selectedTimezone }}</Badge>
+          <Button variant="ghost" size="sm" @click="showTimezoneSelector = !showTimezoneSelector">
+            Cambiar
+          </Button>
+        </div>
+        <select
+          v-if="showTimezoneSelector"
+          v-model="selectedTimezone"
+          class="onboarding-tz__select"
+        >
+          <option value="America/Bogota">Colombia (UTC-5)</option>
+          <option value="America/Lima">Perú (UTC-5)</option>
+          <option value="America/Guayaquil">Ecuador (UTC-5)</option>
+          <option value="America/Caracas">Venezuela (UTC-4)</option>
+          <option value="America/Santiago">Chile (UTC-3/-4)</option>
+          <option value="America/Argentina/Buenos_Aires">Argentina (UTC-3)</option>
+          <option value="America/Sao_Paulo">Brasil (UTC-3)</option>
+          <option value="America/Mexico_City">México (UTC-6)</option>
+          <option value="Europe/Madrid">España (UTC+1/+2)</option>
+        </select>
+      </div>
     </div>
     <div v-if="currentStep === 2" class="onboarding-wizard__step">
       <OnboardingStepIntro
@@ -361,5 +404,18 @@
 
   .onboarding-wizard__step {
     @apply box-content flex w-full flex-col flex-wrap gap-1 text-wrap;
+  }
+
+  .onboarding-tz {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .onboarding-tz__row {
+    @apply flex items-center gap-2;
+  }
+
+  .onboarding-tz__select {
+    @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700;
+    @apply dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200;
   }
 </style>

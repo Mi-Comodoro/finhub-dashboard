@@ -11,6 +11,7 @@
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAdminApplication } from '@/composables/application/useAdminApplication'
   import { useFeedback } from '@/composables/useFeedBack'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { AdminUser } from '@/types/domain'
 
   definePageMeta({
@@ -36,6 +37,7 @@
   } = useAdminApplication()
 
   const { success: successToast, error: errorToast } = useFeedback()
+  const { formatDate } = useTimezone()
 
   // ── Filters ────────────────────────────────────────────────────────────────
   const searchQuery = ref('')
@@ -132,16 +134,6 @@
     } else {
       errorToast('Error al actualizar', 'No se pudo cambiar el rol del usuario.')
     }
-  }
-
-  // ── Helpers ────────────────────────────────────────────────────────────
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
   }
 
   onMounted(async () => {

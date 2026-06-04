@@ -3,6 +3,7 @@
   import { useTravelExpense } from '@/composables/application/useTravelExpense'
   import { useCurrency } from '@/composables/useCurrency'
   import { useFeedback } from '@/composables/useFeedBack'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { GroupMember } from '@/types/groups.types'
 
   import TravelExpenseForm from './forms/TravelExpenseForm.vue'
@@ -17,6 +18,7 @@
   const { format } = useCurrency()
   const { success: successToast, error: errorToast } = useFeedback()
   const { expenses, isLoading, fetchByGroup, settleAssignment, deleteExpense } = useTravelExpense()
+  const { formatDate } = useTimezone()
 
   const showAddModal = ref(false)
 
@@ -45,13 +47,6 @@
     const member = props.members.find(m => m.userId === userId)
     return member?.name ?? member?.email ?? userId
   }
-
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('es-CO', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    })
 
   // Debt summary
   const iOwe = computed(() => {

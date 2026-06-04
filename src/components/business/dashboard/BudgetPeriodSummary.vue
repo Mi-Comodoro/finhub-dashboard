@@ -3,6 +3,7 @@
 
   import Badge from '@/components/atoms/badge/Badge.vue'
   import Text from '@/components/atoms/typography/Text.vue'
+  import { useTimezone } from '@/composables/useTimezone'
 
   interface Props {
     month?: string
@@ -28,6 +29,8 @@
     savingsTarget: 0
   })
 
+  const { formatDate } = useTimezone()
+
   const today = new Date()
 
   const periodDate = computed(() => {
@@ -36,9 +39,7 @@
     return new Date(props.year, isNaN(monthIndex) ? today.getMonth() : monthIndex, 1)
   })
 
-  const periodLabel = computed(() =>
-    periodDate.value.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
-  )
+  const periodLabel = computed(() => formatDate(periodDate.value))
 
   const daysInMonth = computed(() => {
     const d = periodDate.value

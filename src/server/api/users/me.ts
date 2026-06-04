@@ -51,7 +51,8 @@ export default defineEventHandler(async event => {
         isActive: data.userProfile.isActive,
         isPhoneVerified: data.userProfile.isPhoneVerified,
         country: data.userProfile.country,
-        role: data.role ?? data.userProfile.role ?? extractRoleFromJwt(token)
+        role: data.role ?? data.userProfile.role ?? extractRoleFromJwt(token),
+        timezone: data.userProfile.timezone
       },
       finances: data.finances,
       onboarding: data.onboarding,
