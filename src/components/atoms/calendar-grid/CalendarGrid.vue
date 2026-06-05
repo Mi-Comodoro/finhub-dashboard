@@ -66,7 +66,9 @@
   .calendar-grid__day--end {
     @apply bg-primary-600 font-semibold text-white;
   }
-  .calendar-grid__day--disabled,
+  .calendar-grid__day--disabled {
+    @apply cursor-not-allowed bg-transparent text-slate-300 dark:text-neutral-600;
+  }
   .calendar-grid__day--out {
     @apply cursor-not-allowed bg-transparent text-transparent;
   }

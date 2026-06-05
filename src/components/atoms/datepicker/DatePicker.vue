@@ -55,7 +55,9 @@
   const tempRange = ref<DateRange | null>(
     props.mode === 'range' ? { start: null, end: null } : null
   )
-  const selectDay = ref<Date | null>(null)
+  const selectDay = ref<Date | null>(
+    props.modelValue instanceof Date ? props.modelValue : new Date()
+  )
 
   const selectedDay = computed<CalendarDay>(() =>
     Calendar.getSelectDate(
