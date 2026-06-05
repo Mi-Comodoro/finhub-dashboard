@@ -20,6 +20,7 @@
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
   import { useCommon } from '@/composables/useCommon'
   import { useFeedback } from '@/composables/useFeedBack'
+  import { useTimezone } from '@/composables/useTimezone'
   import { useAuthStore } from '@/stores/auth.store'
   import { useFinancesStore } from '@/stores/finances.store'
   import { useFriendshipsStore } from '@/stores/friendships.store'
@@ -47,6 +48,7 @@
   const router = useRouter()
   const authStore = useAuthStore()
   const { success: successToast, error: errorToast } = useFeedback()
+  const { formatDate } = useTimezone()
 
   const {
     selectedGroup,
@@ -306,14 +308,6 @@
     if (!member) return expense.responsibleUserId.slice(0, 8)
     if (member.handle) return `@${member.handle}`
     return member.displayName ?? member.externalName ?? expense.responsibleUserId.slice(0, 8)
-  }
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('es-CO', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    })
   }
 
   // Organizer's linked expense amount (to send as context on trip invitations)
@@ -1532,12 +1526,7 @@
                   <div class="group-detail__link-row-meta">
                     <Text size="xs" color="muted">{{ expense.category }}</Text>
                     <Text size="xs" color="muted">
-                      {{
-                        new Date(expense.dueDate).toLocaleDateString('es-CO', {
-                          day: '2-digit',
-                          month: 'short'
-                        })
-                      }}
+                      {{ formatDate(new Date(expense.dueDate)) }}
                     </Text>
                   </div>
                 </div>

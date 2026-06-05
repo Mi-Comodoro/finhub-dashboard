@@ -17,7 +17,8 @@ export const useUserStore = defineStore('user', {
     trialEndsAt: null as Date | null,
     isActive: false,
     isPhoneVerified: false as boolean,
-    country: null as string | null
+    country: null as string | null,
+    timezone: null as string | null
   }),
 
   getters: {
@@ -54,6 +55,7 @@ export const useUserStore = defineStore('user', {
       this.isActive = userData.isActive ?? this.isActive
       this.isPhoneVerified = userData.isPhoneVerified ?? this.isPhoneVerified
       this.country = userData.country ?? this.country
+      this.timezone = userData.timezone ?? this.timezone
     },
     clearUser() {
       this.id = null
@@ -70,6 +72,7 @@ export const useUserStore = defineStore('user', {
       this.isActive = false
       this.isPhoneVerified = false
       this.country = null
+      this.timezone = null
     }
   }
 })

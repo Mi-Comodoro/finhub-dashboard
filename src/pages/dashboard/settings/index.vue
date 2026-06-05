@@ -8,6 +8,7 @@
   import { useSettingsApplication } from '@/composables/application/useSettingsApplication'
   import { useAuth } from '@/composables/useAuth'
   import { useFeedback } from '@/composables/useFeedBack'
+  import { useTimezone } from '@/composables/useTimezone'
   import { useAuthStore } from '@/stores/auth.store'
   import { useUserStore } from '@/stores/user.store'
   import type { PlanData } from '@/types/api'
@@ -19,6 +20,8 @@
     title: 'Configuración',
     breadcrumb: 'Configuración'
   })
+
+  const { formatDate } = useTimezone()
 
   const { settings, isLoading, fetchSettings, updateSettings, updateBudgetDefaults } =
     useSettingsApplication()
@@ -55,11 +58,24 @@
   const dialCodeForm = ref('+57')
   const phoneNumberForm = ref('')
   const genderForm = ref<'male' | 'female' | 'prefer_not_to_say'>('prefer_not_to_say')
+  const timezoneForm = ref('America/Bogota')
 
   const genderOptions = [
     { label: 'Masculino', value: 'male' },
     { label: 'Femenino', value: 'female' },
     { label: 'Prefiero no decirlo', value: 'prefer_not_to_say' }
+  ]
+
+  const timezoneOptions = [
+    { value: 'America/Bogota', label: 'Colombia (UTC-5)' },
+    { value: 'America/Lima', label: 'Perú (UTC-5)' },
+    { value: 'America/Guayaquil', label: 'Ecuador (UTC-5)' },
+    { value: 'America/Caracas', label: 'Venezuela (UTC-4)' },
+    { value: 'America/Santiago', label: 'Chile (UTC-3/-4)' },
+    { value: 'America/Argentina/Buenos_Aires', label: 'Argentina (UTC-3)' },
+    { value: 'America/Sao_Paulo', label: 'Brasil (UTC-3)' },
+    { value: 'America/Mexico_City', label: 'México (UTC-6)' },
+    { value: 'Europe/Madrid', label: 'España (UTC+1/+2)' }
   ]
 
   const dialCodeOptions = [
@@ -92,12 +108,14 @@
     dialCode: string
     phoneNumber: string
     gender: 'male' | 'female' | 'prefer_not_to_say'
+    timezone: string
   }
   const profileSnapshot = ref<ProfileSnapshot>({
     displayName: '',
     dialCode: '+57',
     phoneNumber: '',
-    gender: 'prefer_not_to_say'
+    gender: 'prefer_not_to_say',
+    timezone: 'America/Bogota'
   })
 
   watch(
@@ -119,6 +137,10 @@
         genderForm.value = val.gender as typeof genderForm.value
         profileSnapshot.value.gender = val.gender as typeof genderForm.value
       }
+      if (userStore.timezone) {
+        timezoneForm.value = userStore.timezone
+        profileSnapshot.value.timezone = userStore.timezone
+      }
     },
     { immediate: true, deep: true }
   )
@@ -130,7 +152,8 @@
       displayNameForm.value !== profileSnapshot.value.displayName ||
       dialCodeForm.value !== profileSnapshot.value.dialCode ||
       phoneNumberForm.value !== profileSnapshot.value.phoneNumber ||
-      genderForm.value !== profileSnapshot.value.gender
+      genderForm.value !== profileSnapshot.value.gender ||
+      timezoneForm.value !== profileSnapshot.value.timezone
   )
 
   const isSavingProfile = ref(false)
@@ -144,14 +167,16 @@
       const { success } = await updatePersonalInfo({
         displayName: displayNameForm.value,
         phone: fullPhone,
-        gender: genderForm.value
+        gender: genderForm.value,
+        timezone: timezoneForm.value
       })
       if (success) {
         profileSnapshot.value = {
           displayName: displayNameForm.value,
           dialCode: dialCodeForm.value,
           phoneNumber: phoneNumberForm.value,
-          gender: genderForm.value
+          gender: genderForm.value,
+          timezone: timezoneForm.value
         }
         successToast('Perfil actualizado', 'Tu información personal fue guardada correctamente.')
       } else {
@@ -336,11 +361,7 @@
 
   const trialExpirationLabel = computed(() => {
     if (!trialEndsAt.value) return '—'
-    return new Date(trialEndsAt.value).toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    return formatDate(new Date(trialEndsAt.value))
   })
 
   const trialIsUrgent = computed(() => daysRemaining.value <= 7)
@@ -611,6 +632,11 @@
               <div class="settings-card__field">
                 <Text size="sm" weight="medium" class="settings-card__label">Sexo</Text>
                 <Select v-model="genderForm" name="gender" :options="genderOptions" />
+              </div>
+
+              <div class="settings-card__field">
+                <Text size="sm" weight="medium" class="settings-card__label">Zona horaria</Text>
+                <Select v-model="timezoneForm" name="timezone" :options="timezoneOptions" />
               </div>
 
               <div class="settings-card__actions">

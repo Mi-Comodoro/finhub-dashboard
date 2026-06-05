@@ -5,6 +5,7 @@
   import Text from '@/components/atoms/typography/Text.vue'
   import { useToast } from '@/components/organisms/toast/useToast'
   import { useAdminApplication } from '@/composables/application/useAdminApplication'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { AnnouncementSegment } from '@/types/domain'
 
   definePageMeta({
@@ -24,6 +25,7 @@
   } = useAdminApplication()
 
   const { show: showToast } = useToast()
+  const { formatDate } = useTimezone()
 
   const segmentOptions: { value: AnnouncementSegment; label: string }[] = [
     { value: 'all', label: 'Todos los usuarios' },
@@ -98,14 +100,6 @@
     } else {
       showToast({ title: 'Error', description: 'No se pudo enviar el anuncio', type: 'error' })
     }
-  }
-
-  const formatDate = (iso: string) => {
-    return new Date(iso).toLocaleDateString('es-CO', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    })
   }
 
   onMounted(() => {

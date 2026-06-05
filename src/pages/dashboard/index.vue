@@ -236,6 +236,8 @@
       await load()
       await nextTick()
 
+      if (!authStore.isOnboardingCompleted) return
+
       if (currentBudget.value?.id) {
         await loadDashboardData(currentBudget.value.id)
       }

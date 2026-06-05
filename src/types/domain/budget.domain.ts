@@ -3,6 +3,14 @@
  * Core business logic for budgets, categories, and financial planning
  */
 
+export interface CustomBucket {
+  id: string
+  name: string
+  purpose?: string
+  percentage: number
+  color?: string
+}
+
 export interface BudgetPeriod {
   readonly year: number
   readonly month: number // 1-12
@@ -108,6 +116,7 @@ export interface CurrentBudgetPlan {
   strategy: BudgetStrategy['name']
   frequency: BudgetFrequency
   freeAmount?: number
+  customBuckets?: CustomBucket[]
 }
 
 export interface BudgetHistoricalSummaryItem {

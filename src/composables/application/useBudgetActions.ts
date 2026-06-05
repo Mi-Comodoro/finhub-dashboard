@@ -3,7 +3,7 @@ import type { FetchError } from 'ofetch'
 import { useBudgetApi } from '@/composables/api/useBudgetApi'
 import { useBudgetStore } from '@/stores/budget.store'
 import type { BudgetListResponse, CurrentBudget, SingleBudget } from '~/types/api'
-import type { Budget, CurrentBudgetPlan } from '~/types/domain'
+import type { Budget, CurrentBudgetPlan, CustomBucket } from '~/types/domain'
 
 // Business logic: mapear SingleBudget a Budget
 const mapSingleBudgetToBudget = (single: SingleBudget): Budget => {
@@ -56,7 +56,8 @@ const mapCurrentBudgetToPlan = (result: SingleBudget): CurrentBudgetPlan => ({
   partnerId: result.partnerId,
   strategy: result.strategy,
   frequency: result.frequency,
-  freeAmount: result.freeAmount
+  freeAmount: result.freeAmount,
+  customBuckets: result.customBuckets ?? []
 })
 
 interface CreateBudgetPayload {
@@ -67,6 +68,7 @@ interface CreateBudgetPayload {
   needsLimit: number
   wantsLimit: number
   savingsLimit: number
+  customBuckets?: CustomBucket[]
 }
 
 interface UpdateBudgetPayload {
@@ -75,6 +77,7 @@ interface UpdateBudgetPayload {
   needsLimit: number
   wantsLimit: number
   savingsLimit: number
+  customBuckets?: CustomBucket[]
 }
 
 export function useBudgetActions() {
@@ -265,6 +268,21 @@ export function useBudgetActions() {
     }
   }
 
+  const deleteCustomBucket = async (
+    budgetId: string,
+    bucketId: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { deleteCustomBucket: apiDeleteBucket } = useBudgetApi()
+      await apiDeleteBucket(budgetId, bucketId)
+      return { success: true }
+    } catch (err) {
+      const fetchErr = err as { data?: { message?: string }; message?: string }
+      const message = fetchErr.data?.message ?? fetchErr.message ?? 'No se pudo eliminar el bucket'
+      return { success: false, error: message }
+    }
+  }
+
   return {
     fetchCurrentBudget,
     fetchBudgets,
@@ -275,6 +293,7 @@ export function useBudgetActions() {
     handleClone,
     handleUpdate,
     handleDelete,
-    setDefaultBudget
+    setDefaultBudget,
+    deleteCustomBucket
   }
 }

@@ -12,6 +12,7 @@
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { usePlansApplication } from '@/composables/application/usePlansApplication'
   import { useFeedback } from '@/composables/useFeedBack'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { PlanData } from '@/types/api'
 
   definePageMeta({
@@ -26,6 +27,7 @@
   const { fetchPlans, createPlan, updatePlan, deletePlan, plans, isLoading } = usePlansApplication()
 
   const { success: successToast, error: errorToast } = useFeedback()
+  const { formatDate } = useTimezone()
 
   // ── Filters ────────────────────────────────────────────────────────────────
   const searchQuery = ref('')
@@ -205,15 +207,6 @@
       style: 'currency',
       currency: plan.currency,
       minimumFractionDigits: 2
-    })
-  }
-
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
     })
   }
 

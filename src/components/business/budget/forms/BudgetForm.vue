@@ -2,6 +2,7 @@
   import AlertBanner from '@/components/atoms/alert-banner/AlertBanner.vue'
   import Form from '@/components/organisms/forms/Form.vue'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
+  import type { CustomBucket } from '~/types/domain'
 
   import { budgetFieldsSchema } from './schema/budget.fields.schema'
 
@@ -16,6 +17,7 @@
       needsLimit: number
       wantsLimit: number
       savingsLimit: number
+      customBuckets: CustomBucket[]
     }>
   }
 
@@ -55,25 +57,30 @@
   const formSchema = computed(() => budgetFieldsSchema(monthOptions.value, yearOptions.value))
 
   // Datos del formulario
-  const formData = ref(
-    props.initialData || {
-      name: '',
-      month: new Date().getMonth() + 1,
-      year: new Date().getFullYear(),
-      strategy: 'BALANCED',
-      needsLimit: 50,
-      wantsLimit: 30,
-      savingsLimit: 20
-    }
-  )
+  const formData = ref({
+    name: props.initialData?.name ?? '',
+    month: props.initialData?.month ?? new Date().getMonth() + 1,
+    year: props.initialData?.year ?? new Date().getFullYear(),
+    strategy: (props.initialData?.strategy ?? 'BALANCED') as 'BALANCED' | 'CUSTOM',
+    needsLimit: props.initialData?.needsLimit ?? 50,
+    wantsLimit: props.initialData?.wantsLimit ?? 30,
+    savingsLimit: props.initialData?.savingsLimit ?? 20,
+    customBuckets: (props.initialData?.customBuckets ?? []) as CustomBucket[]
+  })
 
   const isCustomStrategy = computed(() => formData.value.strategy === 'CUSTOM')
-  const distributionSum = computed(
-    () =>
+  const distributionSum = computed(() => {
+    const customTotal = (formData.value.customBuckets ?? []).reduce(
+      (s, b) => s + (b.percentage ?? 0),
+      0
+    )
+    return (
       (formData.value.needsLimit ?? 0) +
       (formData.value.wantsLimit ?? 0) +
-      (formData.value.savingsLimit ?? 0)
-  )
+      (formData.value.savingsLimit ?? 0) +
+      customTotal
+    )
+  })
   const isSumValid = computed(() => !isCustomStrategy.value || distributionSum.value === 100)
 
   // Submit handler
@@ -95,7 +102,8 @@
       strategy: data.strategy,
       needsLimit: data.strategy === 'BALANCED' ? 50 : Number(data.needsLimit || 50),
       wantsLimit: data.strategy === 'BALANCED' ? 30 : Number(data.wantsLimit || 30),
-      savingsLimit: data.strategy === 'BALANCED' ? 20 : Number(data.savingsLimit || 20)
+      savingsLimit: data.strategy === 'BALANCED' ? 20 : Number(data.savingsLimit || 20),
+      customBuckets: data.strategy === 'CUSTOM' ? (formData.value.customBuckets ?? []) : []
     }
 
     const { success } =
@@ -133,6 +141,15 @@
     <div class="budget-form__content">
       <Form v-model="formData" :schema="formSchema" @submit="handleSubmit">
         <template #actions>
+          <CustomBucketsDistribution
+            v-if="isCustomStrategy"
+            v-model:needs-limit="formData.needsLimit"
+            v-model:wants-limit="formData.wantsLimit"
+            v-model:savings-limit="formData.savingsLimit"
+            v-model:custom-buckets="formData.customBuckets"
+            :budget-id="budgetId"
+            :is-edit-mode="mode === 'edit'"
+          />
           <AlertBanner v-if="isCustomStrategy && !isSumValid" variant="danger">
             Los porcentajes deben sumar 100%. Actualmente suman {{ distributionSum }}%.
           </AlertBanner>
@@ -140,7 +157,12 @@
             <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" size="sm" :disabled="!isSumValid">
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              :disabled="isCustomStrategy && !isSumValid"
+            >
               {{ mode === 'create' ? 'Crear Presupuesto' : 'Actualizar Presupuesto' }}
             </Button>
           </div>
