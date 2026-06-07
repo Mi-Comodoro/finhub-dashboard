@@ -257,6 +257,10 @@
     @apply mt-1 text-xs text-neutral-400;
   }
 
+  .input-field {
+    @apply relative;
+  }
+
   .input-prefix {
     @apply absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500;
     @apply dark:text-neutral-400;

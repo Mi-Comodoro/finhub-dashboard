@@ -1,16 +1,13 @@
 <!-- layouts/dashboard.vue -->
 <script setup lang="ts">
-  import { computed } from 'vue' // Asegúrate de importar computed
+  import { computed } from 'vue'
 
   import DashboardHeader from '@/components/organisms/header/DashboardHeader.vue'
-  import ModalNotification from '@/components/organisms/modal-notification/ModalNotification.vue'
   import DashboardSidebar from '@/components/organisms/sidebar/DashboardSidebar.vue'
   import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
   import { useNotificationsSocket } from '@/composables/useNotificationsSocket'
   import { useSidebar } from '@/composables/useSidebar'
-  import { useModalStore } from '@/stores/modal.store'
 
-  const modalStore = useModalStore()
   const sidebar = useSidebar()
 
   const isOpen = computed({
@@ -30,13 +27,6 @@
 <template>
   <div class="dashboard-layout">
     <div class="relative z-[50]">
-      <ModalNotification
-        :show="modalStore.state.show"
-        :type="modalStore.state.type"
-        :options="modalStore.state.options"
-        @update:show="modalStore.state.show = $event"
-      />
-
       <ClientOnly>
         <div class="pointer-events-none fixed inset-0 z-[100]">
           <ToastContainer />

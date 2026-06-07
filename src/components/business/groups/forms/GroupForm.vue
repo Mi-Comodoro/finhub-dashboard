@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import Form from '@/components/organisms/forms/Form.vue'
   import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
-  import type { CreateGroupDto, GroupType } from '@/types/groups.types'
+  import type { CreateGroupDto, GroupType, UpdateGroupDto } from '@/types/groups.types'
 
   import { groupFieldsSchema } from './schema/group.fields.schema'
 
@@ -9,7 +9,7 @@
     defineProps<{
       mode?: 'create' | 'edit'
       groupId?: string
-      initialData?: Partial<CreateGroupDto>
+      initialData?: Partial<CreateGroupDto & { goal?: number | null }>
     }>(),
     {
       mode: 'create',
@@ -24,12 +24,13 @@
 
   const isEditMode = computed(() => props.mode === 'edit' && !!props.groupId)
 
-  const formSchema = groupFieldsSchema()
+  const formSchema = computed(() => groupFieldsSchema(props.mode))
 
   const formData = computed(() => ({
     name: props.initialData?.name ?? '',
     type: (props.initialData?.type ?? 'SHARED') as string,
-    maxMembers: (props.initialData?.maxMembers ?? 5) as number
+    maxMembers: (props.initialData?.maxMembers ?? 5) as number,
+    ...(isEditMode.value ? { goal: props.initialData?.goal ?? null } : {})
   }))
 
   const isSubmitting = ref(false)
@@ -38,18 +39,24 @@
     if (isSubmitting.value) return
     isSubmitting.value = true
     try {
-      const dto: CreateGroupDto = {
-        name: data.name as string,
-        type: data.type as GroupType,
-        maxMembers: data.maxMembers ? Number(data.maxMembers) : 5
+      if (isEditMode.value && props.groupId) {
+        const updateDto: UpdateGroupDto = {
+          name: data.name as string,
+          type: data.type as GroupType,
+          maxMembers: data.maxMembers ? Number(data.maxMembers) : 5,
+          goal: data.goal !== undefined && data.goal !== null ? Number(data.goal) : null
+        }
+        const { success } = await updateGroup(props.groupId, updateDto)
+        if (success) emit('onSuccess')
+      } else {
+        const dto: CreateGroupDto = {
+          name: data.name as string,
+          type: data.type as GroupType,
+          maxMembers: data.maxMembers ? Number(data.maxMembers) : 5
+        }
+        const { success } = await createGroup(dto)
+        if (success) emit('onSuccess')
       }
-
-      const { success } =
-        isEditMode.value && props.groupId
-          ? await updateGroup(props.groupId, dto)
-          : await createGroup(dto)
-
-      if (success) emit('onSuccess')
     } catch (error) {
       console.error('[GroupForm] Error submitting:', error)
     } finally {

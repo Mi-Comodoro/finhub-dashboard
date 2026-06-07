@@ -8,4 +8,6 @@ export type ExpenseData = {
   status: string
   notes?: string
   billsdId?: string | null
+  groupId?: string | null
+  customBucketId?: string | null
 }

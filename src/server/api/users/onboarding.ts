@@ -18,9 +18,11 @@ export default defineEventHandler(async event => {
       body: {
         userInfo: {
           displayName: body.personalInfo.displayName,
+          handle: body.personalInfo.handle,
           email: body.personalInfo.email,
           phone: body.personalInfo.phone,
-          gender: body.personalInfo.gender
+          gender: body.personalInfo.gender,
+          timezone: body.personalInfo.timezone
         },
         finances: {
           profile: body.finances.profile,
@@ -42,7 +44,8 @@ export default defineEventHandler(async event => {
           budgetFrequency: body.incomes.incomes[0].frequency,
           needs: body.budget.customAllocations.needs,
           wants: body.budget.customAllocations.wants,
-          savings: body.budget.customAllocations.savings
+          savings: body.budget.customAllocations.savings,
+          customBuckets: body.budget.customBuckets ?? []
         },
         incomes: {
           incomes: body.incomes.incomes,

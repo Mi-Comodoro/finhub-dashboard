@@ -12,6 +12,7 @@ export interface User {
   readonly displayName: string
   readonly avatar: string | null
   readonly role?: UserRole
+  readonly timezone?: string
   /*   readonly emailVerified: boolean
   readonly createdAt: Date
   readonly lastLoginAt: Date */

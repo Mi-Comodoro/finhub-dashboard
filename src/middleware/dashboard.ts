@@ -1,3 +1,4 @@
+import { useAuth } from '@/composables/useAuth'
 import { useSession } from '@/composables/useSession'
 import { ACCESS_TOKEN } from '~/common/constants'
 
@@ -21,6 +22,15 @@ export default defineNuxtRouteMiddleware(to => {
 
   if (authStore.isSessionExpired) {
     authStore.clearAuth()
+    if (import.meta.client) {
+      const { triggerSessionExpiredModal } = useAuth()
+      triggerSessionExpiredModal()
+      return abortNavigation()
+    }
     return navigateTo('/')
+  }
+
+  if (!authStore.isOnboardingCompleted && to.path !== '/dashboard') {
+    return navigateTo('/dashboard')
   }
 })

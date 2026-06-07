@@ -25,6 +25,8 @@
   import { useCommon } from '@/composables/useCommon'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
+  import { useAuthStore } from '~/stores/auth.store'
+  import { useUserStore } from '~/stores/user.store'
 
   const DashboardBalanceChart = defineAsyncComponent(
     () => import('@/components/business/dashboard/DashboardBalanceChart.vue')
@@ -55,6 +57,14 @@
     handleCompleteSetup,
     openOnboarding
   } = useSetupApplication()
+  const userStore = useUserStore()
+  const authStore = useAuthStore()
+
+  // Skip Step 1 (personal info) when user registered manually and already provided their info
+  const skipPersonalInfo = computed(() => {
+    return userStore.phone !== null && !authStore.isOnboardingCompleted
+  })
+
   const { currentBudget, budgetStatus } = useCommon()
 
   const { expectedAmount, buckets } = usePlannedIncomeApplication()
@@ -225,6 +235,8 @@
     try {
       await load()
       await nextTick()
+
+      if (!authStore.isOnboardingCompleted) return
 
       if (currentBudget.value?.id) {
         await loadDashboardData(currentBudget.value.id)
@@ -499,7 +511,7 @@
     </div>
 
     <ModalWizard :show="openOnboarding" class="dashboard-page__modal">
-      <OnboardingWizard @completed="handleCompleteSetup" @skip="openOnboarding = false" />
+      <OnboardingWizard :skip-personal-info="skipPersonalInfo" @completed="handleCompleteSetup" />
     </ModalWizard>
 
     <ModalWizard v-model:show="showQuickModal">

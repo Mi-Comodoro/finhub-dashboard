@@ -1,4 +1,8 @@
 <script setup lang="ts">
+  import { ref } from 'vue'
+
+  import SignupForm from '@/components/organisms/forms/SignupForm.vue'
+
   // Define page metadata - use login layout
   definePageMeta({
     layout: 'login'
@@ -8,6 +12,8 @@
     { item: 'Alertas de presupuesto inteligente' },
     { item: 'Proyecta tu ahorro' }
   ]
+
+  const showSignup = ref(false)
 </script>
 
 <template>
@@ -30,7 +36,7 @@
           <!-- Logo -->
           <div class="login-page__logo">
             <Heading level="h1" size="3xl" weight="extrabold" class="drop-shadow-lg" color="white">
-              FinHub
+              Mi Comodoro
             </Heading>
           </div>
 
@@ -64,7 +70,18 @@
 
       <!-- Panel Derecho -->
       <div class="login-page__right">
-        <LoginForm />
+        <div class="login-page__right-body">
+          <LoginForm v-if="!showSignup" />
+          <div v-if="!showSignup" class="login-page__signup-prompt">
+            <Text size="sm" color="muted">¿No tienes una cuenta?</Text>
+            <button type="button" class="login-page__signup-link" @click="showSignup = true">
+              Regístrate gratis
+            </button>
+          </div>
+
+          <SignupForm v-else @back-to-login="showSignup = false" />
+        </div>
+
         <!-- Footer -->
         <div class="login-page__footer">
           <p class="login-page__footer-text">
@@ -95,8 +112,8 @@
     @apply flex w-full overflow-hidden bg-white xl:rounded-none 2xl:max-w-6xl 2xl:rounded-2xl 2xl:shadow-lg;
     @apply transition-colors duration-200;
 
-    /* Altura responsive */
-    @apply min-h-[620px] lg:min-h-[650px] xl:min-h-screen 2xl:min-h-[750px];
+    /* Altura fija para que el panel izquierdo no se distorsione al cambiar formularios */
+    @apply min-h-[620px] lg:min-h-[650px] xl:h-screen 2xl:h-[750px];
 
     @apply dark:bg-neutral-800 dark:shadow-neutral-900/50;
   }
@@ -161,7 +178,7 @@
      ========================= */
 
   .login-page__right {
-    @apply flex w-full flex-1 flex-col justify-between;
+    @apply flex w-full flex-1 flex-col overflow-hidden;
     @apply bg-white transition-colors duration-200;
 
     /* Evita que el formulario se estire demasiado */
@@ -171,6 +188,24 @@
     @apply p-6 md:p-8 xl:p-12;
 
     @apply dark:bg-neutral-800;
+  }
+
+  .login-page__right-body {
+    @apply flex-1 overflow-y-auto;
+
+    /* Espacio inferior para que el último campo no quede pegado al footer */
+    @apply pb-4;
+  }
+
+  .login-page__signup-prompt {
+    @apply mt-4 flex items-center justify-center gap-1;
+  }
+
+  .login-page__signup-link {
+    @apply font-semibold text-teal-600 transition-colors duration-200;
+    @apply text-sm;
+    @apply hover:text-teal-700;
+    @apply dark:text-teal-400 dark:hover:text-teal-300;
   }
 
   .login-page__footer {
@@ -210,7 +245,7 @@
     }
 
     .login-page__right {
-      @apply flex w-full flex-1 flex-col justify-between;
+      @apply flex w-full flex-1 flex-col overflow-hidden;
       @apply bg-white transition-colors duration-200;
 
       /* Laptop */

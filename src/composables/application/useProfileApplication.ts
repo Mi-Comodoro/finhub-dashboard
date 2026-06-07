@@ -7,6 +7,7 @@ interface UserUpdate {
   phone?: string
   gender?: string
   country?: string
+  timezone?: string
 }
 
 export const useProfileApplication = () => {
@@ -26,6 +27,7 @@ export const useProfileApplication = () => {
       if (data.phone) payload.phone = data.phone
       if (data.gender) payload.gender = data.gender
       if (data.country) payload.country = data.country
+      if (data.timezone) payload.timezone = data.timezone
 
       const response = await updateUserProfile(payload)
 
@@ -41,7 +43,8 @@ export const useProfileApplication = () => {
         country: data.country || userStore.country || '',
         photo: userStore.photo || undefined,
         trialEndsAt: userStore.trialEndsAt || undefined,
-        isActive: userStore.isActive
+        isActive: userStore.isActive,
+        timezone: data.timezone || userStore.timezone || undefined
       })
 
       return { success: true }

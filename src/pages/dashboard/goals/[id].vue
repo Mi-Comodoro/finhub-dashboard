@@ -17,6 +17,7 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useGoalDetailPresenter } from '@/composables/presenters/useGoalDetailPresenter'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { GoalHistory, GoalsData, PlannedSaving, Transaction } from '@/types/api'
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
@@ -36,6 +37,8 @@
 
   const route = useRoute()
   const goalId = computed(() => route.params.id as string)
+
+  const { formatDate } = useTimezone()
 
   const {
     currentBudgetPlan,
@@ -354,11 +357,7 @@
         .sort((a, b) => new Date(String(a.date)).getTime() - new Date(String(b.date)).getTime())[0]
       const firstDate = firstSaving ? new Date(String(firstSaving.date)) : null
       if (firstDate && !isNaN(firstDate.getTime())) {
-        const label = firstDate.toLocaleDateString('es-CO', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric'
-        })
+        const label = formatDate(firstDate)
         return `Tienes intereses acumulados sin registrar desde ${label}`
       }
       return 'Tienes intereses acumulados sin registrar'

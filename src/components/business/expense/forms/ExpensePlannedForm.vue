@@ -2,29 +2,35 @@
   import Form from '@/components/organisms/forms/Form.vue'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
-  import type { ExpenseData } from '~/types/domain'
+  import type { CustomBucket, ExpenseData } from '~/types/domain'
 
   import { expensedPlannedFieldsSchema } from './schema/expense.fields.schema'
 
   const { fetchCategories, categories } = useCategoryApplication()
   const { addExpense, updateExpense } = useExpenseApplication()
+  const { formatDate } = useTimezone()
 
   const props = withDefaults(
     defineProps<{
       budgetId?: string
       expenseId?: string
+      groupId?: string
       initialData?: Partial<ExpenseData> & { category?: string; bucket?: string; status?: string }
       mode?: 'create' | 'edit' | 'view'
       currency?: Currency
+      customBuckets?: CustomBucket[]
     }>(),
     {
       budgetId: '',
       expenseId: undefined,
+      groupId: undefined,
       initialData: undefined,
       mode: 'create',
-      currency: 'COP'
+      currency: 'COP',
+      customBuckets: () => []
     }
   )
 
@@ -47,7 +53,15 @@
     }))
   )
 
-  const formSchema = computed(() => expensedPlannedFieldsSchema(selectOptions.value))
+  const customBucketOptions = computed(() =>
+    props.customBuckets?.length
+      ? props.customBuckets.map(b => ({ label: b.name, value: b.id }))
+      : undefined
+  )
+
+  const formSchema = computed(() =>
+    expensedPlannedFieldsSchema(selectOptions.value, customBucketOptions.value)
+  )
   const emit = defineEmits(['success', 'close'])
   const close = () => {
     emit('close')
@@ -63,9 +77,12 @@
         ? new Date(data.dueDate as unknown as string | Date).toISOString()
         : undefined
 
+      const customBucketId = data.customBucketId || null
+
       if (isEditMode.value && props.expenseId) {
         const { success } = await updateExpense(props.expenseId, {
           ...data,
+          customBucketId,
           ...(isoDate ? { dueDate: isoDate as unknown as Date } : {})
         })
         if (success) {
@@ -74,9 +91,11 @@
       } else {
         const buildData = {
           ...data,
+          customBucketId,
           ...(isoDate ? { dueDate: isoDate as unknown as Date } : {}),
           budgetId: props.budgetId,
-          status: 'PLANNED'
+          status: 'PLANNED',
+          ...(props.groupId ? { groupId: props.groupId } : {})
         }
         const { success } = await addExpense(buildData)
         if (success) {
@@ -145,7 +164,7 @@
           <span class="expense-planned-form__view-value">
             {{
               initialData?.dueDate
-                ? new Date(initialData.dueDate as string).toLocaleDateString('es-CO')
+                ? formatDate(new Date(initialData.dueDate as unknown as string))
                 : '—'
             }}
           </span>
@@ -158,6 +177,15 @@
           <span class="expense-planned-form__view-label">Grupo</span>
           <span class="expense-planned-form__view-value">
             {{ bucketLabels[initialData.bucket.toLowerCase()] ?? initialData.bucket }}
+          </span>
+        </div>
+        <div
+          v-if="customBuckets?.length && initialData?.customBucketId"
+          class="expense-planned-form__view-row"
+        >
+          <span class="expense-planned-form__view-label">Categoría personalizada</span>
+          <span class="expense-planned-form__view-value">
+            {{ customBuckets.find(b => b.id === initialData?.customBucketId)?.name ?? '—' }}
           </span>
         </div>
         <div v-if="initialData?.status" class="expense-planned-form__view-row">

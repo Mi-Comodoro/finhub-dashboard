@@ -1,6 +1,7 @@
 export interface BasicInformationData {
   [key: string]: string | number | boolean | Date | null
   displayName: string
+  handle: string
   email: string
   phone: string
   gender: 'male' | 'female' | 'prefer_not_to_say'

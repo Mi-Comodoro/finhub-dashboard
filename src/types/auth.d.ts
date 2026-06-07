@@ -1,6 +1,6 @@
 // types/auth.ts
 
-type AccountType = 'TRIAL' | 'FREE' | 'PREMIUM'
+type AccountType = 'TRIAL' | 'FREE' | 'PLUS' | 'PRO' | 'PARTNER'
 type OnboardingStatus = 'PENDING' | 'COMPLETED'
 type AuthResponseData = {
   token: string

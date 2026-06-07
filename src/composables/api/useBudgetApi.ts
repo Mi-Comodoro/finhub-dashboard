@@ -75,6 +75,16 @@ export function useBudgetApi() {
       body: dto
     })
 
+  const setDefaultBudget = async (budgetId: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/${budgetId}/set-default`, {
+      method: 'PATCH'
+    })
+
+  const deleteCustomBucket = async (budgetId: string, bucketId: string) =>
+    $fetch<{ success: boolean; result: unknown }>(`/api/budgets/${budgetId}/buckets/${bucketId}`, {
+      method: 'DELETE'
+    })
+
   return {
     getBudgets,
     getCurrentBudget,
@@ -85,6 +95,8 @@ export function useBudgetApi() {
     enableBudget,
     closeBudget,
     cloneBudget,
-    transferBalance
+    transferBalance,
+    setDefaultBudget,
+    deleteCustomBucket
   }
 }

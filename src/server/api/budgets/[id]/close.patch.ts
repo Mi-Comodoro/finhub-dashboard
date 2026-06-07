@@ -38,6 +38,7 @@ export default defineEventHandler(async event => {
       month: data.month,
       year: data.year,
       isShared: data.isShared,
+      isDefault: data.isDefault,
       limits: {
         needs: data.needsLimit,
         wants: data.wantsLimit,

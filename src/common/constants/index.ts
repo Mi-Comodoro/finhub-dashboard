@@ -40,8 +40,7 @@ export const ON_BOARDING_CONFIG = {
     title: `Empieza a tomar control de tu dinero`,
     description: `Esta aplicación te ayudará a organizar tus finanzas, crear disciplina y entender mejor en qué usas tu dinero.
 No se conecta a bancos ni accede a tus cuentas. Tú decides qué información registrar.`,
-    banner: `Tu información es privada.
-Esta aplicación funciona como un registro personal de tus finanzas, diseñado para ayudarte a construir hábitos financieros saludables.`
+    banner: `Tu información es privada. Esta aplicación funciona como un registro personal de tus finanzas, diseñado para ayudarte a construir hábitos financieros saludables.`
   },
   financesConfig: {
     title: `Configuremos cómo manejas tu dinero`,

@@ -3,7 +3,7 @@
  * External API contract for budget operations
  */
 
-import type { BudgetFrequency, BudgetStrategy } from '../domain'
+import type { BudgetFrequency, BudgetStrategy, CustomBucket } from '../domain'
 
 /* export interface BudgetApiResponse {
   readonly id: string
@@ -74,6 +74,7 @@ export type BackendCurrentBudgetData = {
   month: string
   year: number
   isShared: boolean
+  isDefault: boolean
   status: string
   needsLimit: number
   wantsLimit: number
@@ -85,6 +86,7 @@ export type BackendCurrentBudgetData = {
   strategy: string
   frequency: string
   freeAmount?: number
+  customBuckets?: CustomBucket[]
 }
 export type BackendCurrentBudget = {
   success: boolean
@@ -97,6 +99,7 @@ export type SingleBudget = {
   month: string
   year: number
   isShared: boolean
+  isDefault: boolean
   limits: {
     needs: number
     wants: number
@@ -109,6 +112,7 @@ export type SingleBudget = {
   strategy: BudgetStrategy['name']
   frequency: BudgetFrequency
   freeAmount?: number
+  customBuckets?: CustomBucket[]
 }
 /** Response from the Nuxt server handler /api/budgets/[financeId]/current */
 export type CurrentBudget = {
