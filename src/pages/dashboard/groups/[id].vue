@@ -60,8 +60,6 @@
     fetchContributions,
     fetchExpenses,
     fetchGroupBudgetProgress,
-    createExpense,
-    updateExpense,
     payExpense,
     markExpenseCxp,
     inviteWithContext
@@ -451,12 +449,13 @@
   const handleInvite = async (userId: string, withContext = false) => {
     invitingUserId.value = userId
     try {
-      const fn = withContext && isTravelGroup.value ? inviteWithContext : addMember
-      const dto =
+      const { success } =
         withContext && isTravelGroup.value
-          ? { userId, plannedAmount: organizerLinkedAmount.value }
-          : { userId }
-      const { success } = await fn(groupId.value, dto as any)
+          ? await inviteWithContext(groupId.value, {
+              userId,
+              plannedAmount: organizerLinkedAmount.value
+            })
+          : await addMember(groupId.value, { userId })
       if (success) {
         successToast('Miembro invitado', 'La invitación fue enviada.')
         showInviteModal.value = false
