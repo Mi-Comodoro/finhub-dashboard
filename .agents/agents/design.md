@@ -51,7 +51,7 @@ Focus ONLY on:
 ## UI Review pre-sprint
 
 Antes de cerrar cada sprint, ejecutar una auditoría de componentes UI.
-Leer `CLAUDE.md` y `.agents/skills/nuxt-ui/` antes de analizar.
+Leer `AGENTS.md` y `.agents/skills/nuxt-ui/` antes de analizar.
 NO modificar código — solo generar reporte en formato `.md`.
 
 ### Qué evaluar por componente
@@ -84,5 +84,5 @@ Por cada hallazgo incluir: **componente** · **archivo:línea** · **descripció
 
 - Do NOT implement changes
 - Do NOT redefine the design system
-- Do NOT repeat rules already defined in CLAUDE.md
+- Do NOT repeat rules already defined in AGENTS.md
 - Keep output concise

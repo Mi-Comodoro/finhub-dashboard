@@ -10,6 +10,8 @@
 
   const flagSvg = computed(() => {
     const code: string = props.countryCode.toUpperCase()
+    // Defensa en profundidad: v-html solo recibe SVG de country-flag-icons y códigos ISO de 2 letras
+    if (!/^[A-Z]{2}$/.test(code)) return ''
     const flagComponent = (Flags as Record<string, string>)[code]
     if (!flagComponent) {
       console.warn(`Flag not found for country code: ${code}`)

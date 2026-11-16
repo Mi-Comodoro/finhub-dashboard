@@ -1,4 +1,11 @@
 packages:
   - .
 
-dangerouslyAllowAllBuilds: true
+# Solo estos paquetes pueden ejecutar scripts de instalación (supply chain)
+allowBuilds:
+  esbuild: true
+  '@firebase/util': false
+  protobufjs: false
+
+overrides:
+  "@grpc/grpc-js": ">=1.13.6"

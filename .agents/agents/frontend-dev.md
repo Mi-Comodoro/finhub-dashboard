@@ -49,5 +49,5 @@ Focus ONLY on:
 - Do NOT validate architecture (handled by architect)
 - Do NOT perform design validation (handled by design)
 - Do NOT orchestrate other agents
-- Do NOT repeat rules from CLAUDE.md
+- Do NOT repeat rules from AGENTS.md
 - Avoid unnecessary new abstractions
