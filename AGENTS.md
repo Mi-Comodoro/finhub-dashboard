@@ -288,7 +288,7 @@ Sizes: `xs` · `sm` · `md` · `lg`
 
 ### Iconos
 
-**Material Symbols Outlined** (via Google Fonts CDN — ya configurado en `nuxt.config.ts`):
+**Material Symbols Outlined** (autohospedada con `@fontsource-variable/material-symbols-outlined`, variante `fill`: solo eje FILL 0/1; `@font-face` y clase base en `src/assets/css/main.css`). No agregar `<link>` a Google Fonts:
 ```html
 <span class="material-symbols-outlined">savings</span>
 <span class="material-symbols-outlined">person</span>
