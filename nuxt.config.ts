@@ -43,7 +43,7 @@ export default defineNuxtConfig({
     '@ui-types': resolvePath('./src/types/ui')
   },
 
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV === 'development' },
   css: ['~/assets/css/main.css'],
 
   typescript: {
