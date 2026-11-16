@@ -39,10 +39,17 @@ export const useNotificationsSocket = () => {
     if (socket?.connected) return
 
     try {
-      const { token } = await $fetch<{ token: string }>('/api/auth/ws-token')
-
+      // El token de WebSocket dura 60 s: se pide uno nuevo en cada intento de conexión
+      // y de reconexión (función de auth de Socket.IO) en lugar de reutilizar uno vencido
       socket = io(config.public.wsBase as string, {
-        auth: { token },
+        auth: async (cb: (data: { token?: string }) => void) => {
+          try {
+            const { token } = await $fetch<{ token: string }>('/api/auth/ws-token')
+            cb({ token })
+          } catch {
+            cb({})
+          }
+        },
         transports: ['websocket', 'polling'],
         reconnectionAttempts: 5,
         reconnectionDelay: 2000

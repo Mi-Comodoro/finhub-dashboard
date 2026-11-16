@@ -1,21 +1,19 @@
-import {
-  ACCESS_TOKEN,
-  ACCOUNT_TYPE,
-  COOKIE_OPTIONS,
-  REFRESH_COOKIE_OPTIONS,
-  REFRESH_TOKEN,
-  TOKEN_EXPIRES_AT
-} from '~/common/constants'
+import { ACCESS_TOKEN, ACCOUNT_TYPE, REFRESH_TOKEN, TOKEN_EXPIRES_AT } from '~/common/constants'
 import type { AuthResponse } from '~/types/auth'
 
 import { validateError } from '../utils/auth.error'
+import {
+  getCookieOptions,
+  getRefreshCookieOptions,
+  REFRESH_COOKIE_PATH
+} from '../utils/cookie-options'
 
 export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
   deleteCookie(event, ACCESS_TOKEN)
-  deleteCookie(event, REFRESH_TOKEN)
+  deleteCookie(event, REFRESH_TOKEN, { path: REFRESH_COOKIE_PATH })
   deleteCookie(event, ACCOUNT_TYPE)
   deleteCookie(event, TOKEN_EXPIRES_AT)
 
@@ -37,10 +35,10 @@ export default defineEventHandler(async event => {
 
   const { token, refreshToken, accountType, expiresAt } = response.data
 
-  setCookie(event, ACCESS_TOKEN, token, COOKIE_OPTIONS)
-  setCookie(event, REFRESH_TOKEN, refreshToken, REFRESH_COOKIE_OPTIONS)
-  setCookie(event, ACCOUNT_TYPE, accountType, COOKIE_OPTIONS)
-  setCookie(event, TOKEN_EXPIRES_AT, String(expiresAt), COOKIE_OPTIONS)
+  setCookie(event, ACCESS_TOKEN, token, getCookieOptions(event))
+  setCookie(event, REFRESH_TOKEN, refreshToken, getRefreshCookieOptions(event))
+  setCookie(event, ACCOUNT_TYPE, accountType, getCookieOptions(event))
+  setCookie(event, TOKEN_EXPIRES_AT, String(expiresAt), getCookieOptions(event))
 
   return { success: response.success, result: response.data }
 })
