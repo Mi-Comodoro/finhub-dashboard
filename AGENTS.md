@@ -4,7 +4,7 @@ Guía para agentes de IA (Codex, Claude Code, Cursor, etc.) que trabajan en este
 
 ## Entorno de desarrollo
 
-- **Node.js requerido: v22.12.0+** (los bindings nativos de oxc-parser requieren >=22.12.0)
+- **Node.js requerido: >=26.13 <27** (LTS "Lithium"; definido en `engines.node` y `.nvmrc`; pnpm 11 exige >=22.13)
 - **Package manager: pnpm** (no npm ni yarn)
 - ESLint falla silenciosamente o no resuelve plugins correctamente con versiones anteriores a Node 22.
 - Verificar versión activa: `node --version`
@@ -19,7 +19,7 @@ Guía para agentes de IA (Codex, Claude Code, Cursor, etc.) que trabajan en este
 | Pinia         | 3.0.4    |
 | TailwindCSS   | 3.4.17   |
 | TypeScript    | 5.8.3    |
-| Node.js       | ≥22.12.0 |
+| Node.js       | ≥26.13 (LTS) |
 | pnpm          | 11.1.2   |
 
 ## Commands
