@@ -14,7 +14,7 @@ Guía para agentes de IA (Codex, Claude Code, Cursor, etc.) que trabajan en este
 
 | Tecnología    | Versión  |
 |---------------|----------|
-| Nuxt          | 4.3.1    |
+| Nuxt          | 4.6.4    |
 | Vue           | 3.x      |
 | Pinia         | 3.0.4    |
 | TailwindCSS   | 3.4.17   |

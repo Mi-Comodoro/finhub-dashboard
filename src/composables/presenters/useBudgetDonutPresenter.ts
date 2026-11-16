@@ -41,7 +41,7 @@ export function useBudgetDonutPresenter() {
     }
 
     const change = ((current - previous) / previous) * 100
-    let direction: TrendDirection = 'stable'
+    let direction: TrendDirection
 
     if (Math.abs(change) < 5) {
       direction = 'stable'
