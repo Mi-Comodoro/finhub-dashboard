@@ -26,7 +26,7 @@ Focus ONLY on:
 ## Instructions
 
 1. Identify modified or relevant files
-2. Analyze code against architecture rules defined in CLAUDE.md
+2. Analyze code against architecture rules defined in AGENTS.md
 3. Report violations (if any)
 
 ## Output format
@@ -44,5 +44,5 @@ Focus ONLY on:
 
 - Do NOT modify code
 - Do NOT implement fixes
-- Do NOT repeat rules from CLAUDE.md
+- Do NOT repeat rules from AGENTS.md
 - Keep output concise
