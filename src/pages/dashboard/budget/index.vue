@@ -261,7 +261,7 @@
         <Heading level="h1" size="2xl" weight="extrabold" class="budget-index__title">
           Presupuestos
         </Heading>
-        <Text size="xs" color="muted">Administrá tus períodos presupuestarios</Text>
+        <Text size="xs" color="muted">Administra tus períodos presupuestarios</Text>
       </div>
       <div class="budget-index__header-actions">
         <Select
@@ -290,7 +290,7 @@
     <EmptyState
       v-else-if="sortedBudgets.length === 0"
       :title="`No hay presupuestos para ${selectedYear}`"
-      description="Creá tu primer presupuesto para empezar a planificar."
+      description="Crea tu primer presupuesto para empezar a planificar."
       illustration="no-budget"
       class="budget-index__empty"
     >
@@ -465,7 +465,7 @@
           <Text size="xs" color="muted">
             No tenés un presupuesto para
             {{ getMonthName(getNextPeriod(nextBudgetSource).nextMonth) }}
-            {{ getNextPeriod(nextBudgetSource).nextYear }}. ¿Querés crear uno?
+            {{ getNextPeriod(nextBudgetSource).nextYear }}. ¿Quieres crear uno?
           </Text>
         </div>
         <div class="next-budget-modal__actions">

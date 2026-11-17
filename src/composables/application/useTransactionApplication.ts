@@ -25,19 +25,25 @@ const buildQueryParams = (budgetId: string, filters: Partial<TransactionFilters>
   return params.toString()
 }
 
+// Business logic: user-facing reason returned by the BFF (already translated to Spanish)
+const getErrorReason = (error: FetchError): string | undefined => {
+  const data = error?.data as { message?: string } | undefined
+  return typeof data?.message === 'string' ? data.message : undefined
+}
+
 // Business logic: manejo de errores
 const createErrorMessage = (error: FetchError) => {
   if (error.status === 401) {
     return {
       status: error.status,
       title: 'Tu sesión ha expirado.',
-      message: 'Por seguridad, tu sesión ha caducado. Por favor iniciá sesión nuevamente.'
+      message: 'Por seguridad, tu sesión ha caducado. Por favor inicia sesión nuevamente.'
     }
   }
   return {
     title: '¡Ups! Algo no salió como esperábamos',
     message:
-      'Lo sentimos, no pudimos completar esta acción. Si el problema persiste, contactá soporte.'
+      'Lo sentimos, no pudimos completar esta acción. Si el problema persiste, contacta a soporte.'
   }
 }
 
@@ -210,10 +216,10 @@ export const useTransactionApplication = () => {
         if (budgetId) await fetchByBudget(budgetId)
       }
 
-      return { success }
+      return { success, message: undefined as string | undefined }
     } catch (err) {
       transactionStore.setError(createErrorMessage(err as FetchError))
-      return { success: false }
+      return { success: false, message: getErrorReason(err as FetchError) }
     } finally {
       transactionStore.setLoading(false)
     }
@@ -234,7 +240,7 @@ export const useTransactionApplication = () => {
           title: 'Error al crear ingreso',
           message: 'No se pudo registrar el ingreso'
         })
-        return { success: false }
+        return { success: false, message: undefined as string | undefined }
       }
 
       const budgetId = String(data['budgetId'] ?? '')
@@ -250,10 +256,10 @@ export const useTransactionApplication = () => {
         await fetchByBudget(transactionStore.budgetId)
       }
 
-      return { success: true }
+      return { success: true, message: undefined as string | undefined }
     } catch (err) {
       transactionStore.setError(createErrorMessage(err as FetchError))
-      return { success: false }
+      return { success: false, message: getErrorReason(err as FetchError) }
     } finally {
       transactionStore.setLoading(false)
     }

@@ -1,9 +1,11 @@
 <script setup lang="ts">
   import EmptyState from '@/components/atoms/empty-state/EmptyState.vue'
+  import BudgetSetupBanner from '@/components/business/budget/BudgetSetupBanner.vue'
   import QuickTransactionForm from '@/components/business/transaction/forms/QuickTransactionForm.vue'
   import TransactionForm from '@/components/business/transaction/forms/TransactionForm.vue'
   import type { Column } from '@/components/organisms/datatable/types'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
+  import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
   import { useTransactionFiltersPresenter } from '@/composables/presenters/useTransactionFiltersPresenter'
@@ -49,11 +51,43 @@
     deleteTransaction
   } = useTransactionApplication()
 
-  const { success: successToast } = useFeedback()
+  const { success: successToast, error: errorToast } = useFeedback()
 
-  const { goals, accounts, loadGoalsData } = useGoalsApplication()
+  const { goals, accounts, loadGoalsData, loadAllocationSummaryData } = useGoalsApplication()
+  const { canActive, setupSteps, activate } = useActiveBudgetApplication()
 
   const budgetSelect = ref<string>('')
+
+  // Movements can only be registered on an active budget (savings setup must be complete first)
+  const selectedBudgetStatus = computed(
+    () => budgetPlans.value.find(plan => plan.id === budgetSelect.value)?.status
+  )
+  const isBudgetPending = computed(
+    () => !!selectedBudgetStatus.value && selectedBudgetStatus.value === 'PLANNED'
+  )
+  const isActivatingBudget = ref(false)
+
+  const goToSavingsSetup = () => navigateTo('/dashboard/goals')
+
+  const activateSelectedBudget = async () => {
+    if (isActivatingBudget.value) return
+    isActivatingBudget.value = true
+    try {
+      const { success, blocked } = await activate(budgetSelect.value)
+      if (blocked) {
+        await goToSavingsSetup()
+        return
+      }
+      if (success) {
+        successToast('Presupuesto activado', 'Ya puedes registrar ingresos y gastos.')
+        await loadInitialData(financeId.value, new Date().getFullYear())
+      } else {
+        errorToast('No se pudo activar', 'Inténtalo de nuevo en unos segundos.')
+      }
+    } finally {
+      isActivatingBudget.value = false
+    }
+  }
   const showForm = ref(false)
   const showQuickModal = ref(false)
   const showDetailsModal = ref(false)
@@ -266,8 +300,9 @@
 
   // --- Init ---
   onMounted(async () => {
-    await loadInitialData(financeId.value, 2026)
+    await loadInitialData(financeId.value, new Date().getFullYear())
     await loadGoalsData()
+    await loadAllocationSummaryData()
 
     const queryBudgetId = route.query.budgetId as string | undefined
     budgetSelect.value =
@@ -302,11 +337,27 @@
       <div class="transactions-page__header-actions">
         <Select v-model="budgetSelect" name="budgetId" :options="budgetOptions" />
 
-        <Button variant="primary" size="sm" icon="add" @click="openQuickModal">
+        <Button
+          variant="primary"
+          size="sm"
+          icon="add"
+          :disabled="isBudgetPending"
+          @click="openQuickModal"
+        >
           Nueva transacción
         </Button>
       </div>
     </div>
+
+    <BudgetSetupBanner
+      v-if="isBudgetPending"
+      :steps="setupSteps"
+      :can-activate="canActive"
+      :is-activating="isActivatingBudget"
+      title="Activa tu presupuesto para registrar movimientos"
+      @activate="activateSelectedBudget"
+      @go-to-setup="goToSavingsSetup"
+    />
 
     <div v-if="!isLoading && budgetPlans.length === 0" class="transactions-page__empty">
       <EmptyState

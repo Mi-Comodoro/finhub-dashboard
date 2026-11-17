@@ -152,12 +152,6 @@
 
   watch(selectedType, refreshAvailableBalance)
 
-  watch(filteredCategoryOptions, newOptions => {
-    if (newOptions.length > 0 && !formData.value['categoryId']) {
-      formData.value = { ...formData.value, categoryId: newOptions[0].value }
-    }
-  })
-
   const savingsAmount = computed(() => {
     const amount = Number(pendingFormData.value?.['amount'] ?? 0)
     return Math.round(amount * ((props.budgetSavingsPercentage ?? 20) / 100))
@@ -268,7 +262,7 @@
       } else {
         const budgetId = effectiveBudgetId.value
         const categoryId = String(data['categoryId'] ?? '')
-        const { success } = await createTransaction({
+        const { success, message } = await createTransaction({
           type: type as 'income' | 'expense',
           amount,
           transactionDate: toDateString(date),
@@ -291,7 +285,7 @@
         } else {
           show({
             title: 'Error al guardar',
-            description: 'No se pudo registrar el movimiento. Inténtalo de nuevo.',
+            description: message ?? 'No se pudo registrar el movimiento. Inténtalo de nuevo.',
             type: 'error'
           })
         }
@@ -325,6 +319,7 @@
       }
 
       let success = false
+      let failureReason: string | undefined
 
       if (createSavingsPlan.value) {
         const result = await createTransactionWithSavingsPlan(
@@ -332,9 +327,11 @@
           props.budgetSavingsPercentage ?? 20
         )
         success = result.success
+        failureReason = result.message
       } else {
         const result = await createTransaction(transactionPayload)
         success = result.success
+        failureReason = result.message
       }
 
       if (success) {
@@ -346,7 +343,7 @@
       } else {
         show({
           title: 'Error al guardar',
-          description: 'No se pudo registrar el ingreso. Inténtalo de nuevo.',
+          description: failureReason ?? 'No se pudo registrar el ingreso. Inténtalo de nuevo.',
           type: 'error'
         })
       }

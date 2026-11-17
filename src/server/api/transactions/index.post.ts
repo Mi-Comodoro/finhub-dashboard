@@ -1,6 +1,6 @@
 import { ACCESS_TOKEN } from '~/common/constants'
 
-import { validateError } from '../utils/auth.error'
+import { translateBackendMessage, validateError } from '../utils/auth.error'
 
 export default defineEventHandler(async event => {
   const config = useRuntimeConfig()
@@ -21,7 +21,10 @@ export default defineEventHandler(async event => {
           const msg = Array.isArray(raw?.message)
             ? raw.message.join(', ')
             : (raw?.message ?? 'Datos inválidos')
-          throw createError({ statusCode: response.status, message: msg })
+          throw createError({
+            statusCode: response.status,
+            message: translateBackendMessage(msg) ?? msg
+          })
         }
         validateError(event, response.status)
       }
