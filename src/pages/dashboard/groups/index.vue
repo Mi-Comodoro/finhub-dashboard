@@ -13,7 +13,7 @@
     FriendshipRequest,
     FriendWithProfile
   } from '@/types/friendships.types'
-  import type { GroupType } from '@/types/groups.types'
+  import type { Group, GroupType } from '@/types/groups.types'
 
   definePageMeta({
     layout: 'dashboard',
@@ -45,6 +45,15 @@
   const handleCreated = () => {
     showCreateModal.value = false
     successToast('Grupo creado', 'El grupo fue creado exitosamente.')
+  }
+
+  // GET /groups may not return members: prefer memberCount and fall back to members length
+  const getMembersLabel = (group: Group) => {
+    const count = group.memberCount ?? group.members?.length ?? 0
+    const max = group.maxMembers ?? 0
+    return max > 0
+      ? `${count} / ${max} miembros`
+      : `${count} ${count === 1 ? 'miembro' : 'miembros'}`
   }
 
   const goToDetail = (id: string) => {
@@ -225,7 +234,7 @@
           </div>
           <div class="groups-page__card-footer">
             <span class="material-symbols-outlined groups-page__member-icon">group</span>
-            <Text size="sm" color="muted">{{ group.members?.length ?? 0 }} miembros</Text>
+            <Text size="sm" color="muted">{{ getMembersLabel(group) }}</Text>
           </div>
         </button>
       </div>
