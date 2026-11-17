@@ -10,24 +10,36 @@
   interface ContributionFormProps {
     goalId?: string
     suggestedAmount?: number
+    defaultAccountId?: string
   }
 
   const props = withDefaults(defineProps<ContributionFormProps>(), {
     goalId: '',
-    suggestedAmount: undefined
+    suggestedAmount: undefined,
+    defaultAccountId: ''
   })
   const emit = defineEmits<{
     onClose: []
   }>()
 
-  const { addContribution } = useGoalsApplication()
+  const { addContribution, accounts, fetchAccounts } = useGoalsApplication()
   const { show: showToast } = useToast()
 
-  const formSchema = contributionFieldsSchema()
+  onMounted(async () => {
+    if (accounts.value.length === 0) await fetchAccounts()
+  })
 
+  const accountOptions = computed(() =>
+    accounts.value.map(account => ({ label: account.name, value: account.id }))
+  )
+  const formSchema = computed(() => contributionFieldsSchema(accountOptions.value))
+
+  // A routine contribution comes from the user's own money; an external deposit is unexpected income
   const initialData = {
     amount: props.suggestedAmount ?? '',
     date: new Date(),
+    contributionType: 'internal',
+    accountId: props.defaultAccountId,
     note: ''
   }
 
@@ -41,11 +53,20 @@
       return
     }
 
+    const contributionType = data.contributionType === 'external' ? 'external' : 'internal'
+    const accountId = contributionType === 'internal' ? String(data.accountId ?? '') : ''
+    if (contributionType === 'internal' && !accountId) {
+      showToast({ title: 'Selecciona la cuenta de origen', type: 'error' })
+      return
+    }
+
     const rawDate = data.date as Date | string
     const { success } = await addContribution(props.goalId, {
       amount: Number(data.amount) || 0,
       date: (rawDate instanceof Date ? rawDate : new Date(rawDate)).toISOString(),
-      note: (data.note as string) || undefined
+      note: (data.note as string) || undefined,
+      contributionType,
+      accountId: accountId || undefined
     })
 
     if (success) {

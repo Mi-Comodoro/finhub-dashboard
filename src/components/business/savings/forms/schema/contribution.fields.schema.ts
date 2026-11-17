@@ -1,6 +1,11 @@
 import type { FormSchema } from '@/components/organisms/forms/Form.vue'
 
-export const contributionFieldsSchema = (): FormSchema => ({
+export interface SelectOption {
+  label: string
+  value: string
+}
+
+export const contributionFieldsSchema = (accountOptions: SelectOption[] = []): FormSchema => ({
   fields: {
     amount: {
       type: 'money',
@@ -13,6 +18,34 @@ export const contributionFieldsSchema = (): FormSchema => ({
       label: 'Fecha',
       required: true
     },
+    contributionType: {
+      type: 'radio-card',
+      label: 'Origen del dinero',
+      required: true,
+      size: 'sm',
+      options: [
+        {
+          label: 'Cuenta propia',
+          value: 'internal',
+          description: 'Sale de tu presupuesto',
+          icon: 'swap_horiz'
+        },
+        {
+          label: 'Depósito externo',
+          value: 'external',
+          description: 'Ingreso no esperado',
+          icon: 'account_balance'
+        }
+      ]
+    },
+    accountId: {
+      type: 'select',
+      label: 'Cuenta origen',
+      placeholder: 'Selecciona una cuenta',
+      options: accountOptions,
+      required: form => form['contributionType'] === 'internal',
+      visibleWhen: form => form['contributionType'] === 'internal'
+    },
     note: {
       type: 'textarea',
       label: 'Nota',
@@ -23,6 +56,8 @@ export const contributionFieldsSchema = (): FormSchema => ({
   layout: [
     { type: 'row', fields: ['amount'] },
     { type: 'row', fields: ['date'] },
+    { type: 'row', fields: ['contributionType'] },
+    { type: 'row', fields: ['accountId'] },
     { type: 'row', fields: ['note'] }
   ]
 })

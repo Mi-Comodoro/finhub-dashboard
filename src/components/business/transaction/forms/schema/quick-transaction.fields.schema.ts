@@ -65,8 +65,7 @@ export const quickTransactionFieldsSchema = (
         {
           label: 'Depósito externo',
           value: 'external',
-
-          description: 'Desde fuera',
+          description: 'Ingreso no esperado',
           icon: 'account_balance'
         },
         {
@@ -83,7 +82,7 @@ export const quickTransactionFieldsSchema = (
       label: 'Cuenta origen',
       placeholder: 'Selecciona una cuenta',
       options: accountOptions,
-      required: false,
+      required: form => form['type'] === 'saving' && form['contributionType'] === 'internal',
       visibleWhen: form => form['type'] === 'saving' && form['contributionType'] === 'internal'
     }
   },

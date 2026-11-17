@@ -208,6 +208,8 @@ export const useGoalsApplication = () => {
       amount: number
       date: string
       note?: string
+      contributionType?: 'internal' | 'external'
+      accountId?: string
     }
   ): Promise<{ success: boolean; contribution?: PlannedSaving }> => {
     try {

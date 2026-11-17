@@ -786,6 +786,7 @@
       <ContributionForm
         :goal-id="goalId"
         :suggested-amount="suggestedContribution"
+        :default-account-id="goal?.accountId"
         @on-close="handleContributionSuccess"
       />
     </ModalWizard>
