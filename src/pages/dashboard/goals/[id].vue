@@ -55,7 +55,8 @@
     fetchGoalHistory,
     fetchGoalContributions,
     fetchGoalSummary,
-    addGoalInterest
+    addGoalInterest,
+    loadAllocationSummaryData
   } = useGoalsApplication()
   const { show: showToast } = useToast()
   const { items: plannedSavingItems, fetchByBudget: fetchPlannedSavings } =
@@ -154,6 +155,9 @@
   }
 
   onMounted(async () => {
+    // Direct load (F5): the current budget is not in the store yet and the monthly banner needs it
+    if (!currentBudgetPlan.value) await loadAllocationSummaryData()
+
     await Promise.all([loadGoalDetail(), loadContributions(), loadSummary()])
 
     // Load planned savings for the current budget if not loaded
