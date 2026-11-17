@@ -114,6 +114,31 @@
     emit('update:modelValue', value)
   }
 
+  /**
+   * Texto pegado: si el ultimo separador es un punto seguido de 1-2 digitos no puede ser un grupo
+   * de miles, asi que es un decimal (45000.5 -> 45000,5; 1,250.50 -> 1250,50).
+   */
+  function normalizePasted(text: string): string {
+    const t = text.trim().replace(/[^\d.,]/g, '')
+    const lastDot = t.lastIndexOf('.')
+    if (lastDot > t.lastIndexOf(',') && /\.\d{1,2}$/.test(t)) {
+      const intPart = t.slice(0, lastDot).replace(/[.,]/g, '')
+      return decimals.value > 0 ? `${intPart},${t.slice(lastDot + 1)}` : intPart
+    }
+    return t
+  }
+
+  function handlePaste(e: ClipboardEvent) {
+    const pasted = e.clipboardData?.getData('text')
+    if (!pasted) return
+    e.preventDefault()
+    const el = e.target as HTMLInputElement
+    const start = el.selectionStart ?? el.value.length
+    const end = el.selectionEnd ?? start
+    el.value = el.value.slice(0, start) + normalizePasted(pasted) + el.value.slice(end)
+    handleInput({ target: el } as unknown as Event)
+  }
+
   function handleBlur() {
     isFocused.value = false
     // Completar decimales al salir (45.000 -> 45.000,00); vacio se mantiene vacio
@@ -157,6 +182,7 @@
         autocomplete="off"
         :aria-required="required"
         @input="handleInput"
+        @paste="handlePaste"
         @focus="handleFocus"
         @blur="handleBlur"
       />
