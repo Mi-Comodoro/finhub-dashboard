@@ -22,6 +22,11 @@
   import { buildProjection, type SavingPoint } from '@/utils/compound-interest.utils'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
+  import {
+    getEffectiveGoalStatus,
+    getProgressPercentage,
+    hasTargetAmount
+  } from '@/utils/goal-formatters'
   import type { GoalStatus } from '@/utils/goals.utils'
 
   const GoalProjectionChart = defineAsyncComponent(
@@ -114,6 +119,7 @@
   }
 
   const openContributionModal = () => {
+    suggestedContribution.value = undefined
     showContributionModal.value = true
   }
 
@@ -166,8 +172,8 @@
   })
 
   const progressPercentage = computed(() => {
-    if (!goal.value?.targetAmount || goal.value.targetAmount === 0) return 0
-    return Math.min(100, Math.round((totalSavedForGoal.value / goal.value.targetAmount) * 100))
+    if (!hasTargetAmount(goal.value?.targetAmount)) return 0
+    return getProgressPercentage(totalSavedForGoal.value, goal.value?.targetAmount ?? null)
   })
 
   // Planned savings for this goal - used for projection chart and movements list
@@ -194,6 +200,39 @@
       interestContributions.value.reduce((sum, t) => sum + t.amount, 0) ||
       goalSummary.value.totalInterest
   )
+
+  // Amount to contribute this month: pending planned savings of the current budget,
+  // or the allocation share of the monthly savings when the plan has not been generated yet.
+  // plannedSavings only comes in GET /goals/:id (not in the list).
+  const currentBudgetSavings = computed(() =>
+    goalSavings.value.filter(s => s.budgetId === currentBudgetPlan.value?.id)
+  )
+
+  const monthlyDueAmount = computed(() => {
+    const pending = currentBudgetSavings.value
+      .filter(s => s.status === 'pending')
+      .reduce((acc, s) => acc + (s.amount ?? 0), 0)
+    if (pending > 0) return pending
+    const done = currentBudgetSavings.value
+      .filter(s => s.status === 'completed')
+      .reduce((acc, s) => acc + (s.amount ?? 0), 0)
+    if (done > 0) return 0
+    const allocation = savingAllocations.value.find(a => a.goalId === goal.value?.id)
+    if (!allocation || savingsAmount.value <= 0) return 0
+    return (savingsAmount.value * allocation.percentage) / 100
+  })
+
+  const hasContributedThisMonth = computed(
+    () =>
+      monthlyDueAmount.value === 0 && currentBudgetSavings.value.some(s => s.status === 'completed')
+  )
+
+  const suggestedContribution = ref<number | undefined>(undefined)
+
+  const openSuggestedContribution = () => {
+    suggestedContribution.value = monthlyDueAmount.value > 0 ? monthlyDueAmount.value : undefined
+    showContributionModal.value = true
+  }
 
   // Total balance: deposits + registered interest (both count toward goal progress)
   const totalSavedForGoal = computed(() => principalSaved.value + totalRegisteredInterest.value)
@@ -482,6 +521,14 @@
 
   const currency = 'COP' as const
 
+  // Scheduled goals with contributions are in progress (backend does not promote the status)
+  const effectiveStatus = computed(
+    () => getEffectiveGoalStatus(goal.value?.status, totalSavedForGoal.value) as GoalStatus
+  )
+  const displayGoal = computed(() =>
+    goal.value ? { ...goal.value, status: effectiveStatus.value } : goal.value
+  )
+
   const isDeadlineAtRisk = computed(() => {
     const months = projectionSummary.value.monthsToGoal
     if (!goal.value?.targetDate || months === null || months <= 0) return false
@@ -582,6 +629,38 @@
             :currency-code="currency"
           />
 
+          <!-- Monthly contribution due -->
+          <div v-if="monthlyDueAmount > 0 || hasContributedThisMonth" class="goal-detail__due">
+            <div class="goal-detail__due-info">
+              <span class="material-symbols-outlined goal-detail__due-icon">event_available</span>
+              <div>
+                <Text size="sm" weight="semibold">
+                  {{
+                    hasContributedThisMonth
+                      ? 'Ya cumpliste tu aporte de este mes'
+                      : `Este mes te toca aportar ${formatCurrency(monthlyDueAmount, currency)}`
+                  }}
+                </Text>
+                <Text size="xs" color="muted">
+                  {{
+                    hasContributedThisMonth
+                      ? 'Puedes registrar un aporte adicional cuando quieras.'
+                      : 'Según tu plan de ahorro mensual para esta meta.'
+                  }}
+                </Text>
+              </div>
+            </div>
+            <Button
+              v-if="monthlyDueAmount > 0"
+              size="sm"
+              variant="primary"
+              icon="add"
+              @click="openSuggestedContribution"
+            >
+              Aportar {{ formatCurrency(monthlyDueAmount, currency) }}
+            </Button>
+          </div>
+
           <GoalInfoCarousel />
 
           <!-- Deadline at risk banner -->
@@ -634,7 +713,7 @@
             </Button>
           </div>
 
-          <GoalStatusStepper :status="(goal.status as GoalStatus) ?? 'SCHEDULED'" />
+          <GoalStatusStepper :status="effectiveStatus" />
 
           <!-- Proyección de crecimiento -->
           <Card class="goal-detail__projection-card">
@@ -675,7 +754,7 @@
         <!-- Sidebar -->
         <aside class="goal-detail__sidebar">
           <GoalSidebarPanel
-            :goal="goal"
+            :goal="displayGoal ?? goal"
             :history="history"
             :account="account"
             :progress-percentage="progressPercentage"
@@ -700,7 +779,11 @@
     </ModalWizard>
 
     <ModalWizard v-model:show="showContributionModal">
-      <ContributionForm :goal-id="goalId" @on-close="handleContributionSuccess" />
+      <ContributionForm
+        :goal-id="goalId"
+        :suggested-amount="suggestedContribution"
+        @on-close="handleContributionSuccess"
+      />
     </ModalWizard>
   </div>
 </template>
@@ -751,6 +834,20 @@
 
   .goal-detail__deadline-banner-actions {
     @apply flex shrink-0 gap-2;
+  }
+
+  /* Monthly contribution due */
+  .goal-detail__due {
+    @apply flex flex-wrap items-center justify-between gap-4 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3;
+    @apply dark:border-primary-700/50 dark:bg-primary-900/20;
+  }
+
+  .goal-detail__due-info {
+    @apply flex items-center gap-3;
+  }
+
+  .goal-detail__due-icon {
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   /* Interest banner */

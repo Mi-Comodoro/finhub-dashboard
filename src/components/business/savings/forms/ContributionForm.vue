@@ -9,10 +9,12 @@
 
   interface ContributionFormProps {
     goalId?: string
+    suggestedAmount?: number
   }
 
   const props = withDefaults(defineProps<ContributionFormProps>(), {
-    goalId: ''
+    goalId: '',
+    suggestedAmount: undefined
   })
   const emit = defineEmits<{
     onClose: []
@@ -24,7 +26,7 @@
   const formSchema = contributionFieldsSchema()
 
   const initialData = {
-    amount: '',
+    amount: props.suggestedAmount ?? '',
     date: new Date(),
     note: ''
   }

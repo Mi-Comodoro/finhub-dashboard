@@ -7,8 +7,8 @@
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import type { GoalsData } from '@/types/api'
   import type { Currency } from '@/utils/currency'
-  import { formatCurrency } from '@/utils/currency'
-  import { getProgressPercentage } from '@/utils/goal-formatters'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
+  import { getProgressPercentage, hasTargetAmount } from '@/utils/goal-formatters'
 
   interface HealthScore {
     score?: {
@@ -125,6 +125,14 @@
 
   function getGoalProgress(goal: GoalsData): number {
     return getProgressPercentage(goal.totalSaved ?? 0, goal.targetAmount ?? null)
+  }
+
+  // Without a target amount a percentage is misleading (always 0%): show the saved amount instead
+  function getGoalProgressLabel(goal: GoalsData): string {
+    if (!hasTargetAmount(goal.targetAmount)) {
+      return formatCompactCurrency(goal.totalSaved ?? 0, props.currency)
+    }
+    return `${getGoalProgress(goal)}%`
   }
 
   function getGoalPctClass(pct: number): string {
@@ -297,7 +305,7 @@
               class="dashboard-sidebar__goal-pct"
               :class="getGoalPctClass(getGoalProgress(goal))"
             >
-              {{ getGoalProgress(goal) }}%
+              {{ getGoalProgressLabel(goal) }}
             </span>
           </div>
         </div>

@@ -16,7 +16,7 @@ export const contributionFieldsSchema = (): FormSchema => ({
     note: {
       type: 'textarea',
       label: 'Nota',
-      placeholder: 'Agrega una nota (opcional)',
+      placeholder: 'Nota opcional (ej. aporte de noviembre)',
       required: false
     }
   },
