@@ -16,11 +16,14 @@
   const { fetchExpensesByPeriod, currency } = useAnalyticsExpensesApplication()
   const { groupByBucket, groupByCategory } = useExpensesPresenter()
 
-  const { data: expenses, pending } = await useAsyncData(
+  const { data: expenses, status } = await useAsyncData(
     'analytics-expenses',
     () => fetchExpensesByPeriod(selectedYear.value, selectedMonth.value),
     { watch: [selectedYear, selectedMonth], server: false }
   )
+
+  // With server:false the status is 'idle' during SSR: count it as loading so server and client render the same skeleton
+  const pending = computed(() => status.value === 'idle' || status.value === 'pending')
 
   const currentLevel = ref<'bucket' | 'category'>('category')
 
