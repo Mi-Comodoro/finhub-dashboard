@@ -64,7 +64,7 @@
       score: healthScore.value?.score.pillars.expenses.score ?? 0,
       max: 25,
       pillarLabel: healthScore.value?.score.pillars.expenses.label ?? '',
-      tip: 'Compara tus gastos reales vs lo que planificaste.'
+      tip: 'Compara tus gastos reales con el saldo que tenías disponible para gastar.'
     },
     {
       label: 'Deudas',
@@ -101,7 +101,7 @@
   const PILLAR_HINTS: Record<string, string> = {
     'Flujo de Caja': 'Lo que te queda después de cubrir tus gastos',
     'Ahorro y Metas': 'Si cumples tu meta de ahorro mensual',
-    'Control de Gastos': 'Si gastas menos de lo que planificaste',
+    'Control de Gastos': 'Si gastas menos de tu saldo disponible',
     Deudas: 'Según el peso de tus deudas sobre tus ingresos'
   }
 
