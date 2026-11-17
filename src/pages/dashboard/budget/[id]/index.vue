@@ -492,7 +492,10 @@
     </ModalWizard>
 
     <ModalWizard v-model:show="showSavingDistributionForm">
-      <SavingDistributionForm @on-close="closeSavingDistributionForm" />
+      <SavingDistributionForm
+        @on-close="closeSavingDistributionForm"
+        @on-success="closeSavingDistributionForm"
+      />
     </ModalWizard>
 
     <ModalWizard v-model:show="showIncomeModal">
