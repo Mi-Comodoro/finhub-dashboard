@@ -38,7 +38,7 @@ export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
   const { data: rawTransactions, pending: isLoading } = useAsyncData(
     'analyticsSavingsTrend',
     () => fetchSavingsForYear(year.value),
-    { watch: [year] }
+    { watch: [year], server: false }
   )
 
   const savingsByMonth = computed(() => {

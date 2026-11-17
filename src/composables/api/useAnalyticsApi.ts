@@ -58,26 +58,31 @@ export interface CashFlowForecastResponse {
 }
 
 export function useAnalyticsApi() {
+  // En SSR reenvia la cookie de sesion del request entrante (sin esto el BFF responde 401 al recargar)
+  const requestFetch = import.meta.server ? useRequestFetch() : $fetch
+
   const getFinancialHealthScore = () =>
-    $fetch<{ success: boolean; result: FinancialHealthScoreResponse }>(
+    requestFetch<{ success: boolean; result: FinancialHealthScoreResponse }>(
       '/api/analytics/financial-health-score'
     )
 
   const getSavingsTrend = (year: number) =>
-    $fetch<{ success: boolean; result: SavingsTrendItem[] }>(
+    requestFetch<{ success: boolean; result: SavingsTrendItem[] }>(
       `/api/analytics/savings-trend?year=${year}`
     )
 
   const getCashFlowForecast = (year: number, month: number) =>
-    $fetch<{ success: boolean; result: CashFlowForecastResponse }>(
+    requestFetch<{ success: boolean; result: CashFlowForecastResponse }>(
       `/api/analytics/cash-flow-forecast?year=${year}&month=${month}`
     )
 
   const getNetPosition = () =>
-    $fetch<{ success: boolean; result: NetPositionResponse }>('/api/analytics/net-position')
+    requestFetch<{ success: boolean; result: NetPositionResponse }>('/api/analytics/net-position')
 
   const getDebtProjection = () =>
-    $fetch<{ success: boolean; result: DebtProjectionResponse }>('/api/analytics/debt-projection')
+    requestFetch<{ success: boolean; result: DebtProjectionResponse }>(
+      '/api/analytics/debt-projection'
+    )
 
   return {
     getFinancialHealthScore,

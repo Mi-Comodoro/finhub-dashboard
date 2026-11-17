@@ -20,13 +20,13 @@
   const { data: transactions, pending } = await useAsyncData(
     'analytics-cashflow',
     () => fetchTransactionsByPeriod(selectedYear.value, selectedMonth.value),
-    { watch: [selectedYear, selectedMonth] }
+    { watch: [selectedYear, selectedMonth], server: false }
   )
 
   const { data: forecast, pending: loadingForecast } = await useAsyncData(
     'analytics-cashflow-forecast',
     () => fetchForecast(selectedYear.value, selectedMonth.value),
-    { watch: [selectedYear, selectedMonth] }
+    { watch: [selectedYear, selectedMonth], server: false }
   )
 
   const forecastWarning = computed(() =>

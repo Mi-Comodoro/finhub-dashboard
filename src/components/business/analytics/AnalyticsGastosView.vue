@@ -19,7 +19,7 @@
   const { data: expenses, pending } = await useAsyncData(
     'analytics-expenses',
     () => fetchExpensesByPeriod(selectedYear.value, selectedMonth.value),
-    { watch: [selectedYear, selectedMonth] }
+    { watch: [selectedYear, selectedMonth], server: false }
   )
 
   const currentLevel = ref<'bucket' | 'category'>('category')
