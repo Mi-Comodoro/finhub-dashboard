@@ -29,7 +29,9 @@ export const useActiveBudgetApplication = () => {
 
   const isAccountCreated = computed(() => accountStore.accounts.length >= 1)
   const goalsProgress = computed(() => goalsStore.goals.length)
-  const isGoalsCompleted = computed(() => goalsProgress.value >= 3)
+  // Same rule as the server: only active goals count towards the minimum of 3
+  const activeGoalsCount = computed(() => goalsStore.goals.filter(g => g.isActive).length)
+  const isGoalsCompleted = computed(() => activeGoalsCount.value >= 3)
 
   const allocationProgress = computed(() => {
     const activeGoalIds = new Set(goalsStore.goals.filter(g => g.isActive).map(g => g.id))
@@ -69,7 +71,7 @@ export const useActiveBudgetApplication = () => {
     {
       key: 'goals',
       label: 'Define al menos 3 metas de ahorro',
-      detail: `${goalsProgress.value} de 3 metas creadas`,
+      detail: `${activeGoalsCount.value} de 3 metas activas`,
       done: isGoalsCompleted.value
     },
     {

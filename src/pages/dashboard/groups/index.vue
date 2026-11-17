@@ -51,9 +51,11 @@
   const getMembersLabel = (group: Group) => {
     const count = group.memberCount ?? group.members?.length ?? 0
     const max = group.maxMembers ?? 0
-    return max > 0
-      ? `${count} / ${max} miembros`
-      : `${count} ${count === 1 ? 'miembro' : 'miembros'}`
+    const pending = group.pendingInvitesCount ?? 0
+    const base =
+      max > 0 ? `${count} / ${max} miembros` : `${count} ${count === 1 ? 'miembro' : 'miembros'}`
+    if (pending === 0) return base
+    return `${base} · ${pending} ${pending === 1 ? 'invitación pendiente' : 'invitaciones pendientes'}`
   }
 
   const goToDetail = (id: string) => {
