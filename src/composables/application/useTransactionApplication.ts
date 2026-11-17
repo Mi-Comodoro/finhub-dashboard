@@ -107,6 +107,33 @@ export const useTransactionApplication = () => {
     }
   }
 
+  // Business rule: available balance = real income - real expenses - real savings.
+  // Calculated over the whole budget (no page filters) so it cannot be skewed by the UI.
+  const getAvailableBalance = async (budgetId: string) => {
+    if (!budgetId) return { success: false, balance: 0, hasIncome: false }
+    try {
+      const { success, result } = await transactionApi.getTransactionTotals(
+        budgetId,
+        buildQueryParams(budgetId, {})
+      )
+      if (!success || !result) return { success: false, balance: 0, hasIncome: false }
+      const balance =
+        Number(result.income ?? 0) - Number(result.expense ?? 0) - Number(result.savings ?? 0)
+      return { success: true, balance, hasIncome: Number(result.countIncome ?? 0) > 0 }
+    } catch {
+      return { success: false, balance: 0, hasIncome: false }
+    }
+  }
+
+  // Business rule: an expense (or an out-of-plan saving) cannot exceed the available balance.
+  const validateSufficientBalance = async (budgetId: string, amount: number) => {
+    const { success, balance, hasIncome } = await getAvailableBalance(budgetId)
+    if (!success) return { valid: false, reason: 'unavailable' as const, balance: 0 }
+    if (!hasIncome) return { valid: false, reason: 'no-income' as const, balance }
+    if (amount > balance) return { valid: false, reason: 'insufficient' as const, balance }
+    return { valid: true, reason: null, balance }
+  }
+
   const setBudgetId = (budgetId: string) => {
     transactionStore.setBudgetId(budgetId)
   }
@@ -303,6 +330,8 @@ export const useTransactionApplication = () => {
     categoryOptions,
     fetchTransaction,
     fetchTotals,
+    getAvailableBalance,
+    validateSufficientBalance,
     loadInitialData,
     setBudgetId,
     fetchByBudget,

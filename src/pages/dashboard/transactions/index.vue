@@ -469,7 +469,12 @@
     </ModalWizard>
 
     <ModalWizard v-model:show="showQuickModal">
-      <QuickTransactionForm :goals="goals" :accounts="accounts" @on-close="closeQuickModal" />
+      <QuickTransactionForm
+        :goals="goals"
+        :accounts="accounts"
+        :budget-id="budgetSelect"
+        @on-close="closeQuickModal"
+      />
     </ModalWizard>
 
     <ModalWizard v-model:show="showDeleteModal">
