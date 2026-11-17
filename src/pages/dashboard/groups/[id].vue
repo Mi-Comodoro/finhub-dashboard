@@ -1112,11 +1112,7 @@
                     </Badge>
                   </div>
                   <Text size="xs" color="muted">{{ roleLabels[member.role] }}</Text>
-                  <Text
-                    v-if="member.userId && (memberLinkedAmounts[member.userId] ?? 0) > 0"
-                    size="xs"
-                    color="muted"
-                  >
+                  <Text v-if="member.userId" size="xs" color="muted">
                     Plan: {{ formatCurrency(memberLinkedAmounts[member.userId] ?? 0, 'COP') }}
                   </Text>
                 </div>
@@ -1618,7 +1614,7 @@
       </div>
     </ModalWizard>
 
-    <!-- MODAL: Eliminar grupo -->
+    <!-- MODAL: Quitar miembro -->
     <ModalWizard :show="!!memberToRemove">
       <div class="group-detail__modal">
         <CardInfo
@@ -1653,6 +1649,7 @@
       </div>
     </ModalWizard>
 
+    <!-- MODAL: Eliminar grupo -->
     <ModalWizard :show="showDeleteModal">
       <div class="group-detail__modal">
         <CardInfo
