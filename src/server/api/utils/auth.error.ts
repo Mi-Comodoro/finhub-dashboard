@@ -38,7 +38,28 @@ export const logoutError = (event: H3Event, status: number): never => {
   }
 }
 
-export const validateError = (event: H3Event, status: number, backendMessage?: string): never => {
+// Backend messages are in English: translate the ones a user can act on
+const BACKEND_MESSAGES_ES: Record<string, string> = {
+  'Budget is not active':
+    'Tu presupuesto aún no está activo. Completa tus metas de ahorro y la distribución del ahorro para activarlo.',
+  'Invalid income amount': 'El monto del ingreso no es válido.',
+  'Amount must be greater than 0': 'El monto debe ser mayor a 0.',
+  'Source is required': 'El origen del ingreso es obligatorio.',
+  'Budget not found': 'No encontramos el presupuesto.',
+  'Planned Income not found': 'No encontramos el ingreso planificado.'
+}
+
+export const translateBackendMessage = (message?: string | null): string | undefined => {
+  if (!message) return undefined
+  if (BACKEND_MESSAGES_ES[message]) return BACKEND_MESSAGES_ES[message]
+  if (/should not be empty|must be a UUID|must be a number|must be a string/i.test(message)) {
+    return 'Faltan datos obligatorios o son inválidos. Revisa el formulario e inténtalo de nuevo.'
+  }
+  return message
+}
+
+export const validateError = (event: H3Event, status: number, rawMessage?: string): never => {
+  const backendMessage = translateBackendMessage(rawMessage)
   if (status === 401) {
     deleteCookie(event, ACCESS_TOKEN)
     deleteCookie(event, ACCOUNT_TYPE)
