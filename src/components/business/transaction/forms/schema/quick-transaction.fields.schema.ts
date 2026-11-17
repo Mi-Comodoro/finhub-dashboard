@@ -63,9 +63,9 @@ export const quickTransactionFieldsSchema = (
       size: 'sm',
       options: [
         {
-          label: 'Depósito externo',
+          label: 'Ingreso no esperado',
           value: 'external',
-          description: 'Ingreso no esperado',
+          description: 'Dinero de fuera',
           icon: 'account_balance'
         },
         {
