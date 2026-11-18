@@ -7,8 +7,11 @@
   import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
   import { useNotificationsSocket } from '@/composables/useNotificationsSocket'
   import { useSidebar } from '@/composables/useSidebar'
+  import { useTimezone } from '@/composables/useTimezone'
 
   const sidebar = useSidebar()
+  // Sincroniza la zona horaria del usuario con DateUtils
+  useTimezone()
 
   const isOpen = computed({
     get: () => sidebar.isOpen.value,
