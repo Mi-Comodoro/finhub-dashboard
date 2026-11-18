@@ -165,7 +165,7 @@
     return date instanceof Date ? date.toISOString() : new Date(date).toISOString()
   }
 
-  // Business rule: savings need enough available balance. Expenses only warn (see handleSubmit)
+  // Business rule: expenses and out-of-plan savings need enough available balance
   const ensureSufficientBalance = async (amount: number): Promise<boolean> => {
     if (!effectiveBudgetId.value) {
       show({
@@ -223,7 +223,7 @@
       const date = data['date'] as Date | string | null
       const description = data['description'] ? String(data['description']) : undefined
 
-      if (type === 'saving' && !(await ensureSufficientBalance(amount))) {
+      if ((type === 'expense' || type === 'saving') && !(await ensureSufficientBalance(amount))) {
         return
       }
 
@@ -272,7 +272,7 @@
       } else {
         const budgetId = effectiveBudgetId.value
         const categoryId = String(data['categoryId'] ?? '')
-        const { success, message, warning } = await createTransaction({
+        const { success, message } = await createTransaction({
           type: type as 'income' | 'expense',
           amount,
           transactionDate: toDateString(date),
@@ -291,10 +291,6 @@
                 : 'El gasto se guardó correctamente.',
             type: 'success'
           })
-          // The expense is already saved; warn that it left the budget over its available balance
-          if (warning) {
-            show({ title: 'Gasto por encima de tu saldo', description: warning, type: 'warning' })
-          }
           emit('onClose')
         } else {
           show({

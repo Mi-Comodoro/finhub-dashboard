@@ -131,8 +131,7 @@ export const useTransactionApplication = () => {
     }
   }
 
-  // Business rule: an out-of-plan saving cannot exceed the available balance.
-  // Expenses are never blocked: the server saves them and returns a warning instead.
+  // Business rule: an expense (or an out-of-plan saving) cannot exceed the available balance.
   const validateSufficientBalance = async (budgetId: string, amount: number) => {
     const { success, balance, hasIncome } = await getAvailableBalance(budgetId)
     if (!success) return { valid: false, reason: 'unavailable' as const, balance: 0 }
@@ -205,9 +204,7 @@ export const useTransactionApplication = () => {
   const createTransaction = async (data: Record<string, unknown>) => {
     try {
       transactionStore.setLoading(true)
-      const { success, result } = await transactionApi.createTransaction(
-        data as unknown as TransactionData
-      )
+      const { success } = await transactionApi.createTransaction(data as unknown as TransactionData)
 
       if (!success) {
         transactionStore.setError({
@@ -219,19 +216,10 @@ export const useTransactionApplication = () => {
         if (budgetId) await fetchByBudget(budgetId)
       }
 
-      return {
-        success,
-        message: undefined as string | undefined,
-        // An expense over the available balance is saved anyway: the server only warns
-        warning: result?.balanceWarning
-      }
+      return { success, message: undefined as string | undefined }
     } catch (err) {
       transactionStore.setError(createErrorMessage(err as FetchError))
-      return {
-        success: false,
-        message: getErrorReason(err as FetchError),
-        warning: undefined as string | undefined
-      }
+      return { success: false, message: getErrorReason(err as FetchError) }
     } finally {
       transactionStore.setLoading(false)
     }
