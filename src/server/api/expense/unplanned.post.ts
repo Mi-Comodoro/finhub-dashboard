@@ -18,7 +18,8 @@ export default defineEventHandler(async event => {
       headers: { authorization: `Bearer ${token}` },
       body,
       onResponseError: ({ response }) => {
-        validateError(event, response.status)
+        const raw = response._data?.message
+        validateError(event, response.status, Array.isArray(raw) ? raw.join(', ') : raw)
       }
     }
   )

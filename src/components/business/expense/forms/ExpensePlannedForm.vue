@@ -2,6 +2,7 @@
   import Form from '@/components/organisms/forms/Form.vue'
   import { useCategoryApplication } from '@/composables/application/useCategoryApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
+  import { useFeedback } from '@/composables/useFeedBack'
   import { useTimezone } from '@/composables/useTimezone'
   import type { Currency } from '@/utils/currency'
   import { formatCurrency } from '@/utils/currency'
@@ -12,6 +13,7 @@
   const { fetchCategories, categories } = useCategoryApplication()
   const { addExpense, updateExpense } = useExpenseApplication()
   const { formatDate } = useTimezone()
+  const { error: errorToast } = useFeedback()
 
   const props = withDefaults(
     defineProps<{
@@ -80,13 +82,15 @@
       const customBucketId = data.customBucketId || null
 
       if (isEditMode.value && props.expenseId) {
-        const { success } = await updateExpense(props.expenseId, {
+        const { success, message } = await updateExpense(props.expenseId, {
           ...data,
           customBucketId,
           ...(isoDate ? { dueDate: isoDate as unknown as Date } : {})
         })
         if (success) {
           emit('success')
+        } else if (message) {
+          errorToast('No se pudo guardar el gasto', message)
         }
       } else {
         const buildData = {
@@ -97,9 +101,12 @@
           status: 'PLANNED',
           ...(props.groupId ? { groupId: props.groupId } : {})
         }
-        const { success } = await addExpense(buildData)
+        const { success, message } = await addExpense(buildData)
         if (success) {
           emit('success')
+        } else if (message) {
+          // The expense does not fit in the expected income once savings are set aside
+          errorToast('No se pudo guardar el gasto', message)
         }
       }
     } catch (error) {

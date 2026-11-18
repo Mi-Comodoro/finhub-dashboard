@@ -17,7 +17,10 @@ export default defineEventHandler(async event => {
       method: 'PATCH',
       headers: { authorization: `Bearer ${token}` },
       body,
-      onResponseError: ({ response }) => validateError(event, response.status)
+      onResponseError: ({ response }) => {
+        const raw = response._data?.message
+        validateError(event, response.status, Array.isArray(raw) ? raw.join(', ') : raw)
+      }
     }
   )
 
