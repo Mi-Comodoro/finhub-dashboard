@@ -9,23 +9,36 @@
 
   interface ContributionFormProps {
     goalId?: string
+    suggestedAmount?: number
+    defaultAccountId?: string
   }
 
   const props = withDefaults(defineProps<ContributionFormProps>(), {
-    goalId: ''
+    goalId: '',
+    suggestedAmount: undefined,
+    defaultAccountId: ''
   })
   const emit = defineEmits<{
     onClose: []
   }>()
 
-  const { addContribution } = useGoalsApplication()
+  const { addContribution, accounts, fetchAccounts } = useGoalsApplication()
   const { show: showToast } = useToast()
 
-  const formSchema = contributionFieldsSchema()
+  onMounted(async () => {
+    if (accounts.value.length === 0) await fetchAccounts()
+  })
 
+  const accountOptions = computed(() =>
+    accounts.value.map(account => ({ label: account.name, value: account.id }))
+  )
+  const formSchema = computed(() => contributionFieldsSchema(accountOptions.value))
+
+  // The contribution always comes out of the available balance; unexpected money is added as an income first
   const initialData = {
-    amount: '',
+    amount: props.suggestedAmount ?? '',
     date: new Date(),
+    accountId: props.defaultAccountId,
     note: ''
   }
 
@@ -39,11 +52,18 @@
       return
     }
 
+    const accountId = String(data.accountId ?? '')
+    if (!accountId) {
+      showToast({ title: 'Selecciona la cuenta de origen', type: 'error' })
+      return
+    }
+
     const rawDate = data.date as Date | string
     const { success } = await addContribution(props.goalId, {
       amount: Number(data.amount) || 0,
       date: (rawDate instanceof Date ? rawDate : new Date(rawDate)).toISOString(),
-      note: (data.note as string) || undefined
+      note: (data.note as string) || undefined,
+      accountId
     })
 
     if (success) {

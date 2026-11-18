@@ -11,6 +11,7 @@ import { useGoalsStore } from '@/stores/goals.store'
 import { usePlannedIncomeStore } from '@/stores/planned-income.store'
 import { useSavingAllocationsStore } from '@/stores/savingAllocations.store'
 
+import { useActiveBudgetApplication } from './useActiveBudgetApplication'
 import { usePlannedIncomeApplication } from './usePlannedIncomeApplication'
 
 interface SavingDistributionFormData {
@@ -29,6 +30,15 @@ export interface AllocationItem {
   goalName: string
   percentage: number
 }
+
+export interface DistributionRow {
+  goalId: string
+  goalName: string
+  percentage: number
+}
+
+/** Suggested split when the user has exactly three goals */
+const SUGGESTED_SPLIT_THREE_GOALS = [40, 30, 30]
 
 export function useSavingDistributionApplication() {
   const budgetStore = useBudgetStore()
@@ -50,9 +60,7 @@ export function useSavingDistributionApplication() {
     if (budgetId) {
       await loadPlannedIncomes(budgetId)
 
-      if (savingsAllocationsStore.savingAllocations.length < 1) {
-        await savingsAllocationsStore.fetchSavingAllocations(budgetId)
-      }
+      await savingsAllocationsStore.fetchSavingAllocations(budgetId)
     }
 
     return { budgetId }
@@ -148,7 +156,68 @@ export function useSavingDistributionApplication() {
     }
   }
 
+  /**
+   * Monthly savings amount to distribute (from the active budget)
+   */
+  const { savingsAmount: monthlySavingsAmount } = useActiveBudgetApplication()
+
+  /**
+   * Rows for the distribution assistant: every active goal, prefilled with the current template
+   */
+  const buildDistributionRows = (budgetId: string): DistributionRow[] => {
+    const current = savingsAllocationsStore.savingAllocations.filter(a => a.budgetId === budgetId)
+    return goalsStore.goals
+      .filter(g => g.isActive)
+      .map(g => ({
+        goalId: g.id,
+        goalName: g.name,
+        percentage: Number(current.find(a => a.goalId === g.id)?.percentage ?? 0)
+      }))
+  }
+
+  /**
+   * Equal split in integer percentages that always sums 100 (e.g. 3 goals -> 34, 33, 33)
+   */
+  const splitEvenly = (count: number): number[] => {
+    if (count <= 0) return []
+    const base = Math.floor(100 / count)
+    const remainder = 100 - base * count
+    return Array.from({ length: count }, (_, i) => base + (i < remainder ? 1 : 0))
+  }
+
+  /**
+   * Suggested 40/30/30 split, only available with exactly three goals
+   */
+  const getSuggestedSplit = (count: number): number[] | null =>
+    count === SUGGESTED_SPLIT_THREE_GOALS.length ? [...SUGGESTED_SPLIT_THREE_GOALS] : null
+
+  /**
+   * Amount in money for a percentage of the monthly savings
+   */
+  const getAmountForPercentage = (percentage: number): number =>
+    ((monthlySavingsAmount.value ?? 0) * (percentage || 0)) / 100
+
+  /**
+   * Replace the whole template with the rows of the assistant (0% rows are omitted)
+   */
+  const saveDistribution = async (budgetId: string, rows: DistributionRow[]) => {
+    const total = rows.reduce((acc, r) => acc + (Number(r.percentage) || 0), 0)
+    if (Math.round(total * 100) !== 10000) {
+      return { success: false, error: null }
+    }
+    const distributions = rows
+      .filter(r => Number(r.percentage) > 0)
+      .map(r => ({ goalId: r.goalId, percentage: Number(r.percentage) }))
+    return updateDistribution(budgetId, distributions)
+  }
+
   return {
+    monthlySavingsAmount,
+    buildDistributionRows,
+    splitEvenly,
+    getSuggestedSplit,
+    getAmountForPercentage,
+    saveDistribution,
     initialize,
     getSavingsAmount,
     getGoalOptions,

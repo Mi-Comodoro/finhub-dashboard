@@ -294,7 +294,7 @@
                 :pattern="schema.fields[fieldKey]!.pattern"
                 :error="errors[fieldKey]"
                 :error-message="schema.fields[fieldKey]!.errorMessage"
-                placeholder="Describe el gasto..."
+                :placeholder="schema.fields[fieldKey]!.placeholder ?? 'Describe el gasto...'"
               />
               <RangeSlider
                 v-else-if="schema.fields[fieldKey]!.type === 'slider-percentage'"

@@ -127,7 +127,6 @@
     categoryId: '',
     description: '',
     goalId: '',
-    contributionType: 'external',
     accountId: ''
   })
 
@@ -239,10 +238,21 @@
           return
         }
 
+        const accountId = String(data['accountId'] ?? '')
+        if (!accountId) {
+          show({
+            title: 'Cuenta requerida',
+            description: 'Selecciona la cuenta de origen del aporte.',
+            type: 'error'
+          })
+          return
+        }
+
         const { success } = await addContribution(goalId, {
           amount,
           date: toDateString(date),
-          note: description
+          note: description,
+          accountId
         })
 
         if (success) {

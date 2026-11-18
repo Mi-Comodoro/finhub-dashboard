@@ -208,6 +208,7 @@ export const useGoalsApplication = () => {
       amount: number
       date: string
       note?: string
+      accountId?: string
     }
   ): Promise<{ success: boolean; contribution?: PlannedSaving }> => {
     try {
