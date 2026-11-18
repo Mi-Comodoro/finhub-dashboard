@@ -2,6 +2,7 @@ import { computed } from 'vue'
 
 import { useExpensesStore } from '@/stores/expense.store'
 import { useFinancesStore } from '@/stores/finances.store'
+import { usePlannedIncomeStore } from '@/stores/planned-income.store'
 import { usePlannedSavingStore } from '@/stores/planned-saving.store'
 import { useTransactionStore } from '@/stores/transaction.store'
 import { addAmounts, subtractAmounts } from '@/utils/currency'
@@ -18,6 +19,7 @@ export function useBudgetBalancePresenter() {
   const expensesStore = useExpensesStore()
   const plannedSavingStore = usePlannedSavingStore()
   const financesStore = useFinancesStore()
+  const plannedIncomeStore = usePlannedIncomeStore()
 
   const currency = computed(() => financesStore.defaultCurrency)
 
@@ -38,6 +40,17 @@ export function useBudgetBalancePresenter() {
       currency.value
     )
   )
+
+  // Planned expenses need something to be backed by: expected income or an available balance.
+  // Without either, the planned-expenses section is disabled (the server enforces the same rule).
+  // The expected income in the store belongs to the last budget loaded, so it only counts when it
+  // is the budget being viewed. While it is still loading we do not block anything.
+  const canPlanExpenses = (budgetId: string) => {
+    if (plannedIncomeStore.isLoading) return true
+    const expected =
+      plannedIncomeStore.budgetId === budgetId ? (plannedIncomeStore.expectedIncome ?? 0) : 0
+    return expected > 0 || available.value > 0
+  }
 
   const committedExpenses = computed(() => expensesStore.totalPlanned ?? 0)
   const committedSavings = computed(() => plannedSavingStore.totalSavingPending ?? 0)
@@ -69,6 +82,7 @@ export function useBudgetBalancePresenter() {
     realExpenses,
     realSavings,
     available,
+    canPlanExpenses,
     committedExpenses,
     committedSavings,
     committed,
