@@ -34,6 +34,7 @@ export function useTransactionApi() {
         description: string | null
         createdAt: Date
         updatedAt: Date
+        balanceWarning?: string
       }
     }>('/api/transactions', {
       method: 'POST',
