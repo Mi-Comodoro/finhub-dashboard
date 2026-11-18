@@ -17,14 +17,14 @@ export const budgetFieldsSchema = (
       label: 'Mes',
       required: true,
       options: monthOptions,
-      errorMessage: 'Seleccioná un mes'
+      errorMessage: 'Selecciona un mes'
     },
     year: {
       type: 'select',
       label: 'Año',
       required: true,
       options: yearOptions,
-      errorMessage: 'Seleccioná un año'
+      errorMessage: 'Selecciona un año'
     },
     strategy: {
       type: 'radio-card',

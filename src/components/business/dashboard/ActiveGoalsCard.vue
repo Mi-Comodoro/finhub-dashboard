@@ -3,7 +3,8 @@
 
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import type { GoalsData } from '@/types/api'
-  import { getProgressPercentage } from '@/utils/goal-formatters'
+  import { type Currency, formatCompactCurrency } from '@/utils/currency'
+  import { getProgressPercentage, hasTargetAmount } from '@/utils/goal-formatters'
 
   const MAX_VISIBLE = 8
 
@@ -28,6 +29,14 @@
 
   function getProgress(goal: GoalsData): number {
     return getProgressPercentage(goal.totalSaved ?? 0, goal.targetAmount ?? null)
+  }
+
+  // Without a target amount a percentage is misleading (always 0%): show the saved amount instead
+  function getProgressLabel(goal: GoalsData): string {
+    if (!hasTargetAmount(goal.targetAmount)) {
+      return formatCompactCurrency(goal.totalSaved ?? 0, props.currencyCode as Currency)
+    }
+    return `${getProgress(goal)}%`
   }
 
   function getProgressColor(pct: number): string {
@@ -57,7 +66,7 @@
     <div class="goals-card__grid">
       <div v-for="goal in visibleGoals" :key="goal.id" class="goals-card__goal-card">
         <span class="goals-card__goal-pct" :class="getProgressColor(getProgress(goal))">
-          {{ getProgress(goal) }}%
+          {{ getProgressLabel(goal) }}
         </span>
         <p class="goals-card__goal-name">{{ goal.name }}</p>
       </div>

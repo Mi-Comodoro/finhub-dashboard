@@ -131,13 +131,14 @@
             </span>
           </div>
           <div class="net-position-view__kpi-body">
-            <Text size="xs" color="muted">Activos fijos</Text>
+            <Text size="xs" color="muted">Libre del presupuesto</Text>
             <p
               :class="['net-position-view__kpi-value', kpiValueClass(netPosition.totalAssets)]"
-              :title="formatCurrency(netPosition.totalAssets, currency)"
+              :title="`${formatCurrency(netPosition.totalAssets, currency)} · Ingreso planificado menos gastos planificados del presupuesto activo`"
             >
               {{ formatCompactCurrency(netPosition.totalAssets, currency) }}
             </p>
+            <Text size="xs" color="muted">Ingreso planificado − gastos planificados</Text>
           </div>
         </div>
 
@@ -198,7 +199,7 @@
             >
               {{ formatCompactCurrency(netPosition.netPosition, currency) }}
             </p>
-            <p class="net-position-view__kpi-hint">Activos + Por cobrar − Deudas</p>
+            <p class="net-position-view__kpi-hint">Libre del presupuesto + Por cobrar − Deudas</p>
           </div>
         </div>
       </div>

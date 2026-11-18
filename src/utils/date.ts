@@ -25,18 +25,45 @@ class DateUtils {
       remainingDays
     }
   }
-  static formatDate(date: Date | string | number | null, type: FormatType = 'numeric') {
+  /**
+   * Criterio unico de fechas:
+   * - Fecha pura (YYYY-MM-DD, o medianoche UTC exacta como 2026-11-16T00:00:00.000Z) -> se muestra en UTC,
+   *   para que un vencimiento no cambie de dia segun la zona del usuario.
+   * - Instante (datetime con hora real) -> se muestra en la zona horaria del usuario
+   *   (DateUtils.setTimeZone, alimentada desde useTimezone; por defecto America/Bogota).
+   * Casos: '2026-11-17T02:52:00Z' -> 16/11/2026 (Bogota) | '2026-11-16' -> 16/11/2026 | '2026-11-16T00:00:00.000Z' -> 16/11/2026
+   */
+  static defaultTimeZone = 'America/Bogota'
+
+  static setTimeZone(timeZone: string | null | undefined) {
+    if (timeZone) DateUtils.defaultTimeZone = timeZone
+  }
+
+  static isPureDate(date: Date | string | number): boolean {
+    if (typeof date === 'string') {
+      return /^\d{4}-\d{2}-\d{2}$/.test(date) || /T00:00:00(\.0+)?(Z|\+00:00)$/.test(date)
+    }
+    const time = date instanceof Date ? date.getTime() : date
+    return Number.isFinite(time) && time % 86_400_000 === 0
+  }
+
+  static formatDate(
+    date: Date | string | number | null,
+    type: FormatType = 'numeric',
+    timeZone?: string
+  ) {
     if (!date) return '---'
     const dateObj = date instanceof Date ? date : new Date(date)
     if (isNaN(dateObj.getTime())) {
       console.warn('Fecha inválida detectada:', date)
       return 'Fecha inválida'
     }
+    const tz = timeZone ?? (DateUtils.isPureDate(date) ? 'UTC' : DateUtils.defaultTimeZone)
     const formats: Record<FormatType, Intl.DateTimeFormatOptions> = {
-      numeric: { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }, // 24/05/2024
-      short: { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }, // 24 may 2024
-      long: { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }, // 24 de mayo de 2024
-      full: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' } // viernes, 24 de mayo...
+      numeric: { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: tz }, // 24/05/2024
+      short: { day: '2-digit', month: 'short', year: 'numeric', timeZone: tz }, // 24 may 2024
+      long: { day: 'numeric', month: 'long', year: 'numeric', timeZone: tz }, // 24 de mayo de 2024
+      full: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: tz } // viernes, 24 de mayo...
     }
 
     return new Intl.DateTimeFormat('es-CO', formats[type]).format(dateObj)
