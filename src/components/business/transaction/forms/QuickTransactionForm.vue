@@ -127,7 +127,6 @@
     categoryId: '',
     description: '',
     goalId: '',
-    contributionType: 'internal',
     accountId: ''
   })
 
@@ -224,13 +223,7 @@
       const date = data['date'] as Date | string | null
       const description = data['description'] ? String(data['description']) : undefined
 
-      // An external deposit is unexpected income: the server registers it as income first, so no balance check
-      const isExternalSaving = type === 'saving' && data['contributionType'] === 'external'
-      if (
-        (type === 'expense' || type === 'saving') &&
-        !isExternalSaving &&
-        !(await ensureSufficientBalance(amount))
-      ) {
+      if ((type === 'expense' || type === 'saving') && !(await ensureSufficientBalance(amount))) {
         return
       }
 
@@ -245,9 +238,8 @@
           return
         }
 
-        const contributionType = data['contributionType'] === 'external' ? 'external' : 'internal'
-        const accountId = contributionType === 'internal' ? String(data['accountId'] ?? '') : ''
-        if (contributionType === 'internal' && !accountId) {
+        const accountId = String(data['accountId'] ?? '')
+        if (!accountId) {
           show({
             title: 'Cuenta requerida',
             description: 'Selecciona la cuenta de origen del aporte.',
@@ -260,8 +252,7 @@
           amount,
           date: toDateString(date),
           note: description,
-          contributionType,
-          accountId: accountId || undefined
+          accountId
         })
 
         if (success) {

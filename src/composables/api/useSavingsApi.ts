@@ -60,7 +60,6 @@ export function useSavingsApi() {
       amount: number
       date: string
       note?: string
-      contributionType?: 'internal' | 'external'
       accountId?: string
     }
   ) =>
@@ -72,7 +71,6 @@ export function useSavingsApi() {
           amount: data.amount,
           date: data.date,
           notes: data.note,
-          contributionType: data.contributionType,
           accountId: data.accountId
         }
       }

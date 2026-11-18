@@ -34,11 +34,10 @@
   )
   const formSchema = computed(() => contributionFieldsSchema(accountOptions.value))
 
-  // A routine contribution comes from the user's own money; an external deposit is unexpected income
+  // The contribution always comes out of the available balance; unexpected money is added as an income first
   const initialData = {
     amount: props.suggestedAmount ?? '',
     date: new Date(),
-    contributionType: 'internal',
     accountId: props.defaultAccountId,
     note: ''
   }
@@ -53,9 +52,8 @@
       return
     }
 
-    const contributionType = data.contributionType === 'external' ? 'external' : 'internal'
-    const accountId = contributionType === 'internal' ? String(data.accountId ?? '') : ''
-    if (contributionType === 'internal' && !accountId) {
+    const accountId = String(data.accountId ?? '')
+    if (!accountId) {
       showToast({ title: 'Selecciona la cuenta de origen', type: 'error' })
       return
     }
@@ -65,8 +63,7 @@
       amount: Number(data.amount) || 0,
       date: (rawDate instanceof Date ? rawDate : new Date(rawDate)).toISOString(),
       note: (data.note as string) || undefined,
-      contributionType,
-      accountId: accountId || undefined
+      accountId
     })
 
     if (success) {
