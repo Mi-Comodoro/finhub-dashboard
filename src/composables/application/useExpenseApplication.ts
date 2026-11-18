@@ -1,9 +1,17 @@
+import type { FetchError } from 'ofetch'
+
 import { useExpenseApi } from '@/composables/api/useExpenseApi'
 import { useExpensesStore } from '@/stores/expense.store'
 import { getPercentage } from '@/utils/currency'
 import type { ExpenseData } from '~/types/domain'
 
 import { usePlannedIncomeApplication } from './usePlannedIncomeApplication'
+
+// Business logic: reason returned by the BFF (already translated to Spanish), e.g. a rule rejection
+const getErrorReason = (error: unknown): string | undefined => {
+  const data = (error as FetchError)?.data as { message?: string } | undefined
+  return typeof data?.message === 'string' ? data.message : undefined
+}
 
 // Business logic: filtrar parámetros activos
 const getActiveFilters = (filters: {
@@ -71,15 +79,22 @@ export const useExpenseApplication = () => {
 
   // Orchestration: add expense
   const addExpense = async (data: ExpenseData) => {
-    store.setLoading(true)
-    const { success } = await expenseApi.createExpense(data)
+    try {
+      store.setLoading(true)
+      const { success } = await expenseApi.createExpense(data)
 
-    store.setLoading(false)
-    if (!success) {
+      if (!success) {
+        store.setError('Error al crear gastos planificados')
+      }
+      await fetchExpenses()
+      return { success, message: undefined as string | undefined }
+    } catch (err) {
+      // e.g. the planned expense does not fit in the expected income minus savings
       store.setError('Error al crear gastos planificados')
+      return { success: false, message: getErrorReason(err) }
+    } finally {
+      store.setLoading(false)
     }
-    await fetchExpenses()
-    return { success }
   }
 
   // Orchestration: complete expense
@@ -93,11 +108,12 @@ export const useExpenseApplication = () => {
         store.updateExpenseStatus(id, result.plannedExpense.status)
       }
 
-      return { success, result }
+      return { success, result, message: undefined as string | undefined }
     } catch (err) {
       console.error(err)
       store.setError('Error al marcar gasto como pagado')
-      return { success: false, result: null }
+      // e.g. paying it would exceed the available balance
+      return { success: false, result: null, message: getErrorReason(err) }
     } finally {
       store.setLoading(false)
     }
@@ -114,11 +130,11 @@ export const useExpenseApplication = () => {
       }
 
       await fetchExpenses()
-      return { success }
+      return { success, message: undefined as string | undefined }
     } catch (err) {
       console.error(err)
       store.setError('Error al actualizar gasto planificado')
-      return { success: false }
+      return { success: false, message: getErrorReason(err) }
     } finally {
       store.setLoading(false)
     }

@@ -83,9 +83,9 @@
     if (markingAsPaidId.value) return
     markingAsPaidId.value = row.id as string
     try {
-      const { success } = await completeExpense(row.id as string)
+      const { success, message } = await completeExpense(row.id as string)
       if (success) emit('mark-as-payed', row)
-      else errorToast('Error al pagar', 'No se pudo marcar el gasto como pagado.')
+      else errorToast('Error al pagar', message ?? 'No se pudo marcar el gasto como pagado.')
     } finally {
       markingAsPaidId.value = null
     }

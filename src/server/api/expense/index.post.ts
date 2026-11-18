@@ -32,8 +32,8 @@ export default defineEventHandler(async event => {
     method: 'POST',
     body,
     onResponseError: ({ response }) => {
-      console.error(JSON.stringify(response))
-      validateError(event, response.status)
+      const raw = response._data?.message
+      validateError(event, response.status, Array.isArray(raw) ? raw.join(', ') : raw)
     }
   })
 
