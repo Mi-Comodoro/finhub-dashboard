@@ -407,7 +407,7 @@
       <div class="goals-page__header-top">
         <div class="goals-page__header-text">
           <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
-            Define tus Propositos
+            Define tus Propósitos
           </Heading>
           <Text size="xs" color="muted">
             Organiza tu futuro financiero creando propósitos específicos.
