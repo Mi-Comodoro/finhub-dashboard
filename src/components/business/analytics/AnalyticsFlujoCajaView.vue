@@ -17,16 +17,22 @@
   const { fetchTransactionsByPeriod, groupTransactionsByWeek, currency, fetchForecast } =
     useAnalyticsCashFlowApplication()
 
-  const { data: transactions, pending } = await useAsyncData(
+  const { data: transactions, status } = await useAsyncData(
     'analytics-cashflow',
     () => fetchTransactionsByPeriod(selectedYear.value, selectedMonth.value),
-    { watch: [selectedYear, selectedMonth] }
+    { watch: [selectedYear, selectedMonth], server: false }
   )
 
-  const { data: forecast, pending: loadingForecast } = await useAsyncData(
+  const { data: forecast, status: forecastStatus } = await useAsyncData(
     'analytics-cashflow-forecast',
     () => fetchForecast(selectedYear.value, selectedMonth.value),
-    { watch: [selectedYear, selectedMonth] }
+    { watch: [selectedYear, selectedMonth], server: false }
+  )
+
+  // With server:false the status is 'idle' during SSR: count it as loading so server and client render the same skeleton
+  const pending = computed(() => status.value === 'idle' || status.value === 'pending')
+  const loadingForecast = computed(
+    () => forecastStatus.value === 'idle' || forecastStatus.value === 'pending'
   )
 
   const forecastWarning = computed(() =>

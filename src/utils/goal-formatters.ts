@@ -30,3 +30,24 @@ export function getProgressPercentage(saved: number, target: number | null): num
   if (!target || target === 0) return 0
   return Math.min(100, Math.round((saved / target) * 100))
 }
+
+/**
+ * Whether the goal has a usable target amount to compute progress against
+ */
+export function hasTargetAmount(target: number | null | undefined): boolean {
+  return (target ?? 0) > 0
+}
+
+/**
+ * Resolves the status to display for a goal.
+ * The backend only promotes SCHEDULED -> IN_PROGRESS on planned-saving completion,
+ * not on manual contributions, so a scheduled goal that already has savings is shown as in progress.
+ */
+export function getEffectiveGoalStatus<T extends string>(
+  status: T | null | undefined,
+  savedAmount: number
+): T | 'SCHEDULED' | 'IN_PROGRESS' {
+  const current = status ?? 'SCHEDULED'
+  if (current === 'SCHEDULED' && savedAmount > 0) return 'IN_PROGRESS'
+  return current
+}

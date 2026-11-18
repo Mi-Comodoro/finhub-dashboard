@@ -14,9 +14,12 @@ export function usePlannedSavingApplication() {
     // Refresh transactions after marking as completed
     if (success && plannedSavingStore.budgetId) {
       const { useTransactionApplication } = await import('./useTransactionApplication')
-      const { fetchByBudget } = useTransactionApplication()
+      const { fetchByBudget, fetchTotals } = useTransactionApplication()
 
-      await fetchByBudget(plannedSavingStore.budgetId)
+      await Promise.all([
+        fetchByBudget(plannedSavingStore.budgetId),
+        fetchTotals(plannedSavingStore.budgetId)
+      ])
     }
 
     return { success }

@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, master]
+
+# Una sola ejecución por PR: si llega un commit nuevo se cancela la anterior
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: ci
+    # Runner de GitHub a propósito: el repo es público y el runner propio ([self-hosted])
+    # solo se usa para desplegar, nunca para ejecutar código de un PR.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HUSKY: '0'
+      NUXT_TELEMETRY_DISABLED: '1'
+
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm exec eslint .
+
+      # El despliegue compila con pnpm build: un build roto debe detectarse en el PR, no al desplegar.
+      # Las variables son valores de relleno: solo hacen falta para compilar, no se publica nada.
+      - name: Compilar
+        env:
+          NUXT_PUBLIC_API_BASE: http://localhost:3005/api/v1
+          NUXT_PUBLIC_WS_BASE: http://localhost:3005
+          FB_API_KEY: ci
+          FB_AUTH_DOMAIN: ci.example.com
+          FB_PROJECT_ID: ci
+          FB_STORAGE_BUCKET: ci.example.com
+          FB_MESSAGING_SENDER_ID: '0'
+          FB_APP_ID: ci
+          FB_MEASUREMENT_ID: ci
+          NITRO_PRESET: node-server
+        run: pnpm build

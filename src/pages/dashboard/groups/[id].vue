@@ -368,16 +368,7 @@
 
   const expenseTableData = computed(() =>
     expenses.value.map(e => {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const isPendingRow = e.status === 'planned' && new Date(e.dueDate) <= today
-      const canAct =
-        !isClosed.value &&
-        e.status !== 'paid' &&
-        e.status !== 'cxp' &&
-        isPendingRow &&
-        (canManage.value ||
-          (currentRole.value === 'MEMBER' && e.responsibleUserId === currentUserId.value))
+      const canAct = canActOnExpense(e)
       return {
         id: e.id,
         description: e.description,
@@ -405,7 +396,7 @@
     const linked = budgetProgress.value?.totalLinked ?? 0
     const goal = budgetProgress.value?.goal ?? 0
     const remaining = Math.max(0, goal - linked)
-    const pct = goal > 0 ? Math.min(Math.round((linked / goal) * 100), 100) : 0
+    const pct = budgetProgressPercent.value
     const label = goal > 0 ? `${pct}%` : 'Sin meta'
 
     const seriesData =
@@ -475,9 +466,44 @@
     }
   }
 
-  const handleRemoveMember = async (userId: string) => {
-    const { success } = await removeMember(groupId.value, userId)
-    if (success) successToast('Miembro eliminado', 'El miembro fue removido del grupo.')
+  // Quitar un miembro: confirmación con ModalWizard (nunca confirm() nativo)
+  const memberToRemove = ref<{ userId: string; name: string } | null>(null)
+  const isRemovingMember = ref(false)
+
+  // El organizador puede quitar a cualquiera; un co-organizador, solo a miembros y visualizadores.
+  // Nunca a uno mismo (para eso está "Salir") ni al organizador, ni a externos sin cuenta.
+  const canRemoveMember = (member: { userId: string | null; role: MemberRole }) =>
+    canManage.value &&
+    !isClosed.value &&
+    !!member.userId &&
+    member.userId !== currentUserId.value &&
+    member.role !== 'ORGANIZER' &&
+    (member.role !== 'CO_ORGANIZER' || isOrganizer.value)
+
+  const requestRemoveMember = (member: {
+    userId: string | null
+    handle: string | null
+    externalName: string | null
+  }) => {
+    if (!member.userId) return
+    memberToRemove.value = {
+      userId: member.userId,
+      name:
+        memberDisplayName.value[member.userId] ??
+        (member.handle ? `@${member.handle}` : (member.externalName ?? 'este miembro'))
+    }
+  }
+
+  const handleRemoveMember = async () => {
+    if (!memberToRemove.value) return
+    isRemovingMember.value = true
+    try {
+      const { success } = await removeMember(groupId.value, memberToRemove.value.userId)
+      if (success) successToast('Miembro eliminado', 'El miembro fue removido del grupo.')
+    } finally {
+      isRemovingMember.value = false
+      memberToRemove.value = null
+    }
   }
 
   const handleDeleteGroup = async () => {
@@ -802,6 +828,15 @@
                 </Text>
               </div>
             </div>
+            <div v-if="canRemoveMember(member)" class="group-detail__member-action">
+              <Button
+                variant="ghost"
+                size="sm"
+                icon="person_remove"
+                title="Quitar del grupo"
+                @click="requestRemoveMember(member)"
+              />
+            </div>
           </li>
         </ul>
       </Card>
@@ -826,7 +861,9 @@
             <Text size="sm" weight="semibold">
               {{ formatCurrency(budgetProgress?.totalLinked ?? 0, 'COP') }}
             </Text>
-            <Text size="xs" color="muted">de la meta</Text>
+            <Text size="xs" color="muted">
+              {{ budgetProgress?.goal ? `${budgetProgressPercent}% de la meta` : 'de la meta' }}
+            </Text>
           </div>
         </div>
         <div class="group-detail__metric-card">
@@ -1074,6 +1111,18 @@
                     </Badge>
                   </div>
                   <Text size="xs" color="muted">{{ roleLabels[member.role] }}</Text>
+                  <Text v-if="member.userId" size="xs" color="muted">
+                    Plan: {{ formatCurrency(memberLinkedAmounts[member.userId] ?? 0, 'COP') }}
+                  </Text>
+                </div>
+                <div v-if="canRemoveMember(member)" class="group-detail__member-action">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon="person_remove"
+                    title="Quitar del grupo"
+                    @click="requestRemoveMember(member)"
+                  />
                 </div>
               </li>
             </ul>
@@ -1564,6 +1613,41 @@
       </div>
     </ModalWizard>
 
+    <!-- MODAL: Quitar miembro -->
+    <ModalWizard :show="!!memberToRemove">
+      <div class="group-detail__modal">
+        <CardInfo
+          title="Quitar miembro"
+          sub-title="El miembro perderá acceso a este grupo."
+          title-size="xl"
+          weight="extrabold"
+          level="h1"
+          color="black"
+          sub-title-size="xs"
+          sub-title-color="muted"
+          icon="person_remove"
+          icon-size="md"
+          icon-variant="primary"
+        />
+        <Text size="sm" color="muted">
+          ¿Estás seguro de quitar a
+          <strong>{{ memberToRemove?.name }}</strong>
+          del grupo?
+        </Text>
+        <div class="group-detail__modal-actions">
+          <Button variant="ghost" size="sm" @click="memberToRemove = null">Cancelar</Button>
+          <Button
+            variant="danger"
+            size="sm"
+            :disabled="isRemovingMember"
+            @click="handleRemoveMember"
+          >
+            {{ isRemovingMember ? 'Quitando...' : 'Quitar' }}
+          </Button>
+        </div>
+      </div>
+    </ModalWizard>
+
     <!-- MODAL: Eliminar grupo -->
     <ModalWizard :show="showDeleteModal">
       <div class="group-detail__modal">
@@ -2027,6 +2111,10 @@
 
   .group-detail__participants-list {
     @apply divide-y divide-neutral-100 dark:divide-neutral-700;
+  }
+
+  .group-detail__member-action {
+    @apply ml-auto shrink-0;
   }
 
   .group-detail__participant-row {

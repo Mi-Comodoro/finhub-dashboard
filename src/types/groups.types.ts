@@ -21,6 +21,8 @@ export interface Group {
   type: GroupType
   status: GroupStatus
   maxMembers: number
+  memberCount?: number
+  pendingInvitesCount?: number
   ownerId: string
   goal?: number | null
   destination?: string | null

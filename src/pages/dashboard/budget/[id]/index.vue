@@ -9,6 +9,7 @@
   import Text from '@/components/atoms/typography/Text.vue'
   import BudgetClosedBanner from '@/components/business/budget/BudgetClosedBanner.vue'
   import BudgetDistribution from '@/components/business/budget/BudgetDistribution.vue'
+  import BudgetSetupBanner from '@/components/business/budget/BudgetSetupBanner.vue'
   import BudgetEditForm from '@/components/business/budget/forms/BudgetEditForm.vue'
   import BudgetIncome from '@/components/business/budget/income/BudgetIncome.vue'
   import BudgetInsights from '@/components/business/budget/insight/BudgetInsights.vue'
@@ -23,6 +24,7 @@
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
   import { useExpenseApi } from '@/composables/api/useExpenseApi'
+  import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
   import { useBillsApplication } from '@/composables/application/useBillsApplication'
   import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
@@ -32,6 +34,7 @@
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
+  import { useBudgetBalancePresenter } from '@/composables/presenters/useBudgetBalancePresenter'
   import { useApiHandler } from '@/composables/useApiHandler'
   import { useFeedback } from '@/composables/useFeedBack'
   import { formatCurrency } from '@/utils/currency'
@@ -52,10 +55,12 @@
   const { deleteExpense } = useExpenseApplication()
   const { fetchByBudget: fetchTransactions, fetchTotals } = useTransactionApplication()
   const { fetchByBudget: fetchPlannedSavings } = usePlannedSavingApplication()
-  const { success: successToast } = useFeedback()
+  const { success: successToast, error: errorToast } = useFeedback()
   const { handleError } = useApiHandler()
   const { lastUpdate } = usePlannedIncomeApplication()
-  const { fetchGoals, goals } = useGoalsApplication()
+  const { fetchGoals, goals, loadAllocationSummaryData } = useGoalsApplication()
+  const { canActive, setupSteps, activate } = useActiveBudgetApplication()
+  const isActivating = ref(false)
   const { transferToBudget, transferToGoal } = useBudgetTransferApplication()
   const { setDefaultBudget } = useBudgetActions()
 
@@ -70,13 +75,37 @@
         fetchTransactions(budgetId),
         fetchTotals(budgetId),
         fetchPlannedSavings(budgetId),
-        fetchGoals()
+        fetchGoals(),
+        loadAllocationSummaryData()
       ])
     }
   })
 
-  const budgetStart = () => {
-    successToast('Gasto Registrado', 'Se registró correctamente')
+  const goToSavingsSetup = () => router.push('/dashboard/goals')
+
+  // The budget can only be activated once savings are set up (account, 3 goals, 100% distributed)
+  const budgetStart = async () => {
+    if (isActivating.value) return
+    isActivating.value = true
+    try {
+      const { success, blocked } = await activate(budgetId)
+      if (blocked) {
+        errorToast(
+          'Aún no puedes activar el presupuesto',
+          'Completa tus metas de ahorro y la distribución del ahorro primero.'
+        )
+        await goToSavingsSetup()
+        return
+      }
+      if (success) {
+        successToast('Presupuesto activado', 'Ya puedes recibir ingresos y registrar gastos.')
+        await loadBudgetDetail(budgetId)
+      } else {
+        errorToast('No se pudo activar', 'Inténtalo de nuevo en unos segundos.')
+      }
+    } finally {
+      isActivating.value = false
+    }
   }
 
   const strategyInfo = computed(() => {
@@ -136,6 +165,9 @@
   ])
 
   const plan = computed(() => budgetSelected.value)
+
+  const { realIncome } = useBudgetBalancePresenter()
+  const hasReceivedIncome = computed(() => (realIncome.value ?? 0) > 0)
 
   const planStatus = computed(() => plan.value?.status ?? 'PLANNED')
   const expectedAmount = computed(() => expectedIncome.value)
@@ -396,6 +428,16 @@
       </div>
     </div>
 
+    <BudgetSetupBanner
+      v-if="planStatus === 'PLANNED'"
+      :steps="setupSteps"
+      :can-activate="canActive"
+      :is-activating="isActivating"
+      class="budget-detail__banner"
+      @activate="budgetStart"
+      @go-to-setup="goToSavingsSetup"
+    />
+
     <BudgetClosedBanner
       v-if="isClosed && hasPendingBalance"
       :budget="plan"
@@ -428,7 +470,11 @@
 
       <div class="budget-detail__sidebar">
         <SidebarPage>
-          <Tips icon="show_chart" title="Optimizacion Inteligente">
+          <Tips
+            v-if="planStatus === 'PLANNED' && !hasReceivedIncome"
+            icon="show_chart"
+            title="Optimizacion Inteligente"
+          >
             El ahorro del {{ plan?.limits?.savings || 0 }}% del
             <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
             , se activará automáticamente cuando confirmes tu primer ingreso.
@@ -454,7 +500,10 @@
     </ModalWizard>
 
     <ModalWizard v-model:show="showSavingDistributionForm">
-      <SavingDistributionForm @on-close="closeSavingDistributionForm" />
+      <SavingDistributionForm
+        @on-close="closeSavingDistributionForm"
+        @on-success="closeSavingDistributionForm"
+      />
     </ModalWizard>
 
     <ModalWizard v-model:show="showIncomeModal">
