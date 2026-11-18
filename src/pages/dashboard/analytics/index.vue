@@ -46,7 +46,7 @@
   const { data: cashflowTxs } = useAsyncData(
     'analytics-cashflow',
     () => fetchTransactionsByPeriod(selectedYear.value, selectedMonth.value),
-    { watch: [selectedYear, selectedMonth] }
+    { watch: [selectedYear, selectedMonth], server: false }
   )
 
   const { fetchExpensesByPeriod } = useAnalyticsExpensesApplication()
@@ -54,7 +54,7 @@
   const { data: expensesData } = useAsyncData(
     'analytics-expenses',
     () => fetchExpensesByPeriod(selectedYear.value, selectedMonth.value),
-    { watch: [selectedYear, selectedMonth] }
+    { watch: [selectedYear, selectedMonth], server: false }
   )
 
   const { totalSaved: savingsTotalSaved, savingsByMonth } =

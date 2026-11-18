@@ -1,7 +1,10 @@
 import type { Bill, CreateBillDto, ImportBillsDto, UpdateBillDto } from '~/types/bills.types'
 
 export function useBillsApi() {
-  const getAll = () => $fetch<{ success: boolean; result: Bill[] }>('/api/bills')
+  // En SSR reenvia la cookie de sesion del request entrante
+  const requestFetch = import.meta.server ? useRequestFetch() : $fetch
+
+  const getAll = () => requestFetch<{ success: boolean; result: Bill[] }>('/api/bills')
 
   const create = (dto: CreateBillDto) =>
     $fetch<{ success: boolean; result: Bill }>('/api/bills', {

@@ -34,6 +34,7 @@
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
+  import { useBudgetBalancePresenter } from '@/composables/presenters/useBudgetBalancePresenter'
   import { useApiHandler } from '@/composables/useApiHandler'
   import { useFeedback } from '@/composables/useFeedBack'
   import { formatCurrency } from '@/utils/currency'
@@ -164,6 +165,9 @@
   ])
 
   const plan = computed(() => budgetSelected.value)
+
+  const { realIncome } = useBudgetBalancePresenter()
+  const hasReceivedIncome = computed(() => (realIncome.value ?? 0) > 0)
 
   const planStatus = computed(() => plan.value?.status ?? 'PLANNED')
   const expectedAmount = computed(() => expectedIncome.value)
@@ -466,7 +470,11 @@
 
       <div class="budget-detail__sidebar">
         <SidebarPage>
-          <Tips icon="show_chart" title="Optimizacion Inteligente">
+          <Tips
+            v-if="planStatus === 'PLANNED' && !hasReceivedIncome"
+            icon="show_chart"
+            title="Optimizacion Inteligente"
+          >
             El ahorro del {{ plan?.limits?.savings || 0 }}% del
             <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
             , se activará automáticamente cuando confirmes tu primer ingreso.

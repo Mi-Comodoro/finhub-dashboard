@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import Button from '@/components/atoms/button/Button.vue'
   import Card from '@/components/atoms/card/Card.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
@@ -6,7 +7,8 @@
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
   import { useTheme } from '@/composables/useTheme'
 
-  const { healthScore, healthScorePending, healthScoreError } = useAnalyticsApplication()
+  const { healthScore, healthScorePending, healthScoreError, refreshHealthScore } =
+    useAnalyticsApplication()
 
   const { isDark } = useTheme()
   const svgScoreColor = computed(() => (isDark.value ? '#F1F5F9' : '#0F172A'))
@@ -138,6 +140,7 @@
       <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
       <p class="analytics-view__empty-title">No se pudo cargar la salud financiera</p>
       <p class="analytics-view__empty-description">Verifica tu conexión e intenta de nuevo</p>
+      <Button variant="primary" size="sm" @click="refreshHealthScore()">Reintentar</Button>
     </div>
 
     <!-- Empty state: no active budget -->
