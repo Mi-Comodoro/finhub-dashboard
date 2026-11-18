@@ -5,7 +5,7 @@
     show: boolean
   }
 
-  const props = defineProps<Props>()
+  defineProps<Props>()
   const emit = defineEmits<{
     close: []
     add: [bucket: Omit<CustomBucket, 'id'>]

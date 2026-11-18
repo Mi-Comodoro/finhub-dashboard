@@ -125,7 +125,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.getContributions(groupId)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -136,7 +136,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.getExpenses(groupId)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -148,7 +148,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.createExpense(groupId, dto)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -160,7 +160,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.payExpense(groupId, expenseId)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -172,7 +172,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.markCxp(groupId, expenseId)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -197,7 +197,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.getGroupBudgetProgress(groupId)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }

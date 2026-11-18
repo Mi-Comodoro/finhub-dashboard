@@ -31,8 +31,6 @@
 
   const isValid = computed(() => total.value === 100)
 
-  const availablePercentage = computed(() => Math.max(0, 100 - total.value))
-
   const CUSTOM_BUCKET_COLORS = ['#a78bfa', '#fb923c', '#f472b6', '#22d3ee', '#4ade80', '#facc15']
   const getBucketColor = (index: number) =>
     CUSTOM_BUCKET_COLORS[index % CUSTOM_BUCKET_COLORS.length]!
