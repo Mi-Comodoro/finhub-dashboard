@@ -35,11 +35,14 @@ export function useAnalyticsSavingsTrendApplication(year: Ref<number>) {
       .filter(t => new Date(t.transactionDate).getFullYear() === yr)
   }
 
-  const { data: rawTransactions, pending: isLoading } = useAsyncData(
+  const { data: rawTransactions, status } = useAsyncData(
     'analyticsSavingsTrend',
     () => fetchSavingsForYear(year.value),
-    { watch: [year] }
+    { watch: [year], server: false }
   )
+
+  // With server:false the status is 'idle' during SSR: count it as loading so server and client render the same skeleton
+  const isLoading = computed(() => status.value === 'idle' || status.value === 'pending')
 
   const savingsByMonth = computed(() => {
     const months = Array.from({ length: 12 }, (_, i) => ({

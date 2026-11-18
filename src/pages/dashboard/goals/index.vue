@@ -22,7 +22,11 @@
   import type { CompoundingFrequency, GoalsData, Transaction } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
   import { FINANCIAL_TIPS } from '@/utils/financial-tips'
-  import { getProgressPercentage as getProgressPercentageUtil } from '@/utils/goal-formatters'
+  import {
+    getEffectiveGoalStatus,
+    getProgressPercentage as getProgressPercentageUtil,
+    hasTargetAmount
+  } from '@/utils/goal-formatters'
   import {
     getGoalTerm,
     getStatusVariant,
@@ -79,6 +83,10 @@
     const saved = getSavedAmountForGoal(goalId)
     return getProgressPercentageUtil(saved, targetAmount)
   }
+
+  // Scheduled goals that already have contributions are shown as in progress
+  const getDisplayStatus = (goal: GoalsData): GoalStatus =>
+    getEffectiveGoalStatus(goal.status, getSavedAmountForGoal(goal.id)) as GoalStatus
 
   const activateBudget = async () => {
     await enabled()
@@ -394,7 +402,7 @@
         targetAmount: goal.targetAmount ?? undefined,
         targetDate: goal.targetDate ? String(goal.targetDate) : '',
         status: goal.isActive ? 'active' : 'paused',
-        showProgressbar: true,
+        showProgressbar: hasTargetAmount(goal.targetAmount),
         progressPercentage
       }
     })
@@ -407,7 +415,7 @@
       <div class="goals-page__header-top">
         <div class="goals-page__header-text">
           <Heading level="h1" size="2xl" weight="extrabold" class="goals-page__title">
-            Define tus Propositos
+            Define tus Propósitos
           </Heading>
           <Text size="xs" color="muted">
             Organiza tu futuro financiero creando propósitos específicos.
@@ -532,15 +540,20 @@
                 <td class="goals-page__table-col--name">{{ goal.name }}</td>
                 <td class="goals-page__table-col--secondary">{{ goal.accountName }}</td>
                 <td>
-                  <Badge :variant="getStatusVariant(goal.status as GoalStatus)" size="xs">
-                    {{ GOAL_STATUS_LABELS[(goal.status as GoalStatus) ?? 'SCHEDULED'] }}
+                  <Badge :variant="getStatusVariant(getDisplayStatus(goal))" size="xs">
+                    {{ GOAL_STATUS_LABELS[getDisplayStatus(goal)] }}
                   </Badge>
                 </td>
                 <td class="goals-page__table-col--secondary">
                   {{ GOAL_TERM_LABELS[getGoalTerm(goal.targetDate)] }}
                 </td>
                 <td>
-                  <div class="goals-page__progress-cell">
+                  <div v-if="!hasTargetAmount(goal.targetAmount)" class="goals-page__progress-cell">
+                    <span class="goals-page__progress-text">
+                      {{ formatCurrency(getSavedAmountForGoal(goal.id), currency) }} · sin objetivo
+                    </span>
+                  </div>
+                  <div v-else class="goals-page__progress-cell">
                     <div class="goals-page__progress-bar">
                       <div
                         class="goals-page__progress-fill"

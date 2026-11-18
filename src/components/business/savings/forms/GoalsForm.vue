@@ -41,11 +41,12 @@
 
   const formKey = ref(0)
   const formData = computed(() => {
-    // Estado inicial por defecto para 'create'
+    // Estado inicial por defecto para 'create'. Con una sola cuenta activa se preselecciona.
+    const activeAccounts = accounts.value.filter(account => !account.disabled)
     const baseData = {
       name: '',
       reason: '',
-      accountId: '',
+      accountId: activeAccounts.length === 1 ? activeAccounts[0].value : '',
       targetAmount: '',
       targetDate: null,
       isActive: true

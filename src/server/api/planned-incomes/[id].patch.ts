@@ -21,7 +21,12 @@ export default defineEventHandler(async event => {
     {
       method: 'PATCH',
       headers: { authorization: `Bearer ${token}` },
-      onResponseError: ({ response }) => validateError(event, response.status)
+      onResponseError: ({ response }) =>
+        validateError(
+          event,
+          response.status,
+          (response._data as { message?: string } | null)?.message
+        )
     }
   )
 

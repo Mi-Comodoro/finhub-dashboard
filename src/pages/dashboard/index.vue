@@ -22,6 +22,7 @@
   import { useGoalsApplication } from '@/composables/application/useGoalsApplication'
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { useSetupApplication } from '@/composables/application/useSetupApplication'
+  import { useBudgetBalancePresenter } from '@/composables/presenters/useBudgetBalancePresenter'
   import { useCommon } from '@/composables/useCommon'
   import { formatCurrency, percentOf, subtractAmounts } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
@@ -37,10 +38,8 @@
   const {
     loadDashboardData,
     currency,
-    totalCommittedExpenses,
     expenses,
     totalSavingGenerated,
-    totalSavingTarget,
     totalTransactionSavings,
     totalIncomeReceived,
     totalPlanned,
@@ -66,6 +65,8 @@
   })
 
   const { currentBudget, budgetStatus } = useCommon()
+
+  const { available: realAvailable, committed, unplannedExpenses } = useBudgetBalancePresenter()
 
   const { expectedAmount, buckets } = usePlannedIncomeApplication()
 
@@ -133,27 +134,25 @@
     return percentOf(incomeBase.value, currentBudget.value.limits.savings, currency.value)
   })
 
-  // Actual savings commitment: all non-skipped plans (includes spontaneous)
-  const actualSavingsCommitment = computed(() =>
-    totalSavingTarget.value > 0 ? totalSavingTarget.value : buckets.value.savingsAmount
-  )
-
   // PLANNED → planned savings completed, ACTIVE/CLOSED → actual savings transactions
   const realSavings = computed(() =>
     budgetStatus.value === 'PLANNED' ? totalSavingGenerated.value : totalTransactionSavings.value
   )
 
-  // LIBRE uses actual commitment so spontaneous savings are deducted
-  const savingsBase = computed(() =>
-    budgetStatus.value === 'ACTIVE' ? actualSavingsCommitment.value : buckets.value.savingsAmount
-  )
-
-  const expense = computed(() =>
-    subtractAmounts(incomeBase.value, savingsBase.value, currency.value)
-  )
-
+  // Disponible: real income - real expenses - real savings (same rule as Budget detail).
+  // While the budget is still PLANNED there are no real figures, so the plan estimate is shown.
   const available = computed(() =>
-    subtractAmounts(expense.value, totalCommittedExpenses.value, currency.value)
+    budgetStatus.value === 'PLANNED'
+      ? subtractAmounts(
+          subtractAmounts(incomeBase.value, buckets.value.savingsAmount, currency.value),
+          committed.value,
+          currency.value
+        )
+      : realAvailable.value
+  )
+
+  const showUnplannedNote = computed(
+    () => budgetStatus.value !== 'PLANNED' && unplannedExpenses.value > 0
   )
 
   const categories = computed(() => {
@@ -162,17 +161,20 @@
     const base = incomeBase.value || 0
     const currentCurrency = currency.value
     const budgetExpenses = expenses.value ?? []
-    const isActive = budgetStatus.value === 'ACTIVE'
+    const isActive = budgetStatus.value !== 'PLANNED'
 
     const needsSpent = budgetExpenses
       .filter(expense => expense.status === 'PAID' && expense.bucket === 'needs')
       .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0)
 
-    const wantsSpent = budgetExpenses
-      .filter(expense => expense.status === 'PAID' && expense.bucket === 'wants')
-      .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0)
+    // Unplanned real expenses are shown under Variables (see note in the template)
+    const wantsSpent =
+      budgetExpenses
+        .filter(expense => expense.status === 'PAID' && expense.bucket === 'wants')
+        .reduce((total, expense) => total + Number(expense.expectedAmount || 0), 0) +
+      (isActive ? unplannedExpenses.value : 0)
 
-    const savingsSpent = isActive ? actualSavingsCommitment.value : realSavings.value || 0
+    const savingsSpent = realSavings.value || 0
 
     return [
       {
@@ -374,7 +376,8 @@
             variant="accent"
           />
           <FinancialProgressCard
-            :title="'Libre Sin Comprometer'"
+            :title="'Disponible'"
+            :subtitle="`Comprometido: ${formatCurrency(committed, currency)}`"
             :amount="available"
             icon-name="payments"
             variant="custom"
@@ -465,6 +468,10 @@
               </div>
             </div>
           </div>
+          <Text v-if="showUnplannedNote" size="xs" color="muted" class="dashboard-page__note">
+            Incluye {{ formatCurrency(unplannedExpenses, currency) }} en gastos no planificados,
+            asignados a Gastos Variables.
+          </Text>
         </section>
 
         <div v-if="!isPageLoading && !currentBudget" class="dashboard-page__no-budget">
@@ -581,6 +588,10 @@
 
   .dashboard-page__skeleton--section {
     @apply h-48;
+  }
+
+  .dashboard-page__note {
+    @apply mt-3;
   }
 
   .dashboard-page__cards {

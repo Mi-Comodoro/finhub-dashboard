@@ -29,7 +29,9 @@ export const useActiveBudgetApplication = () => {
 
   const isAccountCreated = computed(() => accountStore.accounts.length >= 1)
   const goalsProgress = computed(() => goalsStore.goals.length)
-  const isGoalsCompleted = computed(() => goalsProgress.value >= 3)
+  // Same rule as the server: only active goals count towards the minimum of 3
+  const activeGoalsCount = computed(() => goalsStore.goals.filter(g => g.isActive).length)
+  const isGoalsCompleted = computed(() => activeGoalsCount.value >= 3)
 
   const allocationProgress = computed(() => {
     const activeGoalIds = new Set(goalsStore.goals.filter(g => g.isActive).map(g => g.id))
@@ -58,6 +60,35 @@ export const useActiveBudgetApplication = () => {
     return isAccountCreated.value && isGoalsCompleted.value && isSavingsAllocationCompleted.value
   })
 
+  // Checklist shown to the user: the budget can only be activated once savings are set up
+  const setupSteps = computed(() => [
+    {
+      key: 'account',
+      label: 'Crea tu primera cuenta',
+      detail: isAccountCreated.value ? 'Cuenta creada' : 'Aún no tienes cuentas',
+      done: isAccountCreated.value
+    },
+    {
+      key: 'goals',
+      label: 'Define al menos 3 metas de ahorro',
+      detail: `${activeGoalsCount.value} de 3 metas activas`,
+      done: isGoalsCompleted.value
+    },
+    {
+      key: 'distribution',
+      label: 'Distribuye el 100% de tu ahorro entre tus metas',
+      detail: `${allocationProgress.value}% distribuido`,
+      done: isSavingsAllocationCompleted.value
+    }
+  ])
+
+  // Activates a specific budget, but only when the savings setup is complete
+  const activate = async (budgetId: string): Promise<{ success: boolean; blocked: boolean }> => {
+    if (!canActive.value) return { success: false, blocked: true }
+    const { success } = await enableBudget(budgetId)
+    return { success, blocked: false }
+  }
+
   const enabled = async () => {
     const budgetId = budgetStore.currentBudgetPlan?.id ?? ''
     if (!budgetId) return
@@ -76,6 +107,8 @@ export const useActiveBudgetApplication = () => {
     pendingAssignedAmount,
     savingsAmount,
     enabled,
+    activate,
+    setupSteps,
     canActive
   }
 }

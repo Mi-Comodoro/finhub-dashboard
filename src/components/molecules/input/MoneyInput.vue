@@ -2,6 +2,7 @@
   import { computed, onMounted, ref, watch } from 'vue'
 
   import Label from '@/components/atoms/typography/Label.vue'
+  import { type Currency, getCurrencyDecimals } from '@/utils/currency'
 
   import type { InputSize } from './types/input.types'
 
@@ -45,65 +46,122 @@
 
   const emit = defineEmits(['update:modelValue'])
 
-  // Estado interno en centavos — evita float errors
-  const cents = ref(Math.round((props.modelValue ?? 0) * 100))
+  const MAX_INTEGER_DIGITS = 11
 
-  // Sincronizar si el prop cambia externamente
-  watch(
-    () => props.modelValue,
-    val => {
-      const incoming = Math.round((val ?? 0) * 100)
-      if (incoming !== cents.value) {
-        cents.value = incoming
-        updateInput()
-      }
+  const decimals = computed(() => {
+    try {
+      return getCurrencyDecimals(props.currency as Currency) ?? 2
+    } catch {
+      return 2
     }
-  )
+  })
 
-  // Referencia directa al DOM — sin v-model
+  // Referencia directa al DOM — el texto visible se controla manualmente (caret + separadores)
   const inputRef = ref<HTMLInputElement | null>(null)
+  const isFocused = ref(false)
+  // Ultimo valor numerico emitido/recibido, para ignorar ecos del v-model
+  let lastValue = props.modelValue ?? 0
 
-  function format(c: number): string {
-    const int = Math.floor(c / 100)
-    const dec = c % 100
-    const thousands = new Intl.NumberFormat('es-CO').format(int)
-    return `${thousands},${String(dec).padStart(2, '0')}`
+  /** Texto visible a partir de un numero (escritura natural: 45000 -> 45.000,00). */
+  function formatFromNumber(value: number): string {
+    if (!value) return ''
+    const fixed = Math.abs(value).toFixed(decimals.value)
+    const [int = '0', dec = ''] = fixed.split('.')
+    const thousands = int.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+    return decimals.value > 0 ? `${thousands},${dec}` : thousands
   }
 
-  function updateInput() {
-    if (inputRef.value) {
-      inputRef.value.value = format(cents.value)
+  /** Normaliza lo tecleado: solo digitos y una coma decimal; miles con punto en vivo. */
+  function normalize(raw: string): { text: string; value: number } {
+    const commaIndex = raw.indexOf(',')
+    const hasComma = commaIndex >= 0 && decimals.value > 0
+    const intRaw = hasComma ? raw.slice(0, commaIndex) : raw
+    const decRaw = hasComma ? raw.slice(commaIndex + 1) : ''
+    const intDigits = intRaw
+      .replace(/\D/g, '')
+      .replace(/^0+(?=\d)/g, '')
+      .slice(0, MAX_INTEGER_DIGITS)
+    const decDigits = decRaw.replace(/\D/g, '').slice(0, decimals.value)
+    const thousands = intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+    const text = hasComma ? `${thousands || '0'},${decDigits}` : thousands
+    const value = Number(`${intDigits || '0'}.${decDigits || '0'}`)
+    return { text, value }
+  }
+
+  function setDisplay(text: string) {
+    if (inputRef.value && inputRef.value.value !== text) inputRef.value.value = text
+  }
+
+  function handleInput(e: Event) {
+    const el = e.target as HTMLInputElement
+    const caret = el.selectionStart ?? el.value.length
+    // Cuantos caracteres significativos (digitos/coma) hay antes del cursor
+    const significantBefore = el.value.slice(0, caret).replace(/[^\d,]/g, '').length
+
+    const { text, value } = normalize(el.value)
+    el.value = text
+
+    // Restaurar el cursor en la misma posicion logica
+    let seen = 0
+    let pos = 0
+    while (pos < text.length && seen < significantBefore) {
+      if (/[\d,]/.test(text.charAt(pos))) seen++
+      pos++
     }
+    el.setSelectionRange(pos, pos)
+
+    lastValue = value
+    emit('update:modelValue', value)
   }
 
-  function handleKeydown(e: KeyboardEvent) {
-    const nav = ['ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', 'Enter']
-    if (nav.includes(e.key)) return
+  /**
+   * Texto pegado: si el ultimo separador es un punto seguido de 1-2 digitos no puede ser un grupo
+   * de miles, asi que es un decimal (45000.5 -> 45000,5; 1,250.50 -> 1250,50).
+   */
+  function normalizePasted(text: string): string {
+    const t = text.trim().replace(/[^\d.,]/g, '')
+    const lastDot = t.lastIndexOf('.')
+    if (lastDot > t.lastIndexOf(',') && /\.\d{1,2}$/.test(t)) {
+      const intPart = t.slice(0, lastDot).replace(/[.,]/g, '')
+      return decimals.value > 0 ? `${intPart},${t.slice(lastDot + 1)}` : intPart
+    }
+    return t
+  }
 
+  function handlePaste(e: ClipboardEvent) {
+    const pasted = e.clipboardData?.getData('text')
+    if (!pasted) return
     e.preventDefault()
+    const el = e.target as HTMLInputElement
+    const start = el.selectionStart ?? el.value.length
+    const end = el.selectionEnd ?? start
+    el.value = el.value.slice(0, start) + normalizePasted(pasted) + el.value.slice(end)
+    handleInput({ target: el } as unknown as Event)
+  }
 
-    if (e.key >= '0' && e.key <= '9') {
-      if (cents.value >= 999_999_999_99) return
-      cents.value = cents.value * 10 + Number(e.key)
-      updateInput()
-      emit('update:modelValue', cents.value / 100)
-      return
-    }
-
-    if (e.key === 'Backspace' || e.key === 'Delete') {
-      cents.value = Math.floor(cents.value / 10)
-      updateInput()
-      emit('update:modelValue', cents.value / 100)
-    }
+  function handleBlur() {
+    isFocused.value = false
+    // Completar decimales al salir (45.000 -> 45.000,00); vacio se mantiene vacio
+    setDisplay(formatFromNumber(lastValue))
   }
 
   function handleFocus() {
-    // Asegurar que el input muestra el valor al obtener foco
-    updateInput()
+    isFocused.value = true
   }
 
+  // Sincronizar si el prop cambia externamente (reset, edicion, precarga)
+  watch(
+    () => props.modelValue,
+    val => {
+      const incoming = val ?? 0
+      if (incoming === lastValue) return
+      lastValue = incoming
+      setDisplay(formatFromNumber(incoming))
+    }
+  )
+
   onMounted(() => {
-    updateInput()
+    setDisplay(formatFromNumber(lastValue))
   })
 </script>
 
@@ -120,9 +178,13 @@
         :class="['money-input__input', textSizeClass]"
         type="text"
         inputmode="decimal"
-        :required="required"
-        @keydown="handleKeydown"
+        placeholder="0,00"
+        autocomplete="off"
+        :aria-required="required"
+        @input="handleInput"
+        @paste="handlePaste"
         @focus="handleFocus"
+        @blur="handleBlur"
       />
     </div>
   </div>
