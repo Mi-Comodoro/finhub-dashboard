@@ -19,22 +19,33 @@
     accounts?: AccountData[]
     budgetSavingsPercentage?: number
     currency?: Currency
+    budgetId?: string
   }
 
   const props = withDefaults(defineProps<QuickTransactionFormProps>(), {
     goals: () => [],
     accounts: () => [],
     budgetSavingsPercentage: 20,
-    currency: 'COP' as Currency
+    currency: 'COP' as Currency,
+    budgetId: ''
   })
 
   const emit = defineEmits(['onClose'])
 
-  const { createTransaction, createTransactionWithSavingsPlan } = useTransactionApplication()
+  const {
+    createTransaction,
+    createTransactionWithSavingsPlan,
+    getAvailableBalance,
+    validateSufficientBalance
+  } = useTransactionApplication()
   const { addContribution } = useGoalsApplication()
   const { fetchCategories, categories } = useCategoryApplication()
   const { currentBudget } = useCommon()
   const { show } = useToast()
+
+  // Budget chosen on the page wins over the store's current plan
+  const effectiveBudgetId = computed(() => props.budgetId || currentBudget.value?.id || '')
+  const availableBalance = ref<number | null>(null)
 
   const selectedType = ref<string>('')
   const currentStep = ref(1)
@@ -116,7 +127,6 @@
     categoryId: '',
     description: '',
     goalId: '',
-    contributionType: 'external',
     accountId: ''
   })
 
@@ -128,11 +138,18 @@
     }
   )
 
-  watch(filteredCategoryOptions, newOptions => {
-    if (newOptions.length > 0 && !formData.value['categoryId']) {
-      formData.value = { ...formData.value, categoryId: newOptions[0].value }
-    }
-  })
+  const needsBalance = computed(
+    () => selectedType.value === 'expense' || selectedType.value === 'saving'
+  )
+
+  const refreshAvailableBalance = async () => {
+    availableBalance.value = null
+    if (!needsBalance.value || !effectiveBudgetId.value) return
+    const { success, balance } = await getAvailableBalance(effectiveBudgetId.value)
+    if (success) availableBalance.value = balance
+  }
+
+  watch(selectedType, refreshAvailableBalance)
 
   const savingsAmount = computed(() => {
     const amount = Number(pendingFormData.value?.['amount'] ?? 0)
@@ -146,6 +163,37 @@
   const toDateString = (date: Date | string | null | undefined): string => {
     if (!date) return new Date().toISOString()
     return date instanceof Date ? date.toISOString() : new Date(date).toISOString()
+  }
+
+  // Business rule: expenses and out-of-plan savings need enough available balance
+  const ensureSufficientBalance = async (amount: number): Promise<boolean> => {
+    if (!effectiveBudgetId.value) {
+      show({
+        title: 'Presupuesto requerido',
+        description: 'Selecciona un presupuesto para registrar el movimiento.',
+        type: 'error'
+      })
+      return false
+    }
+
+    const { valid, reason, balance } = await validateSufficientBalance(
+      effectiveBudgetId.value,
+      amount
+    )
+    if (valid) return true
+
+    const descriptions = {
+      'no-income':
+        'Aún no has registrado ingresos en este presupuesto. Registra un ingreso primero.',
+      insufficient: `Tu saldo disponible es ${formatCurrency(balance, props.currency)} y el monto es ${formatCurrency(amount, props.currency)}.`,
+      unavailable: 'No pudimos verificar tu saldo disponible. Inténtalo de nuevo.'
+    }
+    show({
+      title: reason === 'unavailable' ? 'No se pudo validar el saldo' : 'Saldo insuficiente',
+      description: descriptions[reason ?? 'unavailable'],
+      type: 'error'
+    })
+    return false
   }
 
   const handleSubmit = async (data: Record<string, unknown>) => {
@@ -175,6 +223,10 @@
       const date = data['date'] as Date | string | null
       const description = data['description'] ? String(data['description']) : undefined
 
+      if ((type === 'expense' || type === 'saving') && !(await ensureSufficientBalance(amount))) {
+        return
+      }
+
       if (type === 'saving') {
         const goalId = String(data['goalId'] ?? '')
         if (!goalId) {
@@ -186,10 +238,21 @@
           return
         }
 
+        const accountId = String(data['accountId'] ?? '')
+        if (!accountId) {
+          show({
+            title: 'Cuenta requerida',
+            description: 'Selecciona la cuenta de origen del aporte.',
+            type: 'error'
+          })
+          return
+        }
+
         const { success } = await addContribution(goalId, {
           amount,
           date: toDateString(date),
-          note: description
+          note: description,
+          accountId
         })
 
         if (success) {
@@ -207,9 +270,9 @@
           })
         }
       } else {
-        const budgetId = currentBudget.value?.id ?? ''
+        const budgetId = effectiveBudgetId.value
         const categoryId = String(data['categoryId'] ?? '')
-        const { success } = await createTransaction({
+        const { success, message } = await createTransaction({
           type: type as 'income' | 'expense',
           amount,
           transactionDate: toDateString(date),
@@ -232,7 +295,7 @@
         } else {
           show({
             title: 'Error al guardar',
-            description: 'No se pudo registrar el movimiento. Inténtalo de nuevo.',
+            description: message ?? 'No se pudo registrar el movimiento. Inténtalo de nuevo.',
             type: 'error'
           })
         }
@@ -252,7 +315,7 @@
       const amount = Number(data['amount'] ?? 0)
       const date = data['date'] as Date | string | null
       const description = data['description'] ? String(data['description']) : undefined
-      const budgetId = currentBudget.value?.id ?? ''
+      const budgetId = effectiveBudgetId.value
       const categoryId = data['categoryId'] ? String(data['categoryId']) : undefined
 
       const transactionPayload = {
@@ -266,6 +329,7 @@
       }
 
       let success = false
+      let failureReason: string | undefined
 
       if (createSavingsPlan.value) {
         const result = await createTransactionWithSavingsPlan(
@@ -273,9 +337,11 @@
           props.budgetSavingsPercentage ?? 20
         )
         success = result.success
+        failureReason = result.message
       } else {
         const result = await createTransaction(transactionPayload)
         success = result.success
+        failureReason = result.message
       }
 
       if (success) {
@@ -287,7 +353,7 @@
       } else {
         show({
           title: 'Error al guardar',
-          description: 'No se pudo registrar el ingreso. Inténtalo de nuevo.',
+          description: failureReason ?? 'No se pudo registrar el ingreso. Inténtalo de nuevo.',
           type: 'error'
         })
       }
@@ -319,6 +385,10 @@
 
     <!-- Step 1: transaction data -->
     <div v-if="currentStep === 1" class="quick-transaction-form__content">
+      <p v-if="needsBalance && availableBalance !== null" class="quick-transaction-form__balance">
+        Saldo disponible:
+        <strong>{{ formatCurrency(availableBalance, currency) }}</strong>
+      </p>
       <Form
         :schema="formSchema"
         :model-value="formData"
@@ -394,6 +464,10 @@
 
   .quick-transaction-form__content {
     @apply flex min-h-0 flex-1 flex-col;
+  }
+
+  .quick-transaction-form__balance {
+    @apply mb-3 text-xs text-neutral-500 dark:text-neutral-400;
   }
 
   .quick-transaction-form__actions {

@@ -6,11 +6,16 @@ import type {
 } from '~/types/accounts-payable.types'
 
 export function useAccountsPayableApi() {
+  // En SSR reenvia la cookie de sesion del request entrante
+  const requestFetch = import.meta.server ? useRequestFetch() : $fetch
+
   const getAll = () =>
-    $fetch<{ success: boolean; result: AccountPayable[] }>('/api/accounts-payable')
+    requestFetch<{ success: boolean; result: AccountPayable[] }>('/api/accounts-payable')
 
   const getSummary = () =>
-    $fetch<{ success: boolean; result: AccountPayableSummary }>('/api/accounts-payable/summary')
+    requestFetch<{ success: boolean; result: AccountPayableSummary }>(
+      '/api/accounts-payable/summary'
+    )
 
   const create = (dto: CreateAccountPayableDto) =>
     $fetch<{ success: boolean; result: AccountPayable }>('/api/accounts-payable', {

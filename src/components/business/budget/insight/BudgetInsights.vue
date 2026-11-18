@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
+  import { useBudgetBalancePresenter } from '@/composables/presenters/useBudgetBalancePresenter'
   import { useBudgetInsightsPresenter } from '@/composables/presenters/useBudgetInsightsPresenter'
-  import { useExpensesStore } from '@/stores/expense.store'
 
   import type { BudgetInsightsData } from './types'
 
@@ -13,36 +13,21 @@
       budgetStatus: 'PLANNED'
     }
   )
-  const { currency, plan, receivedIncome, generatedSavings, pendingSavings } =
-    useBudgetInsightsPresenter()
-
-  const expensesStore = useExpensesStore()
+  const { plan, receivedIncome } = useBudgetInsightsPresenter()
+  const {
+    currency,
+    realSavings: generatedSavings,
+    available,
+    committed,
+    savingsExecutedPct: pctSavingsExecuted
+  } = useBudgetBalancePresenter()
 
   // --- PLANNED (base estática del mes) ---
   const { expectedAmount, savingsAmount, needsAmount, wantsAmount } = usePlannedIncomeApplication()
 
-  // --- REAL (crece al recibir ingresos) ---
-
-  const actualAvailableBase = computed(() =>
-    subtractAmounts(receivedIncome.value, generatedSavings.value, currency.value)
-  )
-
-  // PAID + PLANNED: same definition used on the dashboard
-  const committedExpenses = computed(() => expensesStore.totalCommitted)
-
-  const freeUncommitted = computed(() =>
-    subtractAmounts(actualAvailableBase.value, committedExpenses.value, currency.value)
-  )
-
   // --- Porcentajes de progreso ---
   const pctIncomeReceived = computed(() =>
     expectedAmount.value > 0 ? Math.round((receivedIncome.value / expectedAmount.value) * 100) : 0
-  )
-
-  const pctSavingsExecuted = computed(() =>
-    generatedSavings.value > 0
-      ? Math.round(((generatedSavings.value - pendingSavings.value) / generatedSavings.value) * 100)
-      : 0
   )
 
   // --- Cards fase PLANNED ---
@@ -106,22 +91,22 @@
       variant: 'gold'
     },
     {
-      id: 'available-base',
-      title: 'Base para gastos',
-      subtitle: 'Recibido − Ahorro Generado',
-      amount: actualAvailableBase.value,
+      id: 'committed',
+      title: 'Comprometido',
+      subtitle: 'Gastos y ahorro planificados pendientes',
+      amount: committed.value,
       currencyCode: currency.value,
-      iconName: 'home',
+      iconName: 'event_upcoming',
       variant: 'warning'
     },
     {
-      id: 'free-uncommitted',
-      title: 'Libre sin comprometer',
-      subTitleColor: 'white',
+      id: 'available',
+      title: 'Disponible',
       titleColor: 'white',
       textColor: 'white',
-      subtitle: `${formatCurrency(committedExpenses.value, currency.value)} Planificado`,
-      amount: freeUncommitted.value,
+      subTitleColor: 'white',
+      subtitle: 'Ingresos − gastos − ahorros reales',
+      amount: available.value,
       currencyCode: currency.value,
       iconName: 'account_balance',
       variant: 'accent'

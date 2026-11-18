@@ -60,13 +60,19 @@ export function useSavingsApi() {
       amount: number
       date: string
       note?: string
+      accountId?: string
     }
   ) =>
     $fetch<{ success: boolean; result: PlannedSaving }>(
       `/api/savings/goals/${goalId}/contributions`,
       {
         method: 'POST',
-        body: { amount: data.amount, date: data.date, notes: data.note }
+        body: {
+          amount: data.amount,
+          date: data.date,
+          notes: data.note,
+          accountId: data.accountId
+        }
       }
     )
 

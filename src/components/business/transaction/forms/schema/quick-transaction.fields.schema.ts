@@ -56,35 +56,13 @@ export const quickTransactionFieldsSchema = (
       required: form => form['type'] === 'saving',
       visibleWhen: form => form['type'] === 'saving'
     },
-    contributionType: {
-      type: 'radio-card',
-      label: 'Tipo de aporte',
-      required: false,
-      size: 'sm',
-      options: [
-        {
-          label: 'Depósito externo',
-          value: 'external',
-
-          description: 'Desde fuera',
-          icon: 'account_balance'
-        },
-        {
-          label: 'Transferencia',
-          value: 'internal',
-          description: 'Cuenta propia',
-          icon: 'swap_horiz'
-        }
-      ],
-      visibleWhen: form => form['type'] === 'saving'
-    },
     accountId: {
       type: 'select',
       label: 'Cuenta origen',
       placeholder: 'Selecciona una cuenta',
       options: accountOptions,
-      required: false,
-      visibleWhen: form => form['type'] === 'saving' && form['contributionType'] === 'internal'
+      required: form => form['type'] === 'saving',
+      visibleWhen: form => form['type'] === 'saving'
     }
   },
   layout: [
@@ -93,7 +71,6 @@ export const quickTransactionFieldsSchema = (
     { type: 'row', fields: ['categoryId'] },
     { type: 'row', fields: ['description'] },
     { type: 'row', fields: ['goalId'] },
-    { type: 'row', fields: ['contributionType'] },
     { type: 'row', fields: ['accountId'] }
   ]
 })

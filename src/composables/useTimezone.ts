@@ -1,8 +1,11 @@
+import DateUtils from '@/utils/date'
 import { useUserStore } from '~/stores/user.store'
 
 export const useTimezone = () => {
   const userStore = useUserStore()
   const tz = computed(() => userStore.timezone ?? 'America/Bogota')
+  // Mantiene DateUtils.formatDate alineado con la zona del usuario
+  watchEffect(() => DateUtils.setTimeZone(tz.value))
 
   const format = (
     date: Date | string | number,

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import Button from '@/components/atoms/button/Button.vue'
   import Card from '@/components/atoms/card/Card.vue'
   import EmptyStateIllustration from '@/components/atoms/empty-state-illustration/EmptyStateIllustration.vue'
   import Heading from '@/components/atoms/typography/Heading.vue'
@@ -6,7 +7,8 @@
   import { useAnalyticsApplication } from '@/composables/application/useAnalyticsApplication'
   import { useTheme } from '@/composables/useTheme'
 
-  const { healthScore, healthScorePending, healthScoreError } = useAnalyticsApplication()
+  const { healthScore, healthScorePending, healthScoreError, refreshHealthScore } =
+    useAnalyticsApplication()
 
   const { isDark } = useTheme()
   const svgScoreColor = computed(() => (isDark.value ? '#F1F5F9' : '#0F172A'))
@@ -64,7 +66,7 @@
       score: healthScore.value?.score.pillars.expenses.score ?? 0,
       max: 25,
       pillarLabel: healthScore.value?.score.pillars.expenses.label ?? '',
-      tip: 'Compara tus gastos reales vs lo que planificaste.'
+      tip: 'Compara tus gastos reales con el saldo que tenías disponible para gastar.'
     },
     {
       label: 'Deudas',
@@ -101,7 +103,7 @@
   const PILLAR_HINTS: Record<string, string> = {
     'Flujo de Caja': 'Lo que te queda después de cubrir tus gastos',
     'Ahorro y Metas': 'Si cumples tu meta de ahorro mensual',
-    'Control de Gastos': 'Si gastas menos de lo que planificaste',
+    'Control de Gastos': 'Si gastas menos de tu saldo disponible',
     Deudas: 'Según el peso de tus deudas sobre tus ingresos'
   }
 
@@ -138,6 +140,7 @@
       <EmptyStateIllustration type="no-transactions" class="analytics-view__empty-illustration" />
       <p class="analytics-view__empty-title">No se pudo cargar la salud financiera</p>
       <p class="analytics-view__empty-description">Verifica tu conexión e intenta de nuevo</p>
+      <Button variant="primary" size="sm" @click="refreshHealthScore()">Reintentar</Button>
     </div>
 
     <!-- Empty state: no active budget -->
