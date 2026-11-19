@@ -8,10 +8,22 @@ export const useAuthApi = () => {
     })
   }
 
-  const loginWithGoogleToken = async (idToken: string, name: string, rejectPhoto?: boolean) => {
+  const loginWithGoogleToken = async (
+    idToken: string,
+    name: string,
+    rejectPhoto?: boolean,
+    acceptedPolicyVersion?: string
+  ) => {
     return await $fetch<AuthResponseResult>('/api/auth/google', {
       method: 'POST',
-      body: { data: { idToken, name, ...(rejectPhoto ? { rejectPhoto: true } : {}) } }
+      body: {
+        data: {
+          idToken,
+          name,
+          ...(rejectPhoto ? { rejectPhoto: true } : {}),
+          ...(acceptedPolicyVersion ? { acceptedPolicyVersion } : {})
+        }
+      }
     })
   }
 
@@ -34,6 +46,8 @@ export const useAuthApi = () => {
     phone?: string
     gender?: string
     country?: string
+    handle?: string
+    acceptedPolicyVersion?: string
   }) => {
     return await $fetch<AuthResponseResult>('/api/auth/signup', {
       method: 'POST',

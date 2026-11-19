@@ -12,6 +12,13 @@ import { useModalStore } from '@/stores/modal.store'
 import { useUserStore } from '@/stores/user.store'
 import type { FirebasePlugin } from '@/types/firebase'
 
+// Google credentials kept in memory while the person accepts the data policy (new accounts only),
+// so the Google popup does not have to be shown twice.
+let pendingGoogle: { idToken: string; name: string } | null = null
+
+const isConsentRequired = (err: unknown): boolean =>
+  (err as { data?: { data?: { code?: string } } } | null)?.data?.data?.code === 'CONSENT_REQUIRED'
+
 export const useAuth = () => {
   const error = ref('')
   const user = ref<User | null>(null)
@@ -158,27 +165,40 @@ export const useAuth = () => {
     }
   }
 
-  const loginWithGoogle = async (): Promise<{ onboardingStatus: string; success: boolean }> => {
+  const loginWithGoogle = async (
+    acceptedPolicyVersion?: string
+  ): Promise<{ onboardingStatus: string; success: boolean; consentRequired?: boolean }> => {
     error.value = ''
+    let credentials = acceptedPolicyVersion ? pendingGoogle : null
 
     try {
-      const { $firebase } = useNuxtApp() as { $firebase: FirebasePlugin }
-      const { auth, googleProvider } = await $firebase.initFirebase()
+      if (!credentials) {
+        const { $firebase } = useNuxtApp() as { $firebase: FirebasePlugin }
+        const { auth, googleProvider } = await $firebase.initFirebase()
 
-      if (!auth || !googleProvider) {
-        throw new Error('Error de configuración de Firebase')
+        if (!auth || !googleProvider) {
+          throw new Error('Error de configuración de Firebase')
+        }
+
+        const result = await $firebase.signInWithPopup(auth, googleProvider)
+        const idToken = await result.user.getIdToken()
+        const fallbackName =
+          result.user.displayName ?? result.user.email?.split('@')[0] ?? 'Usuario'
+        credentials = { idToken, name: fallbackName }
       }
 
-      const result = await $firebase.signInWithPopup(auth, googleProvider)
-      const idToken = await result.user.getIdToken()
-      const fallbackName = result.user.displayName ?? result.user.email?.split('@')[0] ?? 'Usuario'
-
-      const { success, result: res } = await authApi.loginWithGoogleToken(idToken, fallbackName)
+      const { success, result: res } = await authApi.loginWithGoogleToken(
+        credentials.idToken,
+        credentials.name,
+        undefined,
+        acceptedPolicyVersion
+      )
 
       if (!success || !res) {
         throw new Error('Error de autenticación con Google')
       }
 
+      pendingGoogle = null
       authStore.setAccountType(res.accountType)
 
       // Pequeño delay para asegurar que las cookies se propaguen desde el server al cliente
@@ -191,6 +211,13 @@ export const useAuth = () => {
 
       return { success: true, onboardingStatus }
     } catch (err) {
+      if (isConsentRequired(err) && credentials) {
+        // New account: ask for the authorization and retry with the same Google credentials
+        pendingGoogle = credentials
+        return { success: false, onboardingStatus: 'PENDING', consentRequired: true }
+      }
+
+      pendingGoogle = null
       error.value = getReadableError(err)
 
       return { success: false, onboardingStatus: 'PENDING' }

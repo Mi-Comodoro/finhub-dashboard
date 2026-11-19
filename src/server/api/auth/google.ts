@@ -26,7 +26,10 @@ export default defineEventHandler(async event => {
     data: {
       idToken: payload.idToken,
       name: payload.name,
-      ...(payload.rejectPhoto ? { rejectPhoto: true } : {})
+      ...(payload.rejectPhoto ? { rejectPhoto: true } : {}),
+      ...(payload.acceptedPolicyVersion
+        ? { acceptedPolicyVersion: String(payload.acceptedPolicyVersion) }
+        : {})
     }
   }
 
@@ -35,6 +38,14 @@ export default defineEventHandler(async event => {
     body: backendBody,
     onResponseError: ({ response }) => {
       console.error('❌ Error del backend en /auth/google:', response.status, response.statusText)
+      // New account without the data-policy authorization: the screen shows the checkbox
+      if (response.status === 400 && response._data?.error === 'ConsentRequired') {
+        throw createError({
+          statusCode: 400,
+          message: response._data.message,
+          data: { code: 'CONSENT_REQUIRED' }
+        })
+      }
       loginError(response.status)
     }
   })
