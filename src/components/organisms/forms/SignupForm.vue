@@ -4,10 +4,12 @@
   import Button from '@/components/atoms/button/Button.vue'
   import Label from '@/components/atoms/typography/Label.vue'
   import Text from '@/components/atoms/typography/Text.vue'
+  import ConsentCheckbox from '@/components/business/legal/ConsentCheckbox.vue'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import Input from '@/components/molecules/input/Input.vue'
   import PasswordInput from '@/components/molecules/input/PasswordInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
+  import { useLegalApplication } from '@/composables/application/useLegalApplication'
   import { useAuth } from '@/composables/useAuth'
   import { DIAL_CODE_OPTIONS } from '~/common/constants'
 
@@ -26,6 +28,15 @@
   const confirmPassword = ref('')
 
   const { signup, error: authError } = useAuth()
+
+  // Data-policy authorization (Ley 1581): the checkbox only appears when the server makes it mandatory
+  const { consentRequired, policyVersion, loadVersions } = useLegalApplication()
+  const consentAccepted = ref(false)
+  const showConsentInvalid = ref(false)
+
+  onMounted(() => {
+    loadVersions()
+  })
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const handleError = ref<string | null>(null)
@@ -110,6 +121,10 @@
     if (password.value !== confirmPassword.value) {
       return 'Las contraseñas no coinciden'
     }
+    if (consentRequired.value && !consentAccepted.value) {
+      showConsentInvalid.value = true
+      return 'Debes autorizar el tratamiento de tus datos personales para crear tu cuenta'
+    }
     return null
   }
 
@@ -129,7 +144,8 @@
       name: name.value,
       displayName: name.value,
       handle: handleValue.value,
-      phone: `${dialCode.value}${phoneNumber.value}`
+      phone: `${dialCode.value}${phoneNumber.value}`,
+      ...(consentRequired.value ? { acceptedPolicyVersion: policyVersion.value } : {})
     })
 
     if (!success) {
@@ -243,6 +259,14 @@
           required
           label="Confirmar contraseña"
           error-message="Las contraseñas no coinciden"
+        />
+
+        <ConsentCheckbox
+          v-if="consentRequired"
+          id="signup-consent"
+          v-model="consentAccepted"
+          :policy-version="policyVersion"
+          :invalid="showConsentInvalid && !consentAccepted"
         />
 
         <Button

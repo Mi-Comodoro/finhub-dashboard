@@ -4,9 +4,11 @@
   import Button from '@/components/atoms/button/Button.vue'
   import GoogleIcon from '@/components/atoms/icons/GoogleIcon.vue'
   import Text from '@/components/atoms/typography/Text.vue'
+  import ConsentCheckbox from '@/components/business/legal/ConsentCheckbox.vue'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import Input from '@/components/molecules/input/Input.vue'
   import PasswordInput from '@/components/molecules/input/PasswordInput.vue'
+  import { useLegalApplication } from '@/composables/application/useLegalApplication'
   import { useAuth } from '@/composables/useAuth'
 
   import type { LoginFormState } from './types/login-form.types'
@@ -18,12 +20,51 @@
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
+  // Data-policy authorization (Ley 1581): only active when the server makes it mandatory
+  const { consentRequired, policyVersion, loadVersions } = useLegalApplication()
+  const needsConsent = ref(false)
+  const consentAccepted = ref(false)
+  const showConsentInvalid = ref(false)
+
+  onMounted(() => {
+    loadVersions()
+  })
+
   const handleGoogleLogin = async (): Promise<void> => {
     isLoading.value = true
     error.value = null
 
     try {
-      const { success } = await loginWithGoogle()
+      const { success, consentRequired: askConsent } = await loginWithGoogle()
+
+      if (askConsent) {
+        // Existing accounts never get here: only a new account needs to accept first
+        needsConsent.value = true
+        return
+      }
+
+      if (!success) {
+        error.value = authError.value || 'Error desconocido durante la autenticacion'
+        return
+      }
+
+      await navigateTo('/dashboard')
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const handleGoogleConsent = async (): Promise<void> => {
+    if (!consentAccepted.value) {
+      showConsentInvalid.value = true
+      return
+    }
+
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const { success } = await loginWithGoogle(policyVersion.value)
 
       if (!success) {
         error.value = authError.value || 'Error desconocido durante la autenticacion'
@@ -106,7 +147,29 @@
         </span>
       </Button>
 
-      <p class="login-form__consent">
+      <div v-if="needsConsent" class="login-form__new-account">
+        <Text size="sm" weight="medium">
+          Para crear tu cuenta con Google necesitamos tu autorización.
+        </Text>
+        <ConsentCheckbox
+          id="login-consent"
+          v-model="consentAccepted"
+          :policy-version="policyVersion"
+          :invalid="showConsentInvalid && !consentAccepted"
+        />
+        <Button
+          variant="primary"
+          size="sm"
+          class="w-full"
+          :loading="isLoading"
+          :disabled="isLoading"
+          @click="handleGoogleConsent"
+        >
+          Aceptar y crear mi cuenta
+        </Button>
+      </div>
+
+      <p v-else-if="!consentRequired" class="login-form__consent">
         Al continuar, autorizas el tratamiento de tu nombre, correo e imagen según nuestra
         <NuxtLink to="/privacy" class="login-form__consent-link" target="_blank">
           Política de Privacidad
@@ -168,6 +231,11 @@
 </template>
 
 <style scoped lang="postcss">
+  .login-form__new-account {
+    @apply flex flex-col gap-3 rounded-xl border border-primary-200 bg-primary-50 p-4;
+    @apply dark:border-primary-800 dark:bg-primary-900/20;
+  }
+
   .login-form__consent {
     @apply text-center text-xs leading-relaxed text-neutral-500;
     @apply dark:text-neutral-400;

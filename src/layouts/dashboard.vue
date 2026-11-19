@@ -2,6 +2,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
 
+  import PolicyUpdateModal from '@/components/business/legal/PolicyUpdateModal.vue'
   import DashboardHeader from '@/components/organisms/header/DashboardHeader.vue'
   import DashboardSidebar from '@/components/organisms/sidebar/DashboardSidebar.vue'
   import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
@@ -63,6 +64,11 @@
         </div>
       </main>
     </div>
+
+    <!-- Last in the DOM: it must stay above any other modal -->
+    <ClientOnly>
+      <PolicyUpdateModal />
+    </ClientOnly>
   </div>
 </template>
 
