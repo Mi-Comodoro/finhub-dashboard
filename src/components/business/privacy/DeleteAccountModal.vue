@@ -88,8 +88,8 @@
         <ul class="delete-account__list">
           <li>
             Tu cuenta queda
-            <strong>programada para eliminarse en 90 días</strong>
-            . Hasta entonces tus datos siguen guardados.
+            <strong>programada para eliminarse en 90 días.</strong>
+            Hasta entonces tus datos siguen guardados.
           </li>
           <li>
             <strong>Cerramos tu sesión ahora.</strong>
