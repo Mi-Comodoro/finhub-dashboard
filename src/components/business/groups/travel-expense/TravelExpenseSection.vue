@@ -140,10 +140,9 @@
             </div>
             <div class="travel-section__assignment-right">
               <Text size="xs" weight="medium">{{ format(assignment.amount) }}</Text>
-              <UBadge
-                :label="assignment.settled ? 'Saldado' : 'Pendiente'"
-                :color="assignment.settled ? 'success' : 'warning'"
-                variant="subtle"
+              <Badge
+                :text="assignment.settled ? 'Saldado' : 'Pendiente'"
+                :variant="assignment.settled ? 'success' : 'warning'"
                 size="xs"
               />
               <Button
