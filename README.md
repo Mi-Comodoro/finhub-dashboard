@@ -1,113 +1,35 @@
 # Mi Comodoro Dashboard
 
-Frontend de Mi Comodoro construido con Nuxt 4. La aplicación funciona como cliente web y BFF ligero para el backend, con enfoque en gestión de presupuesto, ingresos, gastos, ahorros y autenticación.
-
-## Stack
-
-- Nuxt 4
-- Vue 3
-- TypeScript
-- Pinia
-- Tailwind CSS + PostCSS
-- ECharts
-- Firebase Authentication
+Cliente web de Mi Comodoro (presupuestos, ingresos, gastos, ahorros y grupos), hecho con Nuxt 4. También es un BFF ligero: las rutas de `src/server/api/` hablan con la API NestJS del repo `mi-comodoro-server` y guardan la sesión en cookies httpOnly.
 
 ## Requisitos
 
-- Node.js `>=20.19 <23`
-- npm
-- Backend de Mi Comodoro disponible en `API_URL`
+- Node.js `>=26.13 <27` (`nvm use` lee `.nvmrc`)
+- pnpm 11 (la versión exacta está en `packageManager`; `corepack enable` la activa)
+- La API de Mi Comodoro en marcha (por defecto `http://localhost:3005`)
 
-## Puesta en marcha
-
-1. Instala dependencias:
+## Levantarlo
 
 ```bash
-npm install
+pnpm install
+cp .env.example .env   # completa las variables FB_* de Firebase
+pnpm dev
 ```
 
-2. Crea el archivo de entorno a partir de la plantilla:
+La URL de la API se define con `NUXT_PUBLIC_API_BASE` y `NUXT_PUBLIC_WS_BASE`. Todas las variables y sus valores de ejemplo están en `.env.example`.
 
-```bash
-cp .env.example .env
-```
+## Probarlo
 
-3. Ajusta las variables necesarias en `.env`.
+No hay pruebas automáticas. El CI (`.github/workflows/ci.yaml`) corre `pnpm exec eslint .` y `pnpm build`; ambos deben pasar para mergear un PR. En local: `pnpm lint` y `pnpm build`.
 
-4. Inicia el proyecto:
+## Desplegar
 
-```bash
-npm run dev
-```
+- Un push a `develop` despliega la instancia de desarrollo (`deploy-develop.yaml`).
+- Un push a `master` despliega producción (`deploy-production.yaml`).
+- Ambos corren en un runner propio, copian `.output` al servidor y reinician el proceso con PM2.
 
-## Variables de entorno
+## Más información
 
-El proyecto necesita estas variables:
-
-```env
-API_URL=
-FB_API_KEY=
-FB_AUTH_DOMAIN=
-FB_PROJECT_ID=
-FB_STORAGE_BUCKET=
-FB_MESSAGING_SENDER_ID=
-FB_APP_ID=
-FB_MEASUREMENT_ID=
-```
-
-## Scripts
-
-```bash
-npm run dev
-npm run build
-npm run preview
-npm run lint
-npm run lint:fix
-npm run format
-```
-
-## Arquitectura
-
-La aplicación sigue un flujo estricto:
-
-`pages/components -> composables/application -> stores -> composables/api -> server/api -> backend`
-
-Reglas clave:
-
-- `$fetch` solo se usa en `src/composables/api/`.
-- La lógica de negocio vive en `src/composables/application/`.
-- Los stores manejan estado; no deben contener llamadas HTTP directas.
-- `src/server/api/` actúa como BFF para el backend externo.
-- Los componentes de negocio viven dentro de `src/components/business/<feature>/`.
-
-## Estructura principal
-
-```text
-src/
-  components/
-    atoms/
-    molecules/
-    organisms/
-    business/
-  composables/
-    api/
-    application/
-    presenters/
-  middleware/
-  pages/
-  plugins/
-  server/api/
-  stores/
-  utils/
-```
-
-## Documentación útil
-
+- [AGENTS.md](AGENTS.md): convenciones y reglas de trabajo.
 - [Arquitectura](docs/ARCHITECTURE.md)
 - [Flujo de autenticación con Google](docs/google-auth-flow.md)
-
-## Convenciones importantes
-
-- El código debe escribirse en inglés; el texto de UI puede estar en español.
-- Se prefiere `@apply` en estilos en lugar de clases utilitarias extensas en templates.
-- Los cambios de arquitectura deben respetar las capas definidas arriba.
