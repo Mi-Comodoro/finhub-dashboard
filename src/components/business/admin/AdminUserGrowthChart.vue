@@ -11,6 +11,7 @@
   import { computed } from 'vue'
   import VChart from 'vue-echarts'
 
+  import { useTimezone } from '@/composables/useTimezone'
   import { CHART_COLORS } from '@/utils/design-tokens'
   import type { GrowthPeriod, UserGrowthDataPoint } from '~/types/domain'
 
@@ -27,20 +28,43 @@
 
   const props = defineProps<Props>()
 
+  const { tz } = useTimezone()
+
   const formatAxisDate = (isoDate: string): string => {
     const d = new Date(isoDate)
     if (props.period === '30d')
-      return d.toLocaleDateString('es-CO', { month: 'short', day: 'numeric' })
+      return new Intl.DateTimeFormat('es-CO', {
+        month: 'short',
+        day: 'numeric',
+        timeZone: tz.value
+      }).format(d)
     if (props.period === '90d')
-      return d.toLocaleDateString('es-CO', { month: 'short', day: 'numeric' })
-    return d.toLocaleDateString('es-CO', { year: 'numeric', month: 'short' })
+      return new Intl.DateTimeFormat('es-CO', {
+        month: 'short',
+        day: 'numeric',
+        timeZone: tz.value
+      }).format(d)
+    return new Intl.DateTimeFormat('es-CO', {
+      year: 'numeric',
+      month: 'short',
+      timeZone: tz.value
+    }).format(d)
   }
 
   const formatTooltipDate = (isoDate: string): string => {
     const d = new Date(isoDate)
     if (props.period === '12m')
-      return d.toLocaleDateString('es-CO', { year: 'numeric', month: 'long' })
-    return d.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+      return new Intl.DateTimeFormat('es-CO', {
+        year: 'numeric',
+        month: 'long',
+        timeZone: tz.value
+      }).format(d)
+    return new Intl.DateTimeFormat('es-CO', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: tz.value
+    }).format(d)
   }
 
   const chartOption = computed<EChartsOption>(() => ({

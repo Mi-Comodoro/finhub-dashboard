@@ -13,6 +13,7 @@
   const props = withDefaults(defineProps<BasicInformationFormProps>(), {
     modelValue: () => ({
       displayName: '',
+      handle: '',
       email: '',
       phone: '',
       gender: 'prefer_not_to_say' as 'male' | 'female' | 'prefer_not_to_say'
@@ -22,36 +23,76 @@
   const formSchema = userBasicDataFieldsSchema()
   const formKey = ref(0)
   const isValid = ref(false)
+  const handleTouched = ref(false)
 
   const prefillDisplayName =
     userStore.userInfo.name ?? userStore.displayName ?? props.modelValue?.displayName ?? ''
-
   const prefillEmail = userStore.userInfo.email
     ? userStore.userInfo.email
     : (props.modelValue?.email ?? '')
+
   const formData = ref<BasicInformationData>({
     displayName: prefillDisplayName,
+    handle: props.modelValue?.handle ?? '',
     email: prefillEmail,
-    phone: props.modelValue.phone,
-    gender: props.modelValue.gender || 'prefer_not_to_say'
+    phone: props.modelValue?.phone ?? '',
+    gender: props.modelValue?.gender || 'prefer_not_to_say'
   })
 
+  /* Auto-suggest handle desde displayName */
+  function suggestHandle(name: string): string {
+    return name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '')
+      .replace(/^[^a-z]+/, '')
+      .slice(0, 20)
+  }
+
   watch(
-    () => formData.value,
+    () => formData.value.displayName,
+    newName => {
+      if (handleTouched.value) return
+      const suggestion = suggestHandle(String(newName ?? ''))
+      if (suggestion.length >= 1) {
+        formData.value.handle = suggestion
+      }
+    }
+  )
+
+  /* Sanitizar handle a minúsculas cuando el Form lo cambia */
+  watch(
+    () => formData.value.handle,
+    newHandle => {
+      const cleaned = String(newHandle ?? '')
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '')
+        .slice(0, 20)
+      if (cleaned !== newHandle) {
+        formData.value.handle = cleaned
+      }
+      if (newHandle) handleTouched.value = true
+    }
+  )
+
+  watch(
+    formData,
     newValue => {
       if (!newValue) return
-
-      emit('update:modelValue', newValue)
+      emit('update:modelValue', { ...newValue })
       emit('valid', isValid.value)
     },
     { deep: true }
   )
 </script>
+
 <template>
   <div class="basic-form-data">
     <CardInfo
       title="Información Personal"
-      sub-title="Actualiza tus datos de perfil."
+      sub-title="Completa tus datos para comenzar."
       title-size="xl"
       weight="extrabold"
       level="h1"
@@ -68,7 +109,12 @@
         :key="formKey"
         v-model="formData"
         :schema="formSchema"
-        @update:is-valid="isValid = $event"
+        @update:is-valid="
+          (v: boolean) => {
+            isValid = v
+            emit('valid', v)
+          }
+        "
       />
     </div>
   </div>

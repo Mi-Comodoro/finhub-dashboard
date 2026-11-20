@@ -9,6 +9,7 @@
   import type { AccountData, GoalHistory, GoalsData } from '@/types/api'
   import { formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
+  import { getEffectiveGoalStatus, hasTargetAmount } from '@/utils/goal-formatters'
   import { GOAL_STATUS_LABELS, type GoalStatus } from '@/utils/goals.utils'
   import type { Currency } from '~/components/organisms/forms/types'
 
@@ -38,15 +39,16 @@
     loading: false
   })
 
-  const statusLabel = computed(() => {
-    const status = (props.goal?.status ?? 'SCHEDULED') as GoalStatus
-    return GOAL_STATUS_LABELS[status]
-  })
+  // A scheduled goal that already has contributions is in progress
+  const effectiveStatus = computed(
+    () => getEffectiveGoalStatus(props.goal?.status, props.savedAmount ?? 0) as GoalStatus
+  )
 
-  const statusVariant = computed(() => {
-    const status = (props.goal?.status ?? 'SCHEDULED') as GoalStatus
-    return status === 'IN_PROGRESS' ? 'primary' : 'default'
-  })
+  const statusLabel = computed(() => GOAL_STATUS_LABELS[effectiveStatus.value])
+
+  const statusVariant = computed(() =>
+    effectiveStatus.value === 'IN_PROGRESS' ? 'primary' : 'default'
+  )
 
   const deadlineLabel = computed(() => {
     if (!props.goal.targetDate) return 'Sin plazo'
@@ -54,6 +56,7 @@
   })
 
   const targetAmountLabel = computed(() => {
+    if (!hasTargetAmount(props.goal.targetAmount)) return 'Sin definir'
     return formatCurrency(props.goal.targetAmount ?? 0, props.currency as Currency)
   })
 

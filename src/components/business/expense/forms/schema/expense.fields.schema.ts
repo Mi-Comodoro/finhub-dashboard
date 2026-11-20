@@ -1,8 +1,11 @@
 import type { FormSchema } from '~/components/organisms/forms/Form.vue'
 
 export const expensedPlannedFieldsSchema = (
-  options: { label: string; value: string; disabled: boolean }[]
+  options: { label: string; value: string; disabled: boolean }[],
+  customBucketOptions?: { label: string; value: string | null }[]
 ): FormSchema => {
+  const hasCustomBuckets = !!customBucketOptions?.length
+
   return {
     fields: {
       name: {
@@ -53,7 +56,20 @@ export const expensedPlannedFieldsSchema = (
         type: 'textarea',
         label: 'Notas',
         placeholder: 'Detalles sobre este gasto...'
-      }
+      },
+      ...(hasCustomBuckets
+        ? {
+            customBucketId: {
+              type: 'select' as const,
+              label: 'Categoría personalizada',
+              placeholder: 'Sin categoría especial',
+              options: [
+                { label: '— Sin categoría especial', value: '' },
+                ...(customBucketOptions ?? []).map(o => ({ label: o.label, value: o.value ?? '' }))
+              ]
+            }
+          }
+        : {})
     },
 
     layout: [
@@ -67,11 +83,25 @@ export const expensedPlannedFieldsSchema = (
         columns: 2,
         fields: ['expectedAmount', 'dueDate']
       },
-      {
-        type: 'grid',
-        columns: 2,
-        fields: ['billsId', 'isEssential']
-      },
+      ...(hasCustomBuckets
+        ? [
+            {
+              type: 'grid' as const,
+              columns: 2,
+              fields: ['billsId', 'customBucketId']
+            },
+            {
+              type: 'row' as const,
+              fields: ['isEssential']
+            }
+          ]
+        : [
+            {
+              type: 'grid' as const,
+              columns: 2,
+              fields: ['billsId', 'isEssential']
+            }
+          ]),
       {
         type: 'row',
         fields: ['notes']

@@ -9,6 +9,7 @@
   import Text from '@/components/atoms/typography/Text.vue'
   import BudgetClosedBanner from '@/components/business/budget/BudgetClosedBanner.vue'
   import BudgetDistribution from '@/components/business/budget/BudgetDistribution.vue'
+  import BudgetSetupBanner from '@/components/business/budget/BudgetSetupBanner.vue'
   import BudgetEditForm from '@/components/business/budget/forms/BudgetEditForm.vue'
   import BudgetIncome from '@/components/business/budget/income/BudgetIncome.vue'
   import BudgetInsights from '@/components/business/budget/insight/BudgetInsights.vue'
@@ -22,6 +23,10 @@
   import ConfirmDeleteModal from '@/components/organisms/confirm-delete/ConfirmDeleteModal.vue'
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import SidebarPage from '@/components/templates/SidebarPage.vue'
+  import { useExpenseApi } from '@/composables/api/useExpenseApi'
+  import { useActiveBudgetApplication } from '@/composables/application/useActiveBudgetApplication'
+  import { useBillsApplication } from '@/composables/application/useBillsApplication'
+  import { useBudgetActions } from '@/composables/application/useBudgetActions'
   import { useBudgetDetailApplication } from '@/composables/application/useBudgetDetailApplication'
   import { useBudgetTransferApplication } from '@/composables/application/useBudgetTransferApplication'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
@@ -29,6 +34,7 @@
   import { usePlannedIncomeApplication } from '@/composables/application/usePlannedIncomeApplication'
   import { usePlannedSavingApplication } from '@/composables/application/usePlannedSavingApplication'
   import { useTransactionApplication } from '@/composables/application/useTransactionApplication'
+  import { useBudgetBalancePresenter } from '@/composables/presenters/useBudgetBalancePresenter'
   import { useApiHandler } from '@/composables/useApiHandler'
   import { useFeedback } from '@/composables/useFeedBack'
   import { formatCurrency } from '@/utils/currency'
@@ -44,16 +50,19 @@
   const route = useRoute()
   const router = useRouter()
 
-  const { loadBudgetDetail, budgetSelected, expectedIncome, defaultCurrency } =
+  const { loadBudgetDetail, refreshSpentAmounts, budgetSelected, expectedIncome, defaultCurrency } =
     useBudgetDetailApplication()
   const { deleteExpense } = useExpenseApplication()
   const { fetchByBudget: fetchTransactions, fetchTotals } = useTransactionApplication()
   const { fetchByBudget: fetchPlannedSavings } = usePlannedSavingApplication()
-  const { success: successToast } = useFeedback()
+  const { success: successToast, error: errorToast } = useFeedback()
   const { handleError } = useApiHandler()
   const { lastUpdate } = usePlannedIncomeApplication()
-  const { fetchGoals, goals } = useGoalsApplication()
+  const { fetchGoals, goals, loadAllocationSummaryData } = useGoalsApplication()
+  const { canActive, setupSteps, activate } = useActiveBudgetApplication()
+  const isActivating = ref(false)
   const { transferToBudget, transferToGoal } = useBudgetTransferApplication()
+  const { setDefaultBudget } = useBudgetActions()
 
   const budgetId = route.params['id'] as string
 
@@ -66,13 +75,37 @@
         fetchTransactions(budgetId),
         fetchTotals(budgetId),
         fetchPlannedSavings(budgetId),
-        fetchGoals()
+        fetchGoals(),
+        loadAllocationSummaryData()
       ])
     }
   })
 
-  const budgetStart = () => {
-    successToast('Gasto Registrado', 'Se registró correctamente')
+  const goToSavingsSetup = () => router.push('/dashboard/goals')
+
+  // The budget can only be activated once savings are set up (account, 3 goals, 100% distributed)
+  const budgetStart = async () => {
+    if (isActivating.value) return
+    isActivating.value = true
+    try {
+      const { success, blocked } = await activate(budgetId)
+      if (blocked) {
+        errorToast(
+          'Aún no puedes activar el presupuesto',
+          'Completa tus metas de ahorro y la distribución del ahorro primero.'
+        )
+        await goToSavingsSetup()
+        return
+      }
+      if (success) {
+        successToast('Presupuesto activado', 'Ya puedes recibir ingresos y registrar gastos.')
+        await loadBudgetDetail(budgetId)
+      } else {
+        errorToast('No se pudo activar', 'Inténtalo de nuevo en unos segundos.')
+      }
+    } finally {
+      isActivating.value = false
+    }
   }
 
   const strategyInfo = computed(() => {
@@ -115,6 +148,14 @@
       click: budgetStart
     },
     {
+      name: 'Predeterminado',
+      size: 'sm',
+      variant: 'primary',
+      icon: 'star',
+      condition: planStatus.value === 'ACTIVE' && !plan.value?.isDefault,
+      click: () => setDefaultBudget(budgetId)
+    },
+    {
       name: 'Eliminar',
       size: 'sm',
       variant: 'danger',
@@ -124,6 +165,9 @@
   ])
 
   const plan = computed(() => budgetSelected.value)
+
+  const { realIncome } = useBudgetBalancePresenter()
+  const hasReceivedIncome = computed(() => (realIncome.value ?? 0) > 0)
 
   const planStatus = computed(() => plan.value?.status ?? 'PLANNED')
   const expectedAmount = computed(() => expectedIncome.value)
@@ -185,10 +229,50 @@
     showSavingDistributionForm.value = false
   }
 
+  const { activeBills, importBillsToBudget } = useBillsApplication()
+  const { findAllExpenses } = useExpenseApi()
+  const expenseSectionRef = ref<{ refresh: () => void } | null>(null)
+  const showBillImport = ref(false)
+  const selectedBillIds = ref<string[]>([])
+  const alreadyImportedBillIds = ref<Set<string>>(new Set())
+
+  const billsAvailableToImport = computed(() =>
+    (activeBills.value ?? []).filter(b => !alreadyImportedBillIds.value.has(b.id))
+  )
+
+  const openBillImport = async () => {
+    selectedBillIds.value = []
+    alreadyImportedBillIds.value = new Set()
+    showBillImport.value = true
+    try {
+      const res = await findAllExpenses({ budgetId, limit: 500, page: 1 })
+      const ids = (res.result?.data ?? []).filter(e => e.billsId).map(e => e.billsId as string)
+      alreadyImportedBillIds.value = new Set(ids)
+    } catch {
+      // si falla el fetch, mostramos todas las facturas activas
+    }
+  }
+
+  const handleImportBills = async () => {
+    if (!selectedBillIds.value.length) return
+    const { success, imported } = await importBillsToBudget(budgetId, {
+      billIds: selectedBillIds.value
+    })
+    showBillImport.value = false
+    if (success) {
+      successToast('Facturas importadas', `Se crearon ${imported} gastos planificados.`)
+      expenseSectionRef.value?.refresh()
+    }
+  }
+
   const handleMarkExpenseAsPaid = async (_row: { id: string }) => {
     successToast('Gasto pagado', 'El gasto fue marcado como pagado y se registró la transacción.')
     if (budgetId) {
-      await Promise.all([fetchTransactions(budgetId), fetchTotals(budgetId)])
+      await Promise.all([
+        fetchTransactions(budgetId),
+        fetchTotals(budgetId),
+        refreshSpentAmounts(budgetId)
+      ])
     }
   }
 
@@ -201,7 +285,8 @@
         dueDate: row.dueDate,
         categoryId: row.categoryId,
         isEssential: row.isEssential,
-        notes: row.notes
+        notes: row.notes,
+        customBucketId: row.customBucketId ?? null
       }
     }
     formMode.value = 'edit'
@@ -219,7 +304,8 @@
         bucket: row.bucket,
         status: row.status,
         isEssential: row.isEssential,
-        notes: row.notes
+        notes: row.notes,
+        customBucketId: row.customBucketId ?? null
       }
     }
     formMode.value = 'view'
@@ -306,6 +392,10 @@
                 {{ displayStatus }}
               </Badge>
               <Badge variant="secondary" size="xs">{{ strategyInfo?.label }}</Badge>
+              <Badge v-if="plan.isDefault" variant="primary" size="xs">
+                <Icon name="star" size="xs" />
+                Predeterminado
+              </Badge>
               <Badge v-if="plan.isShared" variant="warning" size="xs">
                 <Icon name="group" size="xs" />
                 Compartido
@@ -338,6 +428,16 @@
       </div>
     </div>
 
+    <BudgetSetupBanner
+      v-if="planStatus === 'PLANNED'"
+      :steps="setupSteps"
+      :can-activate="canActive"
+      :is-activating="isActivating"
+      class="budget-detail__banner"
+      @activate="budgetStart"
+      @go-to-setup="goToSavingsSetup"
+    />
+
     <BudgetClosedBanner
       v-if="isClosed && hasPendingBalance"
       :budget="plan"
@@ -357,8 +457,10 @@
         <BudgetInsights :budget-status="planStatus" />
         <PlannedSavingList :budget-id="budgetId" />
         <ExpensePlannedSection
+          ref="expenseSectionRef"
           :budget-id="budgetId"
           @open-form="openForm"
+          @open-bill-import="openBillImport"
           @mark-as-payed="handleMarkExpenseAsPaid"
           @edit="handleEditExpense"
           @view="handleViewExpense"
@@ -368,7 +470,11 @@
 
       <div class="budget-detail__sidebar">
         <SidebarPage>
-          <Tips icon="show_chart" title="Optimizacion Inteligente">
+          <Tips
+            v-if="planStatus === 'PLANNED' && !hasReceivedIncome"
+            icon="show_chart"
+            title="Optimizacion Inteligente"
+          >
             El ahorro del {{ plan?.limits?.savings || 0 }}% del
             <strong>({{ formatCurrency(expectedAmount!, defaultCurrency, 2) }})</strong>
             , se activará automáticamente cuando confirmes tu primer ingreso.
@@ -387,13 +493,17 @@
         :initial-data="editingExpense?.data"
         :currency="defaultCurrency"
         :mode="formMode"
+        :custom-buckets="plan?.customBuckets ?? []"
         @success="handleFormSuccess"
         @close="closeForm"
       />
     </ModalWizard>
 
     <ModalWizard v-model:show="showSavingDistributionForm">
-      <SavingDistributionForm @on-close="closeSavingDistributionForm" />
+      <SavingDistributionForm
+        @on-close="closeSavingDistributionForm"
+        @on-success="closeSavingDistributionForm"
+      />
     </ModalWizard>
 
     <ModalWizard v-model:show="showIncomeModal">
@@ -420,6 +530,50 @@
       :title="`¿Eliminar '${expenseToDelete?.name}'?`"
       @confirm="confirmDeleteExpense"
     />
+
+    <ModalWizard :show="showBillImport" @close="showBillImport = false">
+      <div class="bill-import-modal">
+        <Heading level="h2" size="lg" weight="semibold">Importar Facturas</Heading>
+        <Text size="sm" color="muted">
+          Selecciona las facturas activas que deseas agregar como gastos planificados.
+        </Text>
+
+        <div v-if="billsAvailableToImport.length" class="bill-import-modal__list">
+          <label
+            v-for="bill in billsAvailableToImport"
+            :key="bill.id"
+            class="bill-import-modal__item"
+          >
+            <input
+              v-model="selectedBillIds"
+              type="checkbox"
+              :value="bill.id"
+              class="bill-import-modal__checkbox"
+            />
+            <div class="bill-import-modal__info">
+              <span class="bill-import-modal__name">{{ bill.name }}</span>
+              <span class="bill-import-modal__day">Día {{ bill.billingDay }}</span>
+            </div>
+          </label>
+        </div>
+        <Text v-else size="sm" color="muted">
+          Todas las facturas activas ya están en este presupuesto.
+        </Text>
+
+        <div class="bill-import-modal__actions">
+          <Button variant="ghost" size="sm" @click="showBillImport = false">Cancelar</Button>
+          <Button
+            variant="primary"
+            size="sm"
+            icon="sync"
+            :disabled="!selectedBillIds.length"
+            @click="handleImportBills"
+          >
+            Importar ({{ selectedBillIds.length }})
+          </Button>
+        </div>
+      </div>
+    </ModalWizard>
   </div>
   <div v-else class="budget-detail__empty">
     <Icon name="search_off" class="budget-detail__empty-icon" size="2xl" />
@@ -542,5 +696,38 @@
   .coming-soon-card__description {
     @apply text-neutral-500;
     @apply dark:text-neutral-400;
+  }
+
+  .bill-import-modal {
+    @apply flex flex-col gap-4 p-2;
+  }
+
+  .bill-import-modal__list {
+    @apply flex max-h-64 flex-col gap-2 overflow-y-auto;
+  }
+
+  .bill-import-modal__item {
+    @apply flex cursor-pointer items-center gap-3 rounded-lg border border-neutral-200 p-3 hover:bg-neutral-50;
+    @apply dark:border-neutral-700 dark:hover:bg-neutral-700;
+  }
+
+  .bill-import-modal__checkbox {
+    @apply h-4 w-4 accent-primary-600;
+  }
+
+  .bill-import-modal__info {
+    @apply flex flex-1 items-center justify-between;
+  }
+
+  .bill-import-modal__name {
+    @apply text-sm font-medium text-neutral-900 dark:text-white;
+  }
+
+  .bill-import-modal__day {
+    @apply text-xs text-neutral-500 dark:text-neutral-400;
+  }
+
+  .bill-import-modal__actions {
+    @apply flex justify-end gap-2 border-t border-neutral-200 pt-4 dark:border-neutral-700;
   }
 </style>

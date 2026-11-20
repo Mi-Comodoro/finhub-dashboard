@@ -51,6 +51,7 @@
     { name: 'Dashboard', icon: 'dashboard_2', path: '/dashboard' },
     { name: 'Metas de Ahorro', icon: 'savings', path: '/dashboard/goals' },
     { name: 'Presupuesto', icon: 'account_balance_wallet', path: '/dashboard/budget' },
+    { name: 'Facturas Recurrentes', icon: 'receipt_long', path: '/dashboard/bills' },
     {
       name: 'Grupos',
       icon: 'group',

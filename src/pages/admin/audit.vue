@@ -4,6 +4,7 @@
   import Heading from '@/components/atoms/typography/Heading.vue'
   import Text from '@/components/atoms/typography/Text.vue'
   import { useAdminApplication } from '@/composables/application/useAdminApplication'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { AuditLogFilters } from '@/types/domain'
 
   definePageMeta({
@@ -15,6 +16,7 @@
   })
 
   const { auditLogs, auditTotal, auditPage, isLoadingAudit, fetchAuditLogs } = useAdminApplication()
+  const { formatDateTime } = useTimezone()
 
   const LIMIT = 20
 
@@ -67,13 +69,7 @@
     expandedId.value = expandedId.value === id ? null : id
   }
 
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString('es-CO', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+  const formatDate = (iso: string) => formatDateTime(iso)
 
   const getDetail = (item: (typeof auditLogs.value)[0]): string => {
     if (item.action === 'CONFIG_UPDATED') {

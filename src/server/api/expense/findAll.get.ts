@@ -21,6 +21,7 @@ interface ExpensesResponse {
       isEssential: boolean
       notes?: string
       billsId?: string | null
+      customBucketId?: string | null
       createdAt: Date
       updatedAt: Date
     }[]

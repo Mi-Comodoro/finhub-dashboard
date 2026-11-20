@@ -23,13 +23,7 @@ export default defineNuxtConfig({
           content: 'Control financiero personal inteligente'
         }
       ],
-      link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200'
-        }
-      ]
+      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }]
     }
   },
 
@@ -43,7 +37,7 @@ export default defineNuxtConfig({
     '@ui-types': resolvePath('./src/types/ui')
   },
 
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV === 'development' },
   css: ['~/assets/css/main.css'],
 
   typescript: {

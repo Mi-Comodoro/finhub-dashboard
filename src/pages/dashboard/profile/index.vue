@@ -225,7 +225,7 @@
 
   // Reactive title
   useHead({
-    title: 'Perfil - FinHub'
+    title: 'Perfil - Mi Comodoro'
   })
   const endDate = computed(() =>
     user.value.trialEndsAt ? new Date(user.value.trialEndsAt) : new Date()

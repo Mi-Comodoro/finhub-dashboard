@@ -3,7 +3,7 @@ import type { FetchError } from 'ofetch'
 import { useBudgetApi } from '@/composables/api/useBudgetApi'
 import { useBudgetStore } from '@/stores/budget.store'
 import type { BudgetListResponse, CurrentBudget, SingleBudget } from '~/types/api'
-import type { Budget, CurrentBudgetPlan } from '~/types/domain'
+import type { Budget, CurrentBudgetPlan, CustomBucket } from '~/types/domain'
 
 // Business logic: mapear SingleBudget a Budget
 const mapSingleBudgetToBudget = (single: SingleBudget): Budget => {
@@ -48,6 +48,7 @@ const mapCurrentBudgetToPlan = (result: SingleBudget): CurrentBudgetPlan => ({
   month: result.month,
   year: result.year,
   isShared: result.isShared,
+  isDefault: result.isDefault ?? false,
   limits: result.limits,
   financesId: result.financesId,
   status: result.status,
@@ -55,7 +56,8 @@ const mapCurrentBudgetToPlan = (result: SingleBudget): CurrentBudgetPlan => ({
   partnerId: result.partnerId,
   strategy: result.strategy,
   frequency: result.frequency,
-  freeAmount: result.freeAmount
+  freeAmount: result.freeAmount,
+  customBuckets: result.customBuckets ?? []
 })
 
 interface CreateBudgetPayload {
@@ -66,6 +68,7 @@ interface CreateBudgetPayload {
   needsLimit: number
   wantsLimit: number
   savingsLimit: number
+  customBuckets?: CustomBucket[]
 }
 
 interface UpdateBudgetPayload {
@@ -74,6 +77,7 @@ interface UpdateBudgetPayload {
   needsLimit: number
   wantsLimit: number
   savingsLimit: number
+  customBuckets?: CustomBucket[]
 }
 
 export function useBudgetActions() {
@@ -247,6 +251,38 @@ export function useBudgetActions() {
     return { success }
   }
 
+  const setDefaultBudget = async (budgetId: string): Promise<{ success: boolean }> => {
+    budgetStore.setLoading(true)
+    budgetStore.setError(null)
+    try {
+      const response = (await budgetApi.setDefaultBudget(budgetId)) as CurrentBudget
+      if (!response.success || !response.result) return { success: false }
+      budgetStore.updateBudgetPlan(mapCurrentBudgetToPlan(response.result))
+      return { success: true }
+    } catch (err) {
+      console.error('❌ Error setting default budget:', err)
+      budgetStore.setError(createErrorMessage(err as FetchError))
+      return { success: false }
+    } finally {
+      budgetStore.setLoading(false)
+    }
+  }
+
+  const deleteCustomBucket = async (
+    budgetId: string,
+    bucketId: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { deleteCustomBucket: apiDeleteBucket } = useBudgetApi()
+      await apiDeleteBucket(budgetId, bucketId)
+      return { success: true }
+    } catch (err) {
+      const fetchErr = err as { data?: { message?: string }; message?: string }
+      const message = fetchErr.data?.message ?? fetchErr.message ?? 'No se pudo eliminar el bucket'
+      return { success: false, error: message }
+    }
+  }
+
   return {
     fetchCurrentBudget,
     fetchBudgets,
@@ -256,6 +292,8 @@ export function useBudgetActions() {
     handleCreate,
     handleClone,
     handleUpdate,
-    handleDelete
+    handleDelete,
+    setDefaultBudget,
+    deleteCustomBucket
   }
 }

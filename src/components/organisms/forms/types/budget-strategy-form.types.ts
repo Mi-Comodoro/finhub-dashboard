@@ -1,3 +1,5 @@
+import type { CustomBucket } from '~/types/domain'
+
 export type CanonicalStrategy = 'BALANCED' | 'CUSTOM'
 
 export type StrategyValue = CanonicalStrategy | 'BALANCED' | 'CUSTOM'
@@ -12,6 +14,7 @@ export interface StrategyFormInput {
     wants: number
     savings: number
   }
+  customBuckets?: CustomBucket[]
 }
 
 export interface StrategyFormData {
@@ -22,6 +25,7 @@ export interface StrategyFormData {
     wants: number
     savings: number
   }
+  customBuckets?: CustomBucket[]
 }
 
 export interface BudgetStrategyFormProps {

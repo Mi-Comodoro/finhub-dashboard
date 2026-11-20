@@ -52,6 +52,22 @@ export function useBudgetDetailApplication() {
     }
   }
 
+  const refreshSpentAmounts = async (budgetId: string) => {
+    try {
+      const { result } = await expenseApi.findAllExpenses({ budgetId, status: 'PAID', limit: 1000 })
+      if (result?.data) {
+        needsSpent.value = result.data
+          .filter(e => e.bucket === 'needs')
+          .reduce((sum, e) => sum + Number(e.expectedAmount ?? 0), 0)
+        wantsSpent.value = result.data
+          .filter(e => e.bucket === 'wants')
+          .reduce((sum, e) => sum + Number(e.expectedAmount ?? 0), 0)
+      }
+    } catch {
+      // mantener valores previos si falla
+    }
+  }
+
   const markExpenseAsPaid = async (expenseId: string) => {
     const { useExpenseApplication } = await import('./useExpenseApplication')
     const { completeExpense } = useExpenseApplication()
@@ -66,6 +82,7 @@ export function useBudgetDetailApplication() {
   return {
     loadBudgetDetail,
     markExpenseAsPaid,
+    refreshSpentAmounts,
     budgetSelected,
     expectedIncome,
     defaultCurrency,

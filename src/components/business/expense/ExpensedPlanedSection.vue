@@ -4,9 +4,17 @@
   import type { Column, RowData } from '@/components/organisms/datatable/types'
   import { useExpenseApplication } from '@/composables/application/useExpenseApplication'
   import { useExpenseSectionApplication } from '@/composables/application/useExpenseSectionApplication'
+  import { useBudgetBalancePresenter } from '@/composables/presenters/useBudgetBalancePresenter'
   import { useFeedback } from '@/composables/useFeedBack'
 
-  const emit = defineEmits(['open-form', 'edit', 'view', 'remove', 'mark-as-payed'])
+  const emit = defineEmits([
+    'open-form',
+    'open-bill-import',
+    'edit',
+    'view',
+    'remove',
+    'mark-as-payed'
+  ])
 
   const props = withDefaults(
     defineProps<{
@@ -21,6 +29,8 @@
     useExpenseSectionApplication()
   const { completeExpense } = useExpenseApplication()
   const { error: errorToast } = useFeedback()
+  const { canPlanExpenses: canPlanFor } = useBudgetBalancePresenter()
+  const canPlanExpenses = computed(() => canPlanFor(props.budgetId))
 
   // 🔍 search local (UI)
   const search = ref('')
@@ -70,14 +80,15 @@
   const view = (row: RowData) => emit('view', row)
   const remove = (row: RowData) => emit('remove', row)
   const openForm = () => emit('open-form')
+  const openBillImport = () => emit('open-bill-import')
 
   const markAsPayed = async (row: RowData) => {
     if (markingAsPaidId.value) return
     markingAsPaidId.value = row.id as string
     try {
-      const { success } = await completeExpense(row.id as string)
+      const { success, message } = await completeExpense(row.id as string)
       if (success) emit('mark-as-payed', row)
-      else errorToast('Error al pagar', 'No se pudo marcar el gasto como pagado.')
+      else errorToast('Error al pagar', message ?? 'No se pudo marcar el gasto como pagado.')
     } finally {
       markingAsPaidId.value = null
     }
@@ -141,17 +152,44 @@
     { key: 'dueDate', label: 'Fecha', type: 'date' },
     { key: 'status', label: 'Estado', type: 'badge' }
   ]
+
+  defineExpose({ refresh: fetchExpenses })
 </script>
 
 <template>
   <SectionCard title="Gastos Planificados">
     <template #action>
       <div class="flex gap-2">
-        <Button variant="secondary" size="sm" icon="add" @click="openForm">Añadir Gastos</Button>
-        <Button variant="secondary" size="sm" icon="add" @click="openForm">Añadir Facturas</Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon="add"
+          :disabled="!canPlanExpenses"
+          @click="openForm"
+        >
+          Añadir Gastos
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon="sync"
+          :disabled="!canPlanExpenses"
+          @click="openBillImport"
+        >
+          Importar Facturas
+        </Button>
       </div>
     </template>
     <template #default>
+      <!-- ⛔ Nothing to back the planned expenses with -->
+      <div v-if="!canPlanExpenses" class="expense-section__notice" role="status">
+        <span class="material-symbols-outlined expense-section__notice-icon">info</span>
+        <Text size="sm" color="muted">
+          Aún no puedes planificar gastos: este presupuesto no tiene ingresos esperados ni saldo
+          disponible. Registra un ingreso esperado o recibe un ingreso para habilitarlo.
+        </Text>
+      </div>
+
       <!-- 🔍 SEARCH -->
       <div class="expense-section">
         <div class="expense-section__filters">
@@ -169,6 +207,19 @@
 
         <!-- 📊 TABLE -->
         <DataTable :columns="columns" :data="expenses" :pagination="meta" @page-change="setPage">
+          <template #cell-name="{ value, row }">
+            <span class="expense-section__name-cell">
+              {{ value }}
+              <span
+                v-if="row.billsId"
+                class="material-symbols-outlined expense-section__bill-icon"
+                title="Importado de factura recurrente"
+              >
+                sync
+              </span>
+            </span>
+          </template>
+
           <template #cell-category="{ value }">
             <Badge size="xs">{{ value }}</Badge>
           </template>
@@ -236,11 +287,28 @@
     @apply flex w-full flex-col space-y-2;
   }
 
+  .expense-section__notice {
+    @apply mb-3 flex items-start gap-2 rounded-xl border border-warning-200 bg-warning-50 p-3;
+    @apply dark:border-warning-700 dark:bg-warning-900/20;
+  }
+
+  .expense-section__notice-icon {
+    @apply text-warning-600;
+  }
+
   .expense-section__filters {
     @apply flex gap-2;
   }
 
   .expense-section__actions {
     @apply flex w-full justify-end gap-4;
+  }
+
+  .expense-section__name-cell {
+    @apply flex items-center gap-1 font-semibold;
+  }
+
+  .expense-section__bill-icon {
+    @apply text-xs text-primary-500;
   }
 </style>

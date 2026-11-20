@@ -41,6 +41,7 @@ export function useExpenseApi() {
           isEssential: boolean
           notes?: string
           billsId?: string | null
+          customBucketId?: string | null
           createdAt: Date | string
           updatedAt: Date | string
         }>

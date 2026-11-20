@@ -14,7 +14,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         HOST: '0.0.0.0',
-        PORT: 3000
+        PORT: 3000,
+        NUXT_PUBLIC_WS_BASE: process.env.NUXT_PUBLIC_WS_BASE || 'http://localhost:3005'
       }
     }
   ]

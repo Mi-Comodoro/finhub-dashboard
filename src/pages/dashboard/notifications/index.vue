@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import { useFriendshipsApi } from '@/composables/api/useFriendshipsApi'
+  import { useGroupsApplication } from '@/composables/application/useGroupsApplication'
   import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
   import { useFeedback } from '@/composables/useFeedBack'
   import type { AppNotification } from '@/types/notifications.types'
+  import { formatCurrency } from '@/utils/currency'
 
   definePageMeta({
     layout: 'dashboard',
@@ -17,6 +19,7 @@
   const { loadNotificationsPaginated, handleMarkRead, handleDeleteNotification, handleDeleteAll } =
     useNotificationsApplication()
   const { acceptRequest, rejectRequest } = useFriendshipsApi()
+  const { respondToInvitation } = useGroupsApplication()
   const { success: successToast, error: errorToast } = useFeedback()
 
   const items = ref<AppNotification[]>([])
@@ -34,7 +37,9 @@
     announcement: { icon: 'campaign', label: 'Anuncio' },
     friend_request: { icon: 'person_add', label: 'Solicitud de amistad' },
     friend_accepted: { icon: 'how_to_reg', label: 'Solicitud aceptada' },
-    friend_rejected: { icon: 'person_off', label: 'Solicitud rechazada' }
+    friend_rejected: { icon: 'person_off', label: 'Solicitud rechazada' },
+    group_trip_invitation: { icon: 'flight', label: 'Invitación a viaje' },
+    group_trip_accepted: { icon: 'check_circle', label: 'Invitación aceptada' }
   }
 
   const getConfig = (type: string) => TYPE_CONFIG[type] ?? { icon: 'notifications', label: type }
@@ -50,6 +55,18 @@
 
   const getShortMessage = (n: AppNotification) => {
     if (n.type === 'announcement') return n.payload.title ?? 'Nuevo anuncio'
+    if (n.type === 'group_trip_invitation') {
+      const name = n.payload.groupName ?? 'un viaje'
+      const handle = n.payload.inviterHandle ?? n.payload.senderHandle
+      return handle ? `@${handle} te invitó al viaje "${name}"` : `Te invitaron al viaje "${name}"`
+    }
+    if (n.type === 'group_trip_accepted') {
+      const name = n.payload.groupName ?? 'tu viaje'
+      const handle = n.payload.senderHandle
+      return handle
+        ? `@${handle} se unió al viaje "${name}"`
+        : `Un miembro se unió al viaje "${name}"`
+    }
     const action: Record<string, string> = {
       friend_request: 'quiere ser tu amigo',
       friend_accepted: 'aceptó tu solicitud de amistad',
@@ -139,6 +156,44 @@
       await fetchPage(currentPage.value)
     } catch {
       errorToast('Error', 'No se pudo rechazar la solicitud')
+    } finally {
+      pendingAction.value = null
+    }
+  }
+
+  const onRespondTripInvitation = async (
+    n: AppNotification,
+    action: 'accept_full' | 'accept_half' | 'accept_no_budget' | 'decline'
+  ) => {
+    if (!n.payload.groupId) return
+    pendingAction.value = n.id
+    try {
+      const { success, data } = await respondToInvitation(n.payload.groupId, { action })
+      if (!success) {
+        errorToast('Error', 'No se pudo procesar la respuesta')
+        return
+      }
+      await handleMarkRead(n.id)
+      if (action === 'decline') {
+        successToast('Invitación rechazada', 'Has rechazado la invitación al viaje')
+      } else if (data?.expense) {
+        const amountLabel = formatCurrency(data.expense.expectedAmount, 'COP')
+        successToast(
+          '¡Te uniste al viaje!',
+          `Se creó el gasto "${data.expense.name}" por ${amountLabel} en tu presupuesto`
+        )
+      } else if (action === 'accept_no_budget') {
+        successToast('¡Te uniste al viaje!', 'Te uniste sin vincular un presupuesto')
+      } else {
+        successToast(
+          '¡Te uniste al viaje!',
+          'No se pudo crear el gasto — verifica que tengas un presupuesto activo'
+        )
+      }
+      closeModal()
+      await fetchPage(currentPage.value)
+    } catch {
+      errorToast('Error', 'No se pudo procesar la respuesta')
     } finally {
       pendingAction.value = null
     }
@@ -303,6 +358,96 @@
             </div>
           </template>
 
+          <template v-else-if="selectedNotification.type === 'group_trip_invitation'">
+            <p class="notif-modal__title">
+              <strong>
+                @{{
+                  selectedNotification.payload.inviterHandle ??
+                  selectedNotification.payload.senderHandle
+                }}
+              </strong>
+              te invitó a unirte al viaje
+              <strong>{{ selectedNotification.payload.groupName }}</strong>
+            </p>
+            <div class="notif-modal__trip-context">
+              <div v-if="selectedNotification.payload.goal" class="notif-modal__trip-row">
+                <span class="material-symbols-outlined notif-modal__trip-icon">flag</span>
+                <span>
+                  Meta del viaje:
+                  <strong>{{ formatCurrency(selectedNotification.payload.goal!, 'COP') }}</strong>
+                </span>
+              </div>
+              <div
+                v-if="selectedNotification.payload.organizerPlannedAmount"
+                class="notif-modal__trip-row"
+              >
+                <span class="material-symbols-outlined notif-modal__trip-icon">receipt_long</span>
+                <span>
+                  El organizador planificó:
+                  <strong>
+                    {{ formatCurrency(selectedNotification.payload.organizerPlannedAmount, 'COP') }}
+                  </strong>
+                </span>
+              </div>
+            </div>
+            <p class="notif-modal__body">¿Cómo quieres participar?</p>
+            <div class="notif-modal__trip-actions">
+              <Button
+                v-if="selectedNotification.payload.organizerPlannedAmount"
+                variant="primary"
+                size="sm"
+                :disabled="pendingAction === selectedNotification.id"
+                @click="onRespondTripInvitation(selectedNotification, 'accept_full')"
+              >
+                Aportar
+                {{ formatCurrency(selectedNotification.payload.organizerPlannedAmount, 'COP') }}
+              </Button>
+              <Button
+                v-if="selectedNotification.payload.organizerPlannedAmount"
+                variant="secondary"
+                size="sm"
+                :disabled="pendingAction === selectedNotification.id"
+                @click="onRespondTripInvitation(selectedNotification, 'accept_half')"
+              >
+                Aportar la mitad ({{
+                  formatCurrency(
+                    Math.round((selectedNotification.payload.organizerPlannedAmount ?? 0) / 2),
+                    'COP'
+                  )
+                }})
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                :disabled="pendingAction === selectedNotification.id"
+                @click="onRespondTripInvitation(selectedNotification, 'accept_no_budget')"
+              >
+                Unirme sin presupuesto
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                :disabled="pendingAction === selectedNotification.id"
+                @click="onRespondTripInvitation(selectedNotification, 'decline')"
+              >
+                Rechazar invitación
+              </Button>
+            </div>
+          </template>
+
+          <template v-else-if="selectedNotification.type === 'group_trip_accepted'">
+            <p class="notif-modal__title">
+              <strong>
+                {{
+                  selectedNotification.payload.senderDisplayName ??
+                  `@${selectedNotification.payload.senderHandle}`
+                }}
+              </strong>
+              se unió al viaje
+              <strong>{{ selectedNotification.payload.groupName }}</strong>
+            </p>
+          </template>
+
           <template v-else-if="selectedNotification.type === 'friend_accepted'">
             <p class="notif-modal__title">
               <strong>@{{ selectedNotification.payload.senderHandle }}</strong>
@@ -388,6 +533,10 @@
     @apply bg-success-100 dark:bg-success-900/30;
   }
 
+  .notifications-page__icon-wrap--group {
+    @apply bg-warning-100 dark:bg-warning-900/30;
+  }
+
   .notifications-page__icon {
     @apply text-lg;
   }
@@ -398,6 +547,10 @@
 
   .notifications-page__icon-wrap--friend .notifications-page__icon {
     @apply text-success-600 dark:text-success-400;
+  }
+
+  .notifications-page__icon-wrap--group .notifications-page__icon {
+    @apply text-warning-600 dark:text-warning-400;
   }
 
   /* Content */
@@ -471,6 +624,10 @@
     @apply bg-success-100 dark:bg-success-900/30;
   }
 
+  .notif-modal__icon-wrap--group {
+    @apply bg-warning-100 dark:bg-warning-900/30;
+  }
+
   .notif-modal__icon {
     @apply text-xl;
   }
@@ -481,6 +638,26 @@
 
   .notif-modal__icon-wrap--friend .notif-modal__icon {
     @apply text-success-600 dark:text-success-400;
+  }
+
+  .notif-modal__icon-wrap--group .notif-modal__icon {
+    @apply text-warning-600 dark:text-warning-400;
+  }
+
+  .notif-modal__trip-context {
+    @apply flex flex-col gap-2 rounded-xl border border-warning-200 bg-warning-50 p-3 dark:border-warning-900/40 dark:bg-warning-900/10;
+  }
+
+  .notif-modal__trip-row {
+    @apply flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300;
+  }
+
+  .notif-modal__trip-icon {
+    @apply text-base text-warning-600 dark:text-warning-400;
+  }
+
+  .notif-modal__trip-actions {
+    @apply flex flex-col gap-2 pt-1;
   }
 
   .notif-modal__header-text {

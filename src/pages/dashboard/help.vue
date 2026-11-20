@@ -98,30 +98,36 @@
 
   .help-page__header {
     @apply rounded-xl border border-neutral-200 bg-white p-6;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   /* Tabs */
   .help-page__tabs {
     @apply flex gap-1 rounded-lg border border-neutral-200 bg-neutral-100 p-1;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
     width: fit-content;
   }
 
   .help-page__tab {
     @apply rounded-md px-5 py-2 text-sm font-medium text-neutral-600 transition-all duration-150;
     @apply hover:text-neutral-900;
+    @apply dark:text-neutral-400 dark:hover:text-white;
   }
 
   .help-page__tab--active {
     @apply bg-white text-primary-700 shadow-sm;
+    @apply dark:bg-neutral-700 dark:text-primary-400;
   }
 
   /* FAQ */
   .help-page__section {
     @apply rounded-xl border border-neutral-200 bg-white;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
 
   .help-page__faq-list {
     @apply divide-y divide-neutral-100;
+    @apply dark:divide-neutral-700;
   }
 
   .help-page__faq-item {
@@ -130,6 +136,7 @@
 
   .help-page__faq-item--open {
     @apply bg-primary-50;
+    @apply dark:bg-primary-900/20;
   }
 
   .help-page__faq-trigger {
@@ -138,10 +145,12 @@
 
   .help-page__faq-question {
     @apply text-sm font-semibold text-neutral-800;
+    @apply dark:text-neutral-100;
   }
 
   .help-page__faq-icon {
     @apply flex-shrink-0 text-neutral-400 transition-transform duration-200;
+    @apply dark:text-neutral-500;
     font-size: 1.25rem;
   }
 
@@ -151,11 +160,13 @@
 
   .help-page__faq-answer-text {
     @apply text-sm leading-relaxed text-neutral-600;
+    @apply dark:text-neutral-400;
   }
 
   /* Glossary */
   .help-page__glossary-list {
     @apply divide-y divide-neutral-100;
+    @apply dark:divide-neutral-700;
   }
 
   .help-page__glossary-item {
@@ -164,9 +175,11 @@
 
   .help-page__glossary-term {
     @apply col-span-12 text-sm font-semibold text-primary-700 md:col-span-3;
+    @apply dark:text-primary-400;
   }
 
   .help-page__glossary-definition {
     @apply col-span-12 text-sm leading-relaxed text-neutral-600 md:col-span-9;
+    @apply dark:text-neutral-400;
   }
 </style>

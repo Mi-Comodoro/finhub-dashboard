@@ -11,6 +11,7 @@
   import ModalWizard from '@/components/organisms/modal-wizard/ModalWizard.vue'
   import { useAdminApplication } from '@/composables/application/useAdminApplication'
   import { useFeedback } from '@/composables/useFeedBack'
+  import { useTimezone } from '@/composables/useTimezone'
   import type { AdminUser } from '@/types/domain'
 
   definePageMeta({
@@ -28,6 +29,7 @@
     pagination,
     isLoading,
     isLoadingUser,
+    error,
     fetchUsers,
     fetchUserDetail,
     changeRole,
@@ -35,6 +37,7 @@
   } = useAdminApplication()
 
   const { success: successToast, error: errorToast } = useFeedback()
+  const { formatDate } = useTimezone()
 
   // ── Filters ────────────────────────────────────────────────────────────────
   const searchQuery = ref('')
@@ -133,16 +136,6 @@
     }
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('es-CO', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
   onMounted(async () => {
     await fetchUsers()
   })
@@ -173,7 +166,7 @@
             name="user-search"
             :model-value="searchQuery"
             placeholder="Buscar por nombre o email..."
-            @update:model-value="val => (searchQuery = val)"
+            @update:model-value="searchQuery = String($event)"
           />
         </div>
         <div class="admin-users-page__filter-selects">
@@ -181,15 +174,19 @@
             name="filter-role"
             :model-value="filterRole"
             :options="roleFilterOptions"
-            @update:model-value="val => (filterRole = String(val))"
+            @update:model-value="filterRole = String($event)"
           />
           <Select
             name="filter-status"
             :model-value="filterStatus"
             :options="statusFilterOptions"
-            @update:model-value="val => (filterStatus = String(val))"
+            @update:model-value="filterStatus = String($event)"
           />
         </div>
+      </div>
+
+      <div v-if="error" class="admin-users-page__error">
+        <Text size="sm" weight="medium" class="admin-users-page__error-text">{{ error }}</Text>
       </div>
 
       <div v-if="isLoading" class="admin-users-page__skeleton" />
@@ -401,6 +398,15 @@
 
   .admin-users-page__table-section {
     @apply rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .admin-users-page__error {
+    @apply mx-5 mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3;
+    @apply dark:border-red-800 dark:bg-red-900/20;
+  }
+
+  .admin-users-page__error-text {
+    @apply text-red-700 dark:text-red-300;
   }
 
   .admin-users-page__table-header {

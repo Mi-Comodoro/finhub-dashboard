@@ -9,8 +9,23 @@ export const userBasicDataFieldsSchema = (): FormSchema => {
         placeholder: 'Tu nombre en Mi Comodoro',
         hint: 'Puedes cambiarlo cuando quieras desde tu perfil'
       },
+      handle: {
+        type: 'text',
+        label: 'Tu nombre de usuario',
+        placeholder: 'tu_usuario',
+        prefix: '@',
+        hint: 'Con este @usuario otros podrán encontrarte y etiquetarte en grupos',
+        validate: (value: unknown) => {
+          const v = String(value ?? '')
+          if (!v) return true
+          if (v.length < 3) return 'Mínimo 3 caracteres'
+          if (!/^[a-z][a-z0-9_]{2,19}$/.test(v))
+            return 'Solo letras minúsculas, números y _ (empieza con letra)'
+          return true
+        }
+      },
       phone: {
-        type: 'phone', // nuevo tipo
+        type: 'phone',
         label: 'Teléfono',
         required: true
       },
@@ -34,7 +49,12 @@ export const userBasicDataFieldsSchema = (): FormSchema => {
       {
         type: 'grid',
         columns: 2,
-        fields: ['phone', 'gender']
+        fields: ['handle', 'phone']
+      },
+      {
+        type: 'grid',
+        columns: 1,
+        fields: ['gender']
       }
     ]
   }

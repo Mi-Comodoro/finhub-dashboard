@@ -398,16 +398,18 @@
 
 <style lang="postcss" scoped>
   .form-wrapper {
-    @apply flex h-full w-full flex-col items-center justify-center;
+    @apply flex w-full flex-col;
   }
   .form-income {
-    @apply mx-auto box-content h-96 min-h-96 w-full max-w-2xl space-y-4 overflow-y-auto px-1;
+    @apply mx-auto w-full max-w-2xl space-y-4 px-1;
   }
   .form-income__section {
     @apply space-y-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4;
+    @apply dark:border-neutral-700 dark:bg-neutral-800;
   }
   .form-income__section-title {
     @apply text-sm font-semibold uppercase text-neutral-900;
+    @apply dark:text-neutral-100;
   }
   .form-income__frequency {
     @apply space-y-2;

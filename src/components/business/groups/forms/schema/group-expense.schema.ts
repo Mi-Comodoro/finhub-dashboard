@@ -1,7 +1,8 @@
 import type { FormSchema } from '~/components/organisms/forms/Form.vue'
 
 export const groupExpenseFieldsSchema = (
-  memberOptions: { label: string; value: string; disabled: boolean }[]
+  memberOptions: { label: string; value: string; disabled: boolean }[],
+  isEditMode = false
 ): FormSchema => ({
   fields: {
     description: {
@@ -30,6 +31,7 @@ export const groupExpenseFieldsSchema = (
       required: true,
       validate: (value: unknown) => {
         if (!value) return 'La fecha es requerida'
+        if (isEditMode) return true
         const selected = new Date(value as string)
         const today = new Date()
         today.setHours(0, 0, 0, 0)

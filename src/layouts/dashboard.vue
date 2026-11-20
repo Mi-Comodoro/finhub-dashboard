@@ -1,17 +1,19 @@
 <!-- layouts/dashboard.vue -->
 <script setup lang="ts">
-  import { computed } from 'vue' // Asegúrate de importar computed
+  import { computed } from 'vue'
 
+  import PolicyUpdateModal from '@/components/business/legal/PolicyUpdateModal.vue'
+  import DeletionBanner from '@/components/business/privacy/DeletionBanner.vue'
   import DashboardHeader from '@/components/organisms/header/DashboardHeader.vue'
-  import ModalNotification from '@/components/organisms/modal-notification/ModalNotification.vue'
   import DashboardSidebar from '@/components/organisms/sidebar/DashboardSidebar.vue'
   import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
   import { useNotificationsSocket } from '@/composables/useNotificationsSocket'
   import { useSidebar } from '@/composables/useSidebar'
-  import { useModalStore } from '@/stores/modal.store'
+  import { useTimezone } from '@/composables/useTimezone'
 
-  const modalStore = useModalStore()
   const sidebar = useSidebar()
+  // Sincroniza la zona horaria del usuario con DateUtils
+  useTimezone()
 
   const isOpen = computed({
     get: () => sidebar.isOpen.value,
@@ -30,13 +32,6 @@
 <template>
   <div class="dashboard-layout">
     <div class="relative z-[50]">
-      <ModalNotification
-        :show="modalStore.state.show"
-        :type="modalStore.state.type"
-        :options="modalStore.state.options"
-        @update:show="modalStore.state.show = $event"
-      />
-
       <ClientOnly>
         <div class="pointer-events-none fixed inset-0 z-[100]">
           <ToastContainer />
@@ -65,11 +60,19 @@
 
         <div class="dashboard-scroll-area">
           <div class="dashboard-view-wrapper">
+            <ClientOnly>
+              <DeletionBanner />
+            </ClientOnly>
             <slot />
           </div>
         </div>
       </main>
     </div>
+
+    <!-- Last in the DOM: it must stay above any other modal -->
+    <ClientOnly>
+      <PolicyUpdateModal />
+    </ClientOnly>
   </div>
 </template>
 

@@ -21,12 +21,12 @@ export function useSessionWatcher() {
       if (success && result?.expiresAt) {
         scheduleRefresh(result.expiresAt)
       } else {
-        const { logout } = useAuth()
-        await logout()
+        const { triggerSessionExpiredModal } = useAuth()
+        triggerSessionExpiredModal()
       }
     } catch {
-      const { logout } = useAuth()
-      await logout()
+      const { triggerSessionExpiredModal } = useAuth()
+      triggerSessionExpiredModal()
     }
   }
 

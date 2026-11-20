@@ -40,7 +40,7 @@
 
   const options = computed(() => {
     if (!plan.value) return []
-    return [
+    const base = [
       {
         title: 'Gastos Fijos',
         percentage: plan.value.limits.needs,
@@ -66,6 +66,20 @@
         progress: savingProgress.value
       }
     ]
+
+    if (plan.value.customBuckets?.length) {
+      const customSegments = plan.value.customBuckets.map(bucket => ({
+        title: bucket.name,
+        percentage: bucket.percentage,
+        amount: percentOf(incomeBase.value, bucket.percentage, currency.value),
+        currency: currency.value,
+        className: bucket.color ?? 'bg-purple-500',
+        progress: 0
+      }))
+      return [...base, ...customSegments]
+    }
+
+    return base
   })
 </script>
 <template>

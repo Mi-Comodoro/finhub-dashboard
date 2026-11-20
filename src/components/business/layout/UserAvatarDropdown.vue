@@ -2,6 +2,7 @@
   import { onClickOutside } from '@vueuse/core'
   import { computed, ref } from 'vue'
 
+  import ProfileModal from '@/components/organisms/profile-modal/ProfileModal.vue'
   import { useAuth } from '@/composables/useAuth'
   import { useUserStore } from '@/stores/user.store'
 
@@ -17,6 +18,7 @@
   const { logout } = useAuth()
 
   const isOpen = ref(false)
+  const showProfile = ref(false)
   const dropdownRef = ref<HTMLElement | null>(null)
 
   onClickOutside(dropdownRef, () => {
@@ -35,6 +37,11 @@
       .slice(0, 2)
       .toUpperCase()
   })
+
+  const openProfile = () => {
+    isOpen.value = false
+    showProfile.value = true
+  }
 
   const handleLogout = async () => {
     isOpen.value = false
@@ -72,12 +79,12 @@
 
       <div class="user-avatar-dropdown__divider" />
 
-      <NuxtLink to="/dashboard/profile" class="user-avatar-dropdown__item" @click="isOpen = false">
+      <button class="user-avatar-dropdown__item" @click="openProfile">
         <span class="material-symbols-outlined user-avatar-dropdown__item-icon">
           person_outline
         </span>
         Mi Perfil
-      </NuxtLink>
+      </button>
 
       <button
         class="user-avatar-dropdown__item user-avatar-dropdown__item--danger"
@@ -87,6 +94,8 @@
         Cerrar Sesión
       </button>
     </div>
+
+    <ProfileModal v-if="showProfile" v-model:show="showProfile" />
   </div>
 </template>
 

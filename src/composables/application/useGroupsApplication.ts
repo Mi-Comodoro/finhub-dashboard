@@ -7,8 +7,13 @@ import type {
   ContributionSummary,
   CreateGroupDto,
   CreateGroupExpenseDto,
+  GroupBudgetProgress,
   GroupExpense,
-  UpdateGroupDto
+  InviteWithContextDto,
+  RespondGroupInvitationDto,
+  RespondInvitationResult,
+  UpdateGroupDto,
+  UpdateGroupExpenseDto
 } from '@/types/groups.types'
 
 const createErrorMessage = (error: FetchError) => {
@@ -120,7 +125,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.getContributions(groupId)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -131,7 +136,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.getExpenses(groupId)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -143,7 +148,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.createExpense(groupId, dto)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -155,7 +160,7 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.payExpense(groupId, expenseId)
       return { success: true, data: result }
-    } catch (err) {
+    } catch {
       return { success: false }
     }
   }
@@ -167,7 +172,58 @@ export const useGroupsApplication = () => {
     try {
       const { result } = await groupsApi.markCxp(groupId, expenseId)
       return { success: true, data: result }
+    } catch {
+      return { success: false }
+    }
+  }
+
+  const updateExpense = async (
+    groupId: string,
+    expenseId: string,
+    dto: UpdateGroupExpenseDto
+  ): Promise<{ success: boolean; data?: GroupExpense }> => {
+    try {
+      const { result } = await groupsApi.updateExpense(groupId, expenseId, dto)
+      return { success: true, data: result }
     } catch (err) {
+      groupsStore.setError(createErrorMessage(err as FetchError))
+      return { success: false }
+    }
+  }
+
+  const fetchGroupBudgetProgress = async (
+    groupId: string
+  ): Promise<{ success: boolean; data?: GroupBudgetProgress }> => {
+    try {
+      const { result } = await groupsApi.getGroupBudgetProgress(groupId)
+      return { success: true, data: result }
+    } catch {
+      return { success: false }
+    }
+  }
+
+  const inviteWithContext = async (
+    groupId: string,
+    dto: InviteWithContextDto
+  ): Promise<{ success: boolean }> => {
+    try {
+      await groupsApi.inviteWithContext(groupId, dto)
+      return { success: true }
+    } catch (err) {
+      groupsStore.setError(createErrorMessage(err as FetchError))
+      return { success: false }
+    }
+  }
+
+  const respondToInvitation = async (
+    groupId: string,
+    dto: RespondGroupInvitationDto
+  ): Promise<{ success: boolean; data?: RespondInvitationResult }> => {
+    try {
+      const { result } = await groupsApi.respondToInvitation(groupId, dto)
+      return { success: true, data: result }
+    } catch (err) {
+      groupsStore.setError(createErrorMessage(err as FetchError))
       return { success: false }
     }
   }
@@ -193,6 +249,10 @@ export const useGroupsApplication = () => {
     fetchExpenses,
     createExpense,
     payExpense,
-    markExpenseCxp
+    markExpenseCxp,
+    updateExpense,
+    fetchGroupBudgetProgress,
+    inviteWithContext,
+    respondToInvitation
   }
 }

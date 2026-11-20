@@ -3,6 +3,8 @@
  * Complex components combining molecules and atoms
  */
 
+import type { CustomBucket } from '~/types/domain'
+
 export interface WizardProps {
   readonly currentStep: number
   readonly totalSteps: number
@@ -25,9 +27,11 @@ export type OnBoardingFinances = {
 export type OnboardingFormData = {
   personalInfo: {
     displayName: string
+    handle: string
     phone: string
     email: string
     gender: string
+    timezone?: string
   }
   finances: OnBoardingFinances
   budget: {
@@ -38,6 +42,7 @@ export type OnboardingFormData = {
       wants: number
       savings: number
     }
+    customBuckets?: CustomBucket[]
   }
   incomes: {
     incomes: {
