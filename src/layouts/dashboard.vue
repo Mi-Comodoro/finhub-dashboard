@@ -3,6 +3,7 @@
   import { computed } from 'vue'
 
   import PolicyUpdateModal from '@/components/business/legal/PolicyUpdateModal.vue'
+  import DeletionBanner from '@/components/business/privacy/DeletionBanner.vue'
   import DashboardHeader from '@/components/organisms/header/DashboardHeader.vue'
   import DashboardSidebar from '@/components/organisms/sidebar/DashboardSidebar.vue'
   import { useNotificationsApplication } from '@/composables/application/useNotificationsApplication'
@@ -59,6 +60,9 @@
 
         <div class="dashboard-scroll-area">
           <div class="dashboard-view-wrapper">
+            <ClientOnly>
+              <DeletionBanner />
+            </ClientOnly>
             <slot />
           </div>
         </div>

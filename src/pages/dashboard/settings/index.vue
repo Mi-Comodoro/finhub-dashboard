@@ -2,6 +2,7 @@
   import { useDebounceFn } from '@vueuse/core'
 
   import { FINANCIAL_PROFILE_OPTIONS } from '@/common/constants'
+  import PrivacySection from '@/components/business/privacy/PrivacySection.vue'
   import { useFriendshipsApplication } from '@/composables/application/useFriendshipsApplication'
   import { usePlansApplication } from '@/composables/application/usePlansApplication'
   import { useProfileApplication } from '@/composables/application/useProfileApplication'
@@ -826,6 +827,9 @@
               </div>
             </div>
           </div>
+
+          <!-- Privacidad y datos: derecho de acceso y de supresión -->
+          <PrivacySection />
         </template>
 
         <!-- [3] Notificaciones -->
