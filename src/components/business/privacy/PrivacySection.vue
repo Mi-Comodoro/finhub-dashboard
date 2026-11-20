@@ -88,6 +88,7 @@
           variant="secondary"
           size="sm"
           icon="download"
+          class="privacy-section__action"
           :loading="isDownloading"
           :disabled="isDownloading"
           @click="handleDownload"
@@ -110,6 +111,7 @@
           variant="danger"
           size="sm"
           icon="delete_forever"
+          class="privacy-section__action"
           @click="showDeleteModal = true"
         >
           Eliminar mi cuenta
@@ -181,6 +183,10 @@
   .privacy-section__row--danger {
     @apply border-danger-200 bg-danger-50;
     @apply dark:border-danger-800 dark:bg-danger-900/20;
+  }
+
+  .privacy-section__action {
+    @apply shrink-0 whitespace-nowrap;
   }
 
   .privacy-section__cancel {
