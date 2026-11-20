@@ -51,7 +51,7 @@ Focus ONLY on:
 ## UI Review pre-sprint
 
 Antes de cerrar cada sprint, ejecutar una auditoría de componentes UI.
-Leer `AGENTS.md` y `.agents/skills/nuxt-ui/` antes de analizar.
+Leer `AGENTS.md` antes de analizar.
 NO modificar código — solo generar reporte en formato `.md`.
 
 ### Qué evaluar por componente
