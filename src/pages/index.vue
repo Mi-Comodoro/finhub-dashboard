@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { onMounted, ref } from 'vue'
 
   import SignupForm from '@/components/organisms/forms/SignupForm.vue'
+  import { useBetaInvitation } from '@/composables/application/useBetaInvitation'
 
   // Define page metadata - use login layout
   definePageMeta({
@@ -14,6 +15,37 @@
   ]
 
   const showSignup = ref(false)
+
+  // Closed beta: the invitation link is /?invite=<token>. It opens the sign-up with the invited email.
+  const route = useRoute()
+  const { capture, restore, invitedEmail } = useBetaInvitation()
+  const invitationError = ref<{ title: string; message: string } | null>(null)
+
+  onMounted(async () => {
+    const invite = typeof route.query.invite === 'string' ? route.query.invite : null
+
+    if (invite) {
+      const result = await capture(invite)
+      if (result.success) showSignup.value = true
+      else if (result.invalid) {
+        invitationError.value = {
+          title: 'Invitación no válida',
+          message: `${result.error} Pide una nueva en micomodoro.com.`
+        }
+      } else {
+        invitationError.value = {
+          title: 'No pudimos comprobar tu invitación',
+          message: 'Quedó guardada: recarga la página en unos minutos.'
+        }
+      }
+      // The token should not stay in the address bar
+      await navigateTo({ path: '/', query: {} }, { replace: true })
+      return
+    }
+
+    await restore()
+    if (invitedEmail.value) showSignup.value = true
+  })
 </script>
 
 <template>
@@ -71,6 +103,9 @@
       <!-- Panel Derecho -->
       <div class="login-page__right">
         <div class="login-page__right-body">
+          <AlertBanner v-if="invitationError" variant="danger" :title="invitationError.title">
+            {{ invitationError.message }}
+          </AlertBanner>
           <LoginForm v-if="!showSignup" />
           <div v-if="!showSignup" class="login-page__signup-prompt">
             <Text size="sm" color="muted">¿No tienes una cuenta?</Text>
