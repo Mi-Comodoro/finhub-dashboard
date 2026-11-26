@@ -18,7 +18,7 @@
   import Text from '@/components/atoms/typography/Text.vue'
   import { useTheme } from '@/composables/useTheme'
   import type { Currency } from '@/utils/currency'
-  import { formatCurrency } from '@/utils/currency'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import { CHART_COLORS } from '@/utils/design-tokens'
 
   use([
@@ -161,15 +161,7 @@
       axisLabel: {
         color: chartAxisColor.value,
         formatter: (v: number) => {
-          const abs = Math.abs(v)
-          const sign = v < 0 ? '-' : ''
-          if (abs >= 1_000_000) {
-            return `${sign}$${(abs / 1_000_000).toFixed(2)}M`
-          }
-          if (abs >= 1_000) {
-            return `${sign}$${(abs / 1_000).toFixed(2)}K`
-          }
-          return `${sign}$${abs.toFixed(0)}`
+          return formatCompactCurrency(v, 'COP')
         }
       }
     },

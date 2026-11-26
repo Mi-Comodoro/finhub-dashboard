@@ -94,7 +94,18 @@
 
   function handleInput(e: Event) {
     const el = e.target as HTMLInputElement
-    const caret = el.selectionStart ?? el.value.length
+    let caret = el.selectionStart ?? el.value.length
+    // Un punto tecleado (el punto de miles lo inserta el componente) es el separador decimal
+    if (
+      (e as InputEvent).data === '.' &&
+      decimals.value > 0 &&
+      caret > 0 &&
+      el.value[caret - 1] === '.' &&
+      !el.value.includes(',')
+    ) {
+      el.value = `${el.value.slice(0, caret - 1)},${el.value.slice(caret)}`
+      caret = Math.min(caret, el.value.length)
+    }
     // Cuantos caracteres significativos (digitos/coma) hay antes del cursor
     const significantBefore = el.value.slice(0, caret).replace(/[^\d,]/g, '').length
 
