@@ -118,7 +118,7 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
   .progress-bar-container {
     @apply relative my-2 w-full;
   }

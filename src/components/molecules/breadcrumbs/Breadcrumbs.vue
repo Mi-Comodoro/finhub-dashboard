@@ -87,7 +87,7 @@
   </nav>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
   /* Optional: Add fade transition for truncation */
   .truncate {
     max-width: 200px;
