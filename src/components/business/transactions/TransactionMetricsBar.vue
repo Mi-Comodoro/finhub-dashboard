@@ -54,9 +54,9 @@
     @apply space-y-1;
   }
   .transaction-metrics-bar__value--income {
-    @apply text-success-700;
+    @apply text-success-700 dark:text-neutral-100;
   }
   .transaction-metrics-bar__value--savings {
-    @apply text-warning-700;
+    @apply text-warning-700 dark:text-neutral-100;
   }
 </style>
