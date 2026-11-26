@@ -47,16 +47,16 @@
 </script>
 
 <template>
-  <span
-    :class="iconClasses"
-    :aria-label="ariaLabel || name"
-    class="flex select-none items-center justify-center"
-  >
+  <span :class="iconClasses" :aria-label="ariaLabel || name" class="icon">
     {{ name }}
   </span>
 </template>
 
 <style scoped lang="postcss">
+  .icon {
+    @apply flex select-none items-center justify-center;
+  }
+
   .material-symbols-outlined {
     font-variation-settings:
       'FILL' 0,

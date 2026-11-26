@@ -29,29 +29,29 @@
 </script>
 
 <template>
-  <div :class="['flex h-full w-full items-center bg-transparent px-6', className]">
-    <div class="flex h-full w-full items-center justify-between">
+  <div :class="['dashboard-header', className]">
+    <div class="dashboard-header__inner">
       <!-- Left section: hamburger (mobile only) + back + breadcrumbs -->
-      <div class="flex min-w-0 items-center gap-4">
-        <div class="lg:hidden">
+      <div class="dashboard-header__left">
+        <div class="dashboard-header__menu">
           <Button icon="menu" variant="ghost" size="sm" :icon-only="true" @click="toggle" />
         </div>
 
         <Icon
           v-if="route.path !== '/dashboard' && route.path !== '/admin'"
           name="arrow_back"
-          class="cursor-pointer text-neutral-500 transition-colors hover:text-primary-500"
+          class="dashboard-header__back"
           size="sm"
           @click="router.back()"
         />
 
-        <Breadcrumbs :max-items="4" class="hidden xl:flex" />
+        <Breadcrumbs :max-items="4" class="dashboard-header__breadcrumbs" />
       </div>
 
       <!-- Right section: Search + Actions -->
-      <div class="flex items-center gap-6">
-        <div class="hidden md:block">
-          <SearchInput placeholder="Buscar Movimientos..." class="w-64" />
+      <div class="dashboard-header__right">
+        <div class="dashboard-header__search">
+          <SearchInput placeholder="Buscar Movimientos..." />
         </div>
 
         <!-- Header Actions -->
@@ -60,3 +60,37 @@
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .dashboard-header {
+    @apply flex h-full w-full items-center bg-transparent px-6;
+  }
+
+  .dashboard-header__inner {
+    @apply flex h-full w-full items-center justify-between;
+  }
+
+  .dashboard-header__left {
+    @apply flex min-w-0 items-center gap-4;
+  }
+
+  .dashboard-header__menu {
+    @apply lg:hidden;
+  }
+
+  .dashboard-header__back {
+    @apply cursor-pointer text-neutral-500 transition-colors hover:text-primary-500;
+  }
+
+  .dashboard-header__breadcrumbs {
+    @apply hidden xl:flex;
+  }
+
+  .dashboard-header__right {
+    @apply flex items-center gap-6;
+  }
+
+  .dashboard-header__search {
+    @apply hidden md:block;
+  }
+</style>

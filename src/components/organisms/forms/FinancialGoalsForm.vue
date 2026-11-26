@@ -68,9 +68,9 @@
 </script>
 <template>
   <form class="finances-config-form" @submit.prevent>
-    <div class="space-y-4">
+    <div class="finances-config-form__body">
       <!-- Fila 1 -->
-      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div class="finances-config-form__row">
         <div class="form-field">
           <Label size="sm" weight="bold" variant="form" require>Moneda</Label>
           <Select
@@ -96,7 +96,7 @@
       </div>
 
       <!-- Fila 2 -->
-      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div class="finances-config-form__row">
         <Input
           v-model="formModel.accountName"
           name="accountName"
@@ -121,6 +121,14 @@
 </template>
 
 <style scoped lang="postcss">
+  .finances-config-form__body {
+    @apply space-y-4;
+  }
+
+  .finances-config-form__row {
+    @apply grid grid-cols-1 gap-3 md:grid-cols-2;
+  }
+
   .finances-config-form {
     @apply mx-auto w-full max-w-2xl space-y-6;
   }

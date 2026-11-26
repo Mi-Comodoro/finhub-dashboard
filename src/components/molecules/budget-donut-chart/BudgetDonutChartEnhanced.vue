@@ -228,7 +228,7 @@
           :loading="isLoading"
         />
         <template #fallback>
-          <div class="h-full w-full animate-pulse rounded-full bg-slate-100 dark:bg-slate-700" />
+          <div class="budget-donut-chart-enhanced__skeleton" />
         </template>
       </ClientOnly>
 
@@ -251,8 +251,8 @@
             class="budget-donut-chart-enhanced__legend-dot"
             :style="{ backgroundColor: getSegmentColor(item.type) }"
           />
-          <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-1.5">
+          <div class="budget-donut-chart-enhanced__legend-info">
+            <div class="budget-donut-chart-enhanced__legend-title-row">
               <span class="budget-donut-chart-enhanced__legend-text">
                 {{ item.name }}
                 <span class="budget-donut-chart-enhanced__legend-percent">
@@ -291,11 +291,13 @@
             </div>
           </div>
         </div>
-        <div class="flex flex-col items-end gap-0.5">
+        <div class="budget-donut-chart-enhanced__legend-values">
           <span class="budget-donut-chart-enhanced__legend-amount">
             {{ fullAmount(item.budgeted) }}
           </span>
-          <span class="text-xs text-slate-500">{{ fullAmount(item.spent) }} gastado</span>
+          <span class="budget-donut-chart-enhanced__legend-spent">
+            {{ fullAmount(item.spent) }} gastado
+          </span>
         </div>
       </li>
     </ul>
@@ -345,6 +347,21 @@
   }
   .budget-donut-chart-enhanced__legend-amount {
     @apply shrink-0 text-sm font-semibold text-slate-800 dark:text-slate-100;
+  }
+  .budget-donut-chart-enhanced__skeleton {
+    @apply h-full w-full animate-pulse rounded-full bg-slate-100 dark:bg-slate-700;
+  }
+  .budget-donut-chart-enhanced__legend-info {
+    @apply flex flex-col gap-0.5;
+  }
+  .budget-donut-chart-enhanced__legend-title-row {
+    @apply flex items-center gap-1.5;
+  }
+  .budget-donut-chart-enhanced__legend-values {
+    @apply flex flex-col items-end gap-0.5;
+  }
+  .budget-donut-chart-enhanced__legend-spent {
+    @apply text-xs text-slate-500;
   }
   .budget-donut-chart-enhanced__utilization {
     @apply flex items-center gap-2;

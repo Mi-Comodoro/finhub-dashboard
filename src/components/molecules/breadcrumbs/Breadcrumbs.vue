@@ -48,24 +48,15 @@
   })
 </script>
 <template>
-  <nav
-    v-if="breadcrumbs.length > 0"
-    class="flex items-center space-x-1 text-sm"
-    aria-label="Breadcrumb"
-  >
-    <ol class="flex flex-wrap items-center space-x-1">
+  <nav v-if="breadcrumbs.length > 0" class="breadcrumbs" aria-label="Breadcrumb">
+    <ol class="breadcrumbs__list">
       <li
         v-for="(crumb, index) in breadcrumbs"
         :key="crumb.path || crumb.label"
-        class="flex items-center"
+        class="breadcrumbs__item"
       >
         <!-- Separator -->
-        <Icon
-          v-if="index > 0"
-          name="chevron_right"
-          size="sm"
-          class="mx-1 text-slate-400 dark:text-slate-500"
-        />
+        <Icon v-if="index > 0" name="chevron_right" size="sm" class="breadcrumbs__separator" />
 
         <!-- Breadcrumb item -->
         <NuxtLink
@@ -79,8 +70,8 @@
           ]"
           :aria-current="crumb.isActive ? 'page' : undefined"
         >
-          <Icon v-if="crumb.icon" :name="crumb.icon" :size="iconSize" class="shrink-0" />
-          <span class="max-w-[200px] truncate">{{ crumb.label }}</span>
+          <Icon v-if="crumb.icon" :name="crumb.icon" :size="iconSize" class="breadcrumbs__icon" />
+          <span class="breadcrumbs__label">{{ crumb.label }}</span>
         </NuxtLink>
       </li>
     </ol>
@@ -88,16 +79,34 @@
 </template>
 
 <style scoped lang="postcss">
+  .breadcrumbs {
+    @apply flex items-center space-x-1 text-sm;
+  }
+
+  .breadcrumbs__list {
+    @apply flex flex-wrap items-center space-x-1;
+  }
+
+  .breadcrumbs__item {
+    @apply flex items-center;
+  }
+
+  .breadcrumbs__separator {
+    @apply mx-1 text-slate-400 dark:text-slate-500;
+  }
+
+  .breadcrumbs__icon {
+    @apply shrink-0;
+  }
+
   /* Optional: Add fade transition for truncation */
-  .truncate {
+  .breadcrumbs__label {
+    @apply truncate;
     max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   @media (min-width: 768px) {
-    .truncate {
+    .breadcrumbs__label {
       max-width: 300px;
     }
   }

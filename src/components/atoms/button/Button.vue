@@ -56,9 +56,9 @@
         fill="none"
         stroke="currentColor"
         stroke-width="4"
-        class="opacity-25"
+        class="btn__loader-track"
       />
-      <path fill="currentColor" class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+      <path fill="currentColor" class="btn__loader-arc" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
     </svg>
 
     <!-- Icon -->
@@ -176,6 +176,14 @@
 
   .btn__loader {
     @apply h-4 w-4 animate-spin;
+  }
+
+  .btn__loader-track {
+    @apply opacity-25;
+  }
+
+  .btn__loader-arc {
+    @apply opacity-75;
   }
 
   .btn__text {

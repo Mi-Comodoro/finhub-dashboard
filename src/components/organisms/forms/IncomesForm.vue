@@ -205,7 +205,7 @@
           <Label variant="form" size="sm" weight="bold" color="black" require>
             ¿Con qué frecuencia recibes este ingreso?
           </Label>
-          <div class="flex w-full flex-row gap-4">
+          <div class="form-income__frequency-options">
             <CardRadio
               v-for="opt in FREQUENCY_OPTIONS"
               :key="String(opt.value)"
@@ -237,7 +237,7 @@
             />
           </div>
 
-          <div v-else class="flex gap-4">
+          <div v-else class="form-income__biweekly-dates">
             <DatePickerInput
               :model-value="
                 (formModel.incomes[0].paymentsDates as [Date | null, Date | null] | null)?.[0] ??
@@ -311,7 +311,7 @@
           <Label variant="form" size="sm" weight="bold" color="black" require>
             ¿Con qué frecuencia recibes este ingreso?
           </Label>
-          <div class="flex w-full flex-row gap-4">
+          <div class="form-income__frequency-options">
             <CardRadio
               v-for="opt in FREQUENCY_OPTIONS"
               :key="String(opt.value)"
@@ -343,7 +343,7 @@
             />
           </div>
 
-          <div v-else class="flex gap-4">
+          <div v-else class="form-income__biweekly-dates">
             <DatePickerInput
               :model-value="
                 (formModel.incomes[1].paymentsDates as [Date | null, Date | null] | null)?.[0] ??
@@ -396,7 +396,14 @@
   </div>
 </template>
 
-<style lang="postcss" scoped>
+<style scoped lang="postcss">
+  .form-income__frequency-options {
+    @apply flex w-full flex-row gap-4;
+  }
+  .form-income__biweekly-dates {
+    @apply flex gap-4;
+  }
+
   .form-wrapper {
     @apply flex w-full flex-col;
   }

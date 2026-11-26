@@ -102,25 +102,55 @@
 </script>
 
 <template>
-  <div class="rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-    <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+  <div class="balance-history-chart">
+    <div class="balance-history-chart__header">
       <Heading level="h3" size="lg" weight="semibold">Historial de balance</Heading>
-      <Text size="sm" color="muted" class="mt-1">
+      <Text size="sm" color="muted" class="balance-history-chart__subtitle">
         Resume el comportamiento mensual de ingresos, gastos y ahorro ejecutado.
       </Text>
     </div>
 
-    <div class="p-5">
+    <div class="balance-history-chart__body">
       <ClientOnly v-if="hasData">
-        <VChart :option="chartOption" autoresize class="h-80 w-full" />
+        <VChart :option="chartOption" autoresize class="balance-history-chart__chart" />
         <template #fallback>
-          <div class="h-80 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700" />
+          <div class="balance-history-chart__skeleton" />
         </template>
       </ClientOnly>
 
-      <div v-else class="flex h-80 items-center justify-center">
+      <div v-else class="balance-history-chart__empty">
         <Text size="sm" color="muted">No hay balance historico para mostrar.</Text>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .balance-history-chart {
+    @apply rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .balance-history-chart__header {
+    @apply border-b border-slate-100 px-5 py-4 dark:border-slate-700;
+  }
+
+  .balance-history-chart__subtitle {
+    @apply mt-1;
+  }
+
+  .balance-history-chart__body {
+    @apply p-5;
+  }
+
+  .balance-history-chart__chart {
+    @apply h-80 w-full;
+  }
+
+  .balance-history-chart__skeleton {
+    @apply h-80 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700;
+  }
+
+  .balance-history-chart__empty {
+    @apply flex h-80 items-center justify-center;
+  }
+</style>

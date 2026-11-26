@@ -70,7 +70,7 @@
             ESTADO
           </Label>
           <StatusIndicator
-            class="uppercase"
+            class="account-info-section__status"
             size="lg"
             :status="accountInfo.status === 'active' ? 'default' : 'inactive'"
           >
@@ -83,7 +83,7 @@
           </Label>
           <p class="account-info-section__expiration">
             <span class="">
-              <Icon name="event" class="mr-1 text-secondary-500" size="md" />
+              <Icon name="event" class="account-info-section__expiration-icon" size="md" />
             </span>
             {{ accountInfo.expirationDate }}
           </p>
@@ -146,6 +146,14 @@
 
   .account-info-section__expiration {
     @apply flex items-center gap-1 font-bold text-neutral-900;
+  }
+
+  .account-info-section__status {
+    @apply uppercase;
+  }
+
+  .account-info-section__expiration-icon {
+    @apply mr-1 text-secondary-500;
   }
 
   .account-info-section__progress {

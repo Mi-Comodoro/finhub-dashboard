@@ -31,14 +31,17 @@
 
 <template>
   <div class="dashboard-layout">
-    <div class="relative z-[50]">
+    <div class="dashboard-layout__overlay">
       <ClientOnly>
-        <div class="pointer-events-none fixed inset-0 z-[100]">
+        <div class="dashboard-layout__overlay-inner">
           <ToastContainer />
           <!-- Ahora v-model sí podrá cambiar el valor de isOpen -->
           <Slideover v-model:open="isOpen">
-            <div class="pointer-events-auto h-full w-64 bg-white dark:bg-slate-900">
-              <DashboardSidebar class="!flex h-full w-full" @navigate="sidebar.close" />
+            <div class="dashboard-layout__slideover">
+              <DashboardSidebar
+                class="dashboard-layout__mobile-sidebar"
+                @navigate="sidebar.close"
+              />
             </div>
           </Slideover>
         </div>
@@ -80,6 +83,22 @@
   .dashboard-layout {
     @apply fixed inset-0 flex h-screen w-screen overflow-hidden;
     background-color: var(--surface-base);
+  }
+
+  .dashboard-layout__overlay {
+    @apply relative z-[50];
+  }
+
+  .dashboard-layout__overlay-inner {
+    @apply pointer-events-none fixed inset-0 z-[100];
+  }
+
+  .dashboard-layout__slideover {
+    @apply pointer-events-auto h-full w-64 bg-white dark:bg-slate-900;
+  }
+
+  .dashboard-layout__mobile-sidebar {
+    @apply !flex h-full w-full;
   }
 
   .dashboard-container {

@@ -159,7 +159,7 @@
 <template>
   <SectionCard title="Gastos Planificados">
     <template #action>
-      <div class="flex gap-2">
+      <div class="expense-section__header-actions">
         <Button
           variant="secondary"
           size="sm"
@@ -283,6 +283,10 @@
 </template>
 
 <style scoped lang="postcss">
+  .expense-section__header-actions {
+    @apply flex gap-2;
+  }
+
   .expense-section {
     @apply flex w-full flex-col space-y-2;
   }

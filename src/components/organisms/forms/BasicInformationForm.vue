@@ -264,13 +264,13 @@
       <!-- Teléfono -->
       <div class="form-field">
         <Label variant="form" size="sm" weight="bold" color="black" require>Teléfono</Label>
-        <div class="flex gap-2">
+        <div class="basic-information-form__phone-row">
           <Select
             v-model="formModel.dialCode"
             name="dialCode"
             :options="DIAL_CODE_OPTIONS"
             placeholder="+57"
-            class="w-32 flex-shrink-0"
+            class="basic-information-form__dial-code"
           />
           <div class="phone-input-wrapper">
             <Input
@@ -306,7 +306,7 @@
           required
           @update:model-value="validateField('gender')"
         />
-        <Text as="p" size="xs" color="muted" class="mt-1">
+        <Text as="p" size="xs" color="muted" class="basic-information-form__hint">
           Nos ayuda a personalizar tu experiencia
         </Text>
       </div>
@@ -365,6 +365,18 @@
 
   .handle-info__text {
     @apply text-xs leading-relaxed text-neutral-500;
+  }
+
+  .basic-information-form__phone-row {
+    @apply flex gap-2;
+  }
+
+  .basic-information-form__dial-code {
+    @apply w-32 flex-shrink-0;
+  }
+
+  .basic-information-form__hint {
+    @apply mt-1;
   }
 
   /* ── Phone ── */

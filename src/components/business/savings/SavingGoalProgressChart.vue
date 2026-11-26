@@ -126,41 +126,85 @@
 </script>
 
 <template>
-  <div
-    class="rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
-  >
-    <div
-      class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700"
-    >
+  <div class="saving-goal-progress-chart">
+    <div class="saving-goal-progress-chart__header">
       <div>
         <Heading level="h3" size="lg" weight="semibold">Progreso de metas</Heading>
-        <Text size="sm" color="muted" class="mt-1">
+        <Text size="sm" color="muted" class="saving-goal-progress-chart__subtitle">
           Compara lo acumulado frente al objetivo de cada meta de ahorro.
         </Text>
       </div>
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2">
-          <span class="h-3 w-3 rounded-sm" :style="{ backgroundColor: CHART_COLORS.savings }" />
+      <div class="saving-goal-progress-chart__legend">
+        <div class="saving-goal-progress-chart__legend-item">
+          <span
+            class="saving-goal-progress-chart__swatch"
+            :style="{ backgroundColor: CHART_COLORS.savings }"
+          />
           <Text size="sm" color="muted">Acumulado</Text>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="h-3 w-3 rounded-sm" :style="{ backgroundColor: CHART_COLORS.planned }" />
+        <div class="saving-goal-progress-chart__legend-item">
+          <span
+            class="saving-goal-progress-chart__swatch"
+            :style="{ backgroundColor: CHART_COLORS.planned }"
+          />
           <Text size="sm" color="muted">Objetivo</Text>
         </div>
       </div>
     </div>
 
-    <div class="p-5">
+    <div class="saving-goal-progress-chart__body">
       <ClientOnly v-if="hasData">
-        <VChart :option="chartOption" autoresize class="h-80 w-full" />
+        <VChart :option="chartOption" autoresize class="saving-goal-progress-chart__chart" />
         <template #fallback>
-          <div class="h-80 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700" />
+          <div class="saving-goal-progress-chart__skeleton" />
         </template>
       </ClientOnly>
 
-      <div v-else class="flex h-80 items-center justify-center">
+      <div v-else class="saving-goal-progress-chart__empty">
         <Text size="sm" color="muted">No hay metas suficientes para mostrar esta grafica.</Text>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .saving-goal-progress-chart {
+    @apply rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .saving-goal-progress-chart__header {
+    @apply flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700;
+  }
+
+  .saving-goal-progress-chart__subtitle {
+    @apply mt-1;
+  }
+
+  .saving-goal-progress-chart__legend {
+    @apply flex items-center gap-4;
+  }
+
+  .saving-goal-progress-chart__legend-item {
+    @apply flex items-center gap-2;
+  }
+
+  .saving-goal-progress-chart__swatch {
+    @apply h-3 w-3 rounded-sm;
+  }
+
+  .saving-goal-progress-chart__body {
+    @apply p-5;
+  }
+
+  .saving-goal-progress-chart__chart {
+    @apply h-80 w-full;
+  }
+
+  .saving-goal-progress-chart__skeleton {
+    @apply h-80 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700;
+  }
+
+  .saving-goal-progress-chart__empty {
+    @apply flex h-80 items-center justify-center;
+  }
+</style>

@@ -96,11 +96,11 @@
   <div class="progress-bar-container" :class="sizeClasses">
     <!-- Header Row: Step Counter and Percentage -->
     <div class="progress-header">
-      <div class="flex items-center gap-2">
+      <div class="progress-bar__heading-group">
         <div v-if="currentStep && totalSteps" class="step-counter">
           paso {{ currentStep }} de {{ totalSteps }}
         </div>
-        <Heading v-else color="muted" class="font-semibold uppercase">{{ displayTitle }}</Heading>
+        <Heading v-else color="muted" class="progress-bar__title">{{ displayTitle }}</Heading>
         <p class="step-name">{{ currentStepName }}</p>
       </div>
 
@@ -119,6 +119,14 @@
 </template>
 
 <style scoped lang="postcss">
+  .progress-bar__heading-group {
+    @apply flex items-center gap-2;
+  }
+
+  .progress-bar__title {
+    @apply font-semibold uppercase;
+  }
+
   .progress-bar-container {
     @apply relative my-2 w-full;
   }

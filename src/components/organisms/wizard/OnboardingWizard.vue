@@ -358,7 +358,7 @@
         :highlighted-title="true"
       />
     </div>
-    <div class="mt-4 flex items-center justify-between">
+    <div class="onboarding-wizard__footer">
       <Button
         variant="ghost"
         icon="arrow_back"
@@ -400,6 +400,10 @@
 <style scoped lang="postcss">
   .onboarding-wizard {
     @apply w-full;
+  }
+
+  .onboarding-wizard__footer {
+    @apply mt-4 flex items-center justify-between;
   }
 
   .onboarding-wizard__step {

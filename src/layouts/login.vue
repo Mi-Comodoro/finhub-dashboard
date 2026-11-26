@@ -13,9 +13,7 @@
 </script>
 
 <template>
-  <div
-    class="h-screen w-full flex-1 items-center justify-center bg-neutral-50 transition-colors duration-200 dark:bg-neutral-900"
-  >
+  <div class="login-layout">
     <ModalNotification
       :show="modalStore.state.show"
       :type="modalStore.state.type"
@@ -25,3 +23,9 @@
     <slot />
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .login-layout {
+    @apply h-screen w-full flex-1 items-center justify-center bg-neutral-50 transition-colors duration-200 dark:bg-neutral-900;
+  }
+</style>

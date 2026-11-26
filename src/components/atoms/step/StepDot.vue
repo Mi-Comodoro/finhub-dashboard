@@ -7,7 +7,7 @@
 
 <template>
   <div
-    class="h-3 w-3 rounded-full transition"
+    class="step-dot"
     :class="[
       active && 'bg-primary-500',
       !active && disabled && 'bg-neutral-300',
@@ -15,3 +15,9 @@
     ]"
   />
 </template>
+
+<style scoped lang="postcss">
+  .step-dot {
+    @apply h-3 w-3 rounded-full transition;
+  }
+</style>

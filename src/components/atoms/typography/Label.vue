@@ -96,10 +96,16 @@
 <template>
   <label v-if="effectiveHtmlFor" :for="effectiveHtmlFor" :class="computedClasses">
     <slot>{{ textFallback }}</slot>
-    <span v-if="required" class="ml-1 text-red-500">*</span>
+    <span v-if="required" class="label__required">*</span>
   </label>
   <span v-else :class="computedClasses">
     <slot>{{ textFallback }}</slot>
-    <span v-if="required" class="ml-1 text-red-500">*</span>
+    <span v-if="required" class="label__required">*</span>
   </span>
 </template>
+
+<style scoped lang="postcss">
+  .label__required {
+    @apply ml-1 text-red-500;
+  }
+</style>

@@ -25,11 +25,7 @@
           {{ title }}
         </Heading>
       </div>
-      <button
-        v-if="showEditButton"
-        class="text-sm font-medium text-secondary-600 transition-colors hover:text-secondary-700 focus:outline-none dark:text-secondary-400"
-        @click="emit('edit')"
-      >
+      <button v-if="showEditButton" class="editable-info-card__edit-button" @click="emit('edit')">
         {{ editButtonText }}
       </button>
     </div>
@@ -62,6 +58,10 @@
 
   .editable-info-card__title-group {
     @apply flex items-center space-x-3;
+  }
+
+  .editable-info-card__edit-button {
+    @apply text-sm font-medium text-secondary-600 transition-colors hover:text-secondary-700 focus:outline-none dark:text-secondary-400;
   }
 
   .editable-info-card__title {
