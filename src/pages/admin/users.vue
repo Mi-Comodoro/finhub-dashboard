@@ -46,9 +46,16 @@
 
   const roleFilterOptions = [
     { value: 'all', label: 'Todos los roles' },
+    { value: 'super_admin', label: 'Super administrador' },
     { value: 'admin', label: 'Administrador' },
     { value: 'user', label: 'Usuario' }
   ]
+
+  const roleBadges = {
+    super_admin: { label: 'Super admin', variant: 'danger' },
+    admin: { label: 'Admin', variant: 'danger' },
+    user: { label: 'Usuario', variant: 'default' }
+  } as const
 
   const statusFilterOptions = [
     { value: 'all', label: 'Todos los estados' },
@@ -212,8 +219,8 @@
                 <Text size="sm" color="muted">{{ user.email }}</Text>
               </td>
               <td class="admin-users-page__td">
-                <Badge :variant="user.role === 'admin' ? 'danger' : 'default'">
-                  {{ user.role === 'admin' ? 'Admin' : 'Usuario' }}
+                <Badge :variant="roleBadges[user.role].variant">
+                  {{ roleBadges[user.role].label }}
                 </Badge>
               </td>
               <td class="admin-users-page__td">
@@ -319,14 +326,17 @@
           </div>
           <div class="admin-users-page__panel-row">
             <Text size="xs" color="muted">Rol actual</Text>
-            <Badge :variant="selectedUser.role === 'admin' ? 'danger' : 'default'">
-              {{ selectedUser.role === 'admin' ? 'Admin' : 'Usuario' }}
+            <Badge :variant="roleBadges[selectedUser.role].variant">
+              {{ roleBadges[selectedUser.role].label }}
             </Badge>
           </div>
 
           <div class="admin-users-page__panel-divider" />
 
-          <div class="admin-users-page__panel-actions">
+          <Text v-if="selectedUser.role === 'super_admin'" size="xs" color="muted">
+            El rol de super administrador no se cambia desde aquí.
+          </Text>
+          <div v-else class="admin-users-page__panel-actions">
             <Text size="xs" weight="bold">Cambiar rol</Text>
             <div class="admin-users-page__panel-role-btns">
               <Button
