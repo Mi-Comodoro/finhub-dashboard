@@ -649,7 +649,7 @@
   }
 
   .transactions-page__header {
-    @apply flex items-center justify-between;
+    @apply flex flex-wrap items-center justify-between gap-3;
   }
 
   .transactions-page__title-row {
@@ -661,7 +661,7 @@
   }
 
   .transactions-page__header-actions {
-    @apply flex items-center gap-2;
+    @apply flex flex-wrap items-center gap-2;
   }
 
   .transactions-page__empty {

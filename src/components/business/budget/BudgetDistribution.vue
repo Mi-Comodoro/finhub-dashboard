@@ -86,7 +86,7 @@
   <SectionCard
     icon="donut_large"
     icon-variant="primary"
-    :title="isBalanced ? 'Distribucion 50/30/20' : 'Distribucion Personalizada'"
+    :title="isBalanced ? 'Distribución 50/30/20' : 'Distribución Personalizada'"
   >
     <BudgetCategoryRow
       v-for="(option, index) in options"

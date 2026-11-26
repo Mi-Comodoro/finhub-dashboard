@@ -13,7 +13,7 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
   .toast-enter-active,
   .toast-leave-active {
     transition: all 0.25s ease;

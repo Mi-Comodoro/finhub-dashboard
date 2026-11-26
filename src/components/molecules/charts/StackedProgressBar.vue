@@ -1,6 +1,8 @@
 <script lang="ts" setup>
   import { computed, reactive, watch } from 'vue'
 
+  import { formatCurrency } from '@/utils/currency'
+
   import type { StackedProgressBarProps } from './types/stacked.types'
 
   const props = defineProps<StackedProgressBarProps>()
@@ -47,11 +49,7 @@
   function toMoney(pct: number): string {
     if (!props.totalIncome) return `${pct}%`
     const amount = (props.totalIncome * pct) / 100
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      maximumFractionDigits: 0
-    }).format(amount)
+    return formatCurrency(amount, 'COP')
   }
 </script>
 

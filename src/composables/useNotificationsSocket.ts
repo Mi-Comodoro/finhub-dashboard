@@ -1,5 +1,6 @@
 import { io, type Socket } from 'socket.io-client'
 
+import { useAuthApi } from '@/composables/api/useAuthApi'
 import { useNotificationsStore } from '@/stores/notifications.store'
 import type { AppNotification } from '@/types/notifications.types'
 
@@ -34,6 +35,7 @@ export const useNotificationsSocket = () => {
   const notificationsStore = useNotificationsStore()
   const config = useRuntimeConfig()
   const { success: successToast } = useFeedback()
+  const { getWsToken } = useAuthApi()
 
   const connect = async () => {
     if (socket?.connected) return
@@ -44,7 +46,7 @@ export const useNotificationsSocket = () => {
       socket = io(config.public.wsBase as string, {
         auth: async (cb: (data: { token?: string }) => void) => {
           try {
-            const { token } = await $fetch<{ token: string }>('/api/auth/ws-token')
+            const { token } = await getWsToken()
             cb({ token })
           } catch {
             cb({})

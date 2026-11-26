@@ -58,7 +58,7 @@
       path: '/dashboard/groups',
       badge: pendingRequestsCount.value || undefined
     },
-    { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
+    { name: 'Analítica', icon: 'analytics', path: '/dashboard/analytics' },
     { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' },
     { name: 'Cuentas', icon: 'account_balance', path: '/dashboard/accounts' },
     { name: 'Módulos', icon: 'view_module', className: 'nav-item--disabled' }

@@ -223,7 +223,7 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
   .dropdown-enter-active,
   .dropdown-leave-active {
     transition:

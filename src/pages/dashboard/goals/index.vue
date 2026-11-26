@@ -227,7 +227,7 @@
   const onSavingAllocationSuccess = () => {
     show({
       title: 'Operacion Exitosa',
-      description: 'Distribucion registrada con exito',
+      description: 'Distribución registrada con éxito',
       type: 'success'
     })
     closeSavingDistributionForm()
@@ -884,7 +884,7 @@
   }
 
   .goals-page__header-top {
-    @apply flex items-start justify-between gap-4;
+    @apply flex flex-wrap items-start justify-between gap-4;
   }
 
   .goals-page__header-text {
@@ -892,7 +892,7 @@
   }
 
   .goals-page__header-buttons {
-    @apply flex shrink-0 items-center gap-2;
+    @apply flex shrink-0 flex-wrap items-center gap-2;
   }
 
   .goals-page__header-controls {

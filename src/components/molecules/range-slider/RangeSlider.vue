@@ -53,7 +53,7 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
   /* Fallback thumb for browsers that don't support accent-color */
   input[type='range']::-webkit-slider-thumb {
     appearance: none;

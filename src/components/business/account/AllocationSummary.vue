@@ -44,7 +44,7 @@
       show-progressbar
     />
     <FinancialProgressCard
-      :title="'Proyeccion'"
+      :title="'Proyección'"
       :subtitle="'Basado en tus Metas'"
       :amount="sumAmountTarget(goalsProgress)"
       icon-name="savings"

@@ -43,7 +43,7 @@
   })
 </script>
 
-<style>
+<style lang="postcss">
   .google-icon {
     display: inline-block;
     vertical-align: middle;

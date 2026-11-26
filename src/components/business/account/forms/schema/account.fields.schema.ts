@@ -33,7 +33,7 @@ export const accountFieldsSchema = (): FormSchema => {
       },
       description: {
         type: 'textarea',
-        label: 'Descripcion',
+        label: 'Descripción',
         placeholder: 'Detalles sobre el destino que le daras a la cuenta...'
       }
     },
