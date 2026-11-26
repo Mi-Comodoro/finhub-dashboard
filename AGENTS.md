@@ -56,7 +56,7 @@ Identificadores, tipos y constantes en inglés; textos de la interfaz en españo
 ## Trampas conocidas
 
 - El store de ingresos planificados guarda los del último presupuesto cargado, no necesariamente el que se ve: comparar `budgetId`. `loadAllocationSummaryData` lo sobrescribe con el presupuesto actual.
-- `.agents/` es la fuente de agentes y skills; `.claude/agents` y `.claude/skills` son copias ignoradas por git (`pnpm agents:sync`). No usar symlinks ni junctions.
+- `.agents/` es la fuente de agentes y skills; `.claude/agents` y `.claude/skills` son copias ignoradas por git. Un `git pull` o cambio de rama NO las actualiza: correr `pnpm agents:sync` (y `pnpm agents:check` para verificar). No usar symlinks ni junctions.
 - `plannedSavings` solo viene en `GET /goals/:id`, no en `GET /goals`.
 
 ## Dónde leer (solo si la tarea lo toca)
