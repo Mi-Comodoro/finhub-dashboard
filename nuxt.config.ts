@@ -13,7 +13,9 @@ export default defineNuxtConfig({
     '/dashboard/receivables': { redirect: '/dashboard/accounts' },
     // Los datos del usuario se cargan en el cliente: renderizar en el servidor pintaba «Usuario» y un avatar vacío
     '/dashboard/profile': { ssr: false },
-    '/dashboard/settings': { ssr: false }
+    '/dashboard/settings': { ssr: false },
+    // El rol y los datos de admin solo existen en el cliente: renderizar en el servidor causaba errores de hidratación
+    '/admin/**': { ssr: false }
   },
 
   app: {
