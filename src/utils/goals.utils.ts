@@ -4,6 +4,25 @@ export type GoalTerm = 'short' | 'medium' | 'long' | 'none'
 export type GoalStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAUSED'
 export type BadgeVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info'
 
+// Same keys as the options of the goal form (goals.fiels.schema.ts)
+const GOAL_ICONS = new Set([
+  'emergency',
+  'elderly',
+  'home',
+  'school',
+  'flight',
+  'medical_services',
+  'payments',
+  'trending_up',
+  'directions_car',
+  'shopping_cart'
+])
+
+/** `reason` is the icon name: any other text would be drawn as huge broken glyphs */
+export function getGoalIcon(reason?: string | null): string {
+  return reason && GOAL_ICONS.has(reason) ? reason : 'savings'
+}
+
 export function getGoalTerm(targetDate?: Date | null): GoalTerm {
   if (!targetDate) return 'none'
   const months = differenceInMonths(new Date(targetDate), new Date())

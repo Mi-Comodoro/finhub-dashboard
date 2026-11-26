@@ -11,6 +11,7 @@
   import { useSavingPlannedApplication } from '@/composables/application/useSavingPlannedApplication'
   import { useFinancesStore } from '@/stores/finances.store'
   import DateUtils from '@/utils/date'
+  import { getGoalIcon } from '@/utils/goals.utils'
   import { useToast } from '~/components/organisms/toast/useToast'
   import type { PlannedSavingSummary } from '~/types/domain'
 
@@ -254,7 +255,7 @@
                 <!-- Izquierda: ícono + nombre + cuenta -->
                 <div class="planned-saving-list__item-info">
                   <Icon
-                    :name="item.savingGoal?.reason || 'savings'"
+                    :name="getGoalIcon(item.savingGoal?.reason)"
                     size="2xl"
                     :class-name="getIconClasses(item.savingGoal?.reason)"
                   />
@@ -307,7 +308,7 @@
                             <span
                               class="material-symbols-outlined planned-saving-list__goal-option-icon"
                             >
-                              {{ goal.reason }}
+                              {{ getGoalIcon(goal.reason) }}
                             </span>
                             <span class="planned-saving-list__goal-option-name">
                               {{ goal.name }}
