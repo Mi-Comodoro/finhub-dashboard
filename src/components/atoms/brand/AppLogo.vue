@@ -37,7 +37,7 @@
       level="h2"
       color="black"
       weight="extrabold"
-      sub-title="Gestion financiera"
+      sub-title="Gestión financiera"
       sub-title-size="xs"
       sub-title-color="muted"
     />

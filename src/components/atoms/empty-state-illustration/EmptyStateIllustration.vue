@@ -10,7 +10,6 @@
 </script>
 
 <template>
-  <!-- No Transactions -->
   <svg
     v-if="props.type === 'no-transactions'"
     viewBox="0 0 200 160"
@@ -18,6 +17,7 @@
     class="empty-illustration"
     aria-hidden="true"
   >
+    <!-- No Transactions -->
     <!-- Background card -->
     <rect x="30" y="20" width="140" height="110" rx="12" class="empty-illustration__surface" />
     <!-- Card stripe -->
@@ -50,7 +50,6 @@
     />
   </svg>
 
-  <!-- No Goals -->
   <svg
     v-else-if="props.type === 'no-goals'"
     viewBox="0 0 200 160"
@@ -58,6 +57,7 @@
     class="empty-illustration"
     aria-hidden="true"
   >
+    <!-- No Goals -->
     <!-- Outer ring -->
     <circle cx="100" cy="78" r="52" class="empty-illustration__primary-muted" />
     <!-- Middle ring -->
@@ -106,7 +106,6 @@
     />
   </svg>
 
-  <!-- No Budget -->
   <svg
     v-else-if="props.type === 'no-budget'"
     viewBox="0 0 200 160"
@@ -114,6 +113,7 @@
     class="empty-illustration"
     aria-hidden="true"
   >
+    <!-- No Budget -->
     <!-- Document body -->
     <rect x="50" y="15" width="100" height="128" rx="8" class="empty-illustration__surface" />
     <!-- Dog-ear fold -->
@@ -156,7 +156,6 @@
     />
   </svg>
 
-  <!-- Help -->
   <svg
     v-else-if="props.type === 'help'"
     viewBox="0 0 200 160"
@@ -164,6 +163,7 @@
     class="empty-illustration"
     aria-hidden="true"
   >
+    <!-- Help -->
     <!-- Background circle -->
     <circle cx="100" cy="76" r="58" class="empty-illustration__secondary-muted" />
     <!-- Inner circle -->

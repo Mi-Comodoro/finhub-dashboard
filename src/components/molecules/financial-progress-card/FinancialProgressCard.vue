@@ -8,7 +8,7 @@
   import type { TextColor } from '@/components/atoms/typography/types/text.types'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { useFinancesStore } from '@/stores/finances.store'
-  import { formatCurrency } from '@/utils/currency'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
   // Propiedades
   const financeStore = useFinancesStore()
@@ -257,9 +257,6 @@
       >
         <Heading :color="textColor" size="3xl" weight="bold">
           {{ displayAmount }}
-          <span class="text-xl uppercase md:text-sm" :class="styles.currency">
-            {{ currency }}
-          </span>
         </Heading>
 
         <!-- alert -->
@@ -302,7 +299,6 @@
 
           <Text size="sm" weight="semibold">
             {{ displayTargetAmount }}
-            <span class="text-xs" :class="styles.currency">{{ currency }}</span>
           </Text>
         </div>
 

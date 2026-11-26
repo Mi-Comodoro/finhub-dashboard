@@ -8,6 +8,7 @@
 
   import Button from '@/components/atoms/button/Button.vue'
   import Icon from '@/components/atoms/icons/Icon.vue'
+  import { formatCurrency } from '@/utils/currency'
 
   const props = defineProps<{
     totalIncome?: number
@@ -46,12 +47,7 @@
   function toMoney(pct: number): string {
     if (!props.totalIncome) return ''
     const amount = (props.totalIncome * pct) / 100
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount)
+    return formatCurrency(amount, 'COP')
   }
 
   /* ---------------------------------------------

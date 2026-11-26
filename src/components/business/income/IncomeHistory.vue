@@ -62,7 +62,6 @@
       <template #cell-amount="{ row }">
         <Text size="sm" weight="bold" class="income-history__amount">
           {{ formatCurrency(row.amount, currency) }}
-          <span class="income-history__currency">{{ currency }}</span>
         </Text>
       </template>
 
@@ -114,10 +113,6 @@
 
   .income-history__amount {
     @apply whitespace-nowrap text-success-700;
-  }
-
-  .income-history__currency {
-    @apply text-xs uppercase text-success-600;
   }
 
   .income-history__actions {

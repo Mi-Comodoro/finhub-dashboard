@@ -56,7 +56,7 @@
   </span>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
   .material-symbols-outlined {
     font-variation-settings:
       'FILL' 0,
