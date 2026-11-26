@@ -28,8 +28,8 @@ Focus ONLY on:
 - CardInfo props fijas respetadas en todos los formularios (title-size xl, sub-title-size xs, icon-size md, icon-variant primary)
 - Ícono de CardInfo no cambia según mode create/edit
 - Buttons con size="sm" en acciones inline y formularios
-- Badge de cuenta o plazo → neutral (Primary solo para estados activos e ingresos, ADR-003)
-- Colores semánticos ADR-003: primary=income/needs · warning=savings · danger=expenses · secondary=wants
+- Badge de cuenta o plazo → neutral (Primary solo para estados activos e ingresos)
+- Colores semánticos (ver AGENTS.md): primary=ingresos/necesidades · warning=ahorro · danger=gastos · secondary=gustos · success=metas cumplidas
 
 ## Instructions
 
@@ -45,12 +45,12 @@ Focus ONLY on:
 - ❌ If issues found:
   - List of issues
   - File paths
-  - קצר explanation
+  - Short explanation
   - Suggested minimal fix
 
-## UI Review pre-sprint
+## Auditoría de UI bajo demanda
 
-Antes de cerrar cada sprint, ejecutar una auditoría de componentes UI.
+Solo cuando se pida una auditoría de componentes UI.
 Leer `AGENTS.md` antes de analizar.
 NO modificar código — solo generar reporte en formato `.md`.
 
@@ -61,8 +61,8 @@ NO modificar código — solo generar reporte en formato `.md`.
 - **Estados:** hover (`border/bg`), focus (`ring-2` mínimo WCAG AA), disabled (`cursor-not-allowed` en el contenedor completo, no solo en el `<input>`)
 - **Transiciones:** `transition-colors duration-200` como estándar; `transition-all` solo si hay cambios de layout
 - **Sombras:** `shadow-sm` en componentes sobre `bg-elevated` (modals, sidepanels, cards)
-- **Colores:** semánticos Nuxt UI vs raw Tailwind, cobertura dark mode, ADR-003
-- **Consistencia:** Input y Select a la misma altura; íconos del mismo sistema (no mezclar Material Symbols con Iconify)
+- **Colores:** tokens semánticos del proyecto vs colores crudos, cobertura dark mode
+- **Consistencia:** Input y Select a la misma altura; íconos del mismo sistema (solo `material-symbols-outlined`)
 
 ### Formato del reporte
 

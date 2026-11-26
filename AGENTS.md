@@ -7,6 +7,7 @@ Dashboard web de Mi Comodoro: Nuxt 4, Pinia y Tailwind. Incluye un BFF en `src/s
 - `pnpm install --frozen-lockfile` (Node `>=26.13 <27` según `.nvmrc`; pnpm fijado en `packageManager`)
 - `pnpm dev` (necesita la API en `NUXT_PUBLIC_API_BASE`)
 - `pnpm lint` · `pnpm lint:fix` · `pnpm format`
+- `pnpm agents:check` (espejo `.agents`/`.claude`, frontmatter y tamaño de este archivo; corre en el CI)
 - `pnpm build` (usa `--max-old-space-size=12288`; necesita las variables `FB_*`, aunque sean de relleno: ver `.github/workflows/ci.yaml`)
 - No hay pruebas automáticas. El CI corre `eslint .` y `pnpm build`. El hook pre-commit (husky) corre eslint --fix y prettier sobre lo preparado.
 
@@ -22,7 +23,7 @@ Las variables están en `.env.example` (fuente única). Nunca valores reales en 
 
 ## Notion
 
-Tareas, estado, decisiones, hallazgos y roadmap van en Notion (MCP), nunca en el repo: página «🚀 Mi Comodoro — Project Tracker», base «Roadmap de tareas». Este repo solo guarda lo que no se deduce leyendo el código.
+Tareas, estado, decisiones, hallazgos y roadmap van en Notion (MCP), nunca en el repo: página «🚀 Mi Comodoro — Project Tracker», base «Roadmap de tareas». Este repo solo guarda lo que no se deduce leyendo el código. Notion no se carga al empezar: consultarlo solo si la tarea lo toca (buscar la tarjeta del tema y abrir solo esa). Al cerrar una sesión de trabajo, aplicar la skill `session-compactor`.
 
 ## Arquitectura (obligatoria)
 
@@ -55,5 +56,26 @@ Identificadores, tipos y constantes en inglés; textos de la interfaz en españo
 ## Trampas conocidas
 
 - El store de ingresos planificados guarda los del último presupuesto cargado, no necesariamente el que se ve: comparar `budgetId`. `loadAllocationSummaryData` lo sobrescribe con el presupuesto actual.
-- `.agents/` es la fuente de agentes y skills; `.claude/agents` y `.claude/skills` son copias ignoradas por git (`pnpm agents:sync`). No usar symlinks ni junctions.
+- `.agents/` es la fuente de agentes y skills; `.claude/agents` y `.claude/skills` son copias ignoradas por git. Un `git pull` o cambio de rama NO las actualiza: correr `pnpm agents:sync` (y `pnpm agents:check` para verificar). No usar symlinks ni junctions.
 - `plannedSavings` solo viene en `GET /goals/:id`, no en `GET /goals`.
+
+## Dónde leer (solo si la tarea lo toca)
+
+| Tema | Archivo |
+| --- | --- |
+| Capas, BFF, composables, convenciones | `docs/ARCHITECTURE.md` |
+| Login con Google, consentimiento, invitación a la beta | `docs/google-auth-flow.md` |
+| Agentes y skills (fuente y sincronización) | `.agents/`, `scripts/sync-claude-agents.mjs` |
+| Variables de entorno | `.env.example` |
+
+## Agentes
+
+Usar un subagente solo si el autor lo pide; si no, aplicar la regla en la misma sesión. Flujo habitual: `frontend-dev` → `architect` + `design` → `review`.
+
+| Si la tarea es… | Agente | Escribe código |
+| --- | --- | --- |
+| Implementar UI | `frontend-dev` | Sí |
+| Revisar capas y flujo de datos | `architect` | No |
+| Revisar estilos, colores y gráficos | `design` | No |
+| Revisión final antes de integrar | `review` | No |
+| Corregir violaciones de arquitectura | `refactor` | Sí |

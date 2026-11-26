@@ -22,7 +22,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,ts,vue,json,css,scss}\"",
     "prepare": "husky && node scripts/sync-claude-agents.mjs",
-    "agents:sync": "node scripts/sync-claude-agents.mjs"
+    "agents:sync": "node scripts/sync-claude-agents.mjs",
+    "agents:check": "node scripts/check-agents.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
