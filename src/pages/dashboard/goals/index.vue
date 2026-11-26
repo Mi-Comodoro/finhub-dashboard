@@ -28,6 +28,7 @@
     hasTargetAmount
   } from '@/utils/goal-formatters'
   import {
+    getGoalIcon,
     getGoalTerm,
     getStatusVariant,
     GOAL_STATUS_LABELS,
@@ -398,7 +399,7 @@
         goal,
         title: goal.name,
         subtitle: goal.accountName,
-        iconName: goal.reason,
+        iconName: getGoalIcon(goal.reason),
         iconTextClass: reasonTextMap[goal.reason],
         iconBgClass: reasonBgMap[goal.reason],
         variant: 'custom' as const,
@@ -958,6 +959,11 @@
 
   .goals-page__goal-actions {
     @apply absolute right-2 top-2 z-20 flex gap-1;
+  }
+
+  /* The actions float over the card: keep long goal names out from under them */
+  .goals-page__goal-card-wrapper :deep(h3) {
+    @apply break-words pr-20;
   }
 
   /* Tabla */
