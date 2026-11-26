@@ -119,9 +119,6 @@
               :class="getFormattedAmount(item).colorClass"
             >
               {{ getFormattedAmount(item).text }}
-              <span class="transaction-list__currency" :class="getFormattedAmount(item).colorClass">
-                {{ currency }}
-              </span>
             </Text>
           </div>
         </div>
@@ -191,9 +188,5 @@
 
   .transaction-list__amount-text {
     @apply whitespace-nowrap;
-  }
-
-  .transaction-list__currency {
-    @apply text-xs uppercase;
   }
 </style>
