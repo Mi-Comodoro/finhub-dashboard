@@ -62,7 +62,7 @@
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-col gap-6">
+  <div class="budget-clone-form">
     <CardInfo
       title="Clonar presupuesto"
       title-size="xl"
@@ -77,10 +77,10 @@
       icon-size="md"
     />
 
-    <div class="w-full">
+    <div class="budget-clone-form__body">
       <Form :schema="cloneSchema" @submit="handleSubmit">
         <template #actions>
-          <div class="flex justify-end gap-2">
+          <div class="budget-clone-form__actions">
             <Button type="button" variant="ghost" size="sm" @click="emit('onClose')">
               Cancelar
             </Button>
@@ -91,3 +91,15 @@
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .budget-clone-form {
+    @apply flex h-full w-full flex-col gap-6;
+  }
+  .budget-clone-form__body {
+    @apply w-full;
+  }
+  .budget-clone-form__actions {
+    @apply flex justify-end gap-2;
+  }
+</style>

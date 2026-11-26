@@ -35,7 +35,13 @@
         <div class="login-page__content">
           <!-- Logo -->
           <div class="login-page__logo">
-            <Heading level="h1" size="3xl" weight="extrabold" class="drop-shadow-lg" color="white">
+            <Heading
+              level="h1"
+              size="3xl"
+              weight="extrabold"
+              class="login-page__logo-title"
+              color="white"
+            >
               Mi Comodoro
             </Heading>
           </div>
@@ -53,14 +59,14 @@
               sub-title-color="white"
               sub-title-size="sm"
               sub-title-weight="light"
-              class="max-w-lg"
+              class="login-page__intro"
             />
 
             <div class="login-page__features">
               <ul v-for="(item, index) in items" :key="index">
                 <li class="login-page__feature-item">
                   <span class="login-page__check">✓</span>
-                  <Text class="text-white/90" size="sm">{{ item.item }}</Text>
+                  <Text class="login-page__feature-text" size="sm">{{ item.item }}</Text>
                 </li>
               </ul>
             </div>
@@ -86,7 +92,7 @@
         <div class="login-page__footer">
           <p class="login-page__footer-text">
             Desarrollado por
-            <span class="ml-2 inline-block">
+            <span class="login-page__footer-logo-wrapper">
               <img
                 src="@/assets/svg/V2MIGUELALVAREZ.svg"
                 alt="Miguel Alvarez"
@@ -101,6 +107,22 @@
 </template>
 
 <style scoped lang="postcss">
+  .login-page__logo-title {
+    @apply drop-shadow-lg;
+  }
+
+  .login-page__intro {
+    @apply max-w-lg;
+  }
+
+  .login-page__feature-text {
+    @apply text-white/90;
+  }
+
+  .login-page__footer-logo-wrapper {
+    @apply ml-2 inline-block;
+  }
+
   .login-page {
     @apply flex h-screen items-center justify-center overflow-hidden;
     @apply bg-gradient-to-br from-neutral-50 to-teal-50;

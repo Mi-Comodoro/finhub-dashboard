@@ -266,7 +266,10 @@
                 :options="schema.fields[fieldKey]?.options!"
               />
 
-              <div v-else-if="schema.fields[fieldKey]!.type === 'date'" class="flex-1 flex-col">
+              <div
+                v-else-if="schema.fields[fieldKey]!.type === 'date'"
+                class="form-base__date-field"
+              >
                 <DatePickerInput
                   v-model="formData[fieldKey]! as Date"
                   mode="single"
@@ -275,7 +278,10 @@
                 />
               </div>
 
-              <div v-else-if="schema.fields[fieldKey]!.type === 'switch'" class="pt-5">
+              <div
+                v-else-if="schema.fields[fieldKey]!.type === 'switch'"
+                class="form-base__switch-field"
+              >
                 <SwitchToggle
                   v-model="formData[fieldKey] as boolean"
                   :label="schema.fields[fieldKey]!.label"
@@ -351,6 +357,14 @@
 </template>
 
 <style scoped lang="postcss">
+  .form-base__date-field {
+    @apply flex-1 flex-col;
+  }
+
+  .form-base__switch-field {
+    @apply pt-5;
+  }
+
   .form-base {
     @apply flex min-h-0 flex-1 flex-col;
   }

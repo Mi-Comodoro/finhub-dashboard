@@ -58,10 +58,20 @@
 </script>
 
 <template>
-  <div class="flex items-center space-x-2">
-    <div class="rounded-full" :class="[statusClasses, sizeClasses]"></div>
+  <div class="status-indicator">
+    <div class="status-indicator__dot" :class="[statusClasses, sizeClasses]"></div>
     <span :class="[textColors, textSizeClasses]">
       {{ text }}
     </span>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .status-indicator {
+    @apply flex items-center space-x-2;
+  }
+
+  .status-indicator__dot {
+    @apply rounded-full;
+  }
+</style>

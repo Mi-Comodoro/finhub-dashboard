@@ -15,18 +15,18 @@
 </script>
 
 <template>
-  <div :class="['mb-1 2xl:mb-2', className]">
+  <div :class="['navigation-section', className]">
     <Text
       v-if="!collapsed"
       as="span"
       size="xs"
       weight="semibold"
       color="muted"
-      class="mb-2 block px-2 uppercase tracking-wider"
+      class="navigation-section__title"
     >
       {{ title }}
     </Text>
-    <ul class="space-y-1">
+    <ul class="navigation-section__list">
       <li v-for="item in items" :key="item.name">
         <NavigationItem
           :name="item.name"
@@ -43,3 +43,17 @@
     </ul>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .navigation-section {
+    @apply mb-1 2xl:mb-2;
+  }
+
+  .navigation-section__title {
+    @apply mb-2 block px-2 uppercase tracking-wider;
+  }
+
+  .navigation-section__list {
+    @apply space-y-1;
+  }
+</style>

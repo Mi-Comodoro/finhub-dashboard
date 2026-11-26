@@ -6,14 +6,18 @@
 </script>
 
 <template>
-  <div class="fixed right-4 top-4 z-50 w-80 space-y-2">
+  <div class="toast-container">
     <TransitionGroup name="toast">
       <ToastItem v-for="toast in toasts" :key="toast.id" :toast="toast" @close="remove(toast.id)" />
     </TransitionGroup>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
+  .toast-container {
+    @apply fixed right-4 top-4 z-50 w-80 space-y-2;
+  }
+
   .toast-enter-active,
   .toast-leave-active {
     transition: all 0.25s ease;

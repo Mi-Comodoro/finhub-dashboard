@@ -10,18 +10,16 @@
 </script>
 
 <template>
-  <div class="w-full overflow-hidden border bg-white dark:border-neutral-700 dark:bg-neutral-800">
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
+  <div class="data-table">
+    <div class="data-table__scroll">
+      <table class="data-table__table">
         <!-- HEADER -->
-        <thead
-          class="bg-gray-200 text-xs uppercase text-gray-700 dark:bg-neutral-700 dark:text-neutral-300"
-        >
+        <thead class="data-table__head">
           <tr>
             <th
               v-for="col in columns"
               :key="col.key"
-              class="p-3 text-left font-bold"
+              class="data-table__th"
               :class="{
                 'text-right': col.align === 'right',
                 'text-center': col.align === 'center'
@@ -30,7 +28,7 @@
               {{ col.label }}
             </th>
 
-            <th v-if="$slots.actions" class="p-3 text-right">Acciones</th>
+            <th v-if="$slots.actions" class="data-table__th-actions">Acciones</th>
           </tr>
         </thead>
 
@@ -38,24 +36,17 @@
         <tbody>
           <!-- LOADING -->
           <tr v-if="loading">
-            <td
-              :colspan="columns.length + ($slots.actions ? 1 : 0)"
-              class="p-6 text-center dark:text-neutral-300"
-            >
+            <td :colspan="columns.length + ($slots.actions ? 1 : 0)" class="data-table__loading">
               <slot name="loading">Cargando...</slot>
             </td>
           </tr>
 
           <!-- DATA -->
-          <tr
-            v-for="row in data"
-            :key="row.id as string"
-            class="border-t transition hover:bg-gray-50 dark:border-neutral-700 dark:hover:bg-neutral-700"
-          >
+          <tr v-for="row in data" :key="row.id as string" class="data-table__row">
             <td
               v-for="col in columns"
               :key="col.key"
-              class="p-3 text-xs"
+              class="data-table__cell"
               :class="{
                 'text-right': col.align === 'right',
                 'text-left': col.align === 'left',
@@ -71,17 +62,14 @@
             </td>
 
             <!-- ACTIONS -->
-            <td v-if="$slots.actions" class="flex gap-2 p-3 text-right">
+            <td v-if="$slots.actions" class="data-table__actions">
               <slot name="actions" :row="row" />
             </td>
           </tr>
 
           <!-- EMPTY -->
           <tr v-if="!loading && !data.length">
-            <td
-              :colspan="columns.length + ($slots.actions ? 1 : 0)"
-              class="p-6 text-center text-gray-400 dark:text-neutral-500"
-            >
+            <td :colspan="columns.length + ($slots.actions ? 1 : 0)" class="data-table__empty">
               <slot name="empty">No hay datos</slot>
             </td>
           </tr>
@@ -91,3 +79,49 @@
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .data-table {
+    @apply w-full overflow-hidden border bg-white dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .data-table__scroll {
+    @apply overflow-x-auto;
+  }
+
+  .data-table__table {
+    @apply w-full text-sm;
+  }
+
+  .data-table__head {
+    @apply bg-gray-200 text-xs uppercase text-gray-700 dark:bg-neutral-700 dark:text-neutral-300;
+  }
+
+  .data-table__th {
+    @apply p-3 text-left font-bold;
+  }
+
+  .data-table__th-actions {
+    @apply p-3 text-right;
+  }
+
+  .data-table__loading {
+    @apply p-6 text-center dark:text-neutral-300;
+  }
+
+  .data-table__row {
+    @apply border-t transition hover:bg-gray-50 dark:border-neutral-700 dark:hover:bg-neutral-700;
+  }
+
+  .data-table__cell {
+    @apply p-3 text-xs;
+  }
+
+  .data-table__actions {
+    @apply flex gap-2 p-3 text-right;
+  }
+
+  .data-table__empty {
+    @apply p-6 text-center text-gray-400 dark:text-neutral-500;
+  }
+</style>

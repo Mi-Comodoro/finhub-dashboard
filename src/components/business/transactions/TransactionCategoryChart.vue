@@ -112,27 +112,55 @@
 </script>
 
 <template>
-  <div
-    class="rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
-  >
-    <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+  <div class="transaction-category-chart">
+    <div class="transaction-category-chart__header">
       <Heading level="h3" size="lg" weight="semibold">Gastos por categoria</Heading>
-      <Text size="sm" color="muted" class="mt-1">
+      <Text size="sm" color="muted" class="transaction-category-chart__subtitle">
         Muestra en que categorias se concentra la mayor parte del gasto registrado.
       </Text>
     </div>
 
-    <div class="p-5">
+    <div class="transaction-category-chart__body">
       <ClientOnly v-if="hasData">
-        <VChart :option="chartOption" autoresize class="h-56 w-full" />
+        <VChart :option="chartOption" autoresize class="transaction-category-chart__chart" />
         <template #fallback>
-          <div class="h-56 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700" />
+          <div class="transaction-category-chart__skeleton" />
         </template>
       </ClientOnly>
 
-      <div v-else class="flex h-56 items-center justify-center">
+      <div v-else class="transaction-category-chart__empty">
         <Text size="sm" color="muted">No hay gastos para mostrar esta grafica.</Text>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .transaction-category-chart {
+    @apply rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .transaction-category-chart__header {
+    @apply border-b border-slate-100 px-5 py-4 dark:border-slate-700;
+  }
+
+  .transaction-category-chart__subtitle {
+    @apply mt-1;
+  }
+
+  .transaction-category-chart__body {
+    @apply p-5;
+  }
+
+  .transaction-category-chart__chart {
+    @apply h-56 w-full;
+  }
+
+  .transaction-category-chart__skeleton {
+    @apply h-56 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700;
+  }
+
+  .transaction-category-chart__empty {
+    @apply flex h-56 items-center justify-center;
+  }
+</style>

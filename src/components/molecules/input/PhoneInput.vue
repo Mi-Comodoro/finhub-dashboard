@@ -136,10 +136,10 @@
 </script>
 
 <template>
-  <div class="flex w-full flex-col">
+  <div class="phone-input">
     <Label
       v-if="label"
-      class="mb-1.5 block text-sm font-medium text-gray-700"
+      class="phone-input__label"
       variant="form"
       size="sm"
       weight="medium"
@@ -150,7 +150,7 @@
 
     <!-- Wrapper UNIFICADO -->
     <div
-      class="flex items-stretch rounded-md border bg-white transition-all duration-200 dark:bg-neutral-900"
+      class="phone-input__wrapper"
       :class="[
         error || internalError
           ? 'border-red-500 focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500'
@@ -158,43 +158,33 @@
       ]"
     >
       <!-- Prefijo (país) -->
-      <div class="custom-select relative flex items-center pl-3 pr-2">
-        <button
-          type="button"
-          class="flex items-center gap-2 text-sm text-gray-500 focus:outline-none dark:text-neutral-400"
-          @click="toggleDropdown"
-        >
+      <div class="custom-select phone-input__prefix">
+        <button type="button" class="phone-input__toggle" @click="toggleDropdown">
           <CountryFlag :country-code="selectedCountry.flagCode" :size="16" />
 
-          <span class="text-gray-500">
+          <span class="phone-input__code">
             {{ selectedCode }}
           </span>
 
-          <ChevronDownIcon
-            class="h-3 w-3 text-gray-400 transition-transform duration-200"
-            :class="{ 'rotate-180': isOpen }"
-          />
+          <ChevronDownIcon class="phone-input__chevron" :class="{ 'rotate-180': isOpen }" />
         </button>
 
         <Transition name="dropdown">
-          <ul
-            v-if="isOpen"
-            class="absolute left-0 z-20 mt-1 max-h-60 min-w-[220px] overflow-auto rounded-md border border-gray-300 bg-white py-1 shadow-lg dark:border-neutral-600 dark:bg-neutral-800"
-          >
+          <ul v-if="isOpen" class="phone-input__list">
             <li
               v-for="option in countryCodes"
               :key="option.value"
-              class="flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
+              class="phone-input__option"
               :class="{
                 'bg-primary-50 font-medium text-primary-700': option.value === selectedCode
               }"
               @click="selectCode(option.value)"
             >
-              <div class="flex w-5 justify-center">
+              <div class="phone-input__flag">
                 <CountryFlag :country-code="option.flagCode" :size="16" />
               </div>
 
-              <span class="whitespace-nowrap">
+              <span class="phone-input__option-label">
                 {{ option.label }}
               </span>
             </li>
@@ -208,22 +198,59 @@
         type="tel"
         placeholder="Número"
         inputmode="numeric"
-        class="min-w-0 flex-1 border-none bg-transparent py-2 pl-1 pr-3 text-sm outline-none ring-0"
+        class="phone-input__input"
         @blur="onNumberBlur"
       />
     </div>
 
     <!-- Error -->
-    <span
-      v-if="error || internalError"
-      class="mt-1.5 text-xs font-medium text-red-600 transition-opacity duration-200"
-    >
+    <span v-if="error || internalError" class="phone-input__error">
       {{ error || internalError }}
     </span>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
+  .phone-input {
+    @apply flex w-full flex-col;
+  }
+  .phone-input__label {
+    @apply mb-1.5 block text-sm font-medium text-gray-700;
+  }
+  .phone-input__wrapper {
+    @apply flex items-stretch rounded-md border bg-white transition-all duration-200 dark:bg-neutral-900;
+  }
+  .phone-input__prefix {
+    @apply relative flex items-center pl-3 pr-2;
+  }
+  .phone-input__toggle {
+    @apply flex items-center gap-2 text-sm text-gray-500 focus:outline-none dark:text-neutral-400;
+  }
+  .phone-input__code {
+    @apply text-gray-500;
+  }
+  .phone-input__chevron {
+    @apply h-3 w-3 text-gray-400 transition-transform duration-200;
+  }
+  .phone-input__list {
+    @apply absolute left-0 z-20 mt-1 max-h-60 min-w-[220px] overflow-auto rounded-md border border-gray-300 bg-white py-1 shadow-lg dark:border-neutral-600 dark:bg-neutral-800;
+  }
+  .phone-input__option {
+    @apply flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-neutral-300 dark:hover:bg-neutral-700;
+  }
+  .phone-input__flag {
+    @apply flex w-5 justify-center;
+  }
+  .phone-input__option-label {
+    @apply whitespace-nowrap;
+  }
+  .phone-input__input {
+    @apply min-w-0 flex-1 border-none bg-transparent py-2 pl-1 pr-3 text-sm outline-none ring-0;
+  }
+  .phone-input__error {
+    @apply mt-1.5 text-xs font-medium text-red-600 transition-opacity duration-200;
+  }
+
   .dropdown-enter-active,
   .dropdown-leave-active {
     transition:

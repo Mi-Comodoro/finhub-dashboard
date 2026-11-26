@@ -227,15 +227,27 @@
 <template>
   <div v-if="hasData" class="projection-chart">
     <ClientOnly>
-      <VChart :option="chartOption" autoresize class="h-72 w-full" />
+      <VChart :option="chartOption" autoresize class="projection-chart__chart" />
       <template #fallback>
-        <div class="h-72 w-full animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-700" />
+        <div class="projection-chart__skeleton" />
       </template>
     </ClientOnly>
   </div>
-  <div v-else class="flex h-72 items-center justify-center">
+  <div v-else class="projection-chart__empty">
     <Text size="sm" color="muted">Realiza tu primer aporte para ver la proyección.</Text>
   </div>
 </template>
 
-<style scoped lang="postcss"></style>
+<style scoped lang="postcss">
+  .projection-chart__chart {
+    @apply h-72 w-full;
+  }
+
+  .projection-chart__skeleton {
+    @apply h-72 w-full animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-700;
+  }
+
+  .projection-chart__empty {
+    @apply flex h-72 items-center justify-center;
+  }
+</style>

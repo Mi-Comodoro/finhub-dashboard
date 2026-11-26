@@ -45,50 +45,22 @@
     <table class="budget-table__table">
       <thead>
         <tr>
-          <th
-            class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-          >
-            Periodo
-          </th>
-          <th
-            class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-          >
-            Estado Actual
-          </th>
+          <th class="budget-table__th">Periodo</th>
+          <th class="budget-table__th">Estado Actual</th>
 
-          <th
-            class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-          >
-            Total Presupuestado
-          </th>
-          <th
-            class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-          >
-            % Ejecutado
-          </th>
-          <th
-            class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-          >
-            Próximo Cierre
-          </th>
-          <th
-            class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-          >
-            Acciones
-          </th>
+          <th class="budget-table__th">Total Presupuestado</th>
+          <th class="budget-table__th">% Ejecutado</th>
+          <th class="budget-table__th">Próximo Cierre</th>
+          <th class="budget-table__th">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="plan in props.plans"
-          :key="plan.id"
-          class="border-t border-slate-100 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-700/50"
-        >
-          <td class="whitespace-nowrap px-5 py-4">{{ plan.month }} / {{ plan.year }}</td>
-          <td class="whitespace-nowrap px-5 py-4">
+        <tr v-for="plan in props.plans" :key="plan.id" class="budget-table__row">
+          <td class="budget-table__cell">{{ plan.month }} / {{ plan.year }}</td>
+          <td class="budget-table__cell">
             <span
               :class="[
-                'inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-medium',
+                'budget-table__status',
                 plan.status === 'PLANNED'
                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
                   : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
@@ -97,14 +69,14 @@
               {{ plan.status === 'PLANNED' ? 'Planificado' : 'En Progreso' }}
             </span>
           </td>
-          <td class="whitespace-nowrap px-5 py-4">
+          <td class="budget-table__cell">
             {{ formatCurrency(10000000, currency) }}
           </td>
-          <td class="whitespace-nowrap px-5 py-4">{{ avgExecution }}%</td>
-          <td class="whitespace-nowrap px-5 py-4">
+          <td class="budget-table__cell">{{ avgExecution }}%</td>
+          <td class="budget-table__cell">
             {{ nextClosingDate ?? 'N/A' }}
           </td>
-          <td class="flex gap-3">
+          <td class="budget-table__actions">
             <Button
               variant="primary"
               size="sm"
@@ -161,6 +133,21 @@
   }
   .budget-table__table {
     @apply w-full text-left text-sm;
+  }
+  .budget-table__th {
+    @apply px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400;
+  }
+  .budget-table__row {
+    @apply border-t border-slate-100 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-700/50;
+  }
+  .budget-table__cell {
+    @apply whitespace-nowrap px-5 py-4;
+  }
+  .budget-table__actions {
+    @apply flex gap-3;
+  }
+  .budget-table__status {
+    @apply inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-medium;
   }
   .budget-table__footer {
     @apply flex items-center justify-between border-t border-slate-100 px-5 py-3.5 dark:border-slate-700;

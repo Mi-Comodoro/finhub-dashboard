@@ -94,25 +94,49 @@
 </script>
 
 <template>
-  <div class="rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-    <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+  <div class="incomes-trend-chart">
+    <div class="incomes-trend-chart__header">
       <Heading level="h3" size="lg" weight="semibold">Tendencia de ingresos</Heading>
-      <Text size="sm" color="muted" class="mt-1">
+      <Text size="sm" color="muted" class="incomes-trend-chart__subtitle">
         Compara por mes los ingresos planificados frente a los realmente recibidos.
       </Text>
     </div>
 
-    <div class="p-5">
+    <div class="incomes-trend-chart__body">
       <ClientOnly v-if="hasData">
-        <VChart :option="chartOption" autoresize class="h-80 w-full" />
+        <VChart :option="chartOption" autoresize class="incomes-trend-chart__chart" />
         <template #fallback>
-          <div class="h-80 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700" />
+          <div class="incomes-trend-chart__skeleton" />
         </template>
       </ClientOnly>
 
-      <div v-else class="flex h-80 items-center justify-center">
+      <div v-else class="incomes-trend-chart__empty">
         <Text size="sm" color="muted">No hay datos historicos de ingresos para mostrar.</Text>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .incomes-trend-chart {
+    @apply rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800;
+  }
+  .incomes-trend-chart__header {
+    @apply border-b border-slate-100 px-5 py-4 dark:border-slate-700;
+  }
+  .incomes-trend-chart__subtitle {
+    @apply mt-1;
+  }
+  .incomes-trend-chart__body {
+    @apply p-5;
+  }
+  .incomes-trend-chart__chart {
+    @apply h-80 w-full;
+  }
+  .incomes-trend-chart__skeleton {
+    @apply h-80 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700;
+  }
+  .incomes-trend-chart__empty {
+    @apply flex h-80 items-center justify-center;
+  }
+</style>

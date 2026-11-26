@@ -126,43 +126,91 @@
 </script>
 
 <template>
-  <div
-    class="rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
-  >
-    <div
-      class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700"
-    >
+  <div class="budget-progress-chart">
+    <div class="budget-progress-chart__header">
       <div>
         <Heading level="h3" size="lg" weight="semibold">Progreso por categoria</Heading>
-        <Text size="sm" color="muted" class="mt-1">
+        <Text size="sm" color="muted" class="budget-progress-chart__subtitle">
           Compara lo planificado frente a lo pagado para cada categoria de gasto.
         </Text>
       </div>
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2">
-          <span class="h-3 w-3 rounded-sm" :style="{ backgroundColor: CHART_COLORS.planned }" />
+      <div class="budget-progress-chart__legend">
+        <div class="budget-progress-chart__legend-item">
+          <span
+            class="budget-progress-chart__swatch"
+            :style="{ backgroundColor: CHART_COLORS.planned }"
+          />
           <Text size="sm" color="muted">Planificado</Text>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="h-3 w-3 rounded-sm" :style="{ backgroundColor: CHART_COLORS.wants }" />
+        <div class="budget-progress-chart__legend-item">
+          <span
+            class="budget-progress-chart__swatch"
+            :style="{ backgroundColor: CHART_COLORS.wants }"
+          />
           <Text size="sm" color="muted">Pagado</Text>
         </div>
       </div>
     </div>
 
-    <div class="p-5">
+    <div class="budget-progress-chart__body">
       <ClientOnly v-if="hasData">
-        <VChart :option="chartOption" autoresize class="h-80 w-full" />
+        <VChart :option="chartOption" autoresize class="budget-progress-chart__chart" />
         <template #fallback>
-          <div class="flex h-80 w-full items-center justify-center">
-            <div class="h-full w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700" />
+          <div class="budget-progress-chart__fallback">
+            <div class="budget-progress-chart__skeleton" />
           </div>
         </template>
       </ClientOnly>
 
-      <div v-else class="flex h-80 items-center justify-center text-center">
+      <div v-else class="budget-progress-chart__empty">
         <Text size="sm" color="muted">No hay gastos suficientes para mostrar esta grafica.</Text>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .budget-progress-chart {
+    @apply rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .budget-progress-chart__header {
+    @apply flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-700;
+  }
+
+  .budget-progress-chart__subtitle {
+    @apply mt-1;
+  }
+
+  .budget-progress-chart__legend {
+    @apply flex items-center gap-4;
+  }
+
+  .budget-progress-chart__legend-item {
+    @apply flex items-center gap-2;
+  }
+
+  .budget-progress-chart__swatch {
+    @apply h-3 w-3 rounded-sm;
+  }
+
+  .budget-progress-chart__body {
+    @apply p-5;
+  }
+
+  .budget-progress-chart__chart {
+    @apply h-80 w-full;
+  }
+
+  .budget-progress-chart__fallback {
+    @apply flex h-80 w-full items-center justify-center;
+  }
+
+  .budget-progress-chart__skeleton {
+    @apply h-full w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700;
+  }
+
+  .budget-progress-chart__empty {
+    @apply flex h-80 items-center justify-center text-center;
+  }
+</style>

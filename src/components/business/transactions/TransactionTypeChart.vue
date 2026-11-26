@@ -81,32 +81,33 @@
 </script>
 
 <template>
-  <div
-    class="rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
-  >
-    <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+  <div class="transaction-type-chart">
+    <div class="transaction-type-chart__header">
       <Heading level="h3" size="lg" weight="semibold">Distribucion por tipo</Heading>
-      <Text size="sm" color="muted" class="mt-1">
+      <Text size="sm" color="muted" class="transaction-type-chart__description">
         Resume cuanto del movimiento corresponde a ingresos, gastos y ahorro.
       </Text>
     </div>
 
-    <div class="grid gap-4 p-5 md:grid-cols-[220px,1fr] md:items-center">
+    <div class="transaction-type-chart__content">
       <ClientOnly v-if="hasData">
-        <VChart :option="chartOption" autoresize class="h-56 w-full" />
+        <VChart :option="chartOption" autoresize class="transaction-type-chart__chart" />
         <template #fallback>
-          <div class="h-56 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700" />
+          <div class="transaction-type-chart__skeleton" />
         </template>
       </ClientOnly>
 
-      <div v-if="hasData" class="space-y-3">
+      <div v-if="hasData" class="transaction-type-chart__legend">
         <div
           v-for="item in legendItems"
           :key="item.name"
-          class="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700"
+          class="transaction-type-chart__legend-item"
         >
-          <div class="flex items-center gap-3">
-            <span class="h-3 w-3 rounded-full" :style="{ backgroundColor: item.color }" />
+          <div class="transaction-type-chart__legend-label">
+            <span
+              class="transaction-type-chart__legend-dot"
+              :style="{ backgroundColor: item.color }"
+            />
             <Text size="sm" weight="medium">{{ item.name }}</Text>
           </div>
           <Text size="sm" weight="semibold">
@@ -115,9 +116,56 @@
         </div>
       </div>
 
-      <div v-else class="flex h-56 items-center justify-center md:col-span-2">
+      <div v-else class="transaction-type-chart__empty">
         <Text size="sm" color="muted">No hay transacciones para mostrar esta grafica.</Text>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .transaction-type-chart {
+    @apply rounded-md border border-slate-200 bg-white transition-colors duration-200;
+    @apply dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .transaction-type-chart__header {
+    @apply border-b border-slate-100 px-5 py-4 dark:border-slate-700;
+  }
+
+  .transaction-type-chart__description {
+    @apply mt-1;
+  }
+
+  .transaction-type-chart__content {
+    @apply grid gap-4 p-5 md:grid-cols-[220px,1fr] md:items-center;
+  }
+
+  .transaction-type-chart__chart {
+    @apply h-56 w-full;
+  }
+
+  .transaction-type-chart__skeleton {
+    @apply h-56 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700;
+  }
+
+  .transaction-type-chart__legend {
+    @apply space-y-3;
+  }
+
+  .transaction-type-chart__legend-item {
+    @apply flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700;
+  }
+
+  .transaction-type-chart__legend-label {
+    @apply flex items-center gap-3;
+  }
+
+  .transaction-type-chart__legend-dot {
+    @apply h-3 w-3 rounded-full;
+  }
+
+  .transaction-type-chart__empty {
+    @apply flex h-56 items-center justify-center md:col-span-2;
+  }
+</style>

@@ -79,25 +79,55 @@
 </script>
 
 <template>
-  <div class="rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-    <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+  <div class="savings-rate-chart">
+    <div class="savings-rate-chart__header">
       <Heading level="h3" size="lg" weight="semibold">Tasa de ahorro</Heading>
-      <Text size="sm" color="muted" class="mt-1">
+      <Text size="sm" color="muted" class="savings-rate-chart__subtitle">
         Mide que porcentaje del ingreso recibido termino convirtiendose en ahorro.
       </Text>
     </div>
 
-    <div class="p-5">
+    <div class="savings-rate-chart__body">
       <ClientOnly v-if="hasData">
-        <VChart :option="chartOption" autoresize class="h-80 w-full" />
+        <VChart :option="chartOption" autoresize class="savings-rate-chart__chart" />
         <template #fallback>
-          <div class="h-80 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700" />
+          <div class="savings-rate-chart__skeleton" />
         </template>
       </ClientOnly>
 
-      <div v-else class="flex h-80 items-center justify-center">
+      <div v-else class="savings-rate-chart__empty">
         <Text size="sm" color="muted">No hay tasa de ahorro historica para mostrar.</Text>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="postcss">
+  .savings-rate-chart {
+    @apply rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .savings-rate-chart__header {
+    @apply border-b border-slate-100 px-5 py-4 dark:border-slate-700;
+  }
+
+  .savings-rate-chart__subtitle {
+    @apply mt-1;
+  }
+
+  .savings-rate-chart__body {
+    @apply p-5;
+  }
+
+  .savings-rate-chart__chart {
+    @apply h-80 w-full;
+  }
+
+  .savings-rate-chart__skeleton {
+    @apply h-80 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-700;
+  }
+
+  .savings-rate-chart__empty {
+    @apply flex h-80 items-center justify-center;
+  }
+</style>

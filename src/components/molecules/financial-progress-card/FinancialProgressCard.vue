@@ -222,14 +222,11 @@
   })
 </script>
 <template>
-  <Card
-    class="relative flex h-auto w-full flex-col space-y-2 overflow-hidden rounded-md"
-    :class="styles.background"
-  >
-    <div class="relative z-10 flex h-full flex-col">
+  <Card class="financial-progress-card" :class="styles.background">
+    <div class="financial-progress-card__content">
       <!-- Header Section -->
-      <div class="flex items-center gap-2">
-        <div class="flex items-center gap-2">
+      <div class="financial-progress-card__header">
+        <div class="financial-progress-card__header-inner">
           <!-- Card Info -->
           <CardInfo
             level="h3"
@@ -253,11 +250,11 @@
       <div
         v-if="amount != null && targetAmount === 0"
         ref="amountRef"
-        class="flex min-h-10 flex-col items-start justify-center pt-6"
+        class="financial-progress-card__amount"
       >
         <Heading :color="textColor" size="3xl" weight="bold">
           {{ displayAmount }}
-          <span class="text-xl uppercase md:text-sm" :class="styles.currency">
+          <span class="financial-progress-card__currency" :class="styles.currency">
             {{ currency }}
           </span>
         </Heading>
@@ -271,19 +268,16 @@
 
         <!-- progress bar -->
 
-        <div v-if="showProgressbar" class="flex w-full flex-col items-end gap-2">
-          <div
-            class="h-1.5 w-full overflow-hidden rounded-full"
-            style="background: var(--surface-3)"
-          >
+        <div v-if="showProgressbar" class="financial-progress-card__progress">
+          <div class="financial-progress-card__track" style="background: var(--surface-3)">
             <div
-              class="h-full rounded-full transition-all duration-700"
+              class="financial-progress-card__fill"
               :style="{ width: `${progressWidth}%`, background: progressFillColor }"
             />
           </div>
           <Text size="sm">
             {{ progressLabel }}
-            <span class="text-right text-slate-400">{{ progressPercentage }}%</span>
+            <span class="financial-progress-card__percentage">{{ progressPercentage }}%</span>
           </Text>
         </div>
       </div>
@@ -291,29 +285,31 @@
       <div
         v-else-if="targetAmount && targetAmount > 0"
         ref="targetRef"
-        class="mt-4 flex flex-col gap-2"
+        class="financial-progress-card__target"
       >
         <!-- header progreso -->
-        <div class="flex items-center justify-between gap-2">
+        <div class="financial-progress-card__target-header">
           <Text size="sm">
             {{ progressLabel }}
-            <span class="text-slate-400">({{ progressPercentage }}%)</span>
+            <span class="financial-progress-card__muted">({{ progressPercentage }}%)</span>
           </Text>
 
           <Text size="sm" weight="semibold">
             {{ displayTargetAmount }}
-            <span class="text-xs" :class="styles.currency">{{ currency }}</span>
+            <span class="financial-progress-card__currency-sm" :class="styles.currency">
+              {{ currency }}
+            </span>
           </Text>
         </div>
 
         <!-- progress bar -->
         <div
           v-if="showProgressbar"
-          class="h-1.5 w-full overflow-hidden rounded-full"
+          class="financial-progress-card__track"
           style="background: var(--surface-3)"
         >
           <div
-            class="h-full rounded-full transition-all duration-700"
+            class="financial-progress-card__fill"
             :style="{ width: `${progressWidth}%`, background: progressFillColor }"
           />
         </div>
@@ -325,8 +321,8 @@
       </div>
 
       <!-- footer opcional -->
-      <div class="mt-auto">
-        <Text size="sm" color="muted" class="truncate">
+      <div class="financial-progress-card__footer">
+        <Text size="sm" color="muted" class="financial-progress-card__footer-text">
           {{ textFooter }}
         </Text>
       </div>
@@ -335,7 +331,7 @@
     </div>
 
     <!-- Icon Background -->
-    <div class="pointer-events-none absolute -bottom-8 -right-8 opacity-[0.08] dark:opacity-20">
+    <div class="financial-progress-card__bg-icon">
       <Icon
         :name="iconName || iconMark"
         :class="styles.bgAccent"
@@ -345,3 +341,70 @@
     </div>
   </Card>
 </template>
+
+<style scoped lang="postcss">
+  .financial-progress-card {
+    @apply relative flex h-auto w-full flex-col space-y-2 overflow-hidden rounded-md;
+  }
+
+  .financial-progress-card__content {
+    @apply relative z-10 flex h-full flex-col;
+  }
+
+  .financial-progress-card__header,
+  .financial-progress-card__header-inner {
+    @apply flex items-center gap-2;
+  }
+
+  .financial-progress-card__amount {
+    @apply flex min-h-10 flex-col items-start justify-center pt-6;
+  }
+
+  .financial-progress-card__currency {
+    @apply text-xl uppercase md:text-sm;
+  }
+
+  .financial-progress-card__currency-sm {
+    @apply text-xs;
+  }
+
+  .financial-progress-card__progress {
+    @apply flex w-full flex-col items-end gap-2;
+  }
+
+  .financial-progress-card__track {
+    @apply h-1.5 w-full overflow-hidden rounded-full;
+  }
+
+  .financial-progress-card__fill {
+    @apply h-full rounded-full transition-all duration-700;
+  }
+
+  .financial-progress-card__percentage {
+    @apply text-right text-slate-400;
+  }
+
+  .financial-progress-card__muted {
+    @apply text-slate-400;
+  }
+
+  .financial-progress-card__target {
+    @apply mt-4 flex flex-col gap-2;
+  }
+
+  .financial-progress-card__target-header {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .financial-progress-card__footer {
+    @apply mt-auto;
+  }
+
+  .financial-progress-card__footer-text {
+    @apply truncate;
+  }
+
+  .financial-progress-card__bg-icon {
+    @apply pointer-events-none absolute -bottom-8 -right-8 opacity-[0.08] dark:opacity-20;
+  }
+</style>

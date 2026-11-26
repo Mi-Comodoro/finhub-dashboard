@@ -39,7 +39,7 @@
 </script>
 
 <template>
-  <div :class="['flex items-center', className]">
+  <div :class="['header-actions', className]">
     <Badge variant="secondary" size="xs">
       {{
         accountType?.toUpperCase() === 'TRIAL'
@@ -66,11 +66,19 @@
     <NotificationCenter :notifications="notifications" />
 
     <!-- User Avatar Dropdown -->
-    <UserAvatarDropdown class="ml-2" />
+    <UserAvatarDropdown class="header-actions__avatar" />
   </div>
 </template>
 
 <style scoped lang="postcss">
+  .header-actions {
+    @apply flex items-center;
+  }
+
+  .header-actions__avatar {
+    @apply ml-2;
+  }
+
   .header-actions__help-btn {
     @apply flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 transition-colors duration-150;
     @apply hover:bg-neutral-100 hover:text-primary-600;

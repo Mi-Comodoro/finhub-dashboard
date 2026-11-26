@@ -107,8 +107,8 @@
 </script>
 
 <template>
-  <div class="max-w-lg p-4">
-    <div class="flex w-full flex-col gap-6">
+  <div class="login-form">
+    <div class="login-form__content">
       <div>
         <CardInfo
           level="h2"
@@ -122,12 +122,9 @@
         />
       </div>
 
-      <div
-        v-if="error"
-        class="rounded-lg border border-red-200 bg-red-50 p-4 transition-colors duration-200 dark:border-red-800 dark:bg-red-900/20"
-      >
-        <div class="flex items-center">
-          <Text size="sm" weight="medium" class="text-red-800 dark:text-red-200">
+      <div v-if="error" class="login-form__error">
+        <div class="login-form__error-body">
+          <Text size="sm" weight="medium" class="login-form__error-text">
             {{ error }}
           </Text>
         </div>
@@ -135,13 +132,13 @@
 
       <Button
         variant="outline"
-        class="flex w-full items-center justify-center transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"
+        class="login-form__google-button"
         size="sm"
         :loading="isLoading"
         :disabled="isLoading"
         @click="handleGoogleLogin"
       >
-        <GoogleIcon class="mr-2" :size="18" />
+        <GoogleIcon class="login-form__google-icon" :size="18" />
         <span>
           {{ isLoading ? 'Conectando...' : 'Iniciar sesion con Google' }}
         </span>
@@ -160,7 +157,7 @@
         <Button
           variant="primary"
           size="sm"
-          class="w-full"
+          class="login-form__full-width"
           :loading="isLoading"
           :disabled="isLoading"
           @click="handleGoogleConsent"
@@ -177,24 +174,18 @@
         .
       </p>
 
-      <div class="relative">
-        <div class="absolute inset-0 flex items-center">
-          <div
-            class="w-full border-t border-neutral-200 transition-colors duration-200 dark:border-neutral-600"
-          ></div>
+      <div class="login-form__divider">
+        <div class="login-form__divider-line-wrapper">
+          <div class="login-form__divider-line"></div>
         </div>
-        <div class="relative flex justify-center">
-          <Text
-            size="sm"
-            color="muted"
-            class="bg-white px-4 transition-colors duration-200 dark:bg-neutral-800"
-          >
+        <div class="login-form__divider-label-wrapper">
+          <Text size="sm" color="muted" class="login-form__divider-label">
             O continua con tu correo
           </Text>
         </div>
       </div>
 
-      <form class="w-full space-y-2" @submit.prevent="handleSubmit">
+      <form class="login-form__form" @submit.prevent="handleSubmit">
         <Input
           id="email"
           v-model="email"
@@ -217,7 +208,7 @@
 
         <Button
           type="submit"
-          class="w-full"
+          class="login-form__full-width"
           variant="primary"
           size="sm"
           :loading="isLoading"
@@ -231,6 +222,66 @@
 </template>
 
 <style scoped lang="postcss">
+  .login-form {
+    @apply max-w-lg p-4;
+  }
+
+  .login-form__content {
+    @apply flex w-full flex-col gap-6;
+  }
+
+  .login-form__error {
+    @apply rounded-lg border border-red-200 bg-red-50 p-4 transition-colors duration-200;
+    @apply dark:border-red-800 dark:bg-red-900/20;
+  }
+
+  .login-form__error-body {
+    @apply flex items-center;
+  }
+
+  .login-form__error-text {
+    @apply text-red-800 dark:text-red-200;
+  }
+
+  .login-form__google-button {
+    @apply flex w-full items-center justify-center transition-colors duration-200 hover:bg-neutral-100;
+    @apply dark:hover:bg-neutral-700/50;
+  }
+
+  .login-form__google-icon {
+    @apply mr-2;
+  }
+
+  .login-form__full-width {
+    @apply w-full;
+  }
+
+  .login-form__divider {
+    @apply relative;
+  }
+
+  .login-form__divider-line-wrapper {
+    @apply absolute inset-0 flex items-center;
+  }
+
+  .login-form__divider-line {
+    @apply w-full border-t border-neutral-200 transition-colors duration-200;
+    @apply dark:border-neutral-600;
+  }
+
+  .login-form__divider-label-wrapper {
+    @apply relative flex justify-center;
+  }
+
+  .login-form__divider-label {
+    @apply bg-white px-4 transition-colors duration-200;
+    @apply dark:bg-neutral-800;
+  }
+
+  .login-form__form {
+    @apply w-full space-y-2;
+  }
+
   .login-form__new-account {
     @apply flex flex-col gap-3 rounded-xl border border-primary-200 bg-primary-50 p-4;
     @apply dark:border-primary-800 dark:bg-primary-900/20;
