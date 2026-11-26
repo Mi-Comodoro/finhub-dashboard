@@ -10,7 +10,10 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/dashboard/debts': { redirect: '/dashboard/accounts' },
-    '/dashboard/receivables': { redirect: '/dashboard/accounts' }
+    '/dashboard/receivables': { redirect: '/dashboard/accounts' },
+    // Los datos del usuario se cargan en el cliente: renderizar en el servidor pintaba «Usuario» y un avatar vacío
+    '/dashboard/profile': { ssr: false },
+    '/dashboard/settings': { ssr: false }
   },
 
   app: {

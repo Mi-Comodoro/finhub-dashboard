@@ -187,7 +187,7 @@
   }
 
   .income-page__header {
-    @apply flex items-center justify-between;
+    @apply flex flex-wrap items-center justify-between gap-3;
   }
 
   .income-page__title {

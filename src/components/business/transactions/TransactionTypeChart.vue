@@ -85,7 +85,7 @@
     class="rounded-md border border-slate-200 bg-white transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
   >
     <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-700">
-      <Heading level="h3" size="lg" weight="semibold">Distribucion por tipo</Heading>
+      <Heading level="h3" size="lg" weight="semibold">Distribución por tipo</Heading>
       <Text size="sm" color="muted" class="mt-1">
         Resume cuanto del movimiento corresponde a ingresos, gastos y ahorro.
       </Text>

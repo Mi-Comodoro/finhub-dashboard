@@ -38,7 +38,7 @@
   />
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
   .country-flag {
     display: inline-flex;
     line-height: 1;

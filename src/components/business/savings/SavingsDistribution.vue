@@ -17,7 +17,7 @@
       <div class="savings-distribution__content">
         <div class="savings-distribution__info">
           <IconBadge icon="strategy" container-class="coming-soon-card__icon" />
-          <Heading level="h3" size="lg" weight="semibold">Distribucion de Ahorro</Heading>
+          <Heading level="h3" size="lg" weight="semibold">Distribución de Ahorro</Heading>
           <Text color="muted" size="xs">Necesitas crear cuantas para vincular tus metas</Text>
         </div>
         <div>
