@@ -37,7 +37,7 @@ Focus ONLY on:
 - Buttons size="sm" in forms and inline actions
 - Input/Select: text-xs when size=sm
 - Use `?? 0` for all optional number props — never `Number(optional)`
-- Nuxt UI: only components listed in ADR-009 are allowed (UForm/UInput/USelect prohibited until E6)
+- `@nuxt/ui` is not installed: never use `U*` components (see AGENTS.md)
 
 ## Output
 
