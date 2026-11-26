@@ -24,12 +24,17 @@ const CURRENCY_CONFIG: Record<Currency, CurrencyConfig> = {
 // ─── Arithmetic helpers ───────────────────────────────────────────────────────
 
 /**
- * Round to N decimal places using "round half away from zero".
- * Prevents the classic JS drift: round(1.005, 2) → 1.01, not 1.00.
+ * Round to N decimal places using "round half away from zero": round(10.075, 2) → 10.08.
+ * The decimal point is shifted on the decimal text because binary multiplication fails on half
+ * cents (10.075 * 100 = 1007.4999999999999); 15 significant digits drop earlier arithmetic noise.
  */
 export function round(value: number, decimals: number): number {
-  const factor = Math.pow(10, decimals)
-  return Math.round((value + Number.EPSILON) * factor) / factor
+  if (!Number.isFinite(value)) return value
+  const text = String(Number(Math.abs(value).toPrecision(15)))
+  // Exponential notation: either negligible (1e-7) or too large to have decimals
+  if (text.includes('e')) return Math.abs(value) < 1 ? 0 : value
+  const rounded = Number(`${Math.round(Number(`${text}e${decimals}`))}e-${decimals}`)
+  return rounded === 0 ? 0 : Math.sign(value) * rounded
 }
 
 /** Returns the natural decimal precision for a currency. */
