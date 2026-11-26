@@ -274,8 +274,8 @@
 
         <Text size="sm">
           Invitación para
-          <strong>{{ invite.email }}</strong>
-          . Vence el {{ formatDate(invite.inviteExpiresAt) }} y solo se puede usar una vez.
+          <strong>{{ invite.email }}.</strong>
+          Vence el {{ formatDate(invite.inviteExpiresAt) }} y solo se puede usar una vez.
         </Text>
 
         <div class="beta-modal__link">

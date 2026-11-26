@@ -187,8 +187,7 @@
 
       <AlertBanner v-if="invitedEmail" variant="success" title="Tienes una invitación a la beta">
         Crea tu cuenta con
-        <strong>{{ invitedEmail }}</strong>
-        .
+        <strong>{{ invitedEmail }}.</strong>
       </AlertBanner>
 
       <div v-if="error" class="signup-form__error">
