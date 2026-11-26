@@ -29,7 +29,8 @@ export default defineEventHandler(async event => {
       ...(payload.rejectPhoto ? { rejectPhoto: true } : {}),
       ...(payload.acceptedPolicyVersion
         ? { acceptedPolicyVersion: String(payload.acceptedPolicyVersion) }
-        : {})
+        : {}),
+      ...(payload.inviteToken ? { inviteToken: String(payload.inviteToken) } : {})
     }
   }
 
@@ -44,6 +45,14 @@ export default defineEventHandler(async event => {
           statusCode: 400,
           message: response._data.message,
           data: { code: 'CONSENT_REQUIRED' }
+        })
+      }
+      // Closed beta: a new Google account needs an invitation issued for that email
+      if (response.status === 403 && response._data?.error === 'BetaInviteRequired') {
+        throw createError({
+          statusCode: 403,
+          message: response._data.message,
+          data: { code: 'BETA_INVITE_REQUIRED' }
         })
       }
       loginError(response.status)

@@ -14,6 +14,7 @@
   import { useFeedback } from '@/composables/useFeedBack'
   import { useTimezone } from '@/composables/useTimezone'
   import type { PlanData } from '@/types/api'
+  import { type Currency, formatCurrency } from '@/utils/currency'
 
   definePageMeta({
     layout: 'dashboard',
@@ -203,11 +204,7 @@
   }
 
   const formatPrice = (plan: PlanData) => {
-    return Number(plan.price).toLocaleString('es-CO', {
-      style: 'currency',
-      currency: plan.currency,
-      minimumFractionDigits: 2
-    })
+    return formatCurrency(Number(plan.price), plan.currency as Currency)
   }
 
   onMounted(async () => {

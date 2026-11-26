@@ -24,12 +24,17 @@ const CURRENCY_CONFIG: Record<Currency, CurrencyConfig> = {
 // ─── Arithmetic helpers ───────────────────────────────────────────────────────
 
 /**
- * Round to N decimal places using "round half away from zero".
- * Prevents the classic JS drift: round(1.005, 2) → 1.01, not 1.00.
+ * Round to N decimal places using "round half away from zero": round(10.075, 2) → 10.08.
+ * The decimal point is shifted on the decimal text because binary multiplication fails on half
+ * cents (10.075 * 100 = 1007.4999999999999); 15 significant digits drop earlier arithmetic noise.
  */
 export function round(value: number, decimals: number): number {
-  const factor = Math.pow(10, decimals)
-  return Math.round((value + Number.EPSILON) * factor) / factor
+  if (!Number.isFinite(value)) return value
+  const text = String(Number(Math.abs(value).toPrecision(15)))
+  // Exponential notation: either negligible (1e-7) or too large to have decimals
+  if (text.includes('e')) return Math.abs(value) < 1 ? 0 : value
+  const rounded = Number(`${Math.round(Number(`${text}e${decimals}`))}e-${decimals}`)
+  return rounded === 0 ? 0 : Math.sign(value) * rounded
 }
 
 /** Returns the natural decimal precision for a currency. */
@@ -62,11 +67,11 @@ export function subtractAmounts(a: number, b: number, currency: Currency): numbe
 // ─── Formatting ──────────────────────────────────────────────────────────────
 
 /**
- * Format a numeric amount as a currency string.
- * Uses the correct locale and decimal places for each currency:
- *   COP → $ 1.250.000
- *   USD → $1,250.00
- *   EUR → 1.250,00 €
+ * Format a numeric amount as a currency string that always ends with the
+ * currency code. Amounts are rounded (half away from zero) to the displayed decimals:
+ *   COP → $ 1.250.000,00 COP
+ *   USD → $1,250.00 USD
+ *   EUR → 1.250,00 € EUR
  *
  * @param decimals - optional override for displayed decimal places
  */
@@ -74,12 +79,13 @@ export function formatCurrency(amount: number, currency?: Currency, decimals?: n
   const resolved: Currency = currency && CURRENCY_CONFIG[currency] ? currency : 'COP'
   const { locale } = CURRENCY_CONFIG[resolved]
   const d = decimals ?? CURRENCY_CONFIG[resolved].decimals
-  return new Intl.NumberFormat(locale, {
+  const formatted = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: resolved,
     minimumFractionDigits: d,
     maximumFractionDigits: d
-  }).format(amount)
+  }).format(round(Number(amount) || 0, d))
+  return `${formatted} ${resolved}`
 }
 
 /**
@@ -108,12 +114,14 @@ export function formatNumber(
  *   USD     1_500 → "$1.50K USD"
  */
 export function formatCompactCurrency(amount: number, currency: Currency): string {
-  const { symbol } = CURRENCY_CONFIG[currency]
+  const resolved: Currency = currency && CURRENCY_CONFIG[currency] ? currency : 'COP'
+  const { symbol } = CURRENCY_CONFIG[resolved]
   const abs = Math.abs(amount)
   const sign = amount < 0 ? '-' : ''
-  if (abs >= 1_000_000) return `${sign}${symbol}${round(abs / 1_000_000, 2).toFixed(2)}M `
-  if (abs >= 1_000) return `${sign}${symbol}${round(abs / 1_000, 2).toFixed(2)}K `
-  return `${sign}${formatCurrency(amount, currency)}`
+  if (abs >= 1_000_000)
+    return `${sign}${symbol}${round(abs / 1_000_000, 2).toFixed(2)}M ${resolved}`
+  if (abs >= 1_000) return `${sign}${symbol}${round(abs / 1_000, 2).toFixed(2)}K ${resolved}`
+  return formatCurrency(amount, resolved)
 }
 
 /** Human-readable label for a currency code, e.g. "Peso colombiano". */

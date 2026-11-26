@@ -214,7 +214,7 @@
           :loading="isLoading"
           :disabled="isLoading"
         >
-          Iniciar Sesion
+          Iniciar Sesión
         </Button>
       </form>
     </div>

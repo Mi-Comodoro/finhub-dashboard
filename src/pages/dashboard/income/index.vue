@@ -110,7 +110,6 @@
                   currency
                 )
               }}
-              <span class="income-page__metric-currency">{{ currency }}</span>
             </Heading>
           </div>
         </div>
@@ -187,7 +186,7 @@
   }
 
   .income-page__header {
-    @apply flex items-center justify-between;
+    @apply flex flex-wrap items-center justify-between gap-3;
   }
 
   .income-page__title {
@@ -216,10 +215,6 @@
 
   .income-page__metric-icon--success {
     @apply text-success-600;
-  }
-
-  .income-page__metric-currency {
-    @apply text-base font-normal uppercase text-neutral-500;
   }
 
   .income-page__error {

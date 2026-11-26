@@ -12,7 +12,8 @@ export const useAuthApi = () => {
     idToken: string,
     name: string,
     rejectPhoto?: boolean,
-    acceptedPolicyVersion?: string
+    acceptedPolicyVersion?: string,
+    inviteToken?: string
   ) => {
     return await $fetch<AuthResponseResult>('/api/auth/google', {
       method: 'POST',
@@ -21,7 +22,8 @@ export const useAuthApi = () => {
           idToken,
           name,
           ...(rejectPhoto ? { rejectPhoto: true } : {}),
-          ...(acceptedPolicyVersion ? { acceptedPolicyVersion } : {})
+          ...(acceptedPolicyVersion ? { acceptedPolicyVersion } : {}),
+          ...(inviteToken ? { inviteToken } : {})
         }
       }
     })
@@ -48,6 +50,7 @@ export const useAuthApi = () => {
     country?: string
     handle?: string
     acceptedPolicyVersion?: string
+    inviteToken?: string
   }) => {
     return await $fetch<AuthResponseResult>('/api/auth/signup', {
       method: 'POST',
@@ -55,11 +58,17 @@ export const useAuthApi = () => {
     })
   }
 
+  /** Token de 60 s para conectar el WebSocket de notificaciones */
+  const getWsToken = async () => {
+    return await $fetch<{ token: string }>('/api/auth/ws-token')
+  }
+
   return {
     loginWithCredentials,
     loginWithGoogleToken,
     logout,
     refreshToken,
-    signup
+    signup,
+    getWsToken
   }
 }

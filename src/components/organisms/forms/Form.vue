@@ -305,7 +305,7 @@
               <RangeSlider
                 v-else-if="schema.fields[fieldKey]!.type === 'slider-percentage'"
                 v-model="formData[fieldKey] as number"
-                label="Porcentaje de Distribucion"
+                label="Porcentaje de Distribución"
               />
 
               <template v-else-if="schema.fields[fieldKey]!.type === 'radio-card'">

@@ -940,19 +940,19 @@
 
   /* Unified panel */
   .settings-panel {
-    @apply flex overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm;
+    @apply flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm md:flex-row;
     @apply dark:border-neutral-700 dark:bg-neutral-900;
   }
 
   /* Left nav */
   .settings-panel__nav {
-    @apply flex w-52 shrink-0 flex-col gap-0.5 p-2;
-    @apply border-r border-neutral-200 bg-neutral-50;
+    @apply flex w-full shrink-0 flex-row gap-0.5 overflow-x-auto p-2 md:w-52 md:flex-col md:overflow-visible;
+    @apply border-b border-neutral-200 bg-neutral-50 md:border-b-0 md:border-r;
     @apply dark:border-neutral-700 dark:bg-neutral-800/50;
   }
 
   .settings-panel__nav-item {
-    @apply flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors;
+    @apply flex shrink-0 cursor-pointer items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-left transition-colors md:w-full;
     @apply text-neutral-600 hover:bg-neutral-200/60 hover:text-neutral-900;
     @apply dark:text-neutral-400 dark:hover:bg-neutral-700/40 dark:hover:text-neutral-100;
   }
@@ -1070,7 +1070,7 @@
   }
 
   .settings-card__phone-input-wrap {
-    @apply relative flex-1;
+    @apply relative min-w-0 flex-1;
   }
 
   .settings-card__input--phone {

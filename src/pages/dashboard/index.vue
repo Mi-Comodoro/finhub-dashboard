@@ -303,7 +303,7 @@
           icon="add"
           @click="openQuickModal"
         >
-          Nueva Transaccion
+          Nueva Transacción
         </Button>
       </div>
     </div>
@@ -551,7 +551,7 @@
   }
 
   .dashboard-page__header {
-    @apply flex items-center justify-between;
+    @apply flex flex-wrap items-center justify-between gap-3;
   }
 
   .dashboard-page__header-text {
@@ -567,7 +567,7 @@
   }
 
   .dashboard-page__header-actions {
-    @apply flex items-center gap-2;
+    @apply flex flex-wrap items-center gap-2;
   }
 
   .dashboard-page__loading {
@@ -595,7 +595,7 @@
   }
 
   .dashboard-page__cards {
-    @apply grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3;
+    @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3;
   }
 
   .dashboard-page__card--accent {

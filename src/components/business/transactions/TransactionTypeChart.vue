@@ -83,7 +83,7 @@
 <template>
   <div class="transaction-type-chart">
     <div class="transaction-type-chart__header">
-      <Heading level="h3" size="lg" weight="semibold">Distribucion por tipo</Heading>
+      <Heading level="h3" size="lg" weight="semibold">Distribución por tipo</Heading>
       <Text size="sm" color="muted" class="transaction-type-chart__description">
         Resume cuanto del movimiento corresponde a ingresos, gastos y ahorro.
       </Text>

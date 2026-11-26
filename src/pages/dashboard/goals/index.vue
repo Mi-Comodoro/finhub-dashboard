@@ -159,6 +159,9 @@
     return tips
   })
 
+  // Until the goals are loaded the list is unknown: show a skeleton, never the empty state
+  const isPageLoading = ref(true)
+
   definePageMeta({
     layout: 'dashboard',
     title: 'Metas',
@@ -176,6 +179,7 @@
         })
       }
     }
+    isPageLoading.value = false
     if (currentBudgetId.value) {
       await loadSavingAllocations(currentBudgetId.value)
     }
@@ -227,7 +231,7 @@
   const onSavingAllocationSuccess = () => {
     show({
       title: 'Operacion Exitosa',
-      description: 'Distribucion registrada con exito',
+      description: 'Distribución registrada con éxito',
       type: 'success'
     })
     closeSavingDistributionForm()
@@ -487,7 +491,12 @@
     <AllocationSummary />
     <FinancialTipCarousel :tips="displayTips" />
     <div class="goals-page__grid">
-      <div v-if="isGoalsExists" class="goals-page__goals-section">
+      <div v-if="isPageLoading && !isGoalsExists" class="goals-page__goals-section">
+        <div class="goals-page__goals-cards">
+          <div v-for="n in 4" :key="n" class="goals-page__skeleton" />
+        </div>
+      </div>
+      <div v-else-if="isGoalsExists" class="goals-page__goals-section">
         <!-- Vista tarjetas -->
         <div v-if="viewMode === 'card'" class="goals-page__goals-cards">
           <div
@@ -884,7 +893,7 @@
   }
 
   .goals-page__header-top {
-    @apply flex items-start justify-between gap-4;
+    @apply flex flex-wrap items-start justify-between gap-4;
   }
 
   .goals-page__header-text {
@@ -892,7 +901,7 @@
   }
 
   .goals-page__header-buttons {
-    @apply flex shrink-0 items-center gap-2;
+    @apply flex shrink-0 flex-wrap items-center gap-2;
   }
 
   .goals-page__header-controls {
@@ -937,6 +946,10 @@
 
   .goals-page__goals-cards {
     @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2;
+  }
+
+  .goals-page__skeleton {
+    @apply h-36 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800;
   }
 
   .goals-page__goal-card-wrapper {

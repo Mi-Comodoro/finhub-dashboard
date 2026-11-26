@@ -58,7 +58,7 @@
       path: '/dashboard/groups',
       badge: pendingRequestsCount.value || undefined
     },
-    { name: 'Analitica', icon: 'analytics', path: '/dashboard/analytics' },
+    { name: 'Analítica', icon: 'analytics', path: '/dashboard/analytics' },
     { name: 'Transacciones', icon: 'swap_vertical_circle', path: '/dashboard/transactions' },
     { name: 'Cuentas', icon: 'account_balance', path: '/dashboard/accounts' },
     { name: 'Módulos', icon: 'view_module', className: 'nav-item--disabled' }
@@ -80,6 +80,7 @@
       { name: 'Planes', icon: 'card_membership', path: '/admin/plans' },
       { name: 'Categorías', icon: 'category', path: '/admin/categories' },
       { name: 'Comunicaciones', icon: 'campaign', path: '/admin/communications' },
+      { name: 'Acceso a la beta', icon: 'how_to_reg', path: '/admin/beta' },
       { name: 'Configuración', icon: 'settings', path: '/admin/config' }
     ]
     if (isSuperAdmin.value) {

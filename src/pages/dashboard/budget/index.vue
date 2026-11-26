@@ -538,11 +538,11 @@
   }
 
   .budget-index__header {
-    @apply flex items-start justify-between gap-4;
+    @apply flex flex-wrap items-start justify-between gap-4;
   }
 
   .budget-index__header-actions {
-    @apply flex shrink-0 items-center gap-3;
+    @apply flex shrink-0 flex-wrap items-center gap-3;
   }
 
   .budget-index__year-select {

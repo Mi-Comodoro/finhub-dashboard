@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { SESSION_DURATION } from '@/common/constants'
 import { useAuthApi } from '@/composables/api/useAuthApi'
 import { useUserApi } from '@/composables/api/useUserApi'
+import { useBetaInvitation } from '@/composables/application/useBetaInvitation'
 import { useSessionWatcher } from '@/composables/useSessionWatcher'
 import { useAuthStore } from '@/stores/auth.store'
 import { useBudgetStore } from '@/stores/budget.store'
@@ -30,17 +31,20 @@ export const useAuth = () => {
   const { startWatcher, stopWatcher } = useSessionWatcher()
   const authApi = useAuthApi()
   const userApi = useUserApi()
+  // Closed beta: the invitation the person arrived with is sent when the account is created
+  const invitation = useBetaInvitation()
 
   const isAuthenticated = computed(() => authStore.isAuthenticated)
 
   const getReadableError = (err: unknown) => {
-    if (err instanceof Error && err.message) {
-      return err.message
-    }
-
+    // The BFF reason goes first: on a failed request err.message is the technical $fetch text
     if (typeof err === 'object' && err !== null && 'data' in err) {
       const data = (err as { data?: { message?: string } }).data
       if (data?.message) return data.message
+    }
+
+    if (err instanceof Error && err.message) {
+      return err.message
     }
 
     return 'Error de autenticación con Google'
@@ -133,7 +137,10 @@ export const useAuth = () => {
     error.value = ''
 
     try {
-      const { success, result: res } = await authApi.signup(data)
+      const { success, result: res } = await authApi.signup({
+        ...data,
+        ...(invitation.token.value ? { inviteToken: invitation.token.value } : {})
+      })
 
       if (!success || !res) {
         error.value = 'Error al crear la cuenta'
@@ -141,6 +148,8 @@ export const useAuth = () => {
       }
 
       authStore.setAccountType(res.accountType)
+      // The invitation was used: it will not work again
+      invitation.clear()
 
       const onboardingStatus = await populateSessionFromServer(res.expiresAt)
 
@@ -191,7 +200,8 @@ export const useAuth = () => {
         credentials.idToken,
         credentials.name,
         undefined,
-        acceptedPolicyVersion
+        acceptedPolicyVersion,
+        invitation.token.value ?? undefined
       )
 
       if (!success || !res) {
@@ -199,6 +209,7 @@ export const useAuth = () => {
       }
 
       pendingGoogle = null
+      invitation.clear()
       authStore.setAccountType(res.accountType)
 
       // Pequeño delay para asegurar que las cookies se propaguen desde el server al cliente

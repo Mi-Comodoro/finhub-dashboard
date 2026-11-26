@@ -8,7 +8,7 @@
   import type { TextColor } from '@/components/atoms/typography/types/text.types'
   import CardInfo from '@/components/molecules/card-info/CardInfo.vue'
   import { useFinancesStore } from '@/stores/finances.store'
-  import { formatCurrency } from '@/utils/currency'
+  import { formatCompactCurrency, formatCurrency } from '@/utils/currency'
   import DateUtils from '@/utils/date'
   // Propiedades
   const financeStore = useFinancesStore()
@@ -254,9 +254,6 @@
       >
         <Heading :color="textColor" size="3xl" weight="bold">
           {{ displayAmount }}
-          <span class="financial-progress-card__currency" :class="styles.currency">
-            {{ currency }}
-          </span>
         </Heading>
 
         <!-- alert -->
@@ -296,9 +293,6 @@
 
           <Text size="sm" weight="semibold">
             {{ displayTargetAmount }}
-            <span class="financial-progress-card__currency-sm" :class="styles.currency">
-              {{ currency }}
-            </span>
           </Text>
         </div>
 
@@ -358,14 +352,6 @@
 
   .financial-progress-card__amount {
     @apply flex min-h-10 flex-col items-start justify-center pt-6;
-  }
-
-  .financial-progress-card__currency {
-    @apply text-xl uppercase md:text-sm;
-  }
-
-  .financial-progress-card__currency-sm {
-    @apply text-xs;
   }
 
   .financial-progress-card__progress {

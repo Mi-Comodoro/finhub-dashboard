@@ -8,12 +8,14 @@ import {
   signOut as firebaseSignOut
 } from 'firebase/auth'
 
-import type { FirebaseConfig } from '~/common/interfaces/firebase.interface'
+import { useFirebaseApi } from '@/composables/api/useFirebaseApi'
+
 export default defineNuxtPlugin(async nuxtApp => {
+  const { getFirebaseConfig } = useFirebaseApi()
+
   const initFirebase = async () => {
     if (import.meta.server) return
-    const FIREBASE_CONFIG_PATH = '/api/firebase'
-    const firebaseConfig: FirebaseConfig = await $fetch<FirebaseConfig>(FIREBASE_CONFIG_PATH)
+    const firebaseConfig = await getFirebaseConfig()
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig)
 
     const auth = getAuth(app)
