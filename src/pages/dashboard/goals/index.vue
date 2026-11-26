@@ -159,6 +159,9 @@
     return tips
   })
 
+  // Until the goals are loaded the list is unknown: show a skeleton, never the empty state
+  const isPageLoading = ref(true)
+
   definePageMeta({
     layout: 'dashboard',
     title: 'Metas',
@@ -176,6 +179,7 @@
         })
       }
     }
+    isPageLoading.value = false
     if (currentBudgetId.value) {
       await loadSavingAllocations(currentBudgetId.value)
     }
@@ -487,7 +491,12 @@
     <AllocationSummary />
     <FinancialTipCarousel :tips="displayTips" />
     <div class="goals-page__grid">
-      <div v-if="isGoalsExists" class="goals-page__goals-section">
+      <div v-if="isPageLoading && !isGoalsExists" class="goals-page__goals-section">
+        <div class="goals-page__goals-cards">
+          <div v-for="n in 4" :key="n" class="goals-page__skeleton" />
+        </div>
+      </div>
+      <div v-else-if="isGoalsExists" class="goals-page__goals-section">
         <!-- Vista tarjetas -->
         <div v-if="viewMode === 'card'" class="goals-page__goals-cards">
           <div
@@ -937,6 +946,10 @@
 
   .goals-page__goals-cards {
     @apply grid w-full grid-cols-1 gap-4 md:grid-cols-2;
+  }
+
+  .goals-page__skeleton {
+    @apply h-36 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800;
   }
 
   .goals-page__goal-card-wrapper {
