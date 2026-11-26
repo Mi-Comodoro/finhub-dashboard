@@ -80,6 +80,7 @@
       { name: 'Planes', icon: 'card_membership', path: '/admin/plans' },
       { name: 'Categorías', icon: 'category', path: '/admin/categories' },
       { name: 'Comunicaciones', icon: 'campaign', path: '/admin/communications' },
+      { name: 'Acceso a la beta', icon: 'how_to_reg', path: '/admin/beta' },
       { name: 'Configuración', icon: 'settings', path: '/admin/config' }
     ]
     if (isSuperAdmin.value) {

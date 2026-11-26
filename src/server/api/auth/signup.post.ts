@@ -21,9 +21,18 @@ export default defineEventHandler(async event => {
     method: 'POST',
     body,
     onResponseError: ({ response }) => {
-      const backendData = response._data as { message?: string | string[] } | null
+      const backendData = response._data as { message?: string | string[]; error?: string } | null
       const raw = backendData?.message
       const message = Array.isArray(raw) ? raw.join('. ') : (raw ?? null)
+
+      // Closed beta: no valid invitation for this email
+      if (response.status === 403 && backendData?.error === 'BetaInviteRequired') {
+        throw createError({
+          statusCode: 403,
+          message: message ?? 'El registro es solo por invitación durante la beta cerrada.',
+          data: { code: 'BETA_INVITE_REQUIRED' }
+        })
+      }
 
       if (response.status === 409) {
         throw createError({ statusCode: 409, message: message ?? 'Este correo ya está registrado' })

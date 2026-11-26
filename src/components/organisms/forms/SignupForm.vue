@@ -9,6 +9,7 @@
   import Input from '@/components/molecules/input/Input.vue'
   import PasswordInput from '@/components/molecules/input/PasswordInput.vue'
   import Select from '@/components/molecules/select/Select.vue'
+  import { useBetaInvitation } from '@/composables/application/useBetaInvitation'
   import { useLegalApplication } from '@/composables/application/useLegalApplication'
   import { useAuth } from '@/composables/useAuth'
   import { DIAL_CODE_OPTIONS } from '~/common/constants'
@@ -33,6 +34,16 @@
   const { consentRequired, policyVersion, loadVersions } = useLegalApplication()
   const consentAccepted = ref(false)
   const showConsentInvalid = ref(false)
+
+  // Closed beta: when the person arrived with an invitation, the email is the invited one
+  const { invitedEmail } = useBetaInvitation()
+  watch(
+    invitedEmail,
+    invited => {
+      if (invited) email.value = invited
+    },
+    { immediate: true }
+  )
 
   onMounted(() => {
     loadVersions()
@@ -174,6 +185,11 @@
         />
       </div>
 
+      <AlertBanner v-if="invitedEmail" variant="success" title="Tienes una invitación a la beta">
+        Crea tu cuenta con
+        <strong>{{ invitedEmail }}.</strong>
+      </AlertBanner>
+
       <div v-if="error" class="signup-form__error">
         <div class="signup-form__error-inner">
           <Text size="sm" weight="medium" class="signup-form__error-text">
@@ -212,6 +228,7 @@
           name="email"
           label="Correo electrónico"
           required
+          :readonly="!!invitedEmail"
           placeholder="nombre@empresa.com"
           error-message="Correo inválido"
         />
